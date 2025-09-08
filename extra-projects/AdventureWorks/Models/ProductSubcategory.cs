@@ -1,6 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-
 namespace AdventureWorks.Models;
 
 /// <summary>
@@ -8,32 +5,32 @@ namespace AdventureWorks.Models;
 /// </summary>
 public partial class ProductSubcategory
 {
-    /// <summary>
-    /// Primary key for ProductSubcategory records.
-    /// </summary>
-    public int ProductSubcategoryId { get; set; }
+	/// <summary>
+	/// Primary key for ProductSubcategory records.
+	/// </summary>
+	public int ProductSubcategoryId { get; set; }
 
-    /// <summary>
-    /// Product category identification number. Foreign key to ProductCategory.ProductCategoryID.
-    /// </summary>
-    public int ProductCategoryId { get; set; }
+	/// <summary>
+	/// Product category identification number. Foreign key to ProductCategory.ProductCategoryID.
+	/// </summary>
+	public int ProductCategoryId { get; set; }
 
-    /// <summary>
-    /// Subcategory description.
-    /// </summary>
-    public string Name { get; set; } = null!;
+	/// <summary>
+	/// Subcategory description.
+	/// </summary>
+	public string Name { get; set; } = null!;
 
-    /// <summary>
-    /// ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.
-    /// </summary>
-    public Guid Rowguid { get; set; }
+	/// <summary>
+	/// ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.
+	/// </summary>
+	public Guid Rowguid { get; set; }
 
-    /// <summary>
-    /// Date and time the record was last updated.
-    /// </summary>
-    public DateTime ModifiedDate { get; set; }
+	/// <summary>
+	/// Date and time the record was last updated.
+	/// </summary>
+	public DateTime ModifiedDate { get; set; }
 
-    public virtual ProductCategory ProductCategory { get; set; } = null!;
+	public virtual ProductCategory ProductCategory { get; set; } = null!;
 
-    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+	public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }
