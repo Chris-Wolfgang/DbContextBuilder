@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
+		<TargetFrameworks>
+			net462;net48;
+			netstandard2.0;netstandard2.1;
+			net8.0;net9.0
+		</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<Version>0.1.0</Version>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+		<Title>$(AssemblyName)</Title>
+		<Authors>Chris Wolfgang</Authors>
+		<Description>A library for easily building DbContext for testing using in-memory database</Description>
+		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
+		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
+		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageIcon></PackageIcon>
+		<ApplicationIcon></ApplicationIcon>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<SignAssembly>False</SignAssembly>
+		<PackageTags></PackageTags>
+
+
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+
+	</PropertyGroup>
+
+</Project>
