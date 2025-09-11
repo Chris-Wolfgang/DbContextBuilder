@@ -2,11 +2,7 @@
 
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore.Tests.Unit</RootNamespace>
-		<TargetFrameworks>
-			net462;net472;net48;net481;
-			netstandard2.0;netstandard2.1;
-			net5.0;net60;net70;net8.0;net9.0
-		</TargetFrameworks>
+		<TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<Version>0.1.0</Version>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
@@ -33,10 +29,119 @@
 
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <Compile Remove="Models\Address.cs" />
+	  <Compile Remove="Models\AddressType.cs" />
+	  <Compile Remove="Models\BusinessEntity.cs" />
+	  <Compile Remove="Models\BusinessEntityAddress.cs" />
+	  <Compile Remove="Models\BusinessEntityContact.cs" />
+	  <Compile Remove="Models\Customer.cs" />
+	  <Compile Remove="Models\EmailAddress.cs" />
+	  <Compile Remove="Models\Employee.cs" />
+	  <Compile Remove="Models\Password.cs" />
+	  <Compile Remove="Models\Person.cs" />
+	  <Compile Remove="Models\PersonCreditCard.cs" />
+	  <Compile Remove="Models\PersonPhone.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\Address.cs" Link="Models\Address.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\AddressType.cs" Link="Models\AddressType.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\AdventureWorksDbContext.cs" Link="Models\AdventureWorksDbContext.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\AwbuildVersion.cs" Link="Models\AwbuildVersion.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\BillOfMaterial.cs" Link="Models\BillOfMaterial.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\BusinessEntity.cs" Link="Models\BusinessEntity.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\BusinessEntityAddress.cs" Link="Models\BusinessEntityAddress.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\BusinessEntityContact.cs" Link="Models\BusinessEntityContact.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ContactType.cs" Link="Models\ContactType.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\CountryRegion.cs" Link="Models\CountryRegion.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\CountryRegionCurrency.cs" Link="Models\CountryRegionCurrency.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\CreditCard.cs" Link="Models\CreditCard.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\Culture.cs" Link="Models\Culture.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\Currency.cs" Link="Models\Currency.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\CurrencyRate.cs" Link="Models\CurrencyRate.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\Customer.cs" Link="Models\Customer.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\DatabaseLog.cs" Link="Models\DatabaseLog.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\Department.cs" Link="Models\Department.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\EmailAddress.cs" Link="Models\EmailAddress.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\Employee.cs" Link="Models\Employee.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\EmployeeDepartmentHistory.cs" Link="Models\EmployeeDepartmentHistory.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\EmployeePayHistory.cs" Link="Models\EmployeePayHistory.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ErrorLog.cs" Link="Models\ErrorLog.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\Illustration.cs" Link="Models\Illustration.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\JobCandidate.cs" Link="Models\JobCandidate.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\Location.cs" Link="Models\Location.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\Password.cs" Link="Models\Password.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\Person.cs" Link="Models\Person.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\PersonCreditCard.cs" Link="Models\PersonCreditCard.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\PersonPhone.cs" Link="Models\PersonPhone.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\PhoneNumberType.cs" Link="Models\PhoneNumberType.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\Product.cs" Link="Models\Product.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ProductCategory.cs" Link="Models\ProductCategory.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ProductCostHistory.cs" Link="Models\ProductCostHistory.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ProductDescription.cs" Link="Models\ProductDescription.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ProductInventory.cs" Link="Models\ProductInventory.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ProductListPriceHistory.cs" Link="Models\ProductListPriceHistory.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ProductModel.cs" Link="Models\ProductModel.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ProductModelIllustration.cs" Link="Models\ProductModelIllustration.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ProductModelProductDescriptionCulture.cs" Link="Models\ProductModelProductDescriptionCulture.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ProductPhoto.cs" Link="Models\ProductPhoto.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ProductProductPhoto.cs" Link="Models\ProductProductPhoto.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ProductReview.cs" Link="Models\ProductReview.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ProductSubcategory.cs" Link="Models\ProductSubcategory.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ProductVendor.cs" Link="Models\ProductVendor.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\PurchaseOrderDetail.cs" Link="Models\PurchaseOrderDetail.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\PurchaseOrderHeader.cs" Link="Models\PurchaseOrderHeader.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\SalesOrderDetail.cs" Link="Models\SalesOrderDetail.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\SalesOrderHeader.cs" Link="Models\SalesOrderHeader.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\SalesOrderHeaderSalesReason.cs" Link="Models\SalesOrderHeaderSalesReason.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\SalesPerson.cs" Link="Models\SalesPerson.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\SalesPersonQuotaHistory.cs" Link="Models\SalesPersonQuotaHistory.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\SalesReason.cs" Link="Models\SalesReason.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\SalesTaxRate.cs" Link="Models\SalesTaxRate.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\SalesTerritory.cs" Link="Models\SalesTerritory.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\SalesTerritoryHistory.cs" Link="Models\SalesTerritoryHistory.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ScrapReason.cs" Link="Models\ScrapReason.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\Shift.cs" Link="Models\Shift.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ShipMethod.cs" Link="Models\ShipMethod.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\ShoppingCartItem.cs" Link="Models\ShoppingCartItem.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\SpecialOffer.cs" Link="Models\SpecialOffer.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\SpecialOfferProduct.cs" Link="Models\SpecialOfferProduct.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\StateProvince.cs" Link="Models\StateProvince.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\Store.cs" Link="Models\Store.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\TransactionHistory.cs" Link="Models\TransactionHistory.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\TransactionHistoryArchive.cs" Link="Models\TransactionHistoryArchive.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\UnitMeasure.cs" Link="Models\UnitMeasure.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VAdditionalContactInfo.cs" Link="Models\VAdditionalContactInfo.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VEmployee.cs" Link="Models\VEmployee.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VEmployeeDepartment.cs" Link="Models\VEmployeeDepartment.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VEmployeeDepartmentHistory.cs" Link="Models\VEmployeeDepartmentHistory.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\Vendor.cs" Link="Models\Vendor.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VIndividualCustomer.cs" Link="Models\VIndividualCustomer.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VJobCandidate.cs" Link="Models\VJobCandidate.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VJobCandidateEducation.cs" Link="Models\VJobCandidateEducation.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VJobCandidateEmployment.cs" Link="Models\VJobCandidateEmployment.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VPersonDemographic.cs" Link="Models\VPersonDemographic.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VProductAndDescription.cs" Link="Models\VProductAndDescription.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VProductModelCatalogDescription.cs" Link="Models\VProductModelCatalogDescription.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VProductModelInstruction.cs" Link="Models\VProductModelInstruction.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VSalesPerson.cs" Link="Models\VSalesPerson.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VSalesPersonSalesByFiscalYear.cs" Link="Models\VSalesPersonSalesByFiscalYear.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VStateProvinceCountryRegion.cs" Link="Models\VStateProvinceCountryRegion.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VStoreWithAddress.cs" Link="Models\VStoreWithAddress.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VStoreWithContact.cs" Link="Models\VStoreWithContact.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VStoreWithDemographic.cs" Link="Models\VStoreWithDemographic.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VVendorWithAddress.cs" Link="Models\VVendorWithAddress.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\VVendorWithContact.cs" Link="Models\VVendorWithContact.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\WorkOrder.cs" Link="Models\WorkOrder.cs" />
+	  <Compile Include="..\..\extra-projects\AdventureWorks\Models\WorkOrderRouting.cs" Link="Models\WorkOrderRouting.cs" />
+	</ItemGroup>
+
 
 
 	<ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.32" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
@@ -51,5 +156,6 @@
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
+
 
 </Project>
