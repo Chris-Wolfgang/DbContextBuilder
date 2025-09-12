@@ -55,38 +55,6 @@ internal class RandomEntityGenerator
 
 
 
-    /// <summary>
-    /// Creates the specified number of entities, passing each one to the specified function
-    /// for additional initialization and configuration before being returned to the caller.
-    /// </summary>
-    /// <param name="count">The number of entities to create</param>
-    /// <param name="func">A function that receives the newly created entity for further customization</param>
-    /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns>An IEnumerable{TEntity}</returns>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
-    /// <exception cref="NotImplementedException"></exception>
-    /// <remarks>
-    /// This overload is useful for when the randomly created would have unrealistic values that you want to change.
-    /// For example, a Customer entity would have a CustomerNumber and you want to generate a realistic value for that property.
-    /// </remarks>
-    /// <example>
-    /// var builder = new DbContextBuilder{AppDbContext}()
-    ///     .UseInMemory()
-    ///     .SeedWithRandom{Customer}(count: 5, c => {c.CustomerNumber = GenerateRandomCustomerNumber(); return c; });
-    /// </example>
-    public IEnumerable<TEntity> CreateRandomEntities<TEntity>(int count, Func<TEntity, TEntity> func)
-        where TEntity : class
-    {
-        if (count < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), count, "Value cannot be less than 1");
-        }
-
-        throw new NotImplementedException();
-    }
-
-
-
     internal class NoCircularReferencesCustomization : ICustomization
     {
         public void Customize(IFixture fixture)
@@ -96,6 +64,8 @@ internal class RandomEntityGenerator
                 .ForEach(behavior => fixture.Behaviors.Remove(behavior));
         }
     }
+
+
 
     internal class IgnoreVirtualMembersCustomization : ICustomization
     {
@@ -111,7 +81,7 @@ internal class RandomEntityGenerator
         {
             if (context == null)
             {
-                throw new ArgumentNullException("context");
+                throw new ArgumentNullException(nameof(context));
             }
 
             var propertyInfo = request as PropertyInfo;
