@@ -15,8 +15,9 @@ public class DbContextBuilder<T> where T : DbContext
     
 	private DbProvider _dbProvider = DbProvider.InMemory;
 
+    private RandomEntityGenerator _randomEntityGenerator = new();
 
-	private readonly List<object> _seedData = new List<object>();
+    private readonly List<object> _seedData = new List<object>();
 
 
     /// <summary>
@@ -83,12 +84,14 @@ public class DbContextBuilder<T> where T : DbContext
     /// <param name="entities">The entities to populate the database with</param>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
     /// <exception cref="ArgumentNullException">entities is null</exception>
-    public DbContextBuilder<T> SeedWith<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
+    public DbContextBuilder<T> SeedWith<TEntity>(IEnumerable<TEntity> entities) 
+        where TEntity : class
     {
         if (entities == null)
         {
             throw new ArgumentNullException(nameof(entities));
         }
+        // TODO Check is TEntity is string
 		_seedData.AddRange(entities);
 
         return this;
@@ -102,7 +105,10 @@ public class DbContextBuilder<T> where T : DbContext
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
     /// <param name="entities">The entities to populate the database with</param>
     /// <exception cref="ArgumentNullException">entities is null</exception>
-    public DbContextBuilder<T> SeedWith<TEntity>(params TEntity[] entities) where TEntity : class
+    /// <exception cref="ArgumentException">entities contains a null item</exception>
+    /// <exception cref="ArgumentException">entities contains a string</exception>
+    public DbContextBuilder<T> SeedWith<TEntity>(params TEntity[] entities) 
+        where TEntity : class
     {
         if (entities == null)
         {
@@ -128,5 +134,89 @@ public class DbContextBuilder<T> where T : DbContext
         return this;
     }
 
-}
 
+
+    /// <summary>
+    /// Populates the specified DbSet with random entities of type TEntity.
+    /// </summary>
+    /// <param name="count">The number of items to create</param>
+    /// <typeparam name="TEntity">The type of entity to create</typeparam>
+    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
+    public DbContextBuilder<T> SeedWithRandom<TEntity>(int count) where TEntity : class
+    {
+        if (count < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
+        }
+
+        var entities = _randomEntityGenerator
+            .CreateRandomEntities<TEntity>(count);
+
+        _seedData.AddRange(entities);
+
+        return this;
+    }
+
+
+    /// <summary>
+    /// Populates the specified DbSet with random entities of type TEntity.
+    /// </summary>
+    /// <param name="count">The number of items to create</param>
+    /// <param name="func">A function that takes a TEntity and returns an updated TEntity</param>
+    /// <typeparam name="TEntity">The type of entity to create</typeparam>
+    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
+    public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, TEntity> func) where TEntity : class
+    {
+        if (count < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
+        }
+
+        if (func == null)
+        {
+            throw new ArgumentNullException(nameof(func));
+        }
+
+        var entities = _randomEntityGenerator
+            .CreateRandomEntities<TEntity>(count)
+            .Select(func);
+            
+        _seedData.AddRange(entities);
+
+        return this;
+    }
+
+
+    /// <summary>
+    /// Populates the specified DbSet with random entities of type TEntity.
+    /// </summary>
+    /// <param name="count">The number of items to create</param>
+    /// <param name="func">A function that takes a TEntity and the index number of the entity and returns an updated TEntity</param>
+    /// <typeparam name="TEntity">The type of entity to create</typeparam>
+    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
+    public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, int, TEntity> func) where TEntity : class
+    {
+        if (count < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
+        }
+
+        if (func == null)
+        {
+            throw new ArgumentNullException(nameof(func));
+        }
+
+        var entities = _randomEntityGenerator
+            .CreateRandomEntities<TEntity>(count)
+            .Select(func);
+
+        _seedData.AddRange(entities);
+
+        return this;
+    }
+
+
+}
