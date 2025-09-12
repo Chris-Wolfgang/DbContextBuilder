@@ -552,5 +552,315 @@ public class DbContextBuilderTests
 
 
 
+    /// <summary>
+    /// Verifies that calling SeedWithRandom{T}(int) throws ArgumentOutOfRangeException when passed a value less than 1.
+    /// </summary>
+    [Fact]
+    public void SeedWithRandom_int_when_passed_value_less_than_1_throws_ArgumentException()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<Address>(0));
+        Assert.Equal("count", ex.ParamName);
+    }
+
+    
+
+
+    /// <summary>
+    /// Verifies that calling SeedWithRandom{T}(int) returns the DbContextBuilder instance to allow for method chaining.
+    /// </summary>
+    [Fact]
+    public void SeedWithRandom_int_returns_DbContextBuilder()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        const int count = 5;
+
+        // Act
+        var result = sut.SeedWithRandom<Address>(count);
+        
+        // Assert
+        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+    }
+    
+
+    
+    /// <summary>
+    /// Verifies that a newly created DbContext contains the specified number of randomly generated entities.
+    /// </summary>
+    [Theory]
+    [InlineData(7)]
+    [InlineData(17)]
+    public void SeedWithRandom_int_seeds_DbContext_with_specified_number_of_random_entities(int count)
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+
+        // Act
+        var actualAddresses = sut
+            .SeedWithRandom<Address>(count)
+            .Build()
+            .Addresses
+            .ToList();
+
+        // Assert
+        Assert.NotNull(actualAddresses);
+        Assert.Equal(count, actualAddresses.Count);
+    }
+
+
+    
+    /// <summary>
+    /// Verifies that calling SeedWithRandom{T}(int, func{TEntity, TEntity}) throws ArgumentOutOfRangeException when passed a value less than 1.
+    /// </summary>
+    [Fact]
+    public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_value_less_than_1_throws_ArgumentException()
+    {
+       // Arrange
+       var func = new Func<Address, Address>(a => a);
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+
+       // Act & Assert
+       var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<Address>(0, func));
+       Assert.Equal("count", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling SeedWithRandom{T}(int, func{TEntity, TEntity}) throws ArgumentOutOfRangeException when passed a value less than 1.
+    /// </summary>
+    [Fact]
+    public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_null_for_func_throws_ArgumentException()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        Func<Address, Address> func = null!;
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom<Address>(17, func));
+        Assert.Equal("func", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling SeedWithRandom{T}(int, func{TEntity, TEntity}) returns the DbContextBuilder instance to allow for method chaining.
+    /// </summary>
+    [Fact]
+    public void SeedWithRandom_int_func_TEntity_TEntity_returns_DbContextBuilder()
+    {
+       // Arrange
+       var sut = new DbContextBuilder<AdventureWorksDbContext>();
+       const int count = 5;
+       var func = new Func<Address, Address>(a => a);
+
+        // Act
+        var result = sut.SeedWithRandom(count, func);
+
+       // Assert
+       Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+    }
+
+
+    
+    /// <summary>
+    /// Verifies that a newly created DbContext contains the specified number of randomly generated entities.
+    /// </summary>
+    [Theory]
+    [InlineData(7)]
+    [InlineData(17)]
+    public void SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
+    {
+        var addressId = 1000;
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var func = new Func<Address, Address>(a =>
+        {
+            a.AddressId = ++addressId;
+            return a;
+        });
+
+        // Act
+        var actualAddresses = sut
+          .SeedWithRandom<Address>(count, func)
+          .Build()
+          .Addresses
+          .ToList();
+
+      // Assert
+      Assert.NotNull(actualAddresses);
+      Assert.Equal(count, actualAddresses.Count);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that a newly created DbContext contains the specified number of randomly generated entities.
+    /// </summary>
+    [Theory]
+    [InlineData(7)]
+    [InlineData(17)]
+    public void SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_values(int count)
+    {
+        const int startingId = 1001;
+
+        var addressId = startingId;
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var func = new Func<Address, Address>(a =>
+        {
+            a.AddressId = addressId++;
+            return a;
+        });
+
+        // Act
+        var actualAddresses = sut
+            .SeedWithRandom<Address>(count, func)
+            .Build()
+            .Addresses
+            .ToList();
+
+        // Assert
+
+        var expectedAddressIds = Enumerable
+            .Range(startingId, count)
+            .ToList();
+
+        var actualAddressIds = actualAddresses
+            .Select(a => a.AddressId)
+            .ToList();
+
+        Assert.Equal(expectedAddressIds, actualAddressIds);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling SeedWithRandom{T}(int, func{TEntity, int, TEntity}) throws ArgumentOutOfRangeException when passed a value less than 1.
+    /// </summary>
+    [Fact]
+    public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_value_less_than_1_throws_ArgumentException()
+    {
+        // Arrange
+        var func = new Func<Address, int, Address>((a, i) => a);
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<Address>(0, func));
+        Assert.Equal("count", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling SeedWithRandom{T}(int, func{TEntity, int, TEntity}) throws ArgumentOutOfRangeException when passed a value less than 1.
+    /// </summary>
+    [Fact]
+    public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_null_for_func_throws_ArgumentException()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        Func<Address, int, Address> func = null!;
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom<Address>(17, func));
+        Assert.Equal("func", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling SeedWithRandom{T}(int, func{TEntity, TEntity}) returns the DbContextBuilder instance to allow for method chaining.
+    /// </summary>
+    [Fact]
+    public void SeedWithRandom_int_func_TEntity_int_TEntity_returns_DbContextBuilder()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        const int count = 5;
+        var func = new Func<Address, int, Address>((a, i) => a);
+
+        // Act
+        var result = sut.SeedWithRandom(count, func);
+
+        // Assert
+        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that a newly created DbContext contains the specified number of randomly generated entities.
+    /// </summary>
+    [Theory]
+    [InlineData(7)]
+    [InlineData(17)]
+    public void SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
+    {
+        const int startingId = 1001;
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var func = new Func<Address, int, Address>((a, i) =>
+        {
+            a.AddressId = startingId + i;
+            return a;
+        });
+
+        // Act
+        var actualAddresses = sut
+          .SeedWithRandom<Address>(count, func)
+          .Build()
+          .Addresses
+          .ToList();
+
+        // Assert
+        Assert.NotNull(actualAddresses);
+        Assert.Equal(count, actualAddresses.Count);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that a newly created DbContext contains the specified number of randomly generated entities.
+    /// </summary>
+    [Theory]
+    [InlineData(7)]
+    [InlineData(17)]
+    public void SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_values(int count)
+    {
+        const int startingId = 1001;
+
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var func = new Func<Address, int,Address>((a, i) =>
+        {
+            a.AddressId = startingId + i;
+            return a;
+        });
+
+        // Act
+        var actualAddresses = sut
+            .SeedWithRandom(count, func)
+            .Build()
+            .Addresses
+            .ToList();
+
+        // Assert
+
+        var expectedAddressIds = Enumerable
+            .Range(startingId, count)
+            .ToList();
+
+        var actualAddressIds = actualAddresses
+            .Select(a => a.AddressId)
+            .ToList();
+
+        Assert.Equal(expectedAddressIds, actualAddressIds);
+    }
+
 
 }
