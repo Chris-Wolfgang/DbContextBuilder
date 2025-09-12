@@ -3,14 +3,31 @@ using AdventureWorks.Models;
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
 /// <summary>
-/// 
+/// A base class that contains all the common unit tests for DbContextBuilder.
 /// </summary>
-public class DbContextBuilderTests
+public abstract class DbContextBuilderTestsBase
 {
-	/// <summary>
-	/// Verifies that the test project can create an instance of DbContextBuilder can be created.
-	/// </summary>
-	[Fact]
+
+
+    /// <summary>
+    /// Creates an instance of DbContextBuilder with specific database
+    /// and random entity generator to be used in the tests
+    /// </summary>
+    /// <returns></returns>
+    protected abstract DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder();
+
+
+    /// <summary>
+    /// Specifies the expected database provider as set by the derived class to be used in the tests.
+    /// </summary>
+    protected abstract string ExpectedDatabaseProvider { get; }
+
+
+
+    /// <summary>
+    /// Verifies that the test project can create an instance of DbContextBuilder can be created.
+    /// </summary>
+    [Fact]
 	public void Can_create_instance_of_DbContextBuilder()
 	{
 		var builder = new DbContextBuilder<AdventureWorksDbContext>();
@@ -26,10 +43,11 @@ public class DbContextBuilderTests
 	public void Calling_Build_returns_instance_of_specified_context()
 	{
 		// Arrange
-		var sut = new DbContextBuilder<AdventureWorksDbContext>();
+		var sut = CreateDbContextBuilder();
 
 		// Act
-		var context = sut.Build();
+		using var context = sut
+            .Build();
 
 		// Assert
 		Assert.NotNull(context);
@@ -45,11 +63,11 @@ public class DbContextBuilderTests
 	public void Can_create_multiple_instances_of_specified_context()
 	{
 		// Arrange
-		var sut = new DbContextBuilder<AdventureWorksDbContext>();
+		var sut = CreateDbContextBuilder();
 
 		// Act
-		var context1 = sut.Build();
-		var context2 = sut.Build();
+		using var context1 = sut.Build();
+		using var context2 = sut.Build();
 
 		// Assert
 		Assert.NotNull(context1);
@@ -70,52 +88,14 @@ public class DbContextBuilderTests
 	{
 
 		// Arrange
-		var sut = new DbContextBuilder<AdventureWorksDbContext>();
+		var sut = CreateDbContextBuilder();
 
 		// Act
-		var context = sut.Build();
+		using var context = sut.Build();
 
 		// Assert
 		var provider = context.Database.ProviderName;
 		Assert.Equal("Microsoft.EntityFrameworkCore.InMemory", provider);
-	}
-
-
-
-	/// <summary>
-	/// Verifies that calling UseSqlite changes the database provider to Microsoft.EntityFrameworkCore.Sqlite.
-	/// </summary>
-	[Fact]
-	public void Calling_UseSqlite_changes_database_provider_to_Sqlite()
-	{
-		// Arrange
-		var sut = new DbContextBuilder<AdventureWorksDbContext>();
-
-		// Act
-		sut.UseSqlite();
-		var context = sut.Build();
-
-		// Assert
-		var provider = context.Database.ProviderName;
-		Assert.Equal("Microsoft.EntityFrameworkCore.Sqlite", provider);
-	}
-
-
-
-	/// <summary>
-	/// Verifies that calling UseSqlite returns the DbContextBuilder instance to allow for method chaining.
-	/// </summary>
-	[Fact]
-	public void Calling_UseSqlite_returns_DbContextBuilder()
-	{
-		// Arrange
-		var sut = new DbContextBuilder<AdventureWorksDbContext>();
-
-		// Act
-		var result = sut.UseSqlite();
-
-		// Assert
-		Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
 	}
 
 
@@ -125,38 +105,29 @@ public class DbContextBuilderTests
 	/// </summary>
 	/// <remarks>Currently this is the default so there is no need to explicitly call it</remarks>
 	[Fact]
-	public void Calling_UseInMemory_changes_database_provider_to_InMemory()
+	public void Builder_uses_the_database_specified()
 	{
 		// Arrange
-		var sut = new DbContextBuilder<AdventureWorksDbContext>();
+		var sut = CreateDbContextBuilder();
 
 		// Act
-		sut.UseSqlite();
-		var context = sut.Build();
+		using var context = sut.Build();
 
 		// Switch from default to Sqlite first to prove the change
 		var provider = context.Database.ProviderName;
-		Assert.NotEqual("Microsoft.EntityFrameworkCore.InMemory", provider);
-
-
-		sut.UseInMemory();
-		context = sut.Build();
-
-		// Assert
-		provider = context.Database.ProviderName;
-		Assert.Equal("Microsoft.EntityFrameworkCore.InMemory", provider);
+		Assert.Equal(ExpectedDatabaseProvider, provider);
 	}
 
 
 
-	/// <summary>
+    /// <summary>
 	/// Verifies that calling UseInMemory returns the DbContextBuilder instance to allow for method chaining.
 	/// </summary>
 	[Fact]
 	public void Calling_UseInMemory_returns_DbContextBuilder()
 	{
 		// Arrange
-		var sut = new DbContextBuilder<AdventureWorksDbContext>();
+		var sut = CreateDbContextBuilder();
 
 		// Act
 		var result = sut.UseInMemory();
@@ -176,10 +147,10 @@ public class DbContextBuilderTests
     public void A_newly_created_DbContext_contains_the_mapped_entities_but_the_sets_are_empty()
 	{
 		// Arrange
-		var sut = new DbContextBuilder<AdventureWorksDbContext>();
+		var sut = CreateDbContextBuilder();
 
 		// Act
-		var context = sut.Build();
+		using var context = sut.Build();
 
 		// Assert
 		Assert.NotNull(context);
@@ -203,7 +174,7 @@ public class DbContextBuilderTests
     public void A_newly_created_DbContext_does_not_have_any_tracked_changes()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
 
         var expectedAddresses = new List<Address>
         {
@@ -222,7 +193,7 @@ public class DbContextBuilderTests
             {
                 AddressId = 2,
                 AddressLine1 = "456 Oak St",
-                City = "Othertown",
+                City = "Another town",
                 StateProvinceId = 2,
                 PostalCode = "67890",
                 Rowguid = Guid.NewGuid(),
@@ -231,7 +202,7 @@ public class DbContextBuilderTests
         };
 
         // Act
-        var context = sut
+        using var context = sut
             .SeedWith(expectedAddresses)
             .Build();
 
@@ -250,7 +221,7 @@ public class DbContextBuilderTests
     public void SeedWith_IEnumerable_when_passed_null_throws_ArgumentNullException()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
         IEnumerable<Address> records = null!;
 
         // Act & Assert
@@ -269,7 +240,7 @@ public class DbContextBuilderTests
     {
 
         // Arrange
-		var sut = new DbContextBuilder<AdventureWorksDbContext>();
+		var sut = CreateDbContextBuilder();
 
         var addresses = new List<Address>
         {
@@ -288,7 +259,7 @@ public class DbContextBuilderTests
             {
                 AddressId = 2,
 				AddressLine1 = "456 Oak St",
-                City = "Othertown",
+                City = "Another town",
                 StateProvinceId = 2,
                 PostalCode = "67890",
                 Rowguid = Guid.NewGuid(),
@@ -312,7 +283,7 @@ public class DbContextBuilderTests
     public void SeedsWith_IEnumerable_seeds_DbContext_with_specified_data()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
 
         var expectedAddresses = new List<Address>
         {
@@ -331,7 +302,7 @@ public class DbContextBuilderTests
             {
                 AddressId = 2,
                 AddressLine1 = "456 Oak St",
-                City = "Othertown",
+                City = "Another town",
                 StateProvinceId = 2,
                 PostalCode = "67890",
                 Rowguid = Guid.NewGuid(),
@@ -361,9 +332,9 @@ public class DbContextBuilderTests
     {
 
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
 
-        var address1 = new Address()
+        var address1 = new Address
         {
             AddressId = 1,
             AddressLine1 = "123 Main St",
@@ -375,11 +346,11 @@ public class DbContextBuilderTests
             ModifiedDate = DateTime.UtcNow
         };
  
-        var address2 = new Address()
-            {
+        var address2 = new Address
+        {
                 AddressId = 2,
                 AddressLine1 = "456 Oak St",
-                City = "Othertown",
+                City = "Another town",
                 StateProvinceId = 2,
                 PostalCode = "67890",
                 Rowguid = Guid.NewGuid(),
@@ -403,12 +374,12 @@ public class DbContextBuilderTests
     {
 
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
 
         Address[] addresses = null!;
 
         // Act & Assert
-        var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWith(addresses!));
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWith(addresses));
         Assert.Equal("entities", ex.ParamName);
     }
 
@@ -425,9 +396,9 @@ public class DbContextBuilderTests
     {
 
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
 
-        var address1 = new Address()
+        var address1 = new Address
         {
             AddressId = 1,
             AddressLine1 = "123 Main St",
@@ -440,11 +411,11 @@ public class DbContextBuilderTests
         };
 
 
-        var address2 = new Address()
+        var address2 = new Address
         {
             AddressId = 2,
             AddressLine1 = "456 Oak St",
-            City = "Othertown",
+            City = "Another town",
             StateProvinceId = 2,
             PostalCode = "67890",
             Rowguid = Guid.NewGuid(),
@@ -454,7 +425,7 @@ public class DbContextBuilderTests
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(
-            () => sut.SeedWith(address1, (Address)null!, address2));
+            () => sut.SeedWith(address1, null!, address2));
         Assert.Equal("entities", ex.ParamName);
     }
 
@@ -469,9 +440,9 @@ public class DbContextBuilderTests
     {
 
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
 
-        var addressList = new Address[]
+        var addressList = new[]
         {
             new Address
             {
@@ -488,7 +459,7 @@ public class DbContextBuilderTests
             {
                 AddressId = 2,
                 AddressLine1 = "456 Oak St",
-                City = "Othertown",
+                City = "Another town",
                 StateProvinceId = 2,
                 PostalCode = "67890",
                 Rowguid = Guid.NewGuid(),
@@ -499,7 +470,7 @@ public class DbContextBuilderTests
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(
-            () => sut.SeedWith((Address[])null!, addressList));
+            () => sut.SeedWith(null!, addressList));
         Assert.Equal("entities", ex.ParamName);
     }
 
@@ -512,7 +483,7 @@ public class DbContextBuilderTests
     public void SeedsWith_params_seeds_DbContext_with_specified_data()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
 
         var expectedAddresses = new List<Address>
         {
@@ -531,7 +502,7 @@ public class DbContextBuilderTests
             {
                 AddressId = 2,
                 AddressLine1 = "456 Oak St",
-                City = "Othertown",
+                City = "Another town",
                 StateProvinceId = 2,
                 PostalCode = "67890",
                 Rowguid = Guid.NewGuid(),
@@ -559,7 +530,7 @@ public class DbContextBuilderTests
     public void SeedWithRandom_int_when_passed_value_less_than_1_throws_ArgumentException()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<Address>(0));
@@ -576,7 +547,7 @@ public class DbContextBuilderTests
     public void SeedWithRandom_int_returns_DbContextBuilder()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
         const int count = 5;
 
         // Act
@@ -597,7 +568,7 @@ public class DbContextBuilderTests
     public void SeedWithRandom_int_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
 
         // Act
         var actualAddresses = sut
@@ -621,10 +592,10 @@ public class DbContextBuilderTests
     {
        // Arrange
        var func = new Func<Address, Address>(a => a);
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
 
        // Act & Assert
-       var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<Address>(0, func));
+       var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom(0, func));
        Assert.Equal("count", ex.ParamName);
     }
 
@@ -637,11 +608,11 @@ public class DbContextBuilderTests
     public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_null_for_func_throws_ArgumentException()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
         Func<Address, Address> func = null!;
 
         // Act & Assert
-        var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom<Address>(17, func));
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom(17, func));
         Assert.Equal("func", ex.ParamName);
     }
 
@@ -654,7 +625,7 @@ public class DbContextBuilderTests
     public void SeedWithRandom_int_func_TEntity_TEntity_returns_DbContextBuilder()
     {
        // Arrange
-       var sut = new DbContextBuilder<AdventureWorksDbContext>();
+       var sut = CreateDbContextBuilder();
        const int count = 5;
        var func = new Func<Address, Address>(a => a);
 
@@ -677,7 +648,7 @@ public class DbContextBuilderTests
     {
         var addressId = 1000;
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
         var func = new Func<Address, Address>(a =>
         {
             a.AddressId = ++addressId;
@@ -686,7 +657,7 @@ public class DbContextBuilderTests
 
         // Act
         var actualAddresses = sut
-          .SeedWithRandom<Address>(count, func)
+          .SeedWithRandom(count, func)
           .Build()
           .Addresses
           .ToList();
@@ -710,7 +681,7 @@ public class DbContextBuilderTests
 
         var addressId = startingId;
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
         var func = new Func<Address, Address>(a =>
         {
             a.AddressId = addressId++;
@@ -719,7 +690,7 @@ public class DbContextBuilderTests
 
         // Act
         var actualAddresses = sut
-            .SeedWithRandom<Address>(count, func)
+            .SeedWithRandom(count, func)
             .Build()
             .Addresses
             .ToList();
@@ -746,11 +717,11 @@ public class DbContextBuilderTests
     public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_value_less_than_1_throws_ArgumentException()
     {
         // Arrange
-        var func = new Func<Address, int, Address>((a, i) => a);
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var func = new Func<Address, int, Address>((a, _) => a);
+        var sut = CreateDbContextBuilder();
 
         // Act & Assert
-        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<Address>(0, func));
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom(0, func));
         Assert.Equal("count", ex.ParamName);
     }
 
@@ -763,11 +734,11 @@ public class DbContextBuilderTests
     public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_null_for_func_throws_ArgumentException()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
         Func<Address, int, Address> func = null!;
 
         // Act & Assert
-        var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom<Address>(17, func));
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom(17, func));
         Assert.Equal("func", ex.ParamName);
     }
 
@@ -780,9 +751,9 @@ public class DbContextBuilderTests
     public void SeedWithRandom_int_func_TEntity_int_TEntity_returns_DbContextBuilder()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
         const int count = 5;
-        var func = new Func<Address, int, Address>((a, i) => a);
+        var func = new Func<Address, int, Address>((a, _) => a);
 
         // Act
         var result = sut.SeedWithRandom(count, func);
@@ -803,7 +774,7 @@ public class DbContextBuilderTests
     {
         const int startingId = 1001;
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
         var func = new Func<Address, int, Address>((a, i) =>
         {
             a.AddressId = startingId + i;
@@ -812,7 +783,7 @@ public class DbContextBuilderTests
 
         // Act
         var actualAddresses = sut
-          .SeedWithRandom<Address>(count, func)
+          .SeedWithRandom(count, func)
           .Build()
           .Addresses
           .ToList();
@@ -835,7 +806,7 @@ public class DbContextBuilderTests
         const int startingId = 1001;
 
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = CreateDbContextBuilder();
         var func = new Func<Address, int,Address>((a, i) =>
         {
             a.AddressId = startingId + i;
