@@ -1,9 +1,12 @@
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// Individual products associated with a specific sales order. See SalesOrderHeader.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
 public partial class SalesOrderDetail
 {
 	/// <summary>
