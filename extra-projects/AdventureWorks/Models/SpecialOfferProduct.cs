@@ -1,9 +1,12 @@
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// Cross-reference table mapping products to special offer discounts.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
 public partial class SpecialOfferProduct
 {
 	/// <summary>
