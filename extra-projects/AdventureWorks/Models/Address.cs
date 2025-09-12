@@ -1,9 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
+
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// Street address information for customers, employees, and vendors.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
 public partial class Address : IEquatable<Address>
 {
     public bool Equals(Address? other)
