@@ -477,6 +477,75 @@ public abstract class DbContextBuilderTestsBase
 
 
     /// <summary>
+    /// Verifies that when calling SeedWith(params T[]), if any of the elements in
+    /// the array is null throws an ArgumentException.
+    /// </summary>
+    [Fact]
+    public void SeedWith_params_when_passed_an_array_of_values_and_one_of_the_elements_is_null_throws_ArgumentException()
+    {
+
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        var addressList = new[]
+        {
+            new Address
+            {
+                AddressId = 1,
+                AddressLine1 = "123 Main St",
+                AddressLine2 = "Apt 4B",
+                City = "Anytown",
+                StateProvinceId = 1,
+                PostalCode = "12345",
+                Rowguid = Guid.NewGuid(),
+                ModifiedDate = DateTime.UtcNow
+            },
+            null,
+            new Address
+            {
+                AddressId = 2,
+                AddressLine1 = "456 Oak St",
+                City = "Another town",
+                StateProvinceId = 2,
+                PostalCode = "67890",
+                Rowguid = Guid.NewGuid(),
+                ModifiedDate = DateTime.UtcNow
+            }
+        };
+
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentException>(
+            () => sut.SeedWith(addressList));
+        Assert.Equal("entities", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that when calling SeedWith(params T[]), if any of the elements in
+    /// the array is a string, throws an ArgumentException.
+    /// </summary>
+    /// <remarks>
+    /// This test is needed because the params keyword allows passing in an array of objects
+    /// with the restriction that the object must be classes and string is a class
+    /// </remarks>
+    [Fact]
+    public void SeedWith_params_when_passed_an_array_of_strings_throws_ArgumentException()
+    {
+
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value"));
+        Assert.Equal("entities", ex.ParamName);
+    }
+
+
+
+    /// <summary>
     /// Verifies that a newly created DbContext contains the data it was seeded with.
     /// </summary>
     [Fact]
