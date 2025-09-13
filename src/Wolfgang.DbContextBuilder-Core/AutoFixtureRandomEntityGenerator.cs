@@ -4,23 +4,20 @@ using AutoFixture.Kernel;
 
 namespace Wolfgang.DbContextBuilderCore;
 
-// TODO Create an interface for this class
 // TODO Create implementations for AutoFixture and Bogus
 // TODO Allow user to pass in their own implementation to DbContextBuilder
 // TODO Allow user to configure AutoFixture or Bogus
 // TODO Add tests
 
-
-
 /// <summary>
 /// Provides an API to generate random entities for seeding databases.
 /// </summary>
-internal class RandomEntityGenerator
+internal class AutoFixtureRandomEntityGenerator : IGenerateRandomEntities
 {
 
     private readonly Fixture _fixture = new();
 
-    public RandomEntityGenerator()
+    public AutoFixtureRandomEntityGenerator()
     {
         _fixture.Customize<DateOnly>(o => o.FromFactory((DateTime dt) => DateOnly.FromDateTime(dt)));
         _fixture.Customize<TimeOnly>(o => o.FromFactory((DateTime dt) => TimeOnly.FromDateTime(dt)));
@@ -29,9 +26,8 @@ internal class RandomEntityGenerator
             .OfType<ThrowingRecursionBehavior>()
             .ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _fixture = new Fixture();
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _fixture.Customize(new NoCircularReferencesCustomization());
         _fixture.Customize(new IgnoreVirtualMembersCustomization());
     }
@@ -44,7 +40,7 @@ internal class RandomEntityGenerator
     /// <param name="count">The number of entities to create</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
     /// <returns>An IEnumerable{TEntity}</returns>
-    internal IEnumerable<TEntity> CreateRandomEntities<TEntity>(int count)
+    public IEnumerable<TEntity> GenerateRandomEntities<TEntity>(int count)
         where TEntity : class
         => count < 1
             ? throw new ArgumentOutOfRangeException(nameof(count), count, "Value cannot be less than 1")
