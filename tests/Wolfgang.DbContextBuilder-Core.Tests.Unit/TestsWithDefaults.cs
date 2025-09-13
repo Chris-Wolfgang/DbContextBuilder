@@ -1,4 +1,5 @@
 using AdventureWorks.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
@@ -19,7 +20,34 @@ public class TestsWithDefaults : DbContextBuilderTestsBase
 
 
     /// <summary>
-    /// 
+    /// Verifies that the default RandomEntityGenerator is an instance of AutoFixtureRandomEntityGenerator
     /// </summary>
-    protected override string ExpectedDatabaseProvider => "Microsoft.EntityFrameworkCore.InMemory";
+    [Fact]
+    public void Default_RandomEntityGenerator_is_AutoFixture()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+
+        // Act & Assert
+        Assert.IsType<AutoFixtureRandomEntityGenerator>(sut.RandomEntityGenerator);
+
+    }
+
+
+
+    /// <summary>
+    /// Verifies that the default database is Microsoft's InMemory database
+    /// </summary>
+    [Fact]
+    public async Task Default_database_is_InMemory()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+
+        var context = await sut.BuildAsync();
+
+        // Act & Assert
+        Assert.True(context.Database.IsInMemory());
+    }
+
 }
