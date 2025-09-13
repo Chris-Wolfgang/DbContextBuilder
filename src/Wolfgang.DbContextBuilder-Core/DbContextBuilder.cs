@@ -14,16 +14,19 @@ public class DbContextBuilder<T> where T : DbContext
 	}
     
 	private DbProvider _dbProvider = DbProvider.InMemory;
+    private readonly List<object> _seedData = new();
 
-    private RandomEntityGenerator _randomEntityGenerator = new();
 
-    private readonly List<object> _seedData = new List<object>();
+
+    internal IGenerateRandomEntities RandomEntityGenerator { get; private set; } = new AutoFixtureRandomEntityGenerator();
+
 
 
     /// <summary>
     /// Creates a new instance of T seeded with specified data."/>.
     /// </summary>
     /// <returns>instance of {T}</returns>
+    [Obsolete($"Use {nameof(BuildAsync)}")]
     public T Build()
 	{
         var options = _dbProvider switch
@@ -55,6 +58,52 @@ public class DbContextBuilder<T> where T : DbContext
 
 
     /// <summary>
+    /// Creates a new instance of T seeded with specified data."/>.
+    /// </summary>
+    /// <returns>instance of {T}</returns>
+    /// <exception cref="NotSupportedException">The specified database provider is not supported</exception>
+    public async Task<T> BuildAsync()
+    {
+        var optionBuilder = _dbProvider switch
+        {
+            DbProvider.InMemory => new DbContextOptionsBuilder<T>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString()),
+            DbProvider.Sqlite => new DbContextOptionsBuilder<T>()
+                .UseSqlite("DataSource=:memory:"),
+            _ => throw new NotSupportedException($"Provider {this._dbProvider} is not supported.")
+        };
+
+
+        // TODO add UseVerboseOutput option to log SQL to console
+        var options = optionBuilder
+            .LogTo(Console.WriteLine)
+            .ConfigureWarnings(builder => builder.Throw())
+            .EnableSensitiveDataLogging()
+            .EnableDetailedErrors()
+            .Options;
+
+
+        // Create a context to initialize and seed the database
+        var context = (T)Activator.CreateInstance(typeof(T), options)!;
+
+
+
+        await context.Database.EnsureCreatedAsync();
+
+
+        if (_seedData.Count > 0)
+        {
+            context.AddRange(_seedData.AsEnumerable());
+            await context.SaveChangesAsync();
+        }
+
+        // Create a new clean context instance to return
+        return (T)Activator.CreateInstance(typeof(T), options)!;
+    }
+
+
+
+    /// <summary>
     /// Instructs the builder to use SQLite as the database provider.
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
@@ -64,7 +113,7 @@ public class DbContextBuilder<T> where T : DbContext
 		return this;
 	}
 
-
+    
 
     /// <summary>
     /// Instructs the builder to use InMemory as the database provider.
@@ -91,8 +140,8 @@ public class DbContextBuilder<T> where T : DbContext
         {
             throw new ArgumentNullException(nameof(entities));
         }
-        // TODO Check is TEntity is string
-		_seedData.AddRange(entities);
+
+        _seedData.AddRange(entities);
 
         return this;
     }
@@ -150,13 +199,14 @@ public class DbContextBuilder<T> where T : DbContext
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
         }
 
-        var entities = _randomEntityGenerator
-            .CreateRandomEntities<TEntity>(count);
+        var entities = RandomEntityGenerator
+            .GenerateRandomEntities<TEntity>(count);
 
         _seedData.AddRange(entities);
 
         return this;
     }
+
 
 
     /// <summary>
@@ -179,14 +229,15 @@ public class DbContextBuilder<T> where T : DbContext
             throw new ArgumentNullException(nameof(func));
         }
 
-        var entities = _randomEntityGenerator
-            .CreateRandomEntities<TEntity>(count)
+        var entities = RandomEntityGenerator
+            .GenerateRandomEntities<TEntity>(count)
             .Select(func);
             
         _seedData.AddRange(entities);
 
         return this;
     }
+
 
 
     /// <summary>
@@ -209,8 +260,8 @@ public class DbContextBuilder<T> where T : DbContext
             throw new ArgumentNullException(nameof(func));
         }
 
-        var entities = _randomEntityGenerator
-            .CreateRandomEntities<TEntity>(count)
+        var entities = RandomEntityGenerator
+            .GenerateRandomEntities<TEntity>(count)
             .Select(func);
 
         _seedData.AddRange(entities);
@@ -219,4 +270,16 @@ public class DbContextBuilder<T> where T : DbContext
     }
 
 
+
+    /// <summary>
+    /// Tell DbContextBuilder to use AutoFixture to create random entities.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public DbContextBuilder<T> UseAutoFixture()
+    {
+        RandomEntityGenerator = new AutoFixtureRandomEntityGenerator();
+
+        return this;
+    }
 }
