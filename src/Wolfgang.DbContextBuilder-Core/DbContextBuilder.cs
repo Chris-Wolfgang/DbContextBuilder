@@ -1,6 +1,14 @@
+using System.Collections.ObjectModel;
+using System.Data.Common;
+using System.Diagnostics;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Wolfgang.DbContextBuilderCore;
+
+
+
 
 /// <summary>
 /// Uses the Builder pattern to create instances of DbContext types seeded with specified data.
@@ -15,7 +23,7 @@ public class DbContextBuilder<T> where T : DbContext
     
 	private DbProvider _dbProvider = DbProvider.InMemory;
     private readonly List<object> _seedData = new();
-
+    private IServiceProvider? _serviceProvider;
 
 
     internal IGenerateRandomEntities RandomEntityGenerator { get; private set; } = new AutoFixtureRandomEntityGenerator();
@@ -64,41 +72,89 @@ public class DbContextBuilder<T> where T : DbContext
     /// <exception cref="NotSupportedException">The specified database provider is not supported</exception>
     public async Task<T> BuildAsync()
     {
-        var optionBuilder = _dbProvider switch
-        {
-            DbProvider.InMemory => new DbContextOptionsBuilder<T>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString()),
-            DbProvider.Sqlite => new DbContextOptionsBuilder<T>()
-                .UseSqlite("DataSource=:memory:"),
-            _ => throw new NotSupportedException($"Provider {this._dbProvider} is not supported.")
-        };
+        DbConnection? connection;
+        DbContextOptionsBuilder<T>? optionBuilder;
 
+        switch (_dbProvider)
+        {
+            case DbProvider.InMemory:
+                optionBuilder = new DbContextOptionsBuilder<T>().UseInMemoryDatabase(Guid.NewGuid().ToString());
+                break;
+            case DbProvider.Sqlite:
+                connection = new SqliteConnection("DataSource=:memory:");
+                optionBuilder = new DbContextOptionsBuilder<T>().UseSqlite(connection);
+                break;
+            default:
+                throw new NotSupportedException($"Provider {this._dbProvider} is not supported.");
+        }
+
+        if (_serviceProvider != null)
+        {
+            optionBuilder.UseInternalServiceProvider(_serviceProvider);
+        }
+
+        var logs = new List<string>();
 
         // TODO add UseVerboseOutput option to log SQL to console
         var options = optionBuilder
-            .LogTo(Console.WriteLine)
+            //.LogTo(Console.WriteLine)
+            .LogTo( s => Debug.WriteLine(s)) // TODO Figure out logging
             .ConfigureWarnings(builder => builder.Throw())
             .EnableSensitiveDataLogging()
             .EnableDetailedErrors()
             .Options;
 
+        await using var context = (T)Activator.CreateInstance(typeof(T), options)!;
 
-        // Create a context to initialize and seed the database
-        var context = (T)Activator.CreateInstance(typeof(T), options)!;
+        await context.Database.OpenConnectionAsync();
+        try
+        {
+            // Create a context to initialize and seed the database
+            await context.Database.EnsureCreatedAsync();
+        }
+        catch (Exception e)
+        {
+            var ex = new Exception("Failed to create database. See InnerExceptions and Logs in the Data property for additional information", e);
+            ex.Data.Add("Logs", logs);
+            throw ex;
+        }
 
-
-
-        await context.Database.EnsureCreatedAsync();
-
-
+        await LogTableNamesAsync(context);
+        
         if (_seedData.Count > 0)
         {
             context.AddRange(_seedData.AsEnumerable());
             await context.SaveChangesAsync();
         }
 
+
         // Create a new clean context instance to return
-        return (T)Activator.CreateInstance(typeof(T), options)!;
+        var context2 =  (T)Activator.CreateInstance(typeof(T), options)!;
+        //await context2.Database.OpenConnectionAsync();
+
+        await LogTableNamesAsync(context2);
+
+        return context2;
+    }
+
+
+
+    private static async Task LogTableNamesAsync(T context)
+    {
+        var command = new SqliteCommand();
+            command.CommandText = "SELECT name FROM sqlite_master WHERE type = 'table'";
+            command.Connection = context.Database.GetDbConnection() as SqliteConnection;
+
+            await using var reader = await command.ExecuteReaderAsync();
+            //var tables = new Collection<string>();
+            while (reader.Read())
+            {
+                var tableName = reader.GetString(0);
+                //tables.Add(tableName);
+                Console.WriteLine(tableName);
+            }
+
+            await reader.CloseAsync();
     }
 
 
@@ -136,10 +192,7 @@ public class DbContextBuilder<T> where T : DbContext
     public DbContextBuilder<T> SeedWith<TEntity>(IEnumerable<TEntity> entities) 
         where TEntity : class
     {
-        if (entities == null)
-        {
-            throw new ArgumentNullException(nameof(entities));
-        }
+        ArgumentNullException.ThrowIfNull(entities, nameof(entities));
 
         _seedData.AddRange(entities);
 
@@ -159,10 +212,9 @@ public class DbContextBuilder<T> where T : DbContext
     public DbContextBuilder<T> SeedWith<TEntity>(params TEntity[] entities) 
         where TEntity : class
     {
-        if (entities == null)
-        {
-            throw new ArgumentNullException(nameof(entities));
-        }
+        ArgumentNullException.ThrowIfNull(entities, nameof(entities));
+
+
 
         foreach (var entity in entities)
         {
@@ -224,10 +276,9 @@ public class DbContextBuilder<T> where T : DbContext
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
         }
 
-        if (func == null)
-        {
-            throw new ArgumentNullException(nameof(func));
-        }
+        ArgumentNullException.ThrowIfNull(func, nameof(func));
+
+
 
         var entities = RandomEntityGenerator
             .GenerateRandomEntities<TEntity>(count)
@@ -255,10 +306,7 @@ public class DbContextBuilder<T> where T : DbContext
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
         }
 
-        if (func == null)
-        {
-            throw new ArgumentNullException(nameof(func));
-        }
+        ArgumentNullException.ThrowIfNull(func, nameof(func));
 
         var entities = RandomEntityGenerator
             .GenerateRandomEntities<TEntity>(count)
@@ -274,11 +322,44 @@ public class DbContextBuilder<T> where T : DbContext
     /// <summary>
     /// Tell DbContextBuilder to use AutoFixture to create random entities.
     /// </summary>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
     public DbContextBuilder<T> UseAutoFixture()
     {
         RandomEntityGenerator = new AutoFixtureRandomEntityGenerator();
+
+        return this;
+    }
+
+
+
+    /// <summary>
+    /// Provides a method to override how the database is created since different databases
+    /// support different features
+    /// </summary>
+    /// <param name="serviceProvider"></param>
+    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <remarks>
+    /// This method allows you to intercept the creation of the database and alter or
+    /// customize it. This is useful, for example, if your production database in SQL Server
+    /// or Oracle and is using features that are not supported by the InMemory or Sqlite
+    /// databases. Using this method and passing in your customizations allows you to
+    /// alter or opt out altogether certain columns.
+    ///
+    /// Note: This does mean that the features that you change will not match your
+    /// production system and so testing to features is pointless you can still
+    /// test the rest of your code.
+    ///
+    /// One such option is say your production database has a column that is a computed
+    /// type using functions that is are not supported under InMemory or Sqlite database.
+    /// You could use this method to alter the table to just store an integer rather than
+    /// a calculation. As long as you seed the database correctly you can still use the
+    /// table in your tests.
+    /// </remarks>
+    public DbContextBuilder<T> UseServiceProvider(IServiceProvider serviceProvider)
+    {
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+
+        _serviceProvider = serviceProvider;
 
         return this;
     }
