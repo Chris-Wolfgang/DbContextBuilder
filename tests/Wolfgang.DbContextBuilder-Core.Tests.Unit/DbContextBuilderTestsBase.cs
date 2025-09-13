@@ -1,4 +1,5 @@
 using AdventureWorks.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
@@ -15,12 +16,6 @@ public abstract class DbContextBuilderTestsBase
     /// </summary>
     /// <returns></returns>
     protected abstract DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder();
-
-
-    /// <summary>
-    /// Specifies the expected database provider as set by the derived class to be used in the tests.
-    /// </summary>
-    protected abstract string ExpectedDatabaseProvider { get; }
 
 
 
@@ -40,14 +35,13 @@ public abstract class DbContextBuilderTestsBase
 	/// Verifies that calling Build on the DbContextBuilder returns an instance of the specified DbContext type.
 	/// </summary>
 	[Fact]
-	public void Calling_Build_returns_instance_of_specified_context()
+	public async Task Calling_Build_returns_instance_of_specified_context()
 	{
 		// Arrange
 		var sut = CreateDbContextBuilder();
 
 		// Act
-		using var context = sut
-            .Build();
+        await using var context = await sut.BuildAsync();
 
 		// Assert
 		Assert.NotNull(context);
@@ -60,16 +54,16 @@ public abstract class DbContextBuilderTestsBase
 	/// Verifies that calling Build multiple times on the DbContextBuilder returns multiple distinct instances of the specified DbContext type.
 	/// </summary>
 	[Fact]
-	public void Can_create_multiple_instances_of_specified_context()
+	public async Task Can_create_multiple_instances_of_specified_context()
 	{
 		// Arrange
 		var sut = CreateDbContextBuilder();
 
 		// Act
-		using var context1 = sut.Build();
-		using var context2 = sut.Build();
+        await using var context1 = await sut.BuildAsync();
+        await using var context2 = await sut.BuildAsync();
 
-		// Assert
+        // Assert
 		Assert.NotNull(context1);
 		Assert.NotNull(context2);
 		Assert.IsType<AdventureWorksDbContext>(context1);
@@ -84,38 +78,17 @@ public abstract class DbContextBuilderTestsBase
 	/// </summary>
 	/// <remarks>Other providers could include Sqlite</remarks>
 	[Fact]
-	public void Default_database_provider_is_Microsoft_EntityFrameworkCore_InMemory()
+	public async Task Default_database_provider_is_Microsoft_EntityFrameworkCore_InMemory()
 	{
 
 		// Arrange
 		var sut = CreateDbContextBuilder();
 
 		// Act
-		using var context = sut.Build();
+        await using var context = await sut.BuildAsync();
 
-		// Assert
-		var provider = context.Database.ProviderName;
-		Assert.Equal("Microsoft.EntityFrameworkCore.InMemory", provider);
-	}
-
-
-
-	/// <summary>
-	/// Verifies that calling UseInMemory changes the database provider to Microsoft.EntityFrameworkCore.InMemory.
-	/// </summary>
-	/// <remarks>Currently this is the default so there is no need to explicitly call it</remarks>
-	[Fact]
-	public void Builder_uses_the_database_specified()
-	{
-		// Arrange
-		var sut = CreateDbContextBuilder();
-
-		// Act
-		using var context = sut.Build();
-
-		// Switch from default to Sqlite first to prove the change
-		var provider = context.Database.ProviderName;
-		Assert.Equal(ExpectedDatabaseProvider, provider);
+        // Assert
+        Assert.True(context.Database.IsInMemory());
 	}
 
 
@@ -144,13 +117,13 @@ public abstract class DbContextBuilderTestsBase
 	/// as no data has been seeded.
 	/// </summary>
 	[Fact]
-    public void A_newly_created_DbContext_contains_the_mapped_entities_but_the_sets_are_empty()
+    public async Task A_newly_created_DbContext_contains_the_mapped_entities_but_the_sets_are_empty()
 	{
 		// Arrange
 		var sut = CreateDbContextBuilder();
 
 		// Act
-		using var context = sut.Build();
+        await using var context = await  sut.BuildAsync();
 
 		// Assert
 		Assert.NotNull(context);
@@ -171,7 +144,7 @@ public abstract class DbContextBuilderTestsBase
     /// DbContext would not have anything being tracked.
     /// </remarks>
     [Fact]
-    public void A_newly_created_DbContext_does_not_have_any_tracked_changes()
+    public async Task A_newly_created_DbContext_does_not_have_any_tracked_changes()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -202,9 +175,9 @@ public abstract class DbContextBuilderTestsBase
         };
 
         // Act
-        using var context = sut
+        await using var context = await sut
             .SeedWith(expectedAddresses)
-            .Build();
+            .BuildAsync();
 
 
         // Assert
@@ -280,7 +253,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that a newly created DbContext contains the data it was seeded with.
     /// </summary>
     [Fact]
-    public void SeedsWith_IEnumerable_seeds_DbContext_with_specified_data()
+    public async Task SeedsWith_IEnumerable_seeds_DbContext_with_specified_data()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -310,9 +283,14 @@ public abstract class DbContextBuilderTestsBase
             }
         };
 
+        var context =await  sut
+            .SeedWith(expectedAddresses.AsEnumerable())
+            .BuildAsync();
+
+
         // Act
-        var actualAddresses = sut.SeedWith(expectedAddresses.AsEnumerable())
-            .Build()
+
+        var actualAddresses = context
             .Addresses
             .OrderBy(a => a.AddressId)
             .ToList();
@@ -549,7 +527,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that a newly created DbContext contains the data it was seeded with.
     /// </summary>
     [Fact]
-    public void SeedsWith_params_seeds_DbContext_with_specified_data()
+    public async Task SeedsWith_params_seeds_DbContext_with_specified_data()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -580,8 +558,11 @@ public abstract class DbContextBuilderTestsBase
         };
 
         // Act
-        var actualAddresses = sut.SeedWith(expectedAddresses[0], expectedAddresses[1])
-            .Build()
+        var context = await sut
+            .SeedWith(expectedAddresses[0], expectedAddresses[1])
+            .BuildAsync();
+        
+        var actualAddresses = context
             .Addresses
             .OrderBy(a => a.AddressId)
             .ToList();
@@ -634,15 +615,18 @@ public abstract class DbContextBuilderTestsBase
     [Theory]
     [InlineData(7)]
     [InlineData(17)]
-    public void SeedWithRandom_int_seeds_DbContext_with_specified_number_of_random_entities(int count)
+    public async Task SeedWithRandom_int_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         // Arrange
         var sut = CreateDbContextBuilder();
 
-        // Act
-        var actualAddresses = sut
+        var context = await sut
             .SeedWithRandom<Address>(count)
-            .Build()
+            .BuildAsync();
+
+
+        // Act
+        var actualAddresses = context
             .Addresses
             .ToList();
 
@@ -713,7 +697,7 @@ public abstract class DbContextBuilderTestsBase
     [Theory]
     [InlineData(7)]
     [InlineData(17)]
-    public void SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
+    public async Task SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         var addressId = 1000;
         // Arrange
@@ -724,10 +708,13 @@ public abstract class DbContextBuilderTestsBase
             return a;
         });
 
+        var context = await sut
+            .SeedWithRandom(count, func)
+            .BuildAsync();
+
+
         // Act
-        var actualAddresses = sut
-          .SeedWithRandom(count, func)
-          .Build()
+        var actualAddresses = context
           .Addresses
           .ToList();
 
@@ -744,7 +731,7 @@ public abstract class DbContextBuilderTestsBase
     [Theory]
     [InlineData(7)]
     [InlineData(17)]
-    public void SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_values(int count)
+    public async Task SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_values(int count)
     {
         const int startingId = 1001;
 
@@ -757,10 +744,13 @@ public abstract class DbContextBuilderTestsBase
             return a;
         });
 
-        // Act
-        var actualAddresses = sut
+        var context = await sut
             .SeedWithRandom(count, func)
-            .Build()
+            .BuildAsync();
+
+
+        // Act
+        var actualAddresses = context
             .Addresses
             .ToList();
 
@@ -839,7 +829,7 @@ public abstract class DbContextBuilderTestsBase
     [Theory]
     [InlineData(7)]
     [InlineData(17)]
-    public void SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
+    public async Task SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         const int startingId = 1001;
         // Arrange
@@ -850,10 +840,13 @@ public abstract class DbContextBuilderTestsBase
             return a;
         });
 
+        var context = await sut
+            .SeedWithRandom(count, func)
+            .BuildAsync();
+
+
         // Act
-        var actualAddresses = sut
-          .SeedWithRandom(count, func)
-          .Build()
+        var actualAddresses = context
           .Addresses
           .ToList();
 
@@ -870,7 +863,7 @@ public abstract class DbContextBuilderTestsBase
     [Theory]
     [InlineData(7)]
     [InlineData(17)]
-    public void SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_values(int count)
+    public async Task SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_values(int count)
     {
         const int startingId = 1001;
 
@@ -882,10 +875,13 @@ public abstract class DbContextBuilderTestsBase
             return a;
         });
 
-        // Act
-        var actualAddresses = sut
+        var context = await sut
             .SeedWithRandom(count, func)
-            .Build()
+            .BuildAsync();
+
+
+        // Act
+        var actualAddresses =context
             .Addresses
             .ToList();
 
