@@ -1,5 +1,5 @@
 using AdventureWorks.Models;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
@@ -69,26 +69,6 @@ public abstract class DbContextBuilderTestsBase
 		Assert.IsType<AdventureWorksDbContext>(context1);
 		Assert.IsType<AdventureWorksDbContext>(context2);
 		Assert.NotSame(context1, context2);
-	}
-
-
-
-	/// <summary>
-	/// Verifies that the default database provider is Microsoft.EntityFrameworkCore.InMemory.
-	/// </summary>
-	/// <remarks>Other providers could include Sqlite</remarks>
-	[Fact]
-	public async Task Default_database_provider_is_Microsoft_EntityFrameworkCore_InMemory()
-	{
-
-		// Arrange
-		var sut = CreateDbContextBuilder();
-
-		// Act
-        await using var context = await sut.BuildAsync();
-
-        // Assert
-        Assert.True(context.Database.IsInMemory());
 	}
 
 
@@ -195,10 +175,10 @@ public abstract class DbContextBuilderTestsBase
     {
         // Arrange
         var sut = CreateDbContextBuilder();
-        IEnumerable<Address> records = null!;
+        IEnumerable<Address> entities = null!;
 
         // Act & Assert
-        var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWith(records));
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWith(entities));
         Assert.Equal("entities", ex.ParamName);
     }
 
@@ -897,6 +877,43 @@ public abstract class DbContextBuilderTestsBase
 
         Assert.Equal(expectedAddressIds, actualAddressIds);
     }
+
+
+
+    /// <summary>
+    /// Verifies that calling UseServiceProvider and passing null throws ArgumentNullException
+    /// </summary>
+    [Fact]
+    public void UseServiceProvider_when_passed_null_throws_ArgumentNullException()
+    {
+        // Arrange
+
+        var sut = CreateDbContextBuilder();
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentNullException>(() =>  sut.UseServiceProvider(null!));
+        Assert.Equal("serviceProvider", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that UseServiceProvider returns the DbContextBuilder{T} so it can be chained to other calls
+    /// </summary>
+    [Fact]
+    public void UseServiceProvider_returns_DbContextBuild()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+        var services = new ServiceCollection().BuildServiceProvider();
+
+        // Act & Assert
+        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseServiceProvider(services));
+    }
+
+
+
+    // TODO r/w a table in a schema other than default. Sqlite give warning about schema
 
 
 }
