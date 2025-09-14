@@ -7,53 +7,38 @@ namespace AdventureWorks.Models;
 /// State and province lookup table.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class StateProvince
+public partial class StateProvince : IEquatable<StateProvince>
 {
-	/// <summary>
-	/// Primary key for StateProvince records.
-	/// </summary>
-	public int StateProvinceId { get; set; }
+    public bool Equals(StateProvince? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return StateProvinceId == other.StateProvinceId && StateProvinceCode == other.StateProvinceCode && CountryRegionCode == other.CountryRegionCode && IsOnlyStateProvinceFlag == other.IsOnlyStateProvinceFlag && Name == other.Name && TerritoryId == other.TerritoryId && Rowguid.Equals(other.Rowguid) && ModifiedDate.Equals(other.ModifiedDate) && Addresses.Equals(other.Addresses) && CountryRegionCodeNavigation.Equals(other.CountryRegionCodeNavigation) && SalesTaxRates.Equals(other.SalesTaxRates) && Territory.Equals(other.Territory);
+    }
 
-	/// <summary>
-	/// ISO standard state or province code.
-	/// </summary>
-	public string StateProvinceCode { get; set; } = null!;
+    public override bool Equals(object? obj)
+    {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((StateProvince)obj);
+    }
 
-	/// <summary>
-	/// ISO standard country or region code. Foreign key to CountryRegion.CountryRegionCode. 
-	/// </summary>
-	public string CountryRegionCode { get; set; } = null!;
-
-	/// <summary>
-	/// 0 = StateProvinceCode exists. 1 = StateProvinceCode unavailable, using CountryRegionCode.
-	/// </summary>
-	public bool IsOnlyStateProvinceFlag { get; set; }
-
-	/// <summary>
-	/// State or province description.
-	/// </summary>
-	public string Name { get; set; } = null!;
-
-	/// <summary>
-	/// ID of the territory in which the state or province is located. Foreign key to SalesTerritory.SalesTerritoryID.
-	/// </summary>
-	public int TerritoryId { get; set; }
-
-	/// <summary>
-	/// ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.
-	/// </summary>
-	public Guid Rowguid { get; set; }
-
-	/// <summary>
-	/// Date and time the record was last updated.
-	/// </summary>
-	public DateTime ModifiedDate { get; set; }
-
-	public virtual ICollection<Address> Addresses { get; set; } = new List<Address>();
-
-	public virtual CountryRegion CountryRegionCodeNavigation { get; set; } = null!;
-
-	public virtual ICollection<SalesTaxRate> SalesTaxRates { get; set; } = new List<SalesTaxRate>();
-
-	public virtual SalesTerritory Territory { get; set; } = null!;
+    public override int GetHashCode()
+    {
+        var hashCode = new HashCode();
+        hashCode.Add(StateProvinceId);
+        hashCode.Add(StateProvinceCode);
+        hashCode.Add(CountryRegionCode);
+        hashCode.Add(IsOnlyStateProvinceFlag);
+        hashCode.Add(Name);
+        hashCode.Add(TerritoryId);
+        hashCode.Add(Rowguid);
+        hashCode.Add(ModifiedDate);
+        hashCode.Add(Addresses);
+        hashCode.Add(CountryRegionCodeNavigation);
+        hashCode.Add(SalesTaxRates);
+        hashCode.Add(Territory);
+        return hashCode.ToHashCode();
+    }
 }
