@@ -32,92 +32,6 @@ public class DbContextBuilder<T> where T : DbContext
 
 
     /// <summary>
-    /// Creates a new instance of T seeded with specified data."/>.
-    /// </summary>
-    /// <returns>instance of {T}</returns>
-    /// <exception cref="NotSupportedException">The specified database provider is not supported</exception>
-    public async Task<T> BuildAsync()
-    {
-        // ReSharper disable once TooWideLocalVariableScope
-        DbConnection? connection; // variable must remain in outer scope
-        
-        DbContextOptionsBuilder<T>? optionBuilder;
-
-        switch (_dbProvider)
-        {
-            case DbProvider.InMemory:
-                optionBuilder = new DbContextOptionsBuilder<T>().UseInMemoryDatabase(Guid.NewGuid().ToString());
-                break;
-            case DbProvider.Sqlite:
-                connection = new SqliteConnection("DataSource=:memory:");
-                await connection.OpenAsync();
-                optionBuilder = new DbContextOptionsBuilder<T>().UseSqlite(connection);
-                break;
-            default:
-                throw new NotSupportedException($"Provider {this._dbProvider} is not supported.");
-        }
-
-        if (_serviceProvider != null)
-        {
-            optionBuilder.UseInternalServiceProvider(_serviceProvider);
-        }
-
-        var logs = new List<string>();
-
-        // TODO add UseVerboseOutput option to log SQL to console
-        var options = optionBuilder
-            .LogTo(Console.WriteLine)
-            //.LogTo( s => Debug.WriteLine(s)) // TODO Figure out logging
-            //.LogTo(logs.Add)
-            .LogTo(Console.WriteLine, LogLevel.Information)
-            .ConfigureWarnings(builder => builder.Throw())
-            .EnableSensitiveDataLogging()
-            .EnableDetailedErrors()
-            .Options;
-
-        var context = (T)Activator.CreateInstance(typeof(T), options)!;
-
-        try
-        {
-            // Create a context to initialize and seed the database
-            await context.Database.EnsureCreatedAsync();
-        }
-        catch (InvalidOperationException e) 
-        {
-            // TODO Improve exception
-            var ex = new InvalidOperationException("Failed to create database. See InnerExceptions and Logs in the Data property for additional information", e);
-            //ex.Data.Add("Logs", logs);
-            throw ex;
-        }
-
-        // TODO Need tests
-        if (_dumpTableNamesCommandText is not null && _dumpTableNamesCallback is not null)
-        {
-            var tableNames = await LogTableNamesAsync(context.Database.GetDbConnection(), _dumpTableNamesCommandText);
-            _dumpTableNamesCallback(tableNames);
-        }
-        
-        if (_seedData.Count > 0)
-        {
-            context.AddRange(_seedData.AsEnumerable());
-            await context.SaveChangesAsync();
-        }
-
-        // TODO Need tests
-        if (_dumpTableNamesCommandText is not null && _dumpTableNamesCallback is not null)
-        {
-            var tableNames = await LogTableNamesAsync(context.Database.GetDbConnection(), _dumpTableNamesCommandText);
-            _dumpTableNamesCallback(tableNames);
-        }
-
-
-        // Create a new clean context instance to return
-        return (T)Activator.CreateInstance(typeof(T), options)!;
-    }
-
-
-
-    /// <summary>
     /// Instructs the builder to use SQLite as the database provider.
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
@@ -138,6 +52,53 @@ public class DbContextBuilder<T> where T : DbContext
 		this._dbProvider = DbProvider.InMemory;
 		return this;
 	}
+
+
+
+    /// <summary>
+    /// Tell DbContextBuilder to use AutoFixture to create random entities.
+    /// </summary>
+    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    public DbContextBuilder<T> UseAutoFixture()
+    {
+        RandomEntityGenerator = new AutoFixtureRandomEntityGenerator();
+
+        return this;
+    }
+
+
+
+    /// <summary>
+    /// Provides a method to override how the database is created since different databases
+    /// engines support different features
+    /// </summary>
+    /// <param name="serviceProvider"></param>
+    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <remarks>
+    /// This method allows you to intercept the creation of the database and alter or
+    /// customize it. This is useful, for example, if your production database is SQL Server
+    /// or Oracle and is using features that are not supported by the InMemory or Sqlite
+    /// databases. Using this method and passing in your customizations, allows you to
+    /// alter or opt out altogether certain columns.
+    ///
+    /// Note: This does mean that the features that you change will not match your
+    /// production system and so testing those features is pointless, however you can still
+    /// test the rest of your code.
+    ///
+    /// One such option is say your production database has a column that is a computed
+    /// type using functions that is are not supported under InMemory or Sqlite database.
+    /// You could use this method to alter the table to just store an integer rather than
+    /// a calculation. As long as you seed the database correctly you can still use the
+    /// table in your tests.
+    /// </remarks>
+    public DbContextBuilder<T> UseServiceProvider(IServiceProvider serviceProvider)
+    {
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+
+        _serviceProvider = serviceProvider;
+
+        return this;
+    }
 
 
 
@@ -278,53 +239,6 @@ public class DbContextBuilder<T> where T : DbContext
 
 
     /// <summary>
-    /// Tell DbContextBuilder to use AutoFixture to create random entities.
-    /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-    public DbContextBuilder<T> UseAutoFixture()
-    {
-        RandomEntityGenerator = new AutoFixtureRandomEntityGenerator();
-
-        return this;
-    }
-
-
-
-    /// <summary>
-    /// Provides a method to override how the database is created since different databases
-    /// support different features
-    /// </summary>
-    /// <param name="serviceProvider"></param>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-    /// <remarks>
-    /// This method allows you to intercept the creation of the database and alter or
-    /// customize it. This is useful, for example, if your production database in SQL Server
-    /// or Oracle and is using features that are not supported by the InMemory or Sqlite
-    /// databases. Using this method and passing in your customizations allows you to
-    /// alter or opt out altogether certain columns.
-    ///
-    /// Note: This does mean that the features that you change will not match your
-    /// production system and so testing to features is pointless you can still
-    /// test the rest of your code.
-    ///
-    /// One such option is say your production database has a column that is a computed
-    /// type using functions that is are not supported under InMemory or Sqlite database.
-    /// You could use this method to alter the table to just store an integer rather than
-    /// a calculation. As long as you seed the database correctly you can still use the
-    /// table in your tests.
-    /// </remarks>
-    public DbContextBuilder<T> UseServiceProvider(IServiceProvider serviceProvider)
-    {
-        ArgumentNullException.ThrowIfNull(serviceProvider);
-
-        _serviceProvider = serviceProvider;
-
-        return this;
-    }
-
-
-
-    /// <summary>
     /// When specified, tells the context builder to dump the names of all tables in the database
     /// </summary>
     /// <param name="commandText">The command to use to get the tables. Varies by database provider</param>
@@ -383,4 +297,95 @@ public class DbContextBuilder<T> where T : DbContext
         }
         return tables;
     }
+
+
+
+
+    /// <summary>
+    /// Creates a new instance of T seeded with specified data."/>.
+    /// </summary>
+    /// <returns>instance of {T}</returns>
+    /// <exception cref="NotSupportedException">The specified database provider is not supported</exception>
+    public async Task<T> BuildAsync()
+    {
+        // ReSharper disable once TooWideLocalVariableScope
+        DbConnection? connection; // variable must remain in outer scope
+
+        DbContextOptionsBuilder<T>? optionBuilder;
+
+        switch (_dbProvider)
+        {
+            case DbProvider.InMemory:
+                optionBuilder = new DbContextOptionsBuilder<T>().UseInMemoryDatabase(Guid.NewGuid().ToString());
+                break;
+            case DbProvider.Sqlite:
+                connection = new SqliteConnection("DataSource=:memory:");
+                await connection.OpenAsync();
+                optionBuilder = new DbContextOptionsBuilder<T>().UseSqlite(connection);
+                break;
+            default:
+                throw new NotSupportedException($"Provider {this._dbProvider} is not supported.");
+        }
+
+        if (_serviceProvider != null)
+        {
+            optionBuilder.UseInternalServiceProvider(_serviceProvider);
+        }
+
+        var logs = new List<string>();
+
+        // TODO add UseVerboseOutput option to log SQL to console
+        var options = optionBuilder
+            .LogTo(Console.WriteLine)
+            //.LogTo( s => Debug.WriteLine(s)) // TODO Figure out logging
+            //.LogTo(logs.Add)
+            .LogTo(Console.WriteLine, LogLevel.Information)
+            .ConfigureWarnings(builder => builder.Throw())
+            .EnableSensitiveDataLogging()
+            .EnableDetailedErrors()
+            .Options;
+
+        var context = (T)Activator.CreateInstance(typeof(T), options)!;
+
+        try
+        {
+            // Create a context to initialize and seed the database
+            await context.Database.EnsureCreatedAsync();
+        }
+        catch (InvalidOperationException e)
+        {
+            // TODO Improve exception
+            var ex = new InvalidOperationException("Failed to create database. See InnerExceptions and Logs in the Data property for additional information", e);
+            //ex.Data.Add("Logs", logs);
+            throw ex;
+        }
+
+        // TODO Need tests
+        if (_dumpTableNamesCommandText is not null && _dumpTableNamesCallback is not null)
+        {
+            var tableNames = await LogTableNamesAsync(context.Database.GetDbConnection(), _dumpTableNamesCommandText);
+            _dumpTableNamesCallback(tableNames);
+        }
+
+        if (_seedData.Count > 0)
+        {
+            context.AddRange(_seedData.AsEnumerable());
+            await context.SaveChangesAsync();
+        }
+
+        // TODO Need tests
+        if (_dumpTableNamesCommandText is not null && _dumpTableNamesCallback is not null)
+        {
+            var tableNames = await LogTableNamesAsync(context.Database.GetDbConnection(), _dumpTableNamesCommandText);
+            _dumpTableNamesCallback(tableNames);
+        }
+
+
+        // Create a new clean context instance to return
+        return (T)Activator.CreateInstance(typeof(T), options)!;
+    }
+
+
+
+
 }
