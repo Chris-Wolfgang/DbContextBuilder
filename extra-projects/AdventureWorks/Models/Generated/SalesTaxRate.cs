@@ -7,12 +7,12 @@ namespace AdventureWorks.Models;
 /// Tax rate lookup table.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class SalesTaxRate
+public partial record SalesTaxRate
 {
-	/// <summary>
-	/// Primary key for SalesTaxRate records.
-	/// </summary>
-	public int SalesTaxRateId { get; set; }
+    /// <summary>
+    /// Primary key for SalesTaxRate records.
+    /// </summary>
+    public int SalesTaxRateId { get; set; }
 
 	/// <summary>
 	/// State, province, or country/region the sales tax applies to.

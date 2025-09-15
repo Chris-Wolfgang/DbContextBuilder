@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Cross-reference table mapping customers, vendors, and employees to their addresses.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class BusinessEntityAddress
+public partial record BusinessEntityAddress
 {
 	/// <summary>
 	/// Primary key. Foreign key to BusinessEntity.BusinessEntityID.

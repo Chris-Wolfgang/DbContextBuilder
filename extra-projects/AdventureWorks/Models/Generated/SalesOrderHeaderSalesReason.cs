@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Cross-reference table mapping sales orders to sales reason codes.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class SalesOrderHeaderSalesReason
+public partial record SalesOrderHeaderSalesReason
 {
 	/// <summary>
 	/// Primary key. Foreign key to SalesOrderHeader.SalesOrderID.

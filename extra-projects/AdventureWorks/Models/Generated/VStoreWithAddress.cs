@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace AdventureWorks.Models;
 
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class VStoreWithAddress
+public partial record VStoreWithAddress
 {
 	public int BusinessEntityId { get; set; }
 

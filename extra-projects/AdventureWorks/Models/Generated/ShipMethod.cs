@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Shipping company lookup table.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class ShipMethod
+public partial record ShipMethod
 {
 	/// <summary>
 	/// Primary key for ShipMethod records.

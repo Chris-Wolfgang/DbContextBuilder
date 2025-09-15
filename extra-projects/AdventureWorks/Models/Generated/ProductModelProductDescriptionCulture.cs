@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Cross-reference table mapping product descriptions and the language the description is written in.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class ProductModelProductDescriptionCulture
+public partial record ProductModelProductDescriptionCulture
 {
 	/// <summary>
 	/// Primary key. Foreign key to ProductModel.ProductModelID.

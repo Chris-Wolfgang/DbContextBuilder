@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Telephone number and type of a person.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class PersonPhone
+public partial record PersonPhone
 {
 	/// <summary>
 	/// Business entity identification number. Foreign key to Person.BusinessEntityID.

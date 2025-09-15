@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Product descriptions in several languages.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class ProductDescription
+public partial record ProductDescription
 {
 	/// <summary>
 	/// Primary key for ProductDescription records.

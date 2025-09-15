@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Lookup table containing the types of business entity contacts.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class ContactType
+public partial record ContactType
 {
 	/// <summary>
 	/// Primary key for ContactType records.

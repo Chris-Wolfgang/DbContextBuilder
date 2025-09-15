@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Lookup table containing the languages in which some AdventureWorks data is stored.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class Culture
+public partial record Culture
 {
 	/// <summary>
 	/// Primary key for Culture records.

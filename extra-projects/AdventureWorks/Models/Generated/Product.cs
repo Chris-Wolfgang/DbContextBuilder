@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Products sold or used in the manfacturing of sold products.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class Product
+public partial record Product
 {
 	/// <summary>
 	/// Primary key for Product records.

@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Cross-reference table mapping people to their credit card information in the CreditCard table. 
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class PersonCreditCard
+public partial record PersonCreditCard
 {
 	/// <summary>
 	/// Business entity identification number. Foreign key to Person.BusinessEntityID.

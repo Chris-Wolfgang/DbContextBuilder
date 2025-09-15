@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Work shift lookup table.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class Shift
+public partial record Shift
 {
 	/// <summary>
 	/// Primary key for Shift records.

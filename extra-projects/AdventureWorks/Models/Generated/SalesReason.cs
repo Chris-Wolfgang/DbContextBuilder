@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Lookup table of customer purchase reasons.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class SalesReason
+public partial record SalesReason
 {
 	/// <summary>
 	/// Primary key for SalesReason records.

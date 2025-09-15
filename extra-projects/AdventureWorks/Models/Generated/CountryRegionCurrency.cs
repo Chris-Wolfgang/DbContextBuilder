@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Cross-reference table mapping ISO currency codes to a country or region.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class CountryRegionCurrency
+public partial record CountryRegionCurrency
 {
 	/// <summary>
 	/// ISO code for countries and regions. Foreign key to CountryRegion.CountryRegionCode.
@@ -19,7 +19,7 @@ public partial class CountryRegionCurrency
 	/// </summary>
 	public string CurrencyCode { get; set; } = null!;
 
-	/// <summary>
+    /// <summary>
 	/// Date and time the record was last updated.
 	/// </summary>
 	public DateTime ModifiedDate { get; set; }

@@ -7,9 +7,9 @@ namespace AdventureWorks.Models;
 /// Lookup table containing the ISO standard codes for countries and regions.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class CountryRegion
+public partial record CountryRegion
 {
-	/// <summary>
+    /// <summary>
 	/// ISO standard code for countries and regions.
 	/// </summary>
 	public string CountryRegionCode { get; set; } = null!;

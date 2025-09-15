@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Contains online customer orders until the order is submitted or cancelled.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class ShoppingCartItem
+public partial record ShoppingCartItem
 {
 	/// <summary>
 	/// Primary key for ShoppingCartItem records.

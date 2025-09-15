@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Transactions for previous years.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class TransactionHistoryArchive
+public partial record TransactionHistoryArchive
 {
 	/// <summary>
 	/// Primary key for TransactionHistoryArchive records.

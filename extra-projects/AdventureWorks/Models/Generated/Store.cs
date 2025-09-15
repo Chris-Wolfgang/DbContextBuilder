@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Customers (resellers) of Adventure Works products.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class Store
+public partial record Store
 {
 	/// <summary>
 	/// Primary key. Foreign key to Customer.BusinessEntityID.

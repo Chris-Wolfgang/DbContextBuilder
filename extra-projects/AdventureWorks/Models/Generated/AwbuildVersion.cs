@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Current version number of the AdventureWorks 2016 sample database. 
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class AwbuildVersion
+public partial record AwbuildVersion
 {
 	/// <summary>
 	/// Primary key for AWBuildVersion records.
