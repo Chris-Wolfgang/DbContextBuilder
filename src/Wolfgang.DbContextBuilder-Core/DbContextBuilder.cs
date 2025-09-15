@@ -35,41 +35,6 @@ public class DbContextBuilder<T> where T : DbContext
     /// Creates a new instance of T seeded with specified data."/>.
     /// </summary>
     /// <returns>instance of {T}</returns>
-    [Obsolete($"Use {nameof(BuildAsync)}")]
-    public T Build()
-	{
-        var options = _dbProvider switch
-        {
-            DbProvider.InMemory => new DbContextOptionsBuilder<T>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options,
-            DbProvider.Sqlite => new DbContextOptionsBuilder<T>()
-                .UseSqlite("DataSource=:memory:")
-                .Options,
-            _ => throw new NotSupportedException($"Provider {this._dbProvider} is not supported.")
-        };
-
-        // Create a context to initialize and seed the database
-        var context = (T)Activator.CreateInstance(typeof(T), options)!;
-        context.Database.EnsureCreated();
-
-
-        if (_seedData.Count > 0)
-        {
-            context.AddRange(_seedData.AsEnumerable());
-            context.SaveChanges();
-        }
-
-        // Create a new clean context instance to return
-        return (T)Activator.CreateInstance(typeof(T), options)!;
-    }
-
-
-
-    /// <summary>
-    /// Creates a new instance of T seeded with specified data."/>.
-    /// </summary>
-    /// <returns>instance of {T}</returns>
     /// <exception cref="NotSupportedException">The specified database provider is not supported</exception>
     public async Task<T> BuildAsync()
     {
@@ -117,14 +82,15 @@ public class DbContextBuilder<T> where T : DbContext
             // Create a context to initialize and seed the database
             await context.Database.EnsureCreatedAsync();
         }
-        catch (Exception e)
+        catch (InvalidOperationException e) 
         {
-            var ex = new Exception("Failed to create database. See InnerExceptions and Logs in the Data property for additional information", e);
-            ex.Data.Add("Logs", logs);
+            // TODO Improve exception
+            var ex = new InvalidOperationException("Failed to create database. See InnerExceptions and Logs in the Data property for additional information", e);
+            //ex.Data.Add("Logs", logs);
             throw ex;
         }
 
-        //await context.Database.GetDbConnection().OpenAsync();
+        // TODO Need tests
         if (_dumpTableNamesCommandText is not null && _dumpTableNamesCallback is not null)
         {
             var tableNames = await LogTableNamesAsync(context.Database.GetDbConnection(), _dumpTableNamesCommandText);
@@ -137,6 +103,7 @@ public class DbContextBuilder<T> where T : DbContext
             await context.SaveChangesAsync();
         }
 
+        // TODO Need tests
         if (_dumpTableNamesCommandText is not null && _dumpTableNamesCallback is not null)
         {
             var tableNames = await LogTableNamesAsync(context.Database.GetDbConnection(), _dumpTableNamesCommandText);
@@ -366,6 +333,7 @@ public class DbContextBuilder<T> where T : DbContext
     /// <exception cref="ArgumentException">commandText is either null or whitespace</exception>
     /// <exception cref="ArgumentNullException">callback is null</exception>
     [UsedImplicitly]
+    // TODO Move this to a configuration object that gets passed into the UseInMemory and UseSqlite methods
     public DbContextBuilder<T> DumpTablesNames(string commandText, Action<IReadOnlyCollection<string>> callback)
     {
         // TODO write test methods
