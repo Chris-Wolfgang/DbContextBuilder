@@ -1,5 +1,7 @@
 using AdventureWorks.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit.Abstractions;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
@@ -9,7 +11,6 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelper)
 {
     private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
-
 
     /// <summary>
     /// Creates an instance of DbContextBuilder with specific database
@@ -33,94 +34,95 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     /// Verifies that the test project can create an instance of DbContextBuilder can be created.
     /// </summary>
     [Fact]
-	public void Can_create_instance_of_DbContextBuilder()
-	{
-		var builder = new DbContextBuilder<AdventureWorksDbContext>();
-		Assert.NotNull(builder);
-	}
-
-
-
-	/// <summary>
-	/// Verifies that calling Build on the DbContextBuilder returns an instance of the specified DbContext type.
-	/// </summary>
-	[Fact]
-	public async Task Calling_Build_returns_instance_of_specified_context()
-	{
-		// Arrange
-		var sut = CreateDbContextBuilder();
-
-		// Act
-        await using var context = await sut.BuildAsync();
-
-		// Assert
-		Assert.NotNull(context);
-		Assert.IsType<AdventureWorksDbContext>(context);
-	}
-
-
-
-	/// <summary>
-	/// Verifies that calling Build multiple times on the DbContextBuilder returns multiple distinct instances of the specified DbContext type.
-	/// </summary>
-	[Fact]
-	public async Task Can_create_multiple_instances_of_specified_context()
-	{
-		// Arrange
-		var sut = CreateDbContextBuilder();
-
-		// Act
-        await using var context1 = await sut.BuildAsync();
-        await using var context2 = await sut.BuildAsync();
-
-        // Assert
-		Assert.NotNull(context1);
-		Assert.NotNull(context2);
-		Assert.IsType<AdventureWorksDbContext>(context1);
-		Assert.IsType<AdventureWorksDbContext>(context2);
-		Assert.NotSame(context1, context2);
-	}
+    public void Can_create_instance_of_DbContextBuilder()
+    {
+        var builder = new DbContextBuilder<AdventureWorksDbContext>();
+        Assert.NotNull(builder);
+    }
 
 
 
     /// <summary>
-	/// Verifies that calling UseInMemory returns the DbContextBuilder instance to allow for method chaining.
-	/// </summary>
-	[Fact]
-	public void Calling_UseInMemory_returns_DbContextBuilder()
-	{
-		// Arrange
-		var sut = CreateDbContextBuilder();
+    /// Verifies that calling Build on the DbContextBuilder returns an instance of the specified DbContext type.
+    /// </summary>
+    [Fact]
+    public async Task Calling_Build_returns_instance_of_specified_context()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
 
-		// Act
-		var result = sut.UseInMemory();
+        // Act
+        await using var context = await sut.BuildAsync();
 
-		// Assert
-		Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
-	}
+        // Assert
+        Assert.NotNull(context);
+        Assert.IsType<AdventureWorksDbContext>(context);
+    }
 
 
 
-	/// <summary>
-	/// Verifies that a newly created DbContext contains the mapped entities
-	/// as they are defined in the EF configuration, but the sets are empty
-	/// as no data has been seeded.
-	/// </summary>
-	[Fact]
+    /// <summary>
+    /// Verifies that calling Build multiple times on the DbContextBuilder returns multiple distinct instances of the specified DbContext type.
+    /// </summary>
+    [Fact]
+    public async Task Can_create_multiple_instances_of_specified_context()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        // Act
+        await using var context1 = await sut.BuildAsync();
+        await using var context2 = await sut.BuildAsync();
+
+        // Assert
+        Assert.NotNull(context1);
+        Assert.NotNull(context2);
+        Assert.IsType<AdventureWorksDbContext>(context1);
+        Assert.IsType<AdventureWorksDbContext>(context2);
+        Assert.NotSame(context1, context2);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling UseInMemory returns the DbContextBuilder instance to allow for method chaining.
+    /// </summary>
+    [Fact]
+    public void Calling_UseInMemory_returns_DbContextBuilder()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        // Act
+        var result = sut.UseInMemory();
+
+        // Assert
+        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that a newly created DbContext contains the mapped entities
+    /// as they are defined in the EF configuration, but the sets are empty
+    /// as no data has been seeded.
+    /// </summary>
+    [Fact]
     public async Task A_newly_created_DbContext_contains_the_mapped_entities_but_the_sets_are_empty()
-	{
-		// Arrange
-		var sut = CreateDbContextBuilder();
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
 
-		// Act
-        await using var context = await  sut.BuildAsync();
+        // Act
+        await using var context = await sut
+            .BuildAsync();
 
-		// Assert
-		Assert.NotNull(context);
-		Assert.Empty(context.Addresses);
-		Assert.Empty(context.People);
-		Assert.Empty(context.Vendors);
-	}
+        // Assert
+        Assert.NotNull(context);
+        Assert.Empty(context.Addresses);
+        Assert.Empty(context.People);
+        Assert.Empty(context.Vendors);
+    }
 
 
 
@@ -138,6 +140,50 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     {
         // Arrange
         var sut = CreateDbContextBuilder();
+
+
+        var country = new CountryRegion
+        {
+            CountryRegionCode = "US",
+            Name = "United States",
+            ModifiedDate = DateTime.UtcNow
+        };
+
+        var territory = new SalesTerritory
+        {
+            TerritoryId = 1,
+            Name = "Northeast",
+            CountryRegionCode = "US",
+            Group = "North America",
+            SalesYtd = 0,
+            SalesLastYear = 0,
+            CostYtd = 0,
+            CostLastYear = 0,
+            ModifiedDate = DateTime.UtcNow
+        };
+
+        var expectedStates = new List<StateProvince>
+        {
+            new()
+            {
+                Name = "New York",
+                StateProvinceId = 1,
+                Rowguid = Guid.NewGuid(),
+                StateProvinceCode = "NY",
+                CountryRegionCode = "US",
+                TerritoryId = 1
+            },
+            new()
+            {
+                Name = "New Jersey",
+                StateProvinceId = 2,
+                Rowguid = Guid.NewGuid(),
+                StateProvinceCode = "NJ",
+                CountryRegionCode = "US",
+                TerritoryId = 1
+            }
+        };
+
 
         var expectedAddresses = new List<Address>
         {
@@ -166,6 +212,9 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Act
         await using var context = await sut
+            .SeedWith(country)
+            .SeedWith(territory)
+            .SeedWith(expectedStates)
             .SeedWith(expectedAddresses)
             .BuildAsync();
 
@@ -175,7 +224,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         Assert.Empty(context.ChangeTracker.Entries());
     }
 
-    
+
 
     /// <summary>
     /// Verifies that passing null into SeedWith(IEnumerable{T}) throws an ArgumentNullException.
@@ -201,37 +250,21 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_IEnumerable_returns_DbContextBuild()
     {
-
         // Arrange
-		var sut = CreateDbContextBuilder();
+        var sut = CreateDbContextBuilder();
 
-        var addresses = new List<Address>
+        var countries = new[]
         {
-            new()
+            new CountryRegion
             {
-                AddressId = 1,
-                AddressLine1 = "123 Main St",
-				AddressLine2 = "Apt 4B",
-                City = "Anytown",
-                StateProvinceId = 1,
-                PostalCode = "12345",
-                Rowguid = Guid.NewGuid(),
-                ModifiedDate = DateTime.UtcNow
-            },
-			new()
-            {
-                AddressId = 2,
-				AddressLine1 = "456 Oak St",
-                City = "Another town",
-                StateProvinceId = 2,
-                PostalCode = "67890",
-                Rowguid = Guid.NewGuid(),
+                CountryRegionCode = "US",
+                Name = "United States",
                 ModifiedDate = DateTime.UtcNow
             }
         };
 
         // Act
-        var result = sut.SeedWith(addresses.AsEnumerable());
+        var result = sut.SeedWith(countries.AsEnumerable());
 
         // Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
@@ -248,45 +281,31 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Arrange
         var sut = CreateDbContextBuilder();
 
-        var expectedAddresses = new List<Address>
+        var expectedCountry = new CountryRegion
         {
-            new()
-            {
-                AddressId = 1,
-                AddressLine1 = "123 Main St",
-                AddressLine2 = "Apt 4B",
-                City = "Anytown",
-                StateProvinceId = 1,
-                PostalCode = "12345",
-                Rowguid = Guid.NewGuid(),
-                ModifiedDate = DateTime.UtcNow
-            },
-            new()
-            {
-                AddressId = 2,
-                AddressLine1 = "456 Oak St",
-                City = "Another town",
-                StateProvinceId = 2,
-                PostalCode = "67890",
-                Rowguid = Guid.NewGuid(),
-                ModifiedDate = DateTime.UtcNow
-            }
+            CountryRegionCode = "US",
+            Name = "United States",
+            ModifiedDate = DateTime.UtcNow,
+            StateProvinces = new List<StateProvince>(),
+            SalesTerritories = new List<SalesTerritory>(),
+            CountryRegionCurrencies = new List<CountryRegionCurrency>(),
         };
+        var seedCountry = expectedCountry with { };
 
-        var context =await  sut
-            .SeedWith(expectedAddresses.AsEnumerable())
+        // Act
+        await using var context = await sut
+            .SeedWith(seedCountry)
             .BuildAsync();
 
 
-        // Act
-
-        var actualAddresses = context
-            .Addresses
-            .OrderBy(a => a.AddressId)
-            .ToList();
-
         // Assert
-		Assert.Equivalent(expectedAddresses, actualAddresses);
+
+        var actualCountry = context
+            .CountryRegions
+            .Single();
+        actualCountry.ModifiedDate = DateTime.SpecifyKind(actualCountry.ModifiedDate, DateTimeKind.Utc);
+
+        Assert.Equivalent(expectedCountry, actualCountry);
     }
 
 
@@ -298,7 +317,6 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_params_returns_DbContextBuild()
     {
-
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -313,16 +331,16 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
             Rowguid = Guid.NewGuid(),
             ModifiedDate = DateTime.UtcNow
         };
- 
+
         var address2 = new Address
         {
-                AddressId = 2,
-                AddressLine1 = "456 Oak St",
-                City = "Another town",
-                StateProvinceId = 2,
-                PostalCode = "67890",
-                Rowguid = Guid.NewGuid(),
-                ModifiedDate = DateTime.UtcNow
+            AddressId = 2,
+            AddressLine1 = "456 Oak St",
+            City = "Another town",
+            StateProvinceId = 2,
+            PostalCode = "67890",
+            Rowguid = Guid.NewGuid(),
+            ModifiedDate = DateTime.UtcNow
         };
 
         // Act
@@ -340,7 +358,6 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_params_when_passed_null_throws_ArgumentNullException()
     {
-
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -362,7 +379,6 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_params_when_passed_list_of_values_and_one_is_null_throws_ArgumentException()
     {
-
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -392,8 +408,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
         // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => sut.SeedWith(address1, null!, address2));
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(address1, null!, address2));
         Assert.Equal("entities", ex.ParamName);
     }
 
@@ -406,7 +421,6 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_params_when_passed_mix_of_values_and_list_of_values_and_one_is_null_throws_ArgumentException()
     {
-
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -437,8 +451,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
         // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => sut.SeedWith(null!, addressList));
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(null!, addressList));
         Assert.Equal("entities", ex.ParamName);
     }
 
@@ -449,9 +462,9 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     /// the array is null throws an ArgumentException.
     /// </summary>
     [Fact]
-    public void SeedWith_params_when_passed_an_array_of_values_and_one_of_the_elements_is_null_throws_ArgumentException()
+    public void
+        SeedWith_params_when_passed_an_array_of_values_and_one_of_the_elements_is_null_throws_ArgumentException()
     {
-
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -468,7 +481,9 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
                 Rowguid = Guid.NewGuid(),
                 ModifiedDate = DateTime.UtcNow
             },
-            null,
+
+            null, // Verify method checks for null values
+
             new Address
             {
                 AddressId = 2,
@@ -483,8 +498,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
         // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => sut.SeedWith(addressList));
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith<Address>(addressList!));
         Assert.Equal("entities", ex.ParamName);
     }
 
@@ -501,11 +515,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_params_when_passed_an_array_of_strings_throws_ArgumentException()
     {
-
         // Arrange
         var sut = CreateDbContextBuilder();
 
-        
+
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value"));
         Assert.Equal("entities", ex.ParamName);
@@ -522,43 +535,54 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Arrange
         var sut = CreateDbContextBuilder();
 
-        var expectedAddresses = new List<Address>
+        var expectedCountry = new List<CountryRegion>
         {
             new()
             {
-                AddressId = 1,
-                AddressLine1 = "123 Main St",
-                AddressLine2 = "Apt 4B",
-                City = "Anytown",
-                StateProvinceId = 1,
-                PostalCode = "12345",
-                Rowguid = Guid.NewGuid(),
-                ModifiedDate = DateTime.UtcNow
+                CountryRegionCode = "US",
+                Name = "United States",
+                ModifiedDate = DateTime.UtcNow,
+                StateProvinces = new List<StateProvince>(),
+                SalesTerritories = new List<SalesTerritory>(),
+                CountryRegionCurrencies = new List<CountryRegionCurrency>(),
             },
             new()
             {
-                AddressId = 2,
-                AddressLine1 = "456 Oak St",
-                City = "Another town",
-                StateProvinceId = 2,
-                PostalCode = "67890",
-                Rowguid = Guid.NewGuid(),
-                ModifiedDate = DateTime.UtcNow
+                CountryRegionCode = "CA",
+                Name = "Canada",
+                ModifiedDate = DateTime.UtcNow,
+                StateProvinces = new List<StateProvince>(),
+                SalesTerritories = new List<SalesTerritory>(),
+                CountryRegionCurrencies = new List<CountryRegionCurrency>(),
+            },
+            new()
+            {
+                CountryRegionCode = "MX",
+                Name = "Mexico",
+                ModifiedDate = DateTime.UtcNow,
+                StateProvinces = new List<StateProvince>(),
+                SalesTerritories = new List<SalesTerritory>(),
+                CountryRegionCurrencies = new List<CountryRegionCurrency>(),
             }
         };
+        var seedCountry = expectedCountry.Select(c => c with { });
 
         // Act
-        var context = await sut
-            .SeedWith(expectedAddresses[0], expectedAddresses[1])
+        await using var context = await sut
+            .SeedWith(seedCountry.AsEnumerable())
             .BuildAsync();
-        
-        var actualAddresses = context
-            .Addresses
-            .OrderBy(a => a.AddressId)
-            .ToList();
+
 
         // Assert
-        Assert.Equivalent(expectedAddresses, actualAddresses);
+
+        var actualCountry = context
+            .CountryRegions
+            .ToList()
+            // Sqlite store the data time as unknown so we need to tell .net that it is UTC
+            .Select(c => c with { ModifiedDate = DateTime.SpecifyKind(c.ModifiedDate, DateTimeKind.Utc) })
+            .ToArray();
+
+        Assert.Equivalent(expectedCountry, actualCountry);
     }
 
 
@@ -577,7 +601,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         Assert.Equal("count", ex.ParamName);
     }
 
-    
+
 
 
     /// <summary>
@@ -592,13 +616,13 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Act
         var result = sut.SeedWithRandom<Address>(count);
-        
+
         // Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
     }
-    
 
-    
+
+
     /// <summary>
     /// Verifies that a newly created DbContext contains the specified number of randomly generated entities.
     /// </summary>
@@ -611,13 +635,13 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         var sut = CreateDbContextBuilder();
 
         var context = await sut
-            .SeedWithRandom<Address>(count)
+            .SeedWithRandom<BusinessEntity>(count)
             .BuildAsync();
 
 
         // Act
         var actualAddresses = context
-            .Addresses
+            .BusinessEntities
             .ToList();
 
         // Assert
@@ -626,20 +650,20 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     }
 
 
-    
+
     /// <summary>
     /// Verifies that calling SeedWithRandom{T}(int, func{TEntity, TEntity}) throws ArgumentOutOfRangeException when passed a value less than 1.
     /// </summary>
     [Fact]
     public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_value_less_than_1_throws_ArgumentException()
     {
-       // Arrange
-       var func = new Func<Address, Address>(a => a);
+        // Arrange
+        var func = new Func<Address, Address>(a => a);
         var sut = CreateDbContextBuilder();
 
-       // Act & Assert
-       var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom(0, func));
-       Assert.Equal("count", ex.ParamName);
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom(0, func));
+        Assert.Equal("count", ex.ParamName);
     }
 
 
@@ -667,34 +691,40 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWithRandom_int_func_TEntity_TEntity_returns_DbContextBuilder()
     {
-       // Arrange
-       var sut = CreateDbContextBuilder();
-       const int count = 5;
-       var func = new Func<Address, Address>(a => a);
+        // Arrange
+        var sut = CreateDbContextBuilder();
+        const int count = 5;
+        var func = new Func<Address, Address>(a => a);
 
         // Act
         var result = sut.SeedWithRandom(count, func);
 
-       // Assert
-       Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+        // Assert
+        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
     }
 
 
-    
+
     /// <summary>
     /// Verifies that a newly created DbContext contains the specified number of randomly generated entities.
     /// </summary>
     [Theory]
     [InlineData(7)]
     [InlineData(17)]
-    public async Task SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
+    public async Task
+        SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
-        var addressId = 1000;
+        var startingId = 1000;
         // Arrange
         var sut = CreateDbContextBuilder();
-        var func = new Func<Address, Address>(a =>
+        var func = new Func<Person, Person>(a =>
         {
-            a.AddressId = ++addressId;
+            a.BusinessEntityId = ++startingId;
+            a.AdditionalContactInfo = null;
+            a.BusinessEntity = new BusinessEntity
+            {
+                BusinessEntityId = ++startingId
+            };
             return a;
         });
 
@@ -704,13 +734,13 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
         // Act
-        var actualAddresses = context
-          .Addresses
-          .ToList();
+        var actualPeople = context
+            .People
+            .ToList();
 
-      // Assert
-      Assert.NotNull(actualAddresses);
-      Assert.Equal(count, actualAddresses.Count);
+        // Assert
+        Assert.NotNull(actualPeople);
+        Assert.Equal(count, actualPeople.Count);
     }
 
 
@@ -723,14 +753,23 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [InlineData(17)]
     public async Task SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_values(int count)
     {
+        // Arrange
         const int startingId = 1001;
 
-        var addressId = startingId;
-        // Arrange
+        var businessEntityId = startingId;
+
         var sut = CreateDbContextBuilder();
-        var func = new Func<Address, Address>(a =>
+        var func = new Func<Person, Person>(a =>
         {
-            a.AddressId = addressId++;
+            a.BusinessEntityId = businessEntityId;
+            a.AdditionalContactInfo = null;
+            a.BusinessEntity = new BusinessEntity
+            {
+                BusinessEntityId = businessEntityId
+            };
+
+            businessEntityId++;
+
             return a;
         });
 
@@ -740,21 +779,21 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
         // Act
-        var actualAddresses = context
-            .Addresses
+        var actualPeople = context
+            .People
             .ToList();
 
         // Assert
 
-        var expectedAddressIds = Enumerable
+        var expectedBusinessEntityIds = Enumerable
             .Range(startingId, count)
             .ToList();
 
-        var actualAddressIds = actualAddresses
-            .Select(a => a.AddressId)
+        var actualBusinessEntityId = actualPeople
+            .Select(a => a.BusinessEntityId)
             .ToList();
 
-        Assert.Equal(expectedAddressIds, actualAddressIds);
+        Assert.Equal(expectedBusinessEntityIds, actualBusinessEntityId);
     }
 
 
@@ -819,14 +858,20 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Theory]
     [InlineData(7)]
     [InlineData(17)]
-    public async Task SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
+    public async Task
+        SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         const int startingId = 1001;
         // Arrange
         var sut = CreateDbContextBuilder();
-        var func = new Func<Address, int, Address>((a, i) =>
+        var func = new Func<Person, int, Person>((a, i) =>
         {
-            a.AddressId = startingId + i;
+            a.BusinessEntityId = startingId + i;
+            a.AdditionalContactInfo = null;
+            a.BusinessEntity = new BusinessEntity
+            {
+                BusinessEntityId = startingId + i
+            };
             return a;
         });
 
@@ -836,13 +881,13 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
         // Act
-        var actualAddresses = context
-          .Addresses
-          .ToList();
+        var actualPeople = context
+            .People
+            .ToList();
 
         // Assert
-        Assert.NotNull(actualAddresses);
-        Assert.Equal(count, actualAddresses.Count);
+        Assert.NotNull(actualPeople);
+        Assert.Equal(count, actualPeople.Count);
     }
 
 
@@ -856,12 +901,16 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     public async Task SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_values(int count)
     {
         const int startingId = 1001;
-
         // Arrange
         var sut = CreateDbContextBuilder();
-        var func = new Func<Address, int,Address>((a, i) =>
+        var func = new Func<Person, int, Person>((a, i) =>
         {
-            a.AddressId = startingId + i;
+            a.BusinessEntityId = startingId + i;
+            a.AdditionalContactInfo = null;
+            a.BusinessEntity = new BusinessEntity
+            {
+                BusinessEntityId = startingId + i
+            };
             return a;
         });
 
@@ -871,21 +920,13 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
         // Act
-        var actualAddresses =context
-            .Addresses
+        var actualPeople = context
+            .People
             .ToList();
 
         // Assert
-
-        var expectedAddressIds = Enumerable
-            .Range(startingId, count)
-            .ToList();
-
-        var actualAddressIds = actualAddresses
-            .Select(a => a.AddressId)
-            .ToList();
-
-        Assert.Equal(expectedAddressIds, actualAddressIds);
+        Assert.NotNull(actualPeople);
+        Assert.Equal(count, actualPeople.Count);
     }
 
 
@@ -901,7 +942,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         var sut = CreateDbContextBuilder();
 
         // Act & Assert
-        var ex = Assert.Throws<ArgumentNullException>(() =>  sut.UseServiceProvider(null!));
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.UseServiceProvider(null!));
         Assert.Equal("serviceProvider", ex.ParamName);
     }
 
@@ -926,4 +967,22 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     // TODO r/w a table in a schema other than default. Sqlite give warning about schema
 
 
+    private async Task<IReadOnlyCollection<string>> LogTableNamesAsync(AdventureWorksDbContext context)
+    {
+        var command = context.Database.GetDbConnection().CreateCommand();
+        command.CommandText = SelectTablesCommandText;
+        command.Connection = context.Database.GetDbConnection();
+
+        await using var reader = await command.ExecuteReaderAsync();
+        var tables = new List<string>();
+        while (await reader.ReadAsync())
+        {
+            var tableName = reader.GetString(0);
+            tables.Add(tableName);
+            Console.WriteLine(tableName);
+        }
+
+        await reader.CloseAsync();
+        return tables;
+    }
 }
