@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Sales representative current information.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class SalesPerson
+public partial record SalesPerson
 {
 	/// <summary>
 	/// Primary key for SalesPerson records. Foreign key to Employee.BusinessEntityID

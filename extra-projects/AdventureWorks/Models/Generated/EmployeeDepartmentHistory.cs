@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Employee department transfers.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class EmployeeDepartmentHistory
+public partial record EmployeeDepartmentHistory
 {
 	/// <summary>
 	/// Employee identification number. Foreign key to Employee.BusinessEntityID.

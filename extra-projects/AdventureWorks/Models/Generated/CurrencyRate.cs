@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Currency exchange rates.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class CurrencyRate
+public partial record CurrencyRate
 {
 	/// <summary>
 	/// Primary key for CurrencyRate records.

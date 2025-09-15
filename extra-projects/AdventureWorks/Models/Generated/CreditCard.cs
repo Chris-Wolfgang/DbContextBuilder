@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Customer credit card information.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class CreditCard
+public partial record CreditCard
 {
 	/// <summary>
 	/// Primary key for CreditCard records.

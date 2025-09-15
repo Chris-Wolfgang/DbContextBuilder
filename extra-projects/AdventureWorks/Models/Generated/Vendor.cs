@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Companies from whom Adventure Works Cycles purchases parts or other goods.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class Vendor
+public partial record Vendor
 {
 	/// <summary>
 	/// Primary key for Vendor records.  Foreign key to BusinessEntity.BusinessEntityID

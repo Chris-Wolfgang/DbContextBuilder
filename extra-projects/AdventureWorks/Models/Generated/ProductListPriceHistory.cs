@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Changes in the list price of a product over time.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class ProductListPriceHistory
+public partial record ProductListPriceHistory
 {
 	/// <summary>
 	/// Product identification number. Foreign key to Product.ProductID

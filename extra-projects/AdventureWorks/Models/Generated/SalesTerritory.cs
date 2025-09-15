@@ -7,14 +7,14 @@ namespace AdventureWorks.Models;
 /// Sales territory lookup table.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class SalesTerritory
+public partial record SalesTerritory
 {
-	/// <summary>
-	/// Primary key for SalesTerritory records.
-	/// </summary>
-	public int TerritoryId { get; set; }
+    /// <summary>
+    /// Primary key for SalesTerritory records.
+    /// </summary>
+    public int TerritoryId { get; set; }
 
-	/// <summary>
+    /// <summary>
 	/// Sales territory description
 	/// </summary>
 	public string Name { get; set; } = null!;

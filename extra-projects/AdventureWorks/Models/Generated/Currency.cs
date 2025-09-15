@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Lookup table containing standard ISO currencies.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class Currency
+public partial record Currency
 {
 	/// <summary>
 	/// The ISO code for the Currency.

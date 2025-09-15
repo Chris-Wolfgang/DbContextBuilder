@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Product images.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class ProductPhoto
+public partial record ProductPhoto
 {
 	/// <summary>
 	/// Primary key for ProductPhoto records.

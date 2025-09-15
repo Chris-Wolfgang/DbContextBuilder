@@ -6,14 +6,14 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Street address information for customers, employees, and vendors.
 /// </summary>
-public partial class Address : IEquatable<Address>
+public partial record Address 
 {
     /// <summary>
 	/// Primary key for Address records.
 	/// </summary>
 	public int AddressId { get; set; }
 
-	/// <summary>
+    /// <summary>
 	/// First street address line.
 	/// </summary>
 	public string AddressLine1 { get; set; } = null!;

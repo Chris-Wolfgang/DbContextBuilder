@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Employee pay history.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class EmployeePayHistory
+public partial record EmployeePayHistory
 {
 	/// <summary>
 	/// Employee identification number. Foreign key to Employee.BusinessEntityID.
