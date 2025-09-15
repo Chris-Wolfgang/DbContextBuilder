@@ -6,8 +6,9 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 /// <summary>
 /// A base class that contains all the common unit tests for DbContextBuilder.
 /// </summary>
-public abstract class DbContextBuilderTestsBase
+public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelper)
 {
+    private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
 
 
     /// <summary>
@@ -16,6 +17,15 @@ public abstract class DbContextBuilderTestsBase
     /// </summary>
     /// <returns></returns>
     protected abstract DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder();
+
+
+    /// <summary>
+    /// The SQL command to select schema and table names from the database.
+    /// </summary>
+    /// <remarks>
+    /// If the database does not support schemas, like Sqlite, then return and empty string form the schema
+    /// </remarks>
+    protected abstract string SelectTablesCommandText { get; }
 
 
 
