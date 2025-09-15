@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Individual products associated with a specific sales order. See SalesOrderHeader.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class SalesOrderDetail
+public partial record SalesOrderDetail
 {
 	/// <summary>
 	/// Primary key. Foreign key to SalesOrderHeader.SalesOrderID.

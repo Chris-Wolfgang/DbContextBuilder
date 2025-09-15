@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Product subcategories. See ProductCategory table.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class ProductSubcategory
+public partial record ProductSubcategory
 {
 	/// <summary>
 	/// Primary key for ProductSubcategory records.

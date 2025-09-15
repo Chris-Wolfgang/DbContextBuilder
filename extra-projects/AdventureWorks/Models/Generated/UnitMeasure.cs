@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Unit of measure lookup table.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class UnitMeasure
+public partial record UnitMeasure
 {
 	/// <summary>
 	/// Primary key.

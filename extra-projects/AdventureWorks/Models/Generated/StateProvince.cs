@@ -1,14 +1,12 @@
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-using System.Diagnostics.CodeAnalysis;
-
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// State and province lookup table.
 /// </summary>
-public partial class StateProvince
+public partial record StateProvince
 {
-	/// <summary>
+    /// <summary>
 	/// Primary key for StateProvince records.
 	/// </summary>
 	public int StateProvinceId { get; set; }

@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Customer reviews of products they have purchased.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class ProductReview
+public partial record ProductReview
 {
 	/// <summary>
 	/// Primary key for ProductReview records.

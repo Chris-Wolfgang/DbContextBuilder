@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Manufacturing work orders.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class WorkOrder
+public partial record WorkOrder
 {
 	/// <summary>
 	/// Primary key for WorkOrder records.

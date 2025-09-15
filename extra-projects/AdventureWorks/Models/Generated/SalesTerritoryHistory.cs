@@ -7,9 +7,9 @@ namespace AdventureWorks.Models;
 /// Sales representative transfers to other sales territories.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class SalesTerritoryHistory
+public partial record SalesTerritoryHistory
 {
-	/// <summary>
+    /// <summary>
 	/// Primary key. The sales rep.  Foreign key to SalesPerson.BusinessEntityID.
 	/// </summary>
 	public int BusinessEntityId { get; set; }

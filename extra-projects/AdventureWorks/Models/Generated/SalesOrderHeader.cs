@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// General sales order information.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class SalesOrderHeader
+public partial record SalesOrderHeader
 {
 	/// <summary>
 	/// Primary key.

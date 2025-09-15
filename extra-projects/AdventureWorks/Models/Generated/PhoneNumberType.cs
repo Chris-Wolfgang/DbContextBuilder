@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Type of phone number of a person.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class PhoneNumberType
+public partial record PhoneNumberType
 {
 	/// <summary>
 	/// Primary key for telephone number type records.

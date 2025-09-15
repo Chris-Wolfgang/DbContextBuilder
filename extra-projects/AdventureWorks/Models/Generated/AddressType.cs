@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Types of addresses stored in the Address table. 
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class AddressType
+public partial record AddressType
 {
 	/// <summary>
 	/// Primary key for AddressType records.

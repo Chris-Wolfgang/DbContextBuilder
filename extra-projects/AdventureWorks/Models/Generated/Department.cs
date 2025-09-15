@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Lookup table containing the departments within the Adventure Works Cycles company.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class Department
+public partial record Department
 {
 	/// <summary>
 	/// Primary key for Department records.

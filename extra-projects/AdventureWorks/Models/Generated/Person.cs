@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Human beings involved with AdventureWorks: employees, customer contacts, and vendor contacts.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class Person
+public partial record Person
 {
 	/// <summary>
 	/// Primary key for Person records.
