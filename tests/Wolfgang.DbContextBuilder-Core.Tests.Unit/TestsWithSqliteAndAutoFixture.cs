@@ -8,8 +8,9 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 /// <summary>
 /// Runs all the tests using the default values for DbContextBuilder
 /// </summary>
-public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
+public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) : DbContextBuilderTestsBase(testOutputHelper)
 {
+
     /// <summary>
     /// 
     /// </summary>
@@ -28,6 +29,11 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
             .UseAutoFixture();
     }
 
+
+    /// <summary>
+    /// The SQL statement to retrieve the schema and names for the tables in the database
+    /// </summary>
+    protected override string SelectTablesCommandText => "SELECT null AS SchemaName, name AS TableName FROM sqlite_master WHERE type = 'table'";
 
 
     /// <summary>
