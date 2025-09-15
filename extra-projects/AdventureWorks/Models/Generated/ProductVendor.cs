@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Cross-reference table mapping vendors with the products they supply.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class ProductVendor
+public partial record ProductVendor
 {
 	/// <summary>
 	/// Primary key. Foreign key to Product.ProductID.

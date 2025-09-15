@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Product inventory information.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class ProductInventory
+public partial record ProductInventory
 {
 	/// <summary>
 	/// Product identification number. Foreign key to Product.ProductID.

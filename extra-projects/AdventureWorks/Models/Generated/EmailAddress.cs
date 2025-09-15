@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Where to send a person email.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class EmailAddress
+public partial record EmailAddress
 {
 	/// <summary>
 	/// Primary key. Person associated with this email address.  Foreign key to Person.BusinessEntityID

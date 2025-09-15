@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Résumés submitted to Human Resources by job applicants.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class JobCandidate
+public partial record JobCandidate
 {
 	/// <summary>
 	/// Primary key for JobCandidate records.

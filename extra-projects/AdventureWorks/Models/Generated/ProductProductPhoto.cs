@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Cross-reference table mapping products and product photos.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class ProductProductPhoto
+public partial record ProductProductPhoto
 {
 	/// <summary>
 	/// Product identification number. Foreign key to Product.ProductID.

@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Product inventory and manufacturing locations.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class Location
+public partial record Location
 {
 	/// <summary>
 	/// Primary key for Location records.

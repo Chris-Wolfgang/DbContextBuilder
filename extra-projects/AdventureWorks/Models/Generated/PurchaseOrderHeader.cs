@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// General purchase order information. See PurchaseOrderDetail.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class PurchaseOrderHeader
+public partial record PurchaseOrderHeader
 {
 	/// <summary>
 	/// Primary key.

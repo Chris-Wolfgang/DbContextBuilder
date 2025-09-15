@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Bicycle assembly diagrams.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class Illustration
+public partial record Illustration
 {
 	/// <summary>
 	/// Primary key for Illustration records.

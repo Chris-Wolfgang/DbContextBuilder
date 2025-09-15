@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// Current customer information. Also see the Person and Store tables.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class Customer
+public partial record Customer
 {
 	/// <summary>
 	/// Primary key.

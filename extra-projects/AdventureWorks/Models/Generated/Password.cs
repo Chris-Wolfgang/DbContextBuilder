@@ -7,7 +7,7 @@ namespace AdventureWorks.Models;
 /// One way hashed authentication information
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
-public partial class Password
+public partial record Password
 {
 	public int BusinessEntityId { get; set; }
 
