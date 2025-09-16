@@ -4,33 +4,47 @@ using AutoFixture.Kernel;
 
 namespace Wolfgang.DbContextBuilderCore;
 
-// TODO Create implementations for AutoFixture and Bogus
-// TODO Allow user to pass in their own implementation to DbContextBuilder
-// TODO Allow user to configure AutoFixture or Bogus
-// TODO Add tests
+
 
 /// <summary>
 /// Provides an API to generate random entities for seeding databases.
 /// </summary>
 internal class AutoFixtureRandomEntityGenerator : IGenerateRandomEntities
 {
-
-    private readonly Fixture _fixture = new();
-
     public AutoFixtureRandomEntityGenerator()
     {
-        _fixture.Customize<DateOnly>(o => o.FromFactory((DateTime dt) => DateOnly.FromDateTime(dt)));
-        _fixture.Customize<TimeOnly>(o => o.FromFactory((DateTime dt) => TimeOnly.FromDateTime(dt)));
+        // AutoFixture 4.x does not have built in support for DateOnly and TimeOnly. Version is supposed to 
+        Fixture.Customize<DateOnly>(o => o.FromFactory((DateTime dt) => DateOnly.FromDateTime(dt)));
+        Fixture.Customize<TimeOnly>(o => o.FromFactory((DateTime dt) => TimeOnly.FromDateTime(dt)));
 
-        _fixture.Behaviors
+        // Prevents issues with circular references
+        Fixture.Behaviors
             .OfType<ThrowingRecursionBehavior>()
             .ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-        _fixture.Customize(new NoCircularReferencesCustomization());
-        _fixture.Customize(new IgnoreVirtualMembersCustomization());
+            .ForEach(b => Fixture.Behaviors.Remove(b));
+        Fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        Fixture.Customize(new NoCircularReferencesCustomization());
+        Fixture.Customize(new IgnoreVirtualMembersCustomization());
     }
+
+
+
+    /// <summary>
+    /// Creates an instance of AutoFixtureRandomEntityGenerator using the specified Fixture
+    /// for generating random entities.
+    /// </summary>
+    /// <param name="fixture">The fixture to use when generating random entities</param>
+    public AutoFixtureRandomEntityGenerator(Fixture fixture)
+    {
+        Fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+    }
+
+
+
+    /// <summary>
+    /// The AutoFixture Fixture instance used to generate random data.
+    /// </summary>
+    public Fixture Fixture { get; } = new();
 
 
 
@@ -44,7 +58,7 @@ internal class AutoFixtureRandomEntityGenerator : IGenerateRandomEntities
         where TEntity : class
         => count < 1
             ? throw new ArgumentOutOfRangeException(nameof(count), count, "Value cannot be less than 1")
-            : _fixture
+            : Fixture
                 .Build<TEntity>()
                 .CreateMany(count)
                 .ToList();
@@ -56,7 +70,9 @@ internal class AutoFixtureRandomEntityGenerator : IGenerateRandomEntities
         public void Customize(IFixture fixture)
         {
             fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-            fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            fixture.Behaviors
+                .OfType<ThrowingRecursionBehavior>()
+                .ToList()
                 .ForEach(behavior => fixture.Behaviors.Remove(behavior));
         }
     }

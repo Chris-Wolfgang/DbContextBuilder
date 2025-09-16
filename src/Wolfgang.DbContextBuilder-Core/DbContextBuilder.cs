@@ -69,6 +69,21 @@ public class DbContextBuilder<T> where T : DbContext
 
 
     /// <summary>
+    /// Allows the user to specify their own implementation of IGenerateRandomEntities
+    /// for generating random entities.
+    /// </summary>
+    /// <param name="generator">The generator to use</param>
+    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    public DbContextBuilder<T> UseCustomRandomEntityGenerator(IGenerateRandomEntities generator)
+    {
+        ArgumentNullException.ThrowIfNull(generator);
+        RandomEntityGenerator = generator;
+        return this;
+    }
+
+
+
+    /// <summary>
     /// Provides a method to override how the database is created since different databases
     /// engines support different features
     /// </summary>
