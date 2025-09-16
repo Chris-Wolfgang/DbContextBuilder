@@ -160,26 +160,6 @@ internal class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
             return;
         }
 
-        // Force inclusion of known entities if needed
-        var knownTypes = new[]
-        {
-            typeof(Address),
-            typeof(Customer),
-            typeof(Employee),
-            typeof(SalesOrderHeader),
-            typeof(SalesOrderDetail),
-            typeof(Product),
-            typeof(StateProvince),
-            // Add more as needed
-        };
-
-        foreach (var type in knownTypes)
-        {
-            if (modelBuilder.Model.FindEntityType(type) == null)
-            {
-                modelBuilder.Entity(type);
-            }
-        }
 
         // Rename all tables and fix relationships
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -199,18 +179,13 @@ internal class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
 
             entityType.SetSchema(null); // Always strip schema for SQLite
 
-            var computedColumns = new Dictionary<(string Schema, string Table, string Column), string?>()
-                {
-                    { ("Person", "Person", "OrganizationLevel"), null },
-                    { ("HumanResources", "Employee", "OrganizationLevel"), null },
-                    { ("Sales", "Customer", "AccountNumber"), null },
-                    { ("Sales", "SalesOrderHeader", "SalesOrderNumber"), "(IFNULL('SO' || CAST(\"SalesOrderID\" AS TEXT), '*** ERROR ***'))"},
-                    //{ ("", "", ""), null},
-                    //{ ("", "", ""), null},
-                    //{ ("", "", ""), null},
-
-
-                };
+            var computedColumns = new Dictionary<(string Schema, string Table, string Column), string?>
+            {
+                { ("Person", "Person", "OrganizationLevel"), null },
+                { ("HumanResources", "Employee", "OrganizationLevel"), null },
+                { ("Sales", "Customer", "AccountNumber"), null },
+                { ("Sales", "SalesOrderHeader", "SalesOrderNumber"), "(IFNULL('SO' || CAST(\"SalesOrderID\" AS TEXT), '*** ERROR ***'))"},
+            };
 
             // Fix computed columns and default values
             foreach (var property in entityType.GetProperties())
@@ -261,9 +236,9 @@ internal class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
 
             // Heuristic: rename many-to-many join tables
             var foreignKeys = entityType.GetForeignKeys().ToList();
-            var navigations = entityType.GetNavigations().ToList();
+            var navigation = entityType.GetNavigations().ToList();
 
-            if (foreignKeys.Count == 2 && navigations.Count == 0)
+            if (foreignKeys.Count == 2 && navigation.Count == 0)
             {
                 var left = foreignKeys[0].PrincipalEntityType;
                 var right = foreignKeys[1].PrincipalEntityType;
@@ -278,9 +253,9 @@ internal class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
             }
         }
 
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes().Where(e => !string.IsNullOrWhiteSpace(e.GetSchema())))
-        {
-            entityType.SetSchema(null); // Strip schema for SQLite
-        }
+        //foreach (var entityType in modelBuilder.Model.GetEntityTypes().Where(e => !string.IsNullOrWhiteSpace(e.GetSchema())))
+        //{
+        //    entityType.SetSchema(null); // Strip schema for SQLite
+        //}
     }
 }
