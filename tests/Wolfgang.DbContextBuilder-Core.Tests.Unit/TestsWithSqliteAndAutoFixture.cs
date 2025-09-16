@@ -140,34 +140,38 @@ internal class SqliteModelCacheKeyFactory : IModelCacheKeyFactory
         return new SqliteModelCacheKey(context, designTime);
     }
 
-    private sealed class SqliteModelCacheKey(DbContext context, bool designTime) : ModelCacheKey(context, designTime)
+    private sealed class SqliteModelCacheKey(DbContext context, bool designTime) 
+        : ModelCacheKey(context, designTime)
     {
     }
 }
 
 
 
-internal class SqliteModelCustomizer(ModelCustomizerDependencies dependencies) : ModelCustomizer(dependencies)
+internal class SqliteModelCustomizer(ModelCustomizerDependencies dependencies) 
+    : ModelCustomizer(dependencies)
 {
     public override void Customize(ModelBuilder modelBuilder, DbContext context)
     {
         base.Customize(modelBuilder, context);
 
         if (!context.Database.IsSqlite())
+        {
             return;
+        }
 
         // Force inclusion of known entities if needed
         var knownTypes = new[]
         {
-        typeof(Address),
-        typeof(Customer),
-        typeof(Employee),
-        typeof(SalesOrderHeader),
-        typeof(SalesOrderDetail),
-        typeof(Product),
-        typeof(StateProvince),
-        // Add more as needed
-    };
+            typeof(Address),
+            typeof(Customer),
+            typeof(Employee),
+            typeof(SalesOrderHeader),
+            typeof(SalesOrderDetail),
+            typeof(Product),
+            typeof(StateProvince),
+            // Add more as needed
+        };
 
         foreach (var type in knownTypes)
         {

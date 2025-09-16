@@ -3,7 +3,7 @@ namespace Wolfgang.DbContextBuilderCore;
 /// <summary>
 /// Provides an API to generate random entities for seeding databases.
 /// </summary>
-internal interface IGenerateRandomEntities
+public interface IGenerateRandomEntities
 {
 
     /// <summary>
@@ -13,4 +13,5 @@ internal interface IGenerateRandomEntities
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
     /// <returns>An IEnumerable{TEntity}</returns>
     IEnumerable<TEntity> GenerateRandomEntities<TEntity>(int count) where TEntity : class;
+
 }
