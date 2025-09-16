@@ -10,7 +10,10 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 /// </summary>
 public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelper)
 {
+
+#pragma warning disable IDE0051
     private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
+#pragma warning restore IDE0051
 
     /// <summary>
     /// Creates an instance of DbContextBuilder with specific database
@@ -98,6 +101,101 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling UseSqlite returns the DbContextBuilder instance to allow for method chaining.
+    /// </summary>
+    [Fact]
+    public void Calling_UseSqlite_returns_DbContextBuilder()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        // Act
+        var result = sut.UseSqlite();
+
+        // Assert
+        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+    }
+
+    
+
+    /// <summary>
+    /// Verifies that calling UseAutoFixture returns the DbContextBuilder instance to allow for method chaining.
+    /// </summary>
+    [Fact]
+    public void Calling_UseAutoFixture_returns_DbContextBuilder()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        // Act
+        var result = sut.UseAutoFixture();
+
+        // Assert
+        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+    }
+
+
+    
+    /// <summary>
+    /// Verifies that calling UseCustomRandomEntityGenerator returns the
+    /// DbContextBuilder instance to allow for method chaining.
+    /// </summary>
+    [Fact]
+    public void Calling_UseCustomRandomEntityGenerator_returns_DbContextBuilder()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        var generator = new AutoFixtureRandomEntityGenerator();
+
+        // Act
+        var result = sut.UseCustomRandomEntityGenerator(generator);
+
+        // Assert
+        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling UseCustomRandomEntityGenerator and passing null
+    /// throws ArgumentNullException
+    /// </summary>
+    [Fact]
+    public void Calling_UseCustomRandomEntityGenerator_and_passing_in_null_throws_ArgumentNullException()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentNullException> (() => sut.UseCustomRandomEntityGenerator(null!));
+        Assert.Equal("generator", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling UseCustomRandomEntityGenerator sets Fixture
+    /// property to the value passed in
+    /// </summary>
+    [Fact]
+    public void Calling_UseCustomRandomEntityGenerator_sets_the_RandomEntityGenerator_property()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        var generator = new AutoFixtureRandomEntityGenerator();
+
+        // Act
+        sut.UseCustomRandomEntityGenerator(generator);
+
+        // Assert
+        Assert.Equal(generator, sut.RandomEntityGenerator);
     }
 
 
@@ -658,7 +756,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_value_less_than_1_throws_ArgumentException()
     {
         // Arrange
-        var func = new Func<Address, Address>(a => a);
+        Func<Address, Address> func = null!; 
+
         var sut = CreateDbContextBuilder();
 
         // Act & Assert
@@ -805,7 +904,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_value_less_than_1_throws_ArgumentException()
     {
         // Arrange
-        var func = new Func<Address, int, Address>((a, _) => a);
+        Func<Address, int, Address> func = null!;
         var sut = CreateDbContextBuilder();
 
         // Act & Assert
