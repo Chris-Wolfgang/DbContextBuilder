@@ -1,9 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
+
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// State and province lookup table.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial record StateProvince
 {
     /// <summary>

@@ -6,6 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Street address information for customers, employees, and vendors.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial record Address 
 {
     /// <summary>
