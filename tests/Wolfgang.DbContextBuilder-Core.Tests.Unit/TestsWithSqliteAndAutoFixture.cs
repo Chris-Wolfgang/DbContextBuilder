@@ -143,10 +143,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
 internal class SqliteModelCacheKeyFactory : IModelCacheKeyFactory
 {
-    public object Create(DbContext context, bool designTime)
-    {
-        return new SqliteModelCacheKey(context, designTime);
-    }
+    public object Create(DbContext context, bool designTime) => new SqliteModelCacheKey(context, designTime);
 
     private sealed class SqliteModelCacheKey(DbContext context, bool designTime) 
         : ModelCacheKey(context, designTime)
@@ -156,7 +153,7 @@ internal class SqliteModelCacheKeyFactory : IModelCacheKeyFactory
 
 
 
-internal class SqliteModelCustomizer(ModelCustomizerDependencies dependencies) 
+internal sealed class SqliteModelCustomizer(ModelCustomizerDependencies dependencies) 
     : ModelCustomizer(dependencies)
 {
     public override void Customize(ModelBuilder modelBuilder, DbContext context)
@@ -178,7 +175,7 @@ internal class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
             var schemaPrefix = string.IsNullOrEmpty(schema) ? "dbo" : schema;
 
             // Avoid recursive renaming
-            if (!originalTableName.StartsWith($"{schemaPrefix}_"))
+            if (!originalTableName.StartsWith($"{schemaPrefix}_", StringComparison.InvariantCultureIgnoreCase))
             {
                 var newTableName = $"{schemaPrefix}_{originalTableName}";
                 entityType.SetTableName(newTableName);
