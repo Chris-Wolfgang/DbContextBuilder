@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
+
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
 /// <summary>
@@ -11,11 +12,11 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelper)
 {
 
-#pragma warning disable IDE0051
-    private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
-#pragma warning restore IDE0051
+#pragma warning disable IDE0052
+	private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
+#pragma warning restore IDE0052
 
-    /// <summary>
+	/// <summary>
     /// Creates an instance of DbContextBuilder with specific database
     /// and random entity generator to be used in the tests
     /// </summary>
@@ -384,9 +385,9 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
             CountryRegionCode = "US",
             Name = "United States",
             ModifiedDate = DateTime.UtcNow,
-            StateProvinces = new List<StateProvince>(),
-            SalesTerritories = new List<SalesTerritory>(),
-            CountryRegionCurrencies = new List<CountryRegionCurrency>(),
+            StateProvinces = [],
+            SalesTerritories = [],
+            CountryRegionCurrencies = [],
         };
         var seedCountry = expectedCountry with { };
 
@@ -640,27 +641,27 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
                 CountryRegionCode = "US",
                 Name = "United States",
                 ModifiedDate = DateTime.UtcNow,
-                StateProvinces = new List<StateProvince>(),
-                SalesTerritories = new List<SalesTerritory>(),
-                CountryRegionCurrencies = new List<CountryRegionCurrency>(),
+                StateProvinces = [],
+                SalesTerritories = [],
+                CountryRegionCurrencies = [],
             },
             new()
             {
                 CountryRegionCode = "CA",
                 Name = "Canada",
                 ModifiedDate = DateTime.UtcNow,
-                StateProvinces = new List<StateProvince>(),
-                SalesTerritories = new List<SalesTerritory>(),
-                CountryRegionCurrencies = new List<CountryRegionCurrency>(),
+                StateProvinces = [],
+                SalesTerritories = [],
+                CountryRegionCurrencies = [],
             },
             new()
             {
                 CountryRegionCode = "MX",
                 Name = "Mexico",
                 ModifiedDate = DateTime.UtcNow,
-                StateProvinces = new List<StateProvince>(),
-                SalesTerritories = new List<SalesTerritory>(),
-                CountryRegionCurrencies = new List<CountryRegionCurrency>(),
+                StateProvinces = [],
+                SalesTerritories = [],
+                CountryRegionCurrencies = [],
             }
         };
         var seedCountry = expectedCountry.Select(c => c with { });
@@ -715,8 +716,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act
         var result = sut.SeedWithRandom<Address>(count);
 
-        // Assert
-        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+		// Assert
+		_ = Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
     }
 
 
