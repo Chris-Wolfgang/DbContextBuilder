@@ -37,7 +37,7 @@ public class DbContextBuilder<T> where T : DbContext
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
     public DbContextBuilder<T> UseSqlite()
 	{
-		this._dbProvider = DbProvider.Sqlite;
+		_dbProvider = DbProvider.Sqlite;
 		return this;
 	}
 
@@ -49,7 +49,7 @@ public class DbContextBuilder<T> where T : DbContext
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
 	public DbContextBuilder<T> UseInMemory()
 	{
-		this._dbProvider = DbProvider.InMemory;
+		_dbProvider = DbProvider.InMemory;
 		return this;
 	}
 
@@ -339,7 +339,7 @@ public class DbContextBuilder<T> where T : DbContext
                 optionBuilder = new DbContextOptionsBuilder<T>().UseSqlite(connection);
                 break;
             default:
-                throw new NotSupportedException($"Provider {this._dbProvider} is not supported.");
+                throw new NotSupportedException($"Provider {_dbProvider} is not supported.");
         }
 
         if (_serviceProvider != null)
