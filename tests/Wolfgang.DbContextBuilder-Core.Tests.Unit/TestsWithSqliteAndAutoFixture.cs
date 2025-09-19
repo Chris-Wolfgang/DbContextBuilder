@@ -13,9 +13,9 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 {
 
     /// <summary>
-    /// 
+    /// Creates a new instance of the DbContextBuilder configured to use SQLite and AutoFixture
     /// </summary>
-    /// <returns></returns>
+    /// <returns><see cref="DbContextBuilder{AdventureWorksDbContext}"/></returns>
     protected override DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder()
     {
         var serviceProvider = new ServiceCollection()
@@ -31,10 +31,13 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
     }
 
 
+
     /// <summary>
     /// The SQL statement to retrieve the schema and names for the tables in the database
     /// </summary>
+    // TODO move to configuration/override
     protected override string SelectTablesCommandText => "SELECT null AS SchemaName, name AS TableName FROM sqlite_master WHERE type = 'table'";
+
 
 
     /// <summary>
@@ -108,22 +111,25 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         Assert.True(context.Database.IsSqlite());
     }
 
-    
+
 
     /// <summary>
-    /// 
+    /// Verifies that services passed to UseServiceProvider are used when creating the database
     /// </summary>
     [Fact]
-    public async Task Services_passed_to_UseServiceProvider_are_used__when_creating_the_database()
+    public async Task Services_passed_to_UseServiceProvider_are_used_when_creating_the_database()
     {
 
+        // Arrange
         var serviceProvider = new ServiceCollection()
             .AddEntityFrameworkSqlite()
             .AddSingleton<IModelCacheKeyFactory, SqliteModelCacheKeyFactory>()
             .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
             .BuildServiceProvider();
 
-        // Act
+        // Act & Assert
+
+        // This would fail it wasn't using the custom configuration above
         await CreateDbContextBuilder()
             .UseServiceProvider(serviceProvider)
             .BuildAsync();
@@ -132,6 +138,8 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 }
 
 
+// TODO add property to config OverrideDefaultSqliteModelCacheKeyFactory = T/F
+// TODO Modify UseSqlite to return a SqliteDbContextBuilder with additional properties including this one
 
 internal class SqliteModelCacheKeyFactory : IModelCacheKeyFactory
 {
@@ -160,7 +168,8 @@ internal class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
             return;
         }
 
-
+        // TODO Create property SchemaHandling
+        //      Options: LeaveAlone, Strip, PrefixToTableName
         // Rename all tables and fix relationships
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
