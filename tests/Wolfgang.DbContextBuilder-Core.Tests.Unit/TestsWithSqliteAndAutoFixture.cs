@@ -1,4 +1,5 @@
-﻿using AdventureWorks.Models;
+using System.Text;
+using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -135,7 +136,39 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
             .BuildAsync();
 
     }
+
+    
+
+    /// <summary>
+    /// Verifies that if you configure the DbContextOptionsBuilder correctly is will log SQL statements,
+    /// </summary>
+    [Fact]
+    public async Task When_configured_to_do_so_BuildAsync_will_log_the_create_statement_with_modified_table_names()
+    {
+
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        var buffer = new StringBuilder(10_240);
+        var sw = new StringWriter(buffer);
+
+        var optionsBuilder = new DbContextOptionsBuilder<AdventureWorksDbContext>()
+                .LogTo(s => sw.WriteLine(s));
+
+        sut.UseDbContextOptionsBuilder(optionsBuilder);
+
+        // Act
+        await sut.BuildAsync();
+
+
+        // Assert
+        Assert.Contains("CREATE TABLE \"Person_Person\"", buffer.ToString());
+    }
+
+
+
 }
+
 
 
 // TODO add property to config OverrideDefaultSqliteModelCacheKeyFactory = T/F
