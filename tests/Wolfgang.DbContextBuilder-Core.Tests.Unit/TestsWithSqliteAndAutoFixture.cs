@@ -34,14 +34,6 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
 
     /// <summary>
-    /// The SQL statement to retrieve the schema and names for the tables in the database
-    /// </summary>
-    // TODO move to configuration/override
-    protected override string SelectTablesCommandText => "SELECT null AS SchemaName, name AS TableName FROM sqlite_master WHERE type = 'table'";
-
-
-
-    /// <summary>
     /// Verifies that UseSqlite returns a DbContext{T} for chaining additional calls
     /// </summary>
     [Fact]

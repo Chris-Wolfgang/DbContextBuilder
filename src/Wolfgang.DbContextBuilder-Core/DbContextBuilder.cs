@@ -1,5 +1,4 @@
 using System.Data.Common;
-using JetBrains.Annotations;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,8 +21,6 @@ public class DbContextBuilder<T> where T : DbContext
 	private DbProvider _dbProvider = DbProvider.InMemory;
     private readonly List<object> _seedData = new();
     private IServiceProvider? _serviceProvider;
-    private string? _dumpTableNamesCommandText;
-    private Action<IReadOnlyCollection<string>>? _dumpTableNamesCallback;
     private DbContextOptionsBuilder<T>? _dbContextOptionsBuilder;
 
 
@@ -270,68 +267,6 @@ public class DbContextBuilder<T> where T : DbContext
     }
 
 
-
-    /// <summary>
-    /// When specified, tells the context builder to dump the names of all tables in the database
-    /// </summary>
-    /// <param name="commandText">The command to use to get the tables. Varies by database provider</param>
-    /// <param name="callback">A function to receive the results after the tables names are retrieved</param>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-    /// <exception cref="ArgumentException">commandText is either null or whitespace</exception>
-    /// <exception cref="ArgumentNullException">callback is null</exception>
-    [UsedImplicitly]
-    // TODO Move this to a configuration object that gets passed into the UseInMemory and UseSqlite methods
-    public DbContextBuilder<T> DumpTablesNames(string commandText, Action<IReadOnlyCollection<string>> callback)
-    {
-        // TODO write test methods
-        ArgumentNullException.ThrowIfNull(callback);
-
-        if (string.IsNullOrWhiteSpace(commandText))
-        {
-            throw new ArgumentException("Value cannot be null or whitespace.", nameof(commandText));
-        }
-
-        _dumpTableNamesCommandText = commandText;
-        _dumpTableNamesCallback = callback;
-
-        return this;
-    }
-
-
-
-    private static async Task<IReadOnlyCollection<string>> LogTableNamesAsync(DbConnection connection, string commandText)
-    {
-        var command = connection.CreateCommand();
-        command.CommandText = commandText;
-        await using var reader = await command.ExecuteReaderAsync();
-
-        if (reader.FieldCount != 2)
-        {
-            throw new InvalidOperationException
-            (
-                "Select statement must return exactly two columns. The first must be the schema name and the second the table name"
-            );
-        }
-
-        var tables = new List<string>();
-        while (await reader.ReadAsync())
-        {
-            var value = reader.GetValue(0);
-            var schemaName = value == DBNull.Value ? null : value.ToString();
-
-            value = reader.GetValue(1);
-            var tableName = value == DBNull.Value ? null : value.ToString();
-
-            var fullName = string.IsNullOrWhiteSpace(schemaName)
-                ? $"[{tableName}]"
-                : $"[{schemaName}].[{tableName}]";
-
-            tables.Add(fullName);
-        }
-        return tables;
-    }
-
-    
 
     /// <summary>
     /// Creates a new instance of T seeded with specified data."/>.

@@ -27,16 +27,6 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
     /// <summary>
-    /// The SQL command to select schema and table names from the database.
-    /// </summary>
-    /// <remarks>
-    /// If the database does not support schemas, like Sqlite, then return and empty string form the schema
-    /// </remarks>
-    protected abstract string SelectTablesCommandText { get; }
-
-
-
-    /// <summary>
     /// Verifies that the test project can create an instance of DbContextBuilder can be created.
     /// </summary>
     [Fact]
@@ -1120,28 +1110,5 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Assert
         Assert.True(buffer.Length > 0, "Buffer length was expected to be greater than 0");
-    }
-
-
-    // TODO r/w a table in a schema other than default. Sqlite give warning about schema
-
-
-    private async Task<IReadOnlyCollection<string>> LogTableNamesAsync(AdventureWorksDbContext context)
-    {
-        var command = context.Database.GetDbConnection().CreateCommand();
-        command.CommandText = SelectTablesCommandText;
-        command.Connection = context.Database.GetDbConnection();
-
-        await using var reader = await command.ExecuteReaderAsync();
-        var tables = new List<string>();
-        while (await reader.ReadAsync())
-        {
-            var tableName = reader.GetString(0);
-            tables.Add(tableName);
-            Console.WriteLine(tableName);
-        }
-
-        await reader.CloseAsync();
-        return tables;
     }
 }
