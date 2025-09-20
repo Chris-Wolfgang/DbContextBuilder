@@ -69,7 +69,7 @@ internal class AutoFixtureRandomEntityGenerator : IGenerateRandomEntities
     {
         public void Customize(IFixture fixture)
         {
-            if (fixture.Behaviors.OfType<OmitOnRecursionBehavior>().Any())
+            if (!fixture.Behaviors.OfType<OmitOnRecursionBehavior>().Any())
             {
                 fixture.Behaviors.Add(new OmitOnRecursionBehavior());
             }
