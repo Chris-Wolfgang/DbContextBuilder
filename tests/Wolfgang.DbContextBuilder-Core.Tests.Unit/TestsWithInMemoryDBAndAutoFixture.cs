@@ -22,16 +22,7 @@ public class TestsWithInMemoryDbAndAutoFixture(ITestOutputHelper testOutputHelpe
     }
 
 
-    /// <summary>
-    /// The SQL command to select schema and table names from the database.
-    /// </summary>
-    /// <remarks>
-    /// If the database does not support schemas, like Sqlite, then return and empty string form the schema
-    /// </remarks>
-    protected override string SelectTablesCommandText => throw new NotImplementedException();
 
-
-    
     /// <summary>
     /// Verifies that UseInMemory returns a DbContext{T} for chaining additional calls
     /// </summary>
