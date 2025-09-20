@@ -2,7 +2,6 @@ using System.Data.Common;
 using JetBrains.Annotations;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace Wolfgang.DbContextBuilderCore;
 
@@ -25,6 +24,7 @@ public class DbContextBuilder<T> where T : DbContext
     private IServiceProvider? _serviceProvider;
     private string? _dumpTableNamesCommandText;
     private Action<IReadOnlyCollection<string>>? _dumpTableNamesCallback;
+    private DbContextOptionsBuilder<T>? _dbContextOptionsBuilder;
 
 
     internal IGenerateRandomEntities RandomEntityGenerator { get; private set; } = new AutoFixtureRandomEntityGenerator();
@@ -111,6 +111,24 @@ public class DbContextBuilder<T> where T : DbContext
         ArgumentNullException.ThrowIfNull(serviceProvider);
 
         _serviceProvider = serviceProvider;
+
+        return this;
+    }
+
+
+
+    /// <summary>
+    /// Specifies a specific instance of UseDbContextOptionsBuilder to use when creating the DbContext.
+    /// </summary>
+    /// <param name="dbContextOptionsBuilder"></param>
+    /// <returns></returns>
+    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <exception cref="ArgumentNullException">callback is null</exception>
+    public DbContextBuilder<T> UseDbContextOptionsBuilder(DbContextOptionsBuilder<T> dbContextOptionsBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(dbContextOptionsBuilder);
+
+        _dbContextOptionsBuilder = dbContextOptionsBuilder;
 
         return this;
     }
@@ -313,8 +331,7 @@ public class DbContextBuilder<T> where T : DbContext
         return tables;
     }
 
-
-
+    
 
     /// <summary>
     /// Creates a new instance of T seeded with specified data."/>.
@@ -324,19 +341,19 @@ public class DbContextBuilder<T> where T : DbContext
     public async Task<T> BuildAsync()
     {
         // ReSharper disable once TooWideLocalVariableScope
-        DbConnection? connection; // variable must remain in outer scope
+        DbConnection? connection; // variable must remain in outer scope so it can be reused later
 
-        DbContextOptionsBuilder<T>? optionBuilder;
+        var optionBuilder = _dbContextOptionsBuilder ?? new DbContextOptionsBuilder<T>();
 
         switch (_dbProvider)
         {
             case DbProvider.InMemory:
-                optionBuilder = new DbContextOptionsBuilder<T>().UseInMemoryDatabase(Guid.NewGuid().ToString());
+                optionBuilder.UseInMemoryDatabase(Guid.NewGuid().ToString());
                 break;
             case DbProvider.Sqlite:
                 connection = new SqliteConnection("DataSource=:memory:");
                 await connection.OpenAsync();
-                optionBuilder = new DbContextOptionsBuilder<T>().UseSqlite(connection);
+                optionBuilder.UseSqlite(connection);
                 break;
             default:
                 throw new NotSupportedException($"Provider {_dbProvider} is not supported.");
@@ -347,18 +364,7 @@ public class DbContextBuilder<T> where T : DbContext
             optionBuilder.UseInternalServiceProvider(_serviceProvider);
         }
 
-        var logs = new List<string>();
-
-        // TODO add UseVerboseOutput option to log SQL to console
-        var options = optionBuilder
-            .LogTo(Console.WriteLine)
-            //.LogTo( s => Debug.WriteLine(s)) // TODO Figure out logging
-            //.LogTo(logs.Add)
-            .LogTo(Console.WriteLine, LogLevel.Information)
-            .ConfigureWarnings(builder => builder.Throw())
-            .EnableSensitiveDataLogging()
-            .EnableDetailedErrors()
-            .Options;
+        var options = optionBuilder.Options;
 
         var context = (T)Activator.CreateInstance(typeof(T), options)!;
 
@@ -369,17 +375,10 @@ public class DbContextBuilder<T> where T : DbContext
         }
         catch (InvalidOperationException e)
         {
-            // TODO Improve exception
-            var ex = new InvalidOperationException("Failed to create database. See InnerExceptions and Logs in the Data property for additional information", e);
-            //ex.Data.Add("Logs", logs);
-            throw ex;
-        }
-
-        // TODO Need tests
-        if (_dumpTableNamesCommandText is not null && _dumpTableNamesCallback is not null)
-        {
-            var tableNames = await LogTableNamesAsync(context.Database.GetDbConnection(), _dumpTableNamesCommandText);
-            _dumpTableNamesCallback(tableNames);
+            const string msg = "Failed to create database. See InnerExceptions for details. " +
+                               "You can get addition information by creating a new instance of " +
+                               "DbContextOptionsBuilder<T> and passing into UseDbContextOptionsBuilder";
+            throw new InvalidOperationException(msg, e);
         }
 
         if (_seedData.Count > 0)
@@ -388,19 +387,7 @@ public class DbContextBuilder<T> where T : DbContext
             await context.SaveChangesAsync();
         }
 
-        // TODO Need tests
-        if (_dumpTableNamesCommandText is not null && _dumpTableNamesCallback is not null)
-        {
-            var tableNames = await LogTableNamesAsync(context.Database.GetDbConnection(), _dumpTableNamesCommandText);
-            _dumpTableNamesCallback(tableNames);
-        }
-
-
         // Create a new clean context instance to return
         return (T)Activator.CreateInstance(typeof(T), options)!;
     }
-
-
-
-
 }

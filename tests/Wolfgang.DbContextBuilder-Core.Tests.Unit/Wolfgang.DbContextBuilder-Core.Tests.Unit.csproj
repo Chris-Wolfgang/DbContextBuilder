@@ -149,12 +149,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Folder Include="Models\Generated\" />
 		<Folder Include="Models\" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Folder Include="Models\Generated\" />
-	</ItemGroup>
 
 
 	<PropertyGroup>

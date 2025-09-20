@@ -1,3 +1,4 @@
+using System.Text;
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     /// </summary>
     /// <returns></returns>
     protected abstract DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder();
+
 
 
     /// <summary>
@@ -561,8 +563,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     /// the array is null throws an ArgumentException.
     /// </summary>
     [Fact]
-    public void
-        SeedWith_params_when_passed_an_array_of_values_and_one_of_the_elements_is_null_throws_ArgumentException()
+    public void SeedWith_params_when_passed_an_array_of_values_and_one_of_the_elements_is_null_throws_ArgumentException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -701,8 +702,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     }
 
 
-
-
+    
     /// <summary>
     /// Verifies that calling SeedWithRandom{T}(int) returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
@@ -811,8 +811,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Theory]
     [InlineData(7)]
     [InlineData(17)]
-    public async Task
-        SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
+    public async Task SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         var startingId = 1000;
         // Arrange
@@ -958,8 +957,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Theory]
     [InlineData(7)]
     [InlineData(17)]
-    public async Task
-        SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
+    public async Task SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         const int startingId = 1001;
         // Arrange
@@ -1062,6 +1060,67 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseServiceProvider(services));
     }
 
+
+
+    /// <summary>
+    /// Verifies that calling UseDbContextOptionsBuilder and passing null throws ArgumentNullException
+    /// </summary>
+    [Fact]
+    public void Calling_UseDbContextOptionsBuilder_when_passed_null_throws_ArgumentNullException()
+    {
+        // Arrange
+
+        var sut = CreateDbContextBuilder();
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.UseDbContextOptionsBuilder(null!));
+        Assert.Equal("dbContextOptionsBuilder", ex.ParamName);
+
+
+    }
+
+
+
+    /// <summary>
+    /// Verifies that UseDbContextOptionsBuilder returns the DbContextBuilder{T} so it can be chained to other calls
+    /// </summary>
+    [Fact]
+    public void Calling_UseDbContextOptionsBuilder_returns_DbContextBuild()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+        var optionsBuilder = new DbContextOptionsBuilder<AdventureWorksDbContext>();
+
+        // Act & Assert
+        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseDbContextOptionsBuilder(optionsBuilder));
+    }
+
+
+
+    /// <summary>
+    /// Verifies that BuildAsync uses the DbOptionBuilder passed in by UseDbContextOptionsBuilder
+    /// </summary>
+    [Fact]
+    public async Task UseDbContextOptionsBuilder_after_calling_BuildAsync_uses_DbOptionBuilder_passed_in()
+    {
+
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        var buffer = new StringBuilder(10_240);
+        var sw = new StringWriter(buffer);
+
+        var optionsBuilder = new DbContextOptionsBuilder<AdventureWorksDbContext>()
+            .LogTo(s => sw.WriteLine(s));
+        sut.UseDbContextOptionsBuilder(optionsBuilder);
+
+        // Act
+        await sut.BuildAsync();
+
+
+        // Assert
+        Assert.True(buffer.Length > 0, "Buffer length was expected to be greater than 0");
+    }
 
 
     // TODO r/w a table in a schema other than default. Sqlite give warning about schema
