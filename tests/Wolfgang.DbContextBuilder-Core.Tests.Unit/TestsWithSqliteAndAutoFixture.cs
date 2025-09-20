@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Text;
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +46,94 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         // Act & Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseSqlite());
     }
+
+
+
+    /// <summary>
+    /// Verifies that calling UseSqlite cause BuildAsync() to use Microsoft's Sqlite database
+    /// </summary>
+    [Fact]
+    public async Task UseSqlite_causes_BuildAsync_to_use_Sqlite()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+
+        var serviceProvider = new ServiceCollection()
+            .AddEntityFrameworkSqlite()
+            .AddSingleton<IModelCacheKeyFactory, SqliteModelCacheKeyFactory>()
+            .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
+            .BuildServiceProvider();
+
+        // Act
+        var context = await sut
+            .UseSqlite()
+            .UseServiceProvider(serviceProvider)
+            .BuildAsync();
+
+        // Assert
+        Assert.True(context.Database.IsSqlite());
+    }
+
+
+
+    /// <summary>
+    /// Verifies that UseSqlite returns a DbContext{T} for chaining additional calls
+    /// </summary>
+    [Fact]
+    public void UseSqlite_with_SqliteOverrides_returns_DbContextBuilder()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+
+        var overrides = new SqliteOverrides();
+        // Act & Assert
+        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseSqlite(overrides));
+    }
+
+
+
+    /// <summary>
+    /// Verifies that UseSqlite returns a DbContext{T} for chaining additional calls
+    /// </summary>
+    [Fact]
+    public void UseSqlite_with_SqliteOverrides_when_passed_null_throws_ArgumentNullException()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.UseSqlite(null!));
+        Assert.Equal("overrides", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling UseSqlite cause BuildAsync() to use Microsoft's Sqlite database
+    /// </summary>
+    [Fact]
+    public async Task UseSqlite_with_SqliteOverrides_causes_BuildAsync_to_use_Sqlite()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var overrides = new SqliteOverrides();
+
+        var serviceProvider = new ServiceCollection()
+            .AddEntityFrameworkSqlite()
+            .AddSingleton<IModelCacheKeyFactory, SqliteModelCacheKeyFactory>()
+            .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
+            .BuildServiceProvider();
+
+        // Act
+        var context = await sut
+            .UseSqlite(overrides)
+            .UseServiceProvider(serviceProvider)
+            .BuildAsync();
+
+        // Assert
+        Assert.True(context.Database.IsSqlite());
+    }
+
 
 
 
@@ -159,134 +248,367 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
 
 
-}
-
-
-
-// TODO add property to config OverrideDefaultSqliteModelCacheKeyFactory = T/F
-// TODO Modify UseSqlite to return a SqliteDbContextBuilder with additional properties including this one
-
-internal class SqliteModelCacheKeyFactory : IModelCacheKeyFactory
-{
-    public object Create(DbContext context, bool designTime) => new SqliteModelCacheKey(context, designTime);
-
-    private sealed class SqliteModelCacheKey(DbContext context, bool designTime) 
-        : ModelCacheKey(context, designTime)
+    /// <summary>
+    /// Verifies that the default behavior when using Sqlite, is to prepend the schema name to the table name,
+    /// separated by an underscore, and to strip the schema name from the table itself
+    /// </summary>
+    [Fact]
+    public async Task UseSqlite_default_behavior_for_schema_names_is_to_prepend_the_schema_name_to_table_name()
     {
+
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>()
+                .UseSqlite()
+                .UseAutoFixture();
+
+        // Act
+        var context = await sut
+            .BuildAsync();
+        
+        // Assert
+        //var columns = await GetColumnMetadataAsync(context);
+        //Assert.True(columns.Any(c => c.TableName == "Person_Person"), "Table Person_Person was not found");
+
+        var tables = await GetTableMetadataAsync(context);
+        Assert.Contains(tables, t => t.TableName == "Person_Person");
+    }
+
+
+
+    /// <summary>
+    /// Verifies that the default behavior when using Sqlite, is to prepend the schema name to the table name,
+    /// separated by an underscore, and to strip the schema name from the table itself
+    /// </summary>
+    [Fact]
+    public async Task UseSqlite_default_behavior_for_default_values_is_to_remove_default_value()
+    {
+
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>()
+            .UseSqlite()
+            .UseAutoFixture();
+
+        // Act
+        var context = await sut
+            .BuildAsync();
+
+        // Assert
+        var columns = await GetColumnMetadataAsync(context);
+        var columnsWithDefaultValues = columns.Where(c => !string.IsNullOrEmpty(c.DefaultValue)).ToList();
+        Assert.Empty(columnsWithDefaultValues);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that the default behavior when using Sqlite, is to prepend the schema name to the table name,
+    /// separated by an underscore, and to strip the schema name from the table itself
+    /// </summary>
+    [Fact]
+    public async Task UseSqlite_default_behavior_for_computed_column_is_to_remove_computed_value()
+    {
+
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>()
+            .UseSqlite()
+            .UseAutoFixture();
+
+        // Act
+        var context = await sut
+            .BuildAsync();
+
+        // Assert
+        var columns = await GetColumnMetadataAsync(context);
+        var columnsWithComputedValues = columns.Where(c => !string.IsNullOrEmpty(c.ComputedValue)).ToList();
+        Assert.Empty(columnsWithComputedValues);
+    }
+
+
+
+    private record TableMetadata(string TableName);
+
+    private static async Task<List<TableMetadata>> GetTableMetadataAsync(AdventureWorksDbContext context)
+    {
+        const string commandText = "Select name from sqlite_master where type='table';"; //" and name=@tableName;";
+        var connection = context.Database.GetDbConnection();
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = commandText;
+        command.CommandType = System.Data.CommandType.Text;
+
+        //var parameter = command.CreateParameter();
+        //parameter.ParameterName = "tableName";
+        //parameter.Value = tableName;
+        //command.Parameters.Add(parameter);
+
+        var tables = new List<TableMetadata>(200);
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            var name = reader.GetString(0);
+            tables.Add(new TableMetadata(name));
+        }
+
+        return tables;
+    }
+
+
+
+    private record ColumnMetadata(string TableName, string ColumnName, string? DefaultValue, string? ComputedValue);
+
+
+
+    // Returns a list of columns with default values and computed values for all tables in SQLite
+    private static async Task<List<ColumnMetadata>> GetColumnMetadataAsync(AdventureWorksDbContext context)
+    {
+        var result = new List<ColumnMetadata>();
+        var connection = context.Database.GetDbConnection();
+
+        var tableNames = await GetTableNamesAsync(connection);
+
+        foreach (var tableName in tableNames)
+        {
+            // PRAGMA table_info returns info about columns, including default values
+            var commandText = $"PRAGMA table_info('{tableName}');";
+            await using var command = connection.CreateCommand();
+            command.CommandText = commandText;
+            command.CommandType = System.Data.CommandType.Text;
+
+            await using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var columnName = reader["name"].ToString();
+                var defaultValue = reader["dflt_value"].ToString();
+                string? computedValue = null;
+
+                // Try to get computed value using PRAGMA table_xinfo (if available) or sqlite_master
+                // SQLite stores generated columns in the "generated" column in PRAGMA table_xinfo (SQLite 3.31+)
+                // Fallback: parse the SQL from sqlite_master
+
+                // Try PRAGMA table_xinfo first
+                try
+                {
+                    var xinfoCmdText = $"PRAGMA table_xinfo('{tableName}');";
+                    await using var xinfoCmd = connection.CreateCommand();
+                    xinfoCmd.CommandText = xinfoCmdText;
+                    xinfoCmd.CommandType = System.Data.CommandType.Text;
+
+                    await using var xinfoReader = await xinfoCmd.ExecuteReaderAsync();
+                    while (await xinfoReader.ReadAsync())
+                    {
+                        var xinfoColName = xinfoReader["name"].ToString();
+                        if (string.Equals(xinfoColName, columnName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            var generated = xinfoReader["generated"].ToString();
+                            if (!string.IsNullOrEmpty(generated) && generated != "0")
+                            {
+                                // Try to get the expression from the "hidden" column
+                                computedValue = xinfoReader["dflt_value"].ToString();
+                            }
+                            break;
+                        }
+                    }
+                }
+                catch
+                {
+                    // Ignore errors, fallback to sqlite_master
+                }
+
+                // Fallback: parse CREATE TABLE statement for generated columns
+                if (computedValue == null)
+                {
+                    const string getTableSqlCmdText = "SELECT sql FROM sqlite_master WHERE type='table' AND name=@tableName;";
+                    await using var getTableSqlCmd = connection.CreateCommand();
+                    getTableSqlCmd.CommandText = getTableSqlCmdText;
+                    getTableSqlCmd.CommandType = System.Data.CommandType.Text;
+                    var param = getTableSqlCmd.CreateParameter();
+                    param.ParameterName = "tableName";
+                    param.Value = tableName;
+                    getTableSqlCmd.Parameters.Add(param);
+
+                    var tableSql = "";
+                    await using var sqlReader = await getTableSqlCmd.ExecuteReaderAsync();
+                    if (await sqlReader.ReadAsync())
+                    {
+                        tableSql = sqlReader["sql"].ToString() ?? "";
+                    }
+
+                    if (!string.IsNullOrEmpty(tableSql))
+                    {
+                        // Try to find the column definition with "GENERATED ALWAYS AS"
+                        var pattern = $@"\b{columnName}\b\s+[^\(]*GENERATED\s+ALWAYS\s+AS\s*\((.*?)\)";
+                        var match = System.Text.RegularExpressions.Regex.Match(tableSql, pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                        if (match.Success && match.Groups.Count > 1)
+                        {
+                            computedValue = match.Groups[1].Value;
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(defaultValue) || !string.IsNullOrEmpty(computedValue))
+                {
+                    result.Add
+                    (
+                        new ColumnMetadata
+                        (
+                            TableName: tableName,
+                            ColumnName: columnName!,
+                            DefaultValue: defaultValue,
+                            ComputedValue: computedValue 
+                        )
+                    );
+                }
+            }
+        }
+
+        return result;
+    }
+
+
+
+    private static async Task<List<string>> GetTableNamesAsync(DbConnection connection)
+    {
+        // Get all table names
+        const string getTablesCommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';";
+        await using var getTablesCommand = connection.CreateCommand();
+        getTablesCommand.CommandText = getTablesCommandText;
+        getTablesCommand.CommandType = System.Data.CommandType.Text;
+
+        var tableNames = new List<string>();
+        await using var tablesReader = await getTablesCommand.ExecuteReaderAsync();
+        while (await tablesReader.ReadAsync())
+        {
+            var tableName = tablesReader.GetString(0);
+            if (!string.IsNullOrEmpty(tableName))
+            {
+                tableNames.Add(tableName);
+            }
+        }
+
+        return tableNames;
     }
 }
 
 
+//// TODO add property to config OverrideDefaultSqliteModelCacheKeyFactory = T/F
+//// TODO Modify UseSqlite to return a SqliteDbContextBuilder with additional properties including this one
 
-internal sealed class SqliteModelCustomizer(ModelCustomizerDependencies dependencies) 
-    : ModelCustomizer(dependencies)
-{
-    public override void Customize(ModelBuilder modelBuilder, DbContext context)
-    {
-        base.Customize(modelBuilder, context);
+//internal class SqliteModelCacheKeyFactory : IModelCacheKeyFactory
+//{
+//    public object Create(DbContext context, bool designTime) => new SqliteModelCacheKey(context, designTime);
 
-        if (!context.Database.IsSqlite())
-        {
-            return;
-        }
-
-        // TODO Create property SchemaHandling
-        //      Options: LeaveAlone, Strip, PrefixToTableName
-        // Rename all tables and fix relationships
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-        {
-            var originalTableName = entityType.GetTableName() ?? "";
-            var schema = entityType.GetSchema() ?? "";
-            var schemaPrefix = string.IsNullOrEmpty(schema) ? "dbo" : schema;
-
-            // Avoid recursive renaming
-            if (!originalTableName.StartsWith($"{schemaPrefix}_", StringComparison.InvariantCultureIgnoreCase))
-            {
-                var newTableName = $"{schemaPrefix}_{originalTableName}";
-                entityType.SetTableName(newTableName);
-
-                Console.WriteLine($"[{schema}].[{originalTableName}] to [{newTableName}]");
-            }
-
-            entityType.SetSchema(null); // Always strip schema for SQLite
-
-            var computedColumns = new Dictionary<(string Schema, string Table, string Column), string?>
-            {
-                { ("Person", "Person", "OrganizationLevel"), null },
-                { ("HumanResources", "Employee", "OrganizationLevel"), null },
-                { ("Sales", "Customer", "AccountNumber"), null },
-                { ("Sales", "SalesOrderHeader", "SalesOrderNumber"), "(IFNULL('SO' || CAST(\"SalesOrderID\" AS TEXT), '*** ERROR ***'))"},
-            };
-
-            // Fix computed columns and default values
-            foreach (var property in entityType.GetProperties())
-            {
-                if (computedColumns.TryGetValue((schema, originalTableName, property.Name), out var value))
-                {
-                    property.SetComputedColumnSql(value);
-                }
-                else
-                {
-                    var sql = property.GetComputedColumnSql();
-
-                    if (!string.IsNullOrEmpty(sql))
-                    {
-                        var rewrittenSql = sql.Replace("ISNULL", "IFNULL", StringComparison.OrdinalIgnoreCase)
-                            .Replace("N'", "'", StringComparison.OrdinalIgnoreCase)
-                            .Replace("+", "||", StringComparison.OrdinalIgnoreCase)
-                            //.Replace("CONVERT", "CAST", StringComparison.OrdinalIgnoreCase)
-                            //.Replace("[dbo].", "")
-                            //.Replace("dbo.", "")
-                            ;
-
-                        property.SetComputedColumnSql(rewrittenSql);
-
-                        Console.WriteLine($"ComputerColumn: {sql,-40} | Rewrite: [{rewrittenSql,-40}");
+//    private sealed class SqliteModelCacheKey(DbContext context, bool designTime) 
+//        : ModelCacheKey(context, designTime)
+//    {
+//    }
+//}
 
 
-                    }
-                }
 
-                var defaultValueSql = property.GetDefaultValueSql();
+//internal sealed class SqliteModelCustomizer(ModelCustomizerDependencies dependencies) 
+//    : ModelCustomizer(dependencies)
+//{
+//    public override void Customize(ModelBuilder modelBuilder, DbContext context)
+//    {
+//        base.Customize(modelBuilder, context);
 
-                Console.WriteLine($"DefaultValue: [{defaultValueSql}]");
+//        if (!context.Database.IsSqlite())
+//        {
+//            return;
+//        }
 
-                if (!string.IsNullOrWhiteSpace(defaultValueSql))
-                {
-                    if (!string.IsNullOrEmpty(defaultValueSql) &&
-                        defaultValueSql.Contains("newid", StringComparison.OrdinalIgnoreCase))
-                    {
-                        property.SetDefaultValueSql("lower(hex(randomblob(16)))");
-                    }
-                    else if (defaultValueSql.Contains("getdate()"))
-                    {
-                        property.SetDefaultValueSql("datetime('now')");
-                    }
-                }
-            }
+//        // TODO Create property SchemaHandling
+//        //      Options: LeaveAlone, Strip, PrefixToTableName
+//        // Rename all tables and fix relationships
+//        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+//        {
+//            var originalTableName = entityType.GetTableName() ?? "";
+//            var originalSchemaName = entityType.GetSchema() ?? "";
 
-            // Heuristic: rename many-to-many join tables
-            var foreignKeys = entityType.GetForeignKeys().ToList();
-            var navigation = entityType.GetNavigations().ToList();
+//            { // TODO Override schema handling
+//                var schemaPrefix = string.IsNullOrEmpty(originalSchemaName) ? "dbo" : originalSchemaName;
 
-            if (foreignKeys.Count == 2 && navigation.Count == 0)
-            {
-                var left = foreignKeys[0].PrincipalEntityType;
-                var right = foreignKeys[1].PrincipalEntityType;
+//                // Avoid recursive renaming
+//                if (!originalTableName.StartsWith($"{schemaPrefix}_", StringComparison.InvariantCultureIgnoreCase))
+//                {
+//                    var newTableName = $"{schemaPrefix}_{originalTableName}";
+//                    entityType.SetTableName(newTableName);
+//                }
 
-                var leftName = left.GetTableName();
-                var rightName = right.GetTableName();
+//                entityType.SetSchema(null); // Always strip schema for SQLite
+//            }
 
-                var joinName = $"{leftName}_{rightName}";
-                entityType.SetTableName(joinName);
+//            {
+//                // Fix computed columns and default values
+//                var computedColumns = new Dictionary<(string Schema, string Table, string Column), string?>
+//                {
+//                    { ("Person", "Person", "OrganizationLevel"), null }, { ("HumanResources", "Employee", "OrganizationLevel"), null }, { ("Sales", "Customer", "AccountNumber"), null }, { ("Sales", "SalesOrderHeader", "SalesOrderNumber"), "(IFNULL('SO' || CAST(\"SalesOrderID\" AS TEXT), '*** ERROR ***'))" },
+//                };
 
-                Console.WriteLine($"Renamed join table: {entityType.Name} → {joinName}");
-            }
-        }
+//                // TODO Override computed column handling
+//                foreach (var property in entityType.GetProperties())
+//                {
+//                    if (computedColumns.TryGetValue((originalSchemaName, originalTableName, property.Name), out var value))
+//                    {
+//                        property.SetComputedColumnSql(value);
+//                    }
+//                    else
+//                    {
+//                        var sql = property.GetComputedColumnSql();
 
-        //foreach (var entityType in modelBuilder.Model.GetEntityTypes().Where(e => !string.IsNullOrWhiteSpace(e.GetSchema())))
-        //{
-        //    entityType.SetSchema(null); // Strip schema for SQLite
-        //}
-    }
-}
+//                        if (!string.IsNullOrEmpty(sql))
+//                        {
+//                            var rewrittenSql = sql.Replace("ISNULL", "IFNULL", StringComparison.OrdinalIgnoreCase)
+//                                    .Replace("N'", "'", StringComparison.OrdinalIgnoreCase)
+//                                    .Replace("+", "||", StringComparison.OrdinalIgnoreCase)
+//                                //.Replace("CONVERT", "CAST", StringComparison.OrdinalIgnoreCase)
+//                                //.Replace("[dbo].", "")
+//                                //.Replace("dbo.", "")
+//                                ;
+
+//                            property.SetComputedColumnSql(rewrittenSql);
+//                        }
+//                    }
+//                }
+
+//                { // TODO Override default value handling
+//                    foreach (var property in entityType.GetProperties())
+//                    {
+//                        var defaultValueSql = property.GetDefaultValueSql();
+
+//                        if (!string.IsNullOrWhiteSpace(defaultValueSql))
+//                        {
+//                            if (!string.IsNullOrEmpty(defaultValueSql) &&
+//                                defaultValueSql.Contains("newid", StringComparison.OrdinalIgnoreCase))
+//                            {
+//                                property.SetDefaultValueSql("lower(hex(randomblob(16)))");
+//                            }
+//                            else if (defaultValueSql.Contains("getdate()"))
+//                            {
+//                                property.SetDefaultValueSql("datetime('now')");
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+
+//            { // TODO Override join table handling
+//                // Heuristic: rename many-to-many join tables
+//                var foreignKeys = entityType.GetForeignKeys().ToList();
+//                var navigation = entityType.GetNavigations().ToList();
+
+//                if (foreignKeys.Count == 2 && navigation.Count == 0)
+//                {
+//                    var left = foreignKeys[0].PrincipalEntityType;
+//                    var right = foreignKeys[1].PrincipalEntityType;
+
+//                    var leftName = left.GetTableName();
+//                    var rightName = right.GetTableName();
+
+//                    var joinName = $"{leftName}_{rightName}";
+//                    entityType.SetTableName(joinName);
+//                }
+//            }
+//        }
+//    }
+//}
