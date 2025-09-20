@@ -1,6 +1,9 @@
 using System.Data.Common;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Wolfgang.DbContextBuilderCore.Tests.Unit;
 
 namespace Wolfgang.DbContextBuilderCore;
 
@@ -32,19 +35,40 @@ public class DbContextBuilder<T> where T : DbContext
     /// Instructs the builder to use SQLite as the database provider.
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-    public DbContextBuilder<T> UseSqlite()
+    public DbContextBuilder<T> UseSqlite() // TODO Move to extension method
 	{
 		_dbProvider = DbProvider.Sqlite;
-		return this;
+
+        _serviceProvider =  new ServiceCollection()
+            .AddEntityFrameworkSqlite()
+            .AddSingleton<IModelCacheKeyFactory, SqliteModelCacheKeyFactory>()
+            .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
+            .BuildServiceProvider();
+
+        return this;
 	}
 
-    
+
+
+    /// <summary>
+    /// Instructs the builder to use SQLite as the database provider.
+    /// </summary>
+    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    public DbContextBuilder<T> UseSqlite(SqliteOverrides overrides) // TODO Move to extension method
+    {
+        ArgumentNullException.ThrowIfNull(overrides);
+
+        _dbProvider = DbProvider.Sqlite;
+        return this;
+    }
+
+
 
     /// <summary>
     /// Instructs the builder to use InMemory as the database provider.
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-	public DbContextBuilder<T> UseInMemory()
+    public DbContextBuilder<T> UseInMemory()
 	{
 		_dbProvider = DbProvider.InMemory;
 		return this;
@@ -324,5 +348,135 @@ public class DbContextBuilder<T> where T : DbContext
 
         // Create a new clean context instance to return
         return (T)Activator.CreateInstance(typeof(T), options)!;
+    }
+}
+
+
+
+
+
+
+// TODO add property to config OverrideDefaultSqliteModelCacheKeyFactory = T/F
+// TODO Modify UseSqlite to return a SqliteDbContextBuilder with additional properties including this one
+
+internal class SqliteModelCacheKeyFactory : IModelCacheKeyFactory
+{
+    public object Create(DbContext context, bool designTime) => new SqliteModelCacheKey(context, designTime);
+
+    private sealed class SqliteModelCacheKey(DbContext context, bool designTime)
+        : ModelCacheKey(context, designTime)
+    {
+    }
+}
+
+
+
+internal sealed class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
+    : ModelCustomizer(dependencies)
+{
+    public override void Customize(ModelBuilder modelBuilder, DbContext context)
+    {
+        base.Customize(modelBuilder, context);
+
+        if (!context.Database.IsSqlite())
+        {
+            return;
+        }
+
+        // TODO Create property SchemaHandling
+        //      Options: LeaveAlone, Strip, PrefixToTableName
+        // Rename all tables and fix relationships
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            var originalTableName = entityType.GetTableName() ?? "";
+            var originalSchemaName = entityType.GetSchema() ?? "";
+
+            { // TODO Override schema handling
+                var schemaPrefix = string.IsNullOrEmpty(originalSchemaName) ? "dbo" : originalSchemaName;
+
+                // Avoid recursive renaming
+                if (!originalTableName.StartsWith($"{schemaPrefix}_", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var newTableName = $"{schemaPrefix}_{originalTableName}";
+                    entityType.SetTableName(newTableName);
+                }
+
+                entityType.SetSchema(null); // Always strip schema for SQLite
+            }
+
+            { // TODO Override computed column handling
+
+                //// Fix computed columns and default values
+                //var computedColumns = new Dictionary<(string Schema, string Table, string Column), string?>
+                //{
+                //    { ("Person", "Person", "OrganizationLevel"), null }, { ("HumanResources", "Employee", "OrganizationLevel"), null }, { ("Sales", "Customer", "AccountNumber"), null }, { ("Sales", "SalesOrderHeader", "SalesOrderNumber"), "(IFNULL('SO' || CAST(\"SalesOrderID\" AS TEXT), '*** ERROR ***'))" },
+                //};
+
+                foreach (var property in entityType.GetProperties())
+                {
+                    //if (computedColumns.TryGetValue((originalSchemaName, originalTableName, property.Name), out var value))
+                    //{
+                    //    property.SetComputedColumnSql(value);
+                    //}
+                    //else
+                    //{
+                    //    var sql = property.GetComputedColumnSql();
+
+                    //    if (!string.IsNullOrEmpty(sql))
+                    //    {
+                    //        var rewrittenSql = sql.Replace("ISNULL", "IFNULL", StringComparison.OrdinalIgnoreCase)
+                    //                .Replace("N'", "'", StringComparison.OrdinalIgnoreCase)
+                    //                .Replace("+", "||", StringComparison.OrdinalIgnoreCase)
+                    //            //.Replace("CONVERT", "CAST", StringComparison.OrdinalIgnoreCase)
+                    //            //.Replace("[dbo].", "")
+                    //            //.Replace("dbo.", "")
+                    //            ;
+
+                    //        property.SetComputedColumnSql(rewrittenSql);
+                    //    }
+                    //}
+                    property.SetComputedColumnSql(null!);
+                }
+
+                { // TODO Override default value handling
+                    foreach (var property in entityType.GetProperties())
+                    {
+                        var defaultValueSql = property.GetDefaultValueSql();
+
+                        if (!string.IsNullOrWhiteSpace(defaultValueSql))
+                        {
+                            if (!string.IsNullOrEmpty(defaultValueSql) &&
+                                defaultValueSql.Contains("newid", StringComparison.OrdinalIgnoreCase))
+                            {
+                                property.SetDefaultValueSql("lower(hex(randomblob(16)))");
+                            }
+                            else if (defaultValueSql.Contains("getdate()"))
+                            {
+                                property.SetDefaultValueSql("datetime('now')");
+                            }
+                        }
+                        //property.SetDefaultValueSql(null!); // TODO Uncomment this and comment out above to make tests pass
+                    }
+                }
+            }
+
+            { // TODO Override join table handling
+                // Heuristic: rename many-to-many join tables
+                var foreignKeys = entityType.GetForeignKeys().ToList();
+                var navigation = entityType.GetNavigations().ToList();
+
+                if (foreignKeys.Count == 2 && navigation.Count == 0)
+                {
+                    var left = foreignKeys[0].PrincipalEntityType;
+                    var right = foreignKeys[1].PrincipalEntityType;
+
+                    var leftName = left.GetTableName();
+                    var rightName = right.GetTableName();
+
+                    var joinName = $"{leftName}_{rightName}";
+                    entityType.SetTableName(joinName);
+                }
+            }
+        }
     }
 }
