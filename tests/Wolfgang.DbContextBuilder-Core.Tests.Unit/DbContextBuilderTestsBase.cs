@@ -1,7 +1,6 @@
 using System.Text;
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
 
@@ -1015,41 +1014,6 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Assert
         Assert.NotNull(actualPeople);
         Assert.Equal(count, actualPeople.Count);
-    }
-
-
-
-    /// <summary>
-    /// Verifies that calling UseServiceProvider and passing null throws ArgumentNullException
-    /// </summary>
-    [Fact]
-    public void UseServiceProvider_when_passed_null_throws_ArgumentNullException()
-    {
-        Assert.Fail("Need to rework test");
-        //// Arrange
-
-        //var sut = CreateDbContextBuilder();
-
-        //// Act & Assert
-        //var ex = Assert.Throws<ArgumentNullException>(() => sut.UseServiceProvider(null!));
-        //Assert.Equal("serviceProvider", ex.ParamName);
-    }
-
-
-
-    /// <summary>
-    /// Verifies that UseServiceProvider returns the DbContextBuilder{T} so it can be chained to other calls
-    /// </summary>
-    [Fact]
-    public void UseServiceProvider_returns_DbContextBuild()
-    {
-        Assert.Fail("Need to rework test");
-        //// Arrange
-        //var sut = CreateDbContextBuilder();
-        //var services = new ServiceCollection().BuildServiceProvider();
-
-        //// Act & Assert
-        //Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseServiceProvider(services));
     }
 
 
