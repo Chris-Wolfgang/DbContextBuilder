@@ -3,6 +3,7 @@ using System.Text;
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
@@ -20,14 +21,15 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
     /// <returns><see cref="DbContextBuilder{AdventureWorksDbContext}"/></returns>
     protected override DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder()
     {
-        var serviceProvider = new ServiceCollection()
-            .AddEntityFrameworkSqlite()
-            .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
-            .BuildServiceProvider();
+        //var serviceProvider = new ServiceCollection()
+        //    .AddEntityFrameworkSqlite()
+        //    .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
+        //    .BuildServiceProvider();
 
         return new DbContextBuilder<AdventureWorksDbContext>()
-            .UseSqlite()
-            .UseServiceProvider(serviceProvider)
+            //.UseSqlite()
+            .UseSqliteForMsSqlServer()
+            //.UseServiceProvider(serviceProvider)
             .UseAutoFixture();
     }
 
@@ -65,7 +67,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         // Act
         var context = await sut
             .UseSqlite()
-            .UseServiceProvider(serviceProvider)
+            //.UseServiceProvider(serviceProvider)
             .BuildAsync();
 
         // Assert
@@ -78,31 +80,30 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
     /// Verifies that UseSqlite returns a DbContext{T} for chaining additional calls
     /// </summary>
     [Fact]
-    public void UseSqlite_with_SqliteOverrides_returns_DbContextBuilder()
-    {
-        // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
-
-        var overrides = new SqliteOverrides();
-        // Act & Assert
-        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseSqlite(overrides));
-    }
-
-
-
-    /// <summary>
-    /// Verifies that UseSqlite returns a DbContext{T} for chaining additional calls
-    /// </summary>
-    [Fact]
-    public void UseSqlite_with_SqliteOverrides_when_passed_null_throws_ArgumentNullException()
+    public void UseSqliteForMsSqlServer_returns_DbContextBuilder()
     {
         // Arrange
         var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
-        var ex = Assert.Throws<ArgumentNullException>(() => sut.UseSqlite(null!));
-        Assert.Equal("overrides", ex.ParamName);
+        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseSqliteForMsSqlServer());
     }
+
+
+
+    ///// <summary>
+    ///// Verifies that UseSqlite returns a DbContext{T} for chaining additional calls
+    ///// </summary>
+    //[Fact]
+    //public void UseSqlite_with_SqliteOverrides_when_passed_null_throws_ArgumentNullException()
+    //{
+    //    // Arrange
+    //    var sut = new DbContextBuilder<AdventureWorksDbContext>();
+
+    //    // Act & Assert
+    //    var ex = Assert.Throws<ArgumentNullException>(() => sut.UseSqliteForMsSqlServer());
+    //    Assert.Equal("modelCustomizer", ex.ParamName);
+    //}
 
 
 
@@ -110,11 +111,10 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
     /// Verifies that calling UseSqlite cause BuildAsync() to use Microsoft's Sqlite database
     /// </summary>
     [Fact]
-    public async Task UseSqlite_with_SqliteOverrides_causes_BuildAsync_to_use_Sqlite()
+    public async Task UseSqliteForMsSqlServer_causes_BuildAsync_to_use_Sqlite_with_customizations_for_Sql_Server()
     {
         // Arrange
         var sut = new DbContextBuilder<AdventureWorksDbContext>();
-        var overrides = new SqliteOverrides();
 
         var serviceProvider = new ServiceCollection()
             .AddEntityFrameworkSqlite()
@@ -123,8 +123,8 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
         // Act
         var context = await sut
-            .UseSqlite(overrides)
-            .UseServiceProvider(serviceProvider)
+            .UseSqliteForMsSqlServer()
+            //.UseServiceProvider(serviceProvider)
             .BuildAsync();
 
         // Assert
@@ -182,7 +182,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         // Act
         var context = await sut
             .UseSqlite()
-            .UseServiceProvider(serviceProvider)
+            //.UseServiceProvider(serviceProvider)
             .BuildAsync();
 
         // Assert
@@ -208,7 +208,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
         // This would fail it wasn't using the custom configuration above
         await CreateDbContextBuilder()
-            .UseServiceProvider(serviceProvider)
+            //.UseServiceProvider(serviceProvider)
             .BuildAsync();
 
     }
@@ -275,7 +275,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
     /// separated by an underscore, and to strip the schema name from the table itself
     /// </summary>
     [Fact]
-    public async Task UseSqlite_default_behavior_for_default_values_is_to_remove_default_value()
+    public async Task UseSqlite_default_behavior_for_default_values_is_to_not_change_them()
     {
 
         // Arrange
@@ -289,8 +289,12 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
         // Assert
         var columns = await GetColumnMetadataAsync(context);
-        var columnsWithDefaultValues = columns.Where(c => !string.IsNullOrEmpty(c.DefaultValue)).ToList();
-        Assert.Empty(columnsWithDefaultValues);
+
+        var columnsWithNewId = columns.Where(c => c.DefaultValue == "(newid())").ToList();
+        Assert.Equal(28, columnsWithNewId.Count);
+
+        var columnsWithGetDate = columns.Where(c => c.DefaultValue == "(getdate())").ToList();
+        Assert.Equal(75, columnsWithGetDate.Count);
     }
 
 
@@ -321,6 +325,8 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
 
     private record TableMetadata(string TableName);
+
+
 
     private static async Task<List<TableMetadata>> GetTableMetadataAsync(AdventureWorksDbContext context)
     {
