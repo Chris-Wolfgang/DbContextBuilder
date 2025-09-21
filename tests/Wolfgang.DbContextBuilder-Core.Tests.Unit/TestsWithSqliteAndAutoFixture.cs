@@ -2,9 +2,6 @@ using System.Data.Common;
 using System.Text;
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
@@ -19,20 +16,10 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
     /// Creates a new instance of the DbContextBuilder configured to use SQLite and AutoFixture
     /// </summary>
     /// <returns><see cref="DbContextBuilder{AdventureWorksDbContext}"/></returns>
-    protected override DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder()
-    {
-        //var serviceProvider = new ServiceCollection()
-        //    .AddEntityFrameworkSqlite()
-        //    .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
-        //    .BuildServiceProvider();
-
-        return new DbContextBuilder<AdventureWorksDbContext>()
-            //.UseSqlite()
+    protected override DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder() =>
+        new DbContextBuilder<AdventureWorksDbContext>()
             .UseSqliteForMsSqlServer()
-            //.UseServiceProvider(serviceProvider)
             .UseAutoFixture();
-    }
-
 
 
     /// <summary>
@@ -59,15 +46,9 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         // Arrange
         var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
-        var serviceProvider = new ServiceCollection()
-            .AddEntityFrameworkSqlite()
-            .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
-            .BuildServiceProvider();
-
         // Act
         var context = await sut
             .UseSqlite()
-            //.UseServiceProvider(serviceProvider)
             .BuildAsync();
 
         // Assert
@@ -91,22 +72,6 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
 
 
-    ///// <summary>
-    ///// Verifies that UseSqlite returns a DbContext{T} for chaining additional calls
-    ///// </summary>
-    //[Fact]
-    //public void UseSqlite_with_SqliteOverrides_when_passed_null_throws_ArgumentNullException()
-    //{
-    //    // Arrange
-    //    var sut = new DbContextBuilder<AdventureWorksDbContext>();
-
-    //    // Act & Assert
-    //    var ex = Assert.Throws<ArgumentNullException>(() => sut.UseSqliteForMsSqlServer());
-    //    Assert.Equal("modelCustomizer", ex.ParamName);
-    //}
-
-
-
     /// <summary>
     /// Verifies that calling UseSqlite cause BuildAsync() to use Microsoft's Sqlite database
     /// </summary>
@@ -116,23 +81,16 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         // Arrange
         var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
-        var serviceProvider = new ServiceCollection()
-            .AddEntityFrameworkSqlite()
-            .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
-            .BuildServiceProvider();
-
         // Act
         var context = await sut
             .UseSqliteForMsSqlServer()
-            //.UseServiceProvider(serviceProvider)
             .BuildAsync();
 
         // Assert
         Assert.True(context.Database.IsSqlite());
     }
 
-
-
+    
 
     /// <summary>
     /// Verifies that UseAutoFixture returns a DbContext{T} for chaining additional calls
@@ -174,15 +132,9 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         // Arrange
         var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
-        var serviceProvider = new ServiceCollection()
-            .AddEntityFrameworkSqlite()
-            .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
-            .BuildServiceProvider();
-
         // Act
         var context = await sut
             .UseSqlite()
-            //.UseServiceProvider(serviceProvider)
             .BuildAsync();
 
         // Assert
@@ -190,30 +142,6 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
     }
 
 
-
-    /// <summary>
-    /// Verifies that services passed to UseServiceProvider are used when creating the database
-    /// </summary>
-    [Fact]
-    public async Task Services_passed_to_UseServiceProvider_are_used_when_creating_the_database()
-    {
-
-        // Arrange
-        var serviceProvider = new ServiceCollection()
-            .AddEntityFrameworkSqlite()
-            .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
-            .BuildServiceProvider();
-
-        // Act & Assert
-
-        // This would fail it wasn't using the custom configuration above
-        await CreateDbContextBuilder()
-            //.UseServiceProvider(serviceProvider)
-            .BuildAsync();
-
-    }
-
-    
 
     /// <summary>
     /// Verifies that if you configure the DbContextOptionsBuilder correctly is will log SQL statements,
@@ -355,7 +283,9 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
 
 
+    // ReSharper disable NotAccessedPositionalProperty.Local
     private record ColumnMetadata(string TableName, string ColumnName, string? DefaultValue, string? ComputedValue);
+    // ReSharper restore NotAccessedPositionalProperty.Local
 
 
 
@@ -489,127 +419,3 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         return tableNames;
     }
 }
-
-
-//// TODO add property to config OverrideDefaultSqliteModelCacheKeyFactory = T/F
-//// TODO Modify UseSqlite to return a SqliteDbContextBuilder with additional properties including this one
-
-//internal class SqliteModelCacheKeyFactory : IModelCacheKeyFactory
-//{
-//    public object Create(DbContext context, bool designTime) => new SqliteModelCacheKey(context, designTime);
-
-//    private sealed class SqliteModelCacheKey(DbContext context, bool designTime) 
-//        : ModelCacheKey(context, designTime)
-//    {
-//    }
-//}
-
-
-
-//internal sealed class SqliteModelCustomizer(ModelCustomizerDependencies dependencies) 
-//    : ModelCustomizer(dependencies)
-//{
-//    public override void Customize(ModelBuilder modelBuilder, DbContext context)
-//    {
-//        base.Customize(modelBuilder, context);
-
-//        if (!context.Database.IsSqlite())
-//        {
-//            return;
-//        }
-
-//        // TODO Create property SchemaHandling
-//        //      Options: LeaveAlone, Strip, PrefixToTableName
-//        // Rename all tables and fix relationships
-//        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-//        {
-//            var originalTableName = entityType.GetTableName() ?? "";
-//            var originalSchemaName = entityType.GetSchema() ?? "";
-
-//            { // TODO Override schema handling
-//                var schemaPrefix = string.IsNullOrEmpty(originalSchemaName) ? "dbo" : originalSchemaName;
-
-//                // Avoid recursive renaming
-//                if (!originalTableName.StartsWith($"{schemaPrefix}_", StringComparison.InvariantCultureIgnoreCase))
-//                {
-//                    var newTableName = $"{schemaPrefix}_{originalTableName}";
-//                    entityType.SetTableName(newTableName);
-//                }
-
-//                entityType.SetSchema(null); // Always strip schema for SQLite
-//            }
-
-//            {
-//                // Fix computed columns and default values
-//                var computedColumns = new Dictionary<(string Schema, string Table, string Column), string?>
-//                {
-//                    { ("Person", "Person", "OrganizationLevel"), null }, { ("HumanResources", "Employee", "OrganizationLevel"), null }, { ("Sales", "Customer", "AccountNumber"), null }, { ("Sales", "SalesOrderHeader", "SalesOrderNumber"), "(IFNULL('SO' || CAST(\"SalesOrderID\" AS TEXT), '*** ERROR ***'))" },
-//                };
-
-//                // TODO Override computed column handling
-//                foreach (var property in entityType.GetProperties())
-//                {
-//                    if (computedColumns.TryGetValue((originalSchemaName, originalTableName, property.Name), out var value))
-//                    {
-//                        property.SetComputedColumnSql(value);
-//                    }
-//                    else
-//                    {
-//                        var sql = property.GetComputedColumnSql();
-
-//                        if (!string.IsNullOrEmpty(sql))
-//                        {
-//                            var rewrittenSql = sql.Replace("ISNULL", "IFNULL", StringComparison.OrdinalIgnoreCase)
-//                                    .Replace("N'", "'", StringComparison.OrdinalIgnoreCase)
-//                                    .Replace("+", "||", StringComparison.OrdinalIgnoreCase)
-//                                //.Replace("CONVERT", "CAST", StringComparison.OrdinalIgnoreCase)
-//                                //.Replace("[dbo].", "")
-//                                //.Replace("dbo.", "")
-//                                ;
-
-//                            property.SetComputedColumnSql(rewrittenSql);
-//                        }
-//                    }
-//                }
-
-//                { // TODO Override default value handling
-//                    foreach (var property in entityType.GetProperties())
-//                    {
-//                        var defaultValueSql = property.GetDefaultValueSql();
-
-//                        if (!string.IsNullOrWhiteSpace(defaultValueSql))
-//                        {
-//                            if (!string.IsNullOrEmpty(defaultValueSql) &&
-//                                defaultValueSql.Contains("newid", StringComparison.OrdinalIgnoreCase))
-//                            {
-//                                property.SetDefaultValueSql("lower(hex(randomblob(16)))");
-//                            }
-//                            else if (defaultValueSql.Contains("getdate()"))
-//                            {
-//                                property.SetDefaultValueSql("datetime('now')");
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-
-//            { // TODO Override join table handling
-//                // Heuristic: rename many-to-many join tables
-//                var foreignKeys = entityType.GetForeignKeys().ToList();
-//                var navigation = entityType.GetNavigations().ToList();
-
-//                if (foreignKeys.Count == 2 && navigation.Count == 0)
-//                {
-//                    var left = foreignKeys[0].PrincipalEntityType;
-//                    var right = foreignKeys[1].PrincipalEntityType;
-
-//                    var leftName = left.GetTableName();
-//                    var rightName = right.GetTableName();
-
-//                    var joinName = $"{leftName}_{rightName}";
-//                    entityType.SetTableName(joinName);
-//                }
-//            }
-//        }
-//    }
-//}
