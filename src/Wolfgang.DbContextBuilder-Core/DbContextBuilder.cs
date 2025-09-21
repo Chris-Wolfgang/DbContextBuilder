@@ -41,7 +41,6 @@ public class DbContextBuilder<T> where T : DbContext
 
         _serviceProvider =  new ServiceCollection()
             .AddEntityFrameworkSqlite()
-            .AddSingleton<IModelCacheKeyFactory, SqliteModelCacheKeyFactory>()
             .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
             .BuildServiceProvider();
 
@@ -359,21 +358,42 @@ public class DbContextBuilder<T> where T : DbContext
 // TODO add property to config OverrideDefaultSqliteModelCacheKeyFactory = T/F
 // TODO Modify UseSqlite to return a SqliteDbContextBuilder with additional properties including this one
 
-internal class SqliteModelCacheKeyFactory : IModelCacheKeyFactory
-{
-    public object Create(DbContext context, bool designTime) => new SqliteModelCacheKey(context, designTime);
+//internal class SqliteModelCacheKeyFactory : IModelCacheKeyFactory
+//{
+//    public object Create(DbContext context, bool designTime) => new SqliteModelCacheKey(context, designTime);
 
-    private sealed class SqliteModelCacheKey(DbContext context, bool designTime)
-        : ModelCacheKey(context, designTime)
-    {
-    }
-}
+//    private sealed class SqliteModelCacheKey(DbContext context, bool designTime)
+//        : ModelCacheKey(context, designTime)
+//    {
+//    }
+//}
 
 
 
-internal sealed class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
+internal class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
     : ModelCustomizer(dependencies)
 {
+    private Func<(string? SchemaName, string TableName), string> _handleTableRename =
+        t =>
+        {
+            var schemaPrefix = t.SchemaName ?? "dbo";
+
+            // Avoid recursive renaming
+            return t.TableName.StartsWith($"{schemaPrefix}_", StringComparison.InvariantCultureIgnoreCase)
+                ? t.TableName // Table has already been renamed so just return it
+                : $"{schemaPrefix}_{t.TableName}"; // Rename table by prefixing schema name
+        };
+
+
+
+    public Func<(string? SchemaName, string TableName), string> HandleTableRename
+    {
+        get => _handleTableRename;
+        set => _handleTableRename = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
+    
+
     public override void Customize(ModelBuilder modelBuilder, DbContext context)
     {
         base.Customize(modelBuilder, context);
@@ -388,20 +408,38 @@ internal sealed class SqliteModelCustomizer(ModelCustomizerDependencies dependen
         // Rename all tables and fix relationships
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
-            var originalTableName = entityType.GetTableName() ?? "";
-            var originalSchemaName = entityType.GetSchema() ?? "";
+            var originalTableName = entityType.GetTableName();
+            var originalSchemaName = entityType.GetSchema();
 
             { // TODO Override schema handling
-                var schemaPrefix = string.IsNullOrEmpty(originalSchemaName) ? "dbo" : originalSchemaName;
+                ////var schemaPrefix = string.IsNullOrEmpty(originalSchemaName) ? "dbo" : originalSchemaName;
+                //var schemaPrefix = originalSchemaName ?? "dbo";
 
-                // Avoid recursive renaming
-                if (!originalTableName.StartsWith($"{schemaPrefix}_", StringComparison.InvariantCultureIgnoreCase))
+                //// Avoid recursive renaming
+                //if (!originalTableName.StartsWith($"{schemaPrefix}_", StringComparison.InvariantCultureIgnoreCase))
+                //{
+                //    var newTableName = $"{schemaPrefix}_{originalTableName}";
+                //    entityType.SetTableName(newTableName);
+                //}
+
+                //entityType.SetSchema(null); // Always strip schema for SQLite
+
+                if (originalTableName == null)
                 {
-                    var newTableName = $"{schemaPrefix}_{originalTableName}";
-                    entityType.SetTableName(newTableName);
+                    throw new InvalidOperationException($"Entity type {entityType.Name} has no table name");
                 }
 
-                entityType.SetSchema(null); // Always strip schema for SQLite
+                var newTableName = HandleTableRename((originalSchemaName, originalTableName));
+                if (newTableName != originalSchemaName)
+                {
+                        entityType.SetTableName(newTableName);
+                }
+
+                if (originalSchemaName != null)
+                {
+                    entityType.SetSchema(null);
+                }
+
             }
 
             { // TODO Override computed column handling
