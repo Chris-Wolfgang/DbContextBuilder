@@ -69,6 +69,8 @@ internal class AutoFixtureRandomEntityGenerator : IGenerateRandomEntities
     {
         public void Customize(IFixture fixture)
         {
+            ArgumentNullException.ThrowIfNull(fixture);
+
             if (!fixture.Behaviors.OfType<OmitOnRecursionBehavior>().Any())
             {
                 fixture.Behaviors.Add(new OmitOnRecursionBehavior());
@@ -89,21 +91,23 @@ internal class AutoFixtureRandomEntityGenerator : IGenerateRandomEntities
     {
         public void Customize(IFixture fixture)
         {
+            ArgumentNullException.ThrowIfNull(fixture);
+            if (fixture.Customizations.OfType<IgnoreVirtualMembers>().Any())
+            {
+                return;
+            }
             fixture.Customizations.Add(new IgnoreVirtualMembers());
         }
     }
 
-
-
+    
 
     internal class IgnoreVirtualMembers : ISpecimenBuilder
     {
         public object? Create(object request, ISpecimenContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(request);
+            ArgumentNullException.ThrowIfNull(context);
 
             var propertyInfo = request as PropertyInfo;
             if (propertyInfo == null)
