@@ -19,12 +19,11 @@ public class DbContextBuilder<T> where T : DbContext
 		InMemory,
 		Sqlite
 	}
-    
+
+
 	private DbProvider _dbProvider = DbProvider.InMemory;
     private readonly List<object> _seedData = [];
-    //private IServiceProvider? _serviceProvider;
     private readonly ServiceCollection _serviceCollection = [];
-
     private DbContextOptionsBuilder<T>? _dbContextOptionsBuilder;
 
 
