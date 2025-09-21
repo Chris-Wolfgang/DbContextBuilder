@@ -1025,13 +1025,14 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void UseServiceProvider_when_passed_null_throws_ArgumentNullException()
     {
-        // Arrange
+        Assert.Fail("Need to rework test");
+        //// Arrange
 
-        var sut = CreateDbContextBuilder();
+        //var sut = CreateDbContextBuilder();
 
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentNullException>(() => sut.UseServiceProvider(null!));
-        Assert.Equal("serviceProvider", ex.ParamName);
+        //// Act & Assert
+        //var ex = Assert.Throws<ArgumentNullException>(() => sut.UseServiceProvider(null!));
+        //Assert.Equal("serviceProvider", ex.ParamName);
     }
 
 
@@ -1042,12 +1043,13 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void UseServiceProvider_returns_DbContextBuild()
     {
-        // Arrange
-        var sut = CreateDbContextBuilder();
-        var services = new ServiceCollection().BuildServiceProvider();
+        Assert.Fail("Need to rework test");
+        //// Arrange
+        //var sut = CreateDbContextBuilder();
+        //var services = new ServiceCollection().BuildServiceProvider();
 
-        // Act & Assert
-        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseServiceProvider(services));
+        //// Act & Assert
+        //Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseServiceProvider(services));
     }
 
 
