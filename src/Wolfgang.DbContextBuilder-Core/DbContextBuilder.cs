@@ -3,7 +3,6 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Wolfgang.DbContextBuilderCore.Tests.Unit;
 
 namespace Wolfgang.DbContextBuilderCore;
 
@@ -23,7 +22,9 @@ public class DbContextBuilder<T> where T : DbContext
     
 	private DbProvider _dbProvider = DbProvider.InMemory;
     private readonly List<object> _seedData = new();
-    private IServiceProvider? _serviceProvider;
+    //private IServiceProvider? _serviceProvider;
+    private readonly ServiceCollection _serviceCollection = new();
+
     private DbContextOptionsBuilder<T>? _dbContextOptionsBuilder;
 
 
@@ -39,10 +40,11 @@ public class DbContextBuilder<T> where T : DbContext
 	{
 		_dbProvider = DbProvider.Sqlite;
 
-        _serviceProvider =  new ServiceCollection()
+        // TODO Check is items exist in the list and don't add duplicates
+        // TODO Check if Sql Server provider is already registered and if so, remove it
+        _serviceCollection
             .AddEntityFrameworkSqlite()
-            .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
-            .BuildServiceProvider();
+            .AddSingleton<IModelCustomizer, SqliteModelCustomizer>();
 
         return this;
 	}
@@ -50,14 +52,20 @@ public class DbContextBuilder<T> where T : DbContext
 
 
     /// <summary>
-    /// Instructs the builder to use SQLite as the database provider.
+    /// 
     /// </summary>
+    /// <returns></returns>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-    public DbContextBuilder<T> UseSqlite(SqliteOverrides overrides) // TODO Move to extension method
+    public DbContextBuilder<T> UseSqliteForMsSqlServer()  // TODO Move to extension method
     {
-        ArgumentNullException.ThrowIfNull(overrides);
-
         _dbProvider = DbProvider.Sqlite;
+
+        // TODO Check is items exist in the list and don't add duplicates
+        // TODO Check if Sql Server provider is already registered and if so, remove it
+        _serviceCollection
+            .AddEntityFrameworkSqlite()
+            .AddSingleton<IModelCustomizer, SqliteForMsSqlServerModelCustomizer>();
+
         return this;
     }
 
@@ -103,38 +111,64 @@ public class DbContextBuilder<T> where T : DbContext
 
 
 
-    /// <summary>
-    /// Provides a method to override how the database is created since different databases
-    /// engines support different features
-    /// </summary>
-    /// <param name="serviceProvider"></param>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-    /// <remarks>
-    /// This method allows you to intercept the creation of the database and alter or
-    /// customize it. This is useful, for example, if your production database is SQL Server
-    /// or Oracle and is using features that are not supported by the InMemory or Sqlite
-    /// databases. Using this method and passing in your customizations, allows you to
-    /// alter or opt out altogether certain columns.
-    ///
-    /// Note: This does mean that the features that you change will not match your
-    /// production system and so testing those features is pointless, however you can still
-    /// test the rest of your code.
-    ///
-    /// One such option is say your production database has a column that is a computed
-    /// type using functions that is are not supported under InMemory or Sqlite database.
-    /// You could use this method to alter the table to just store an integer rather than
-    /// a calculation. As long as you seed the database correctly you can still use the
-    /// table in your tests.
-    /// </remarks>
-    public DbContextBuilder<T> UseServiceProvider(IServiceProvider serviceProvider)
+    ///// <summary>
+    ///// Provides a method to override how the database is created since different databases
+    ///// engines support different features
+    ///// </summary>
+    ///// <param name="serviceProvider"></param>
+    ///// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    ///// <remarks>
+    ///// This method allows you to intercept the creation of the database and alter or
+    ///// customize it. This is useful, for example, if your production database is SQL Server
+    ///// or Oracle and is using features that are not supported by the InMemory or Sqlite
+    ///// databases. Using this method and passing in your customizations, allows you to
+    ///// alter or opt out altogether certain columns.
+    /////
+    ///// Note: This does mean that the features that you change will not match your
+    ///// production system and so testing those features is pointless, however you can still
+    ///// test the rest of your code.
+    /////
+    ///// One such option is say your production database has a column that is a computed
+    ///// type using functions that is are not supported under InMemory or Sqlite database.
+    ///// You could use this method to alter the table to just store an integer rather than
+    ///// a calculation. As long as you seed the database correctly you can still use the
+    ///// table in your tests.
+    ///// </remarks>
+    //public DbContextBuilder<T> UseServiceProvider(IServiceProvider serviceProvider)
+    //{
+    //    ArgumentNullException.ThrowIfNull(serviceProvider);
+
+    //    _serviceProvider = serviceProvider;
+
+    //    return this;
+    //}
+
+
+
+    public DbContextBuilder<T> UseServices(IServiceCollection services)
     {
-        ArgumentNullException.ThrowIfNull(serviceProvider);
+        throw new NotImplementedException("UseServices is not implemented yet");
+        //ArgumentNullException.ThrowIfNull(services);
 
-        _serviceProvider = serviceProvider;
-
-        return this;
+        //foreach (var service in services)
+        //{
+        //    switch (service.Lifetime)
+        //    {
+        //        case ServiceLifetime.Singleton:
+        //            _serviceCollection.AddSingleton(service.ServiceType, service.ImplementationInstance);
+        //            break;
+        //        case ServiceLifetime.Scoped:
+        //            _serviceCollection.AddScoped( service.ServiceType, service.ImplementationInstance);
+        //            break;
+        //        case ServiceLifetime.Transient:
+        //            _serviceCollection.AddTransient(service.ServiceType, service.ImplementationInstance);
+        //            break;
+        //        default:
+        //            throw new ArgumentOutOfRangeException();
+        //    }
+        //}
+        //return this;
     }
-
 
 
     /// <summary>
@@ -317,9 +351,10 @@ public class DbContextBuilder<T> where T : DbContext
                 throw new NotSupportedException($"Provider {_dbProvider} is not supported.");
         }
 
-        if (_serviceProvider != null)
+        if (_serviceCollection.Count > 0)
         {
-            optionBuilder.UseInternalServiceProvider(_serviceProvider);
+            var provider = _serviceCollection.BuildServiceProvider();
+            optionBuilder.UseInternalServiceProvider(provider);
         }
 
         var options = optionBuilder.Options;
@@ -333,6 +368,7 @@ public class DbContextBuilder<T> where T : DbContext
         }
         catch (InvalidOperationException e)
         {
+            // TODO Is this message correct and complete? The last line may be incomplete
             const string msg = "Failed to create database. See InnerExceptions for details. " +
                                "You can get addition information by creating a new instance of " +
                                "DbContextOptionsBuilder<T> and passing into UseDbContextOptionsBuilder";
@@ -348,6 +384,7 @@ public class DbContextBuilder<T> where T : DbContext
         // Create a new clean context instance to return
         return (T)Activator.CreateInstance(typeof(T), options)!;
     }
+
 }
 
 
@@ -367,154 +404,3 @@ public class DbContextBuilder<T> where T : DbContext
 //    {
 //    }
 //}
-
-
-
-internal class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
-    : ModelCustomizer(dependencies)
-{
-    private Func<(string? SchemaName, string TableName), string> _handleTableRename =
-        t =>
-        {
-            var schemaPrefix = t.SchemaName ?? "dbo";
-
-            // Avoid recursive renaming
-            return t.TableName.StartsWith($"{schemaPrefix}_", StringComparison.InvariantCultureIgnoreCase)
-                ? t.TableName // Table has already been renamed so just return it
-                : $"{schemaPrefix}_{t.TableName}"; // Rename table by prefixing schema name
-        };
-
-
-
-    public Func<(string? SchemaName, string TableName), string> HandleTableRename
-    {
-        get => _handleTableRename;
-        set => _handleTableRename = value ?? throw new ArgumentNullException(nameof(value));
-    }
-
-    
-
-    public override void Customize(ModelBuilder modelBuilder, DbContext context)
-    {
-        base.Customize(modelBuilder, context);
-
-        if (!context.Database.IsSqlite())
-        {
-            return;
-        }
-
-        // TODO Create property SchemaHandling
-        //      Options: LeaveAlone, Strip, PrefixToTableName
-        // Rename all tables and fix relationships
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-        {
-            var originalTableName = entityType.GetTableName();
-            var originalSchemaName = entityType.GetSchema();
-
-            { // TODO Override schema handling
-                ////var schemaPrefix = string.IsNullOrEmpty(originalSchemaName) ? "dbo" : originalSchemaName;
-                //var schemaPrefix = originalSchemaName ?? "dbo";
-
-                //// Avoid recursive renaming
-                //if (!originalTableName.StartsWith($"{schemaPrefix}_", StringComparison.InvariantCultureIgnoreCase))
-                //{
-                //    var newTableName = $"{schemaPrefix}_{originalTableName}";
-                //    entityType.SetTableName(newTableName);
-                //}
-
-                //entityType.SetSchema(null); // Always strip schema for SQLite
-
-                if (originalTableName == null)
-                {
-                    throw new InvalidOperationException($"Entity type {entityType.Name} has no table name");
-                }
-
-                var newTableName = HandleTableRename((originalSchemaName, originalTableName));
-                if (newTableName != originalSchemaName)
-                {
-                        entityType.SetTableName(newTableName);
-                }
-
-                if (originalSchemaName != null)
-                {
-                    entityType.SetSchema(null);
-                }
-
-            }
-
-            { // TODO Override computed column handling
-
-                //// Fix computed columns and default values
-                //var computedColumns = new Dictionary<(string Schema, string Table, string Column), string?>
-                //{
-                //    { ("Person", "Person", "OrganizationLevel"), null }, { ("HumanResources", "Employee", "OrganizationLevel"), null }, { ("Sales", "Customer", "AccountNumber"), null }, { ("Sales", "SalesOrderHeader", "SalesOrderNumber"), "(IFNULL('SO' || CAST(\"SalesOrderID\" AS TEXT), '*** ERROR ***'))" },
-                //};
-
-                foreach (var property in entityType.GetProperties())
-                {
-                    //if (computedColumns.TryGetValue((originalSchemaName, originalTableName, property.Name), out var value))
-                    //{
-                    //    property.SetComputedColumnSql(value);
-                    //}
-                    //else
-                    //{
-                    //    var sql = property.GetComputedColumnSql();
-
-                    //    if (!string.IsNullOrEmpty(sql))
-                    //    {
-                    //        var rewrittenSql = sql.Replace("ISNULL", "IFNULL", StringComparison.OrdinalIgnoreCase)
-                    //                .Replace("N'", "'", StringComparison.OrdinalIgnoreCase)
-                    //                .Replace("+", "||", StringComparison.OrdinalIgnoreCase)
-                    //            //.Replace("CONVERT", "CAST", StringComparison.OrdinalIgnoreCase)
-                    //            //.Replace("[dbo].", "")
-                    //            //.Replace("dbo.", "")
-                    //            ;
-
-                    //        property.SetComputedColumnSql(rewrittenSql);
-                    //    }
-                    //}
-                    property.SetComputedColumnSql(null!);
-                }
-
-                { // TODO Override default value handling
-                    foreach (var property in entityType.GetProperties())
-                    {
-                        var defaultValueSql = property.GetDefaultValueSql();
-
-                        if (!string.IsNullOrWhiteSpace(defaultValueSql))
-                        {
-                            if (!string.IsNullOrEmpty(defaultValueSql) &&
-                                defaultValueSql.Contains("newid", StringComparison.OrdinalIgnoreCase))
-                            {
-                                property.SetDefaultValueSql("lower(hex(randomblob(16)))");
-                            }
-                            else if (defaultValueSql.Contains("getdate()"))
-                            {
-                                property.SetDefaultValueSql("datetime('now')");
-                            }
-                        }
-                        //property.SetDefaultValueSql(null!); // TODO Uncomment this and comment out above to make tests pass
-                    }
-                }
-            }
-
-            { // TODO Override join table handling
-                // Heuristic: rename many-to-many join tables
-                var foreignKeys = entityType.GetForeignKeys().ToList();
-                var navigation = entityType.GetNavigations().ToList();
-
-                if (foreignKeys.Count == 2 && navigation.Count == 0)
-                {
-                    var left = foreignKeys[0].PrincipalEntityType;
-                    var right = foreignKeys[1].PrincipalEntityType;
-
-                    var leftName = left.GetTableName();
-                    var rightName = right.GetTableName();
-
-                    var joinName = $"{leftName}_{rightName}";
-                    entityType.SetTableName(joinName);
-                }
-            }
-        }
-    }
-}
