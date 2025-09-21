@@ -22,7 +22,6 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
     {
         var serviceProvider = new ServiceCollection()
             .AddEntityFrameworkSqlite()
-            .AddSingleton<IModelCacheKeyFactory, SqliteModelCacheKeyFactory>()
             .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
             .BuildServiceProvider();
 
@@ -60,7 +59,6 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
         var serviceProvider = new ServiceCollection()
             .AddEntityFrameworkSqlite()
-            .AddSingleton<IModelCacheKeyFactory, SqliteModelCacheKeyFactory>()
             .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
             .BuildServiceProvider();
 
@@ -120,7 +118,6 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
         var serviceProvider = new ServiceCollection()
             .AddEntityFrameworkSqlite()
-            .AddSingleton<IModelCacheKeyFactory, SqliteModelCacheKeyFactory>()
             .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
             .BuildServiceProvider();
 
@@ -179,7 +176,6 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
         var serviceProvider = new ServiceCollection()
             .AddEntityFrameworkSqlite()
-            .AddSingleton<IModelCacheKeyFactory, SqliteModelCacheKeyFactory>()
             .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
             .BuildServiceProvider();
 
@@ -205,7 +201,6 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         // Arrange
         var serviceProvider = new ServiceCollection()
             .AddEntityFrameworkSqlite()
-            .AddSingleton<IModelCacheKeyFactory, SqliteModelCacheKeyFactory>()
             .AddSingleton<IModelCustomizer, SqliteModelCustomizer>()
             .BuildServiceProvider();
 
