@@ -6,4 +6,4 @@ using System.Runtime.CompilerServices;
 // TODO Create implementations for Bogus // DevSkim: ignore DS176209
 // TODO Allow user to configure Bogus // DevSkim: ignore DS176209
 // TODO Add tests // DevSkim: ignore DS176209
-// TODO r/w a table in a schema other than default. Sqlite give warning about schema// DevSkim: ignore DS176209
+// TODO r/w a table in a schema other than default. SQLite gives warning about schema // DevSkim: ignore DS176209
