@@ -91,7 +91,7 @@ jobs:
         run: dotnet tool install --global Microsoft.CST.DevSkim.CLI
 
       - name: Run DevSkim Security Scan (Save output)
-        run: devskim analyze --source-code . -f text --output-file devskim-results.txt -E
+        run: devskim analyze --source-code . -f text --output-file devskim-results.txt -E --skip-git-ignored-files
 
       - name: Show DevSkim Results in Summary
         if: failure()
