@@ -170,7 +170,7 @@ public class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
         }
 
         var newTableName = getNewName((originalSchemaName, originalTableName));
-        if (newTableName != originalSchemaName)
+        if (newTableName != originalTableName)
         {
             entityType.SetTableName(newTableName);
         }
