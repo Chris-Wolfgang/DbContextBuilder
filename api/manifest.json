@@ -1,0 +1,145 @@
+{
+  "source_base_path": "C:/Source/GitHub/DbContextBuilder",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "Resource",
+      "output": {
+        "resource": {
+          "relative_path": "index.json"
+        }
+      }
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "README.md",
+      "output": {
+        ".html": {
+          "relative_path": "README.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.DbContextBuilder<T>",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.yml\" sourcestartlinenumber=\"1\">Uses the Builder pattern to create instances of DbContext types seeded with specified data.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.IGenerateRandomEntities.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.IGenerateRandomEntities.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.IGenerateRandomEntities",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.IGenerateRandomEntities.yml\" sourcestartlinenumber=\"1\">Provides an API to generate random entities for seeding databases.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.yml\" sourcestartlinenumber=\"1\">An implementation of SqliteModelCustomizer specifically configured to handle a DbContext\ndesigned for Microsoft SQL Server databases.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.SqliteModelCustomizer",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.yml\" sourcestartlinenumber=\"1\">Overrides the default model creation process in the DbContext{T} with configurations suitable for SQLite.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore",
+      "Summary": null
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/getting-started.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/getting-started.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/introduction.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/introduction.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "docs/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "docs/toc.html"
+        },
+        ".json": {
+          "relative_path": "docs/toc.json"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}
