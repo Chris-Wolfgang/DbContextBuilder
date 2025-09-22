@@ -1,0 +1,325 @@
+### YamlMime:XRefMap
+sorted: true
+references:
+- uid: Wolfgang.DbContextBuilderCore
+  name: Wolfgang.DbContextBuilderCore
+  href: api/Wolfgang.DbContextBuilderCore.html
+  commentId: N:Wolfgang.DbContextBuilderCore
+  fullName: Wolfgang.DbContextBuilderCore
+  nameWithType: Wolfgang.DbContextBuilderCore
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1
+  name: DbContextBuilder<T>
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html
+  commentId: T:Wolfgang.DbContextBuilderCore.DbContextBuilder`1
+  name.vb: DbContextBuilder(Of T)
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T)
+  nameWithType: DbContextBuilder<T>
+  nameWithType.vb: DbContextBuilder(Of T)
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.BuildAsync
+  name: BuildAsync()
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_BuildAsync
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.BuildAsync
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.BuildAsync()
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).BuildAsync()
+  nameWithType: DbContextBuilder<T>.BuildAsync()
+  nameWithType.vb: DbContextBuilder(Of T).BuildAsync()
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.BuildAsync*
+  name: BuildAsync
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_BuildAsync_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.BuildAsync
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.BuildAsync
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).BuildAsync
+  nameWithType: DbContextBuilder<T>.BuildAsync
+  nameWithType.vb: DbContextBuilder(Of T).BuildAsync
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWith*
+  name: SeedWith
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWith_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWith
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).SeedWith
+  nameWithType: DbContextBuilder<T>.SeedWith
+  nameWithType.vb: DbContextBuilder(Of T).SeedWith
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWithRandom*
+  name: SeedWithRandom
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWithRandom_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWithRandom
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).SeedWithRandom
+  nameWithType: DbContextBuilder<T>.SeedWithRandom
+  nameWithType.vb: DbContextBuilder(Of T).SeedWithRandom
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWithRandom``1(System.Int32)
+  name: SeedWithRandom<TEntity>(int)
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWithRandom__1_System_Int32_
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWithRandom``1(System.Int32)
+  name.vb: SeedWithRandom(Of TEntity)(Integer)
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int)
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).SeedWithRandom(Of TEntity)(Integer)
+  nameWithType: DbContextBuilder<T>.SeedWithRandom<TEntity>(int)
+  nameWithType.vb: DbContextBuilder(Of T).SeedWithRandom(Of TEntity)(Integer)
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWithRandom``1(System.Int32,System.Func{``0,System.Int32,``0})
+  name: SeedWithRandom<TEntity>(int, Func<TEntity, int, TEntity>)
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWithRandom__1_System_Int32_System_Func___0_System_Int32___0__
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWithRandom``1(System.Int32,System.Func{``0,System.Int32,``0})
+  name.vb: SeedWithRandom(Of TEntity)(Integer, Func(Of TEntity, Integer, TEntity))
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int, System.Func<TEntity, int, TEntity>)
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).SeedWithRandom(Of TEntity)(Integer, System.Func(Of TEntity, Integer, TEntity))
+  nameWithType: DbContextBuilder<T>.SeedWithRandom<TEntity>(int, Func<TEntity, int, TEntity>)
+  nameWithType.vb: DbContextBuilder(Of T).SeedWithRandom(Of TEntity)(Integer, Func(Of TEntity, Integer, TEntity))
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWithRandom``1(System.Int32,System.Func{``0,``0})
+  name: SeedWithRandom<TEntity>(int, Func<TEntity, TEntity>)
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWithRandom__1_System_Int32_System_Func___0___0__
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWithRandom``1(System.Int32,System.Func{``0,``0})
+  name.vb: SeedWithRandom(Of TEntity)(Integer, Func(Of TEntity, TEntity))
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int, System.Func<TEntity, TEntity>)
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).SeedWithRandom(Of TEntity)(Integer, System.Func(Of TEntity, TEntity))
+  nameWithType: DbContextBuilder<T>.SeedWithRandom<TEntity>(int, Func<TEntity, TEntity>)
+  nameWithType.vb: DbContextBuilder(Of T).SeedWithRandom(Of TEntity)(Integer, Func(Of TEntity, TEntity))
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWith``1(System.Collections.Generic.IEnumerable{``0})
+  name: SeedWith<TEntity>(IEnumerable<TEntity>)
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWith__1_System_Collections_Generic_IEnumerable___0__
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWith``1(System.Collections.Generic.IEnumerable{``0})
+  name.vb: SeedWith(Of TEntity)(IEnumerable(Of TEntity))
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(System.Collections.Generic.IEnumerable<TEntity>)
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).SeedWith(Of TEntity)(System.Collections.Generic.IEnumerable(Of TEntity))
+  nameWithType: DbContextBuilder<T>.SeedWith<TEntity>(IEnumerable<TEntity>)
+  nameWithType.vb: DbContextBuilder(Of T).SeedWith(Of TEntity)(IEnumerable(Of TEntity))
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWith``1(``0[])
+  name: SeedWith<TEntity>(params TEntity[])
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWith__1___0___
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWith``1(``0[])
+  name.vb: SeedWith(Of TEntity)(ParamArray TEntity())
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(params TEntity[])
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).SeedWith(Of TEntity)(ParamArray TEntity())
+  nameWithType: DbContextBuilder<T>.SeedWith<TEntity>(params TEntity[])
+  nameWithType.vb: DbContextBuilder(Of T).SeedWith(Of TEntity)(ParamArray TEntity())
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseAutoFixture
+  name: UseAutoFixture()
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseAutoFixture
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseAutoFixture
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseAutoFixture()
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseAutoFixture()
+  nameWithType: DbContextBuilder<T>.UseAutoFixture()
+  nameWithType.vb: DbContextBuilder(Of T).UseAutoFixture()
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseAutoFixture*
+  name: UseAutoFixture
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseAutoFixture_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseAutoFixture
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseAutoFixture
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseAutoFixture
+  nameWithType: DbContextBuilder<T>.UseAutoFixture
+  nameWithType.vb: DbContextBuilder(Of T).UseAutoFixture
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseCustomRandomEntityGenerator(Wolfgang.DbContextBuilderCore.IGenerateRandomEntities)
+  name: UseCustomRandomEntityGenerator(IGenerateRandomEntities)
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseCustomRandomEntityGenerator_Wolfgang_DbContextBuilderCore_IGenerateRandomEntities_
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseCustomRandomEntityGenerator(Wolfgang.DbContextBuilderCore.IGenerateRandomEntities)
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseCustomRandomEntityGenerator(Wolfgang.DbContextBuilderCore.IGenerateRandomEntities)
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseCustomRandomEntityGenerator(Wolfgang.DbContextBuilderCore.IGenerateRandomEntities)
+  nameWithType: DbContextBuilder<T>.UseCustomRandomEntityGenerator(IGenerateRandomEntities)
+  nameWithType.vb: DbContextBuilder(Of T).UseCustomRandomEntityGenerator(IGenerateRandomEntities)
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseCustomRandomEntityGenerator*
+  name: UseCustomRandomEntityGenerator
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseCustomRandomEntityGenerator_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseCustomRandomEntityGenerator
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseCustomRandomEntityGenerator
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseCustomRandomEntityGenerator
+  nameWithType: DbContextBuilder<T>.UseCustomRandomEntityGenerator
+  nameWithType.vb: DbContextBuilder(Of T).UseCustomRandomEntityGenerator
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseDbContextOptionsBuilder(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder{`0})
+  name: UseDbContextOptionsBuilder(DbContextOptionsBuilder<T>)
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseDbContextOptionsBuilder_Microsoft_EntityFrameworkCore_DbContextOptionsBuilder__0__
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseDbContextOptionsBuilder(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder{`0})
+  name.vb: UseDbContextOptionsBuilder(DbContextOptionsBuilder(Of T))
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseDbContextOptionsBuilder(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<T>)
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseDbContextOptionsBuilder(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder(Of T))
+  nameWithType: DbContextBuilder<T>.UseDbContextOptionsBuilder(DbContextOptionsBuilder<T>)
+  nameWithType.vb: DbContextBuilder(Of T).UseDbContextOptionsBuilder(DbContextOptionsBuilder(Of T))
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseDbContextOptionsBuilder*
+  name: UseDbContextOptionsBuilder
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseDbContextOptionsBuilder_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseDbContextOptionsBuilder
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseDbContextOptionsBuilder
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseDbContextOptionsBuilder
+  nameWithType: DbContextBuilder<T>.UseDbContextOptionsBuilder
+  nameWithType.vb: DbContextBuilder(Of T).UseDbContextOptionsBuilder
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseInMemory
+  name: UseInMemory()
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseInMemory
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseInMemory
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseInMemory()
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseInMemory()
+  nameWithType: DbContextBuilder<T>.UseInMemory()
+  nameWithType.vb: DbContextBuilder(Of T).UseInMemory()
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseInMemory*
+  name: UseInMemory
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseInMemory_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseInMemory
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseInMemory
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseInMemory
+  nameWithType: DbContextBuilder<T>.UseInMemory
+  nameWithType.vb: DbContextBuilder(Of T).UseInMemory
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSqlite
+  name: UseSqlite()
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseSqlite
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSqlite
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseSqlite()
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseSqlite()
+  nameWithType: DbContextBuilder<T>.UseSqlite()
+  nameWithType.vb: DbContextBuilder(Of T).UseSqlite()
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSqlite*
+  name: UseSqlite
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseSqlite_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSqlite
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseSqlite
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseSqlite
+  nameWithType: DbContextBuilder<T>.UseSqlite
+  nameWithType.vb: DbContextBuilder(Of T).UseSqlite
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSqliteForMsSqlServer
+  name: UseSqliteForMsSqlServer()
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseSqliteForMsSqlServer
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSqliteForMsSqlServer
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseSqliteForMsSqlServer()
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseSqliteForMsSqlServer()
+  nameWithType: DbContextBuilder<T>.UseSqliteForMsSqlServer()
+  nameWithType.vb: DbContextBuilder(Of T).UseSqliteForMsSqlServer()
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSqliteForMsSqlServer*
+  name: UseSqliteForMsSqlServer
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseSqliteForMsSqlServer_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSqliteForMsSqlServer
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseSqliteForMsSqlServer
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseSqliteForMsSqlServer
+  nameWithType: DbContextBuilder<T>.UseSqliteForMsSqlServer
+  nameWithType.vb: DbContextBuilder(Of T).UseSqliteForMsSqlServer
+- uid: Wolfgang.DbContextBuilderCore.IGenerateRandomEntities
+  name: IGenerateRandomEntities
+  href: api/Wolfgang.DbContextBuilderCore.IGenerateRandomEntities.html
+  commentId: T:Wolfgang.DbContextBuilderCore.IGenerateRandomEntities
+  fullName: Wolfgang.DbContextBuilderCore.IGenerateRandomEntities
+  nameWithType: IGenerateRandomEntities
+- uid: Wolfgang.DbContextBuilderCore.IGenerateRandomEntities.GenerateRandomEntities*
+  name: GenerateRandomEntities
+  href: api/Wolfgang.DbContextBuilderCore.IGenerateRandomEntities.html#Wolfgang_DbContextBuilderCore_IGenerateRandomEntities_GenerateRandomEntities_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.IGenerateRandomEntities.GenerateRandomEntities
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.IGenerateRandomEntities.GenerateRandomEntities
+  nameWithType: IGenerateRandomEntities.GenerateRandomEntities
+- uid: Wolfgang.DbContextBuilderCore.IGenerateRandomEntities.GenerateRandomEntities``1(System.Int32)
+  name: GenerateRandomEntities<TEntity>(int)
+  href: api/Wolfgang.DbContextBuilderCore.IGenerateRandomEntities.html#Wolfgang_DbContextBuilderCore_IGenerateRandomEntities_GenerateRandomEntities__1_System_Int32_
+  commentId: M:Wolfgang.DbContextBuilderCore.IGenerateRandomEntities.GenerateRandomEntities``1(System.Int32)
+  name.vb: GenerateRandomEntities(Of TEntity)(Integer)
+  fullName: Wolfgang.DbContextBuilderCore.IGenerateRandomEntities.GenerateRandomEntities<TEntity>(int)
+  fullName.vb: Wolfgang.DbContextBuilderCore.IGenerateRandomEntities.GenerateRandomEntities(Of TEntity)(Integer)
+  nameWithType: IGenerateRandomEntities.GenerateRandomEntities<TEntity>(int)
+  nameWithType.vb: IGenerateRandomEntities.GenerateRandomEntities(Of TEntity)(Integer)
+- uid: Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer
+  name: SqliteForMsSqlServerModelCustomizer
+  href: api/Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.html
+  commentId: T:Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer
+  fullName: Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer
+  nameWithType: SqliteForMsSqlServerModelCustomizer
+- uid: Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.#ctor(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies)
+  name: SqliteForMsSqlServerModelCustomizer(ModelCustomizerDependencies)
+  href: api/Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.html#Wolfgang_DbContextBuilderCore_SqliteForMsSqlServerModelCustomizer__ctor_Microsoft_EntityFrameworkCore_Infrastructure_ModelCustomizerDependencies_
+  commentId: M:Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.#ctor(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies)
+  name.vb: New(ModelCustomizerDependencies)
+  fullName: Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.SqliteForMsSqlServerModelCustomizer(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies)
+  fullName.vb: Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.New(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies)
+  nameWithType: SqliteForMsSqlServerModelCustomizer.SqliteForMsSqlServerModelCustomizer(ModelCustomizerDependencies)
+  nameWithType.vb: SqliteForMsSqlServerModelCustomizer.New(ModelCustomizerDependencies)
+- uid: Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.#ctor*
+  name: SqliteForMsSqlServerModelCustomizer
+  href: api/Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.html#Wolfgang_DbContextBuilderCore_SqliteForMsSqlServerModelCustomizer__ctor_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.SqliteForMsSqlServerModelCustomizer
+  fullName.vb: Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.New
+  nameWithType: SqliteForMsSqlServerModelCustomizer.SqliteForMsSqlServerModelCustomizer
+  nameWithType.vb: SqliteForMsSqlServerModelCustomizer.New
+- uid: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer
+  name: SqliteModelCustomizer
+  href: api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html
+  commentId: T:Wolfgang.DbContextBuilderCore.SqliteModelCustomizer
+  fullName: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer
+  nameWithType: SqliteModelCustomizer
+- uid: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.#ctor(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies)
+  name: SqliteModelCustomizer(ModelCustomizerDependencies)
+  href: api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html#Wolfgang_DbContextBuilderCore_SqliteModelCustomizer__ctor_Microsoft_EntityFrameworkCore_Infrastructure_ModelCustomizerDependencies_
+  commentId: M:Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.#ctor(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies)
+  name.vb: New(ModelCustomizerDependencies)
+  fullName: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.SqliteModelCustomizer(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies)
+  fullName.vb: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.New(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies)
+  nameWithType: SqliteModelCustomizer.SqliteModelCustomizer(ModelCustomizerDependencies)
+  nameWithType.vb: SqliteModelCustomizer.New(ModelCustomizerDependencies)
+- uid: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.#ctor*
+  name: SqliteModelCustomizer
+  href: api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html#Wolfgang_DbContextBuilderCore_SqliteModelCustomizer__ctor_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.SqliteModelCustomizer
+  fullName.vb: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.New
+  nameWithType: SqliteModelCustomizer.SqliteModelCustomizer
+  nameWithType.vb: SqliteModelCustomizer.New
+- uid: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.Customize(Microsoft.EntityFrameworkCore.ModelBuilder,Microsoft.EntityFrameworkCore.DbContext)
+  name: Customize(ModelBuilder, DbContext)
+  href: api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html#Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_Customize_Microsoft_EntityFrameworkCore_ModelBuilder_Microsoft_EntityFrameworkCore_DbContext_
+  commentId: M:Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.Customize(Microsoft.EntityFrameworkCore.ModelBuilder,Microsoft.EntityFrameworkCore.DbContext)
+  fullName: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.Customize(Microsoft.EntityFrameworkCore.ModelBuilder, Microsoft.EntityFrameworkCore.DbContext)
+  nameWithType: SqliteModelCustomizer.Customize(ModelBuilder, DbContext)
+- uid: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.Customize*
+  name: Customize
+  href: api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html#Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_Customize_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.Customize
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.Customize
+  nameWithType: SqliteModelCustomizer.Customize
+- uid: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.DefaultValueMap
+  name: DefaultValueMap
+  href: api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html#Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_DefaultValueMap
+  commentId: P:Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.DefaultValueMap
+  fullName: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.DefaultValueMap
+  nameWithType: SqliteModelCustomizer.DefaultValueMap
+- uid: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.DefaultValueMap*
+  name: DefaultValueMap
+  href: api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html#Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_DefaultValueMap_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.DefaultValueMap
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.DefaultValueMap
+  nameWithType: SqliteModelCustomizer.DefaultValueMap
+- uid: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling
+  name: OverrideDefaultValueHandling
+  href: api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html#Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideDefaultValueHandling
+  commentId: P:Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling
+  fullName: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling
+  nameWithType: SqliteModelCustomizer.OverrideDefaultValueHandling
+- uid: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling*
+  name: OverrideDefaultValueHandling
+  href: api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html#Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideDefaultValueHandling_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling
+  nameWithType: SqliteModelCustomizer.OverrideDefaultValueHandling
+- uid: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenameRenaming
+  name: OverrideTableRenameRenaming
+  href: api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html#Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideTableRenameRenaming
+  commentId: P:Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenameRenaming
+  fullName: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenameRenaming
+  nameWithType: SqliteModelCustomizer.OverrideTableRenameRenaming
+- uid: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenameRenaming*
+  name: OverrideTableRenameRenaming
+  href: api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html#Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideTableRenameRenaming_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenameRenaming
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenameRenaming
+  nameWithType: SqliteModelCustomizer.OverrideTableRenameRenaming

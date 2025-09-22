@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class SqliteModelCustomizer | DbContextBuilder </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class SqliteModelCustomizer | DbContextBuilder ">
+      
+      <meta name="description" content="Overrides the default model creation process in the DbContext{T} with configurations suitable for SQLite.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/Chris-Wolfgang/DbContextBuilder/new/develop/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="DbContextBuilder">
+            DbContextBuilder
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer">
+
+
+
+  <h1 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer" class="text-break">
+Class SqliteModelCustomizer  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Wolfgang.html">Wolfgang</a>.<a class="xref" href="Wolfgang.DbContextBuilderCore.html">DbContextBuilderCore</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Wolfgang.DbContextBuilder-Core.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Overrides the default model creation process in the DbContext{T} with configurations suitable for SQLite.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class SqliteModelCustomizer : ModelCustomizer, IModelCustomizer</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.entityframeworkcore.infrastructure.modelcustomizer">ModelCustomizer</a></div>
+      <div><span class="xref">SqliteModelCustomizer</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.entityframeworkcore.infrastructure.imodelcustomizer">IModelCustomizer</a></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist derived">
+    <dt>Derived</dt>
+    <dd>
+      <div><a class="xref" href="Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.html">SqliteForMsSqlServerModelCustomizer</a></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.entityframeworkcore.infrastructure.modelcustomizer.dependencies">ModelCustomizer.Dependencies</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+  <h2 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>Unless the production database you are testing is also SQLite, there will be differences between
+your database and the context's configuration definition and SQLite's capabilities. This class
+provides some basic overrides to make your DbContext work in SQLite. This class provides some
+basic capabilities like,</p>
+<ol>
+<li>Renaming tables to avoid schema issues since SQLite does not support schemas.</li>
+<li>Removing computed values for columns since SQLite may not support the same functions.</li>
+</ol>
+<p>You can override the functionality provided in this class or if you will be frequently working
+in the same database engine, you can create your own ModelCustomizer, either from scratch or
+derived from this one, and override the desired functionality. Once you created you can reuse
+it over and over again. For example, you want to create a SqliteForOracleModelCustomizer that
+has overrides to make an DbContext created for Oracle work in SQLite.</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer__ctor_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.#ctor*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer__ctor_Microsoft_EntityFrameworkCore_Infrastructure_ModelCustomizerDependencies_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.#ctor(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies)">
+  SqliteModelCustomizer(ModelCustomizerDependencies)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Overrides the default model creation process in the DbContext{T} with configurations suitable for SQLite.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SqliteModelCustomizer(ModelCustomizerDependencies dependencies)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>dependencies</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.entityframeworkcore.infrastructure.modelcustomizerdependencies">ModelCustomizerDependencies</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer__ctor_Microsoft_EntityFrameworkCore_Infrastructure_ModelCustomizerDependencies__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Unless the production database you are testing is also SQLite, there will be differences between
+your database and the context's configuration definition and SQLite's capabilities. This class
+provides some basic overrides to make your DbContext work in SQLite. This class provides some
+basic capabilities like,</p>
+<ol>
+<li>Renaming tables to avoid schema issues since SQLite does not support schemas.</li>
+<li>Removing computed values for columns since SQLite may not support the same functions.</li>
+</ol>
+<p>You can override the functionality provided in this class or if you will be frequently working
+in the same database engine, you can create your own ModelCustomizer, either from scratch or
+derived from this one, and override the desired functionality. Once you created you can reuse
+it over and over again. For example, you want to create a SqliteForOracleModelCustomizer that
+has overrides to make an DbContext created for Oracle work in SQLite.</p>
+</div>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_DefaultValueMap_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.DefaultValueMap*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_DefaultValueMap" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.DefaultValueMap">
+  DefaultValueMap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L69"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A dictionary where the key is the default value as defined in the model and the value is the
+value to replace it with.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IDictionary&lt;string, string&gt; DefaultValueMap { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.idictionary-2">IDictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_DefaultValueMap_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Examples of a default values that may need to be replaced it getdate() and newid() which would
+be replaced with datetime('now') and lower(hex(randomblob(16))) respectively.</p>
+</div>
+
+
+
+
+  <a id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideDefaultValueHandling_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideDefaultValueHandling" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling">
+  OverrideDefaultValueHandling
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L83"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>This method is called for each column that has a default value defined in the model.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Func&lt;string?, string?&gt; OverrideDefaultValueHandling { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-2">Func</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideDefaultValueHandling_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>The default implementation checks the DefaultValueMap dictionary to see if the existing default value
+is contained in the dictionary and if so, replaces it with the value in the dictionary. If the
+current default is not in the dictionary, it is left unchanged. You can override this behavior
+by assigning a custom implementation to this property</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <a id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideTableRenameRenaming_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenameRenaming*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideTableRenameRenaming" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenameRenaming">
+  OverrideTableRenameRenaming
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>This method is called for each table in the database to rename the table since SQLite
+does not support schemas.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Func&lt;(string? SchemaName, string TableName), string&gt; OverrideTableRenameRenaming { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-2">Func</a>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.schemaname">SchemaName</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.tablename">TableName</a>), <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideTableRenameRenaming_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>The default implementation renames the table by prefixing
+the schema name to the table name. For example, a table named &quot;Person&quot; in schema
+Personnel would be renamed to &quot;Personnel_Person&quot;. If the table doesn't have a schema
+&quot;dbo&quot; is used as the schema name. You can override this behavior by assigning a
+custom implementation to this property</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_Customize_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.Customize*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_Customize_Microsoft_EntityFrameworkCore_ModelBuilder_Microsoft_EntityFrameworkCore_DbContext_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.Customize(Microsoft.EntityFrameworkCore.ModelBuilder,Microsoft.EntityFrameworkCore.DbContext)">
+  Customize(ModelBuilder, DbContext)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L107"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Overrides the default model creation process in the DbContext{T} with configurations suitable for SQLite.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override void Customize(ModelBuilder modelBuilder, DbContext context)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>modelBuilder</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.entityframeworkcore.modelbuilder">ModelBuilder</a></dt>
+    <dd></dd>
+    <dt><code>context</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.entityframeworkcore.dbcontext">DbContext</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L25" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
