@@ -49,7 +49,7 @@ public class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
                 var schemaPrefix = t.SchemaName ?? "dbo";
 
                 // Avoid recursive renaming
-                return t.TableName.StartsWith($"{schemaPrefix}_", StringComparison.InvariantCultureIgnoreCase)
+                return t.TableName.StartsWith($"{schemaPrefix}_", StringComparison.OrdinalIgnoreCase)
                     ? t.TableName // Table has already been renamed so just return it
                     : $"{schemaPrefix}_{t.TableName}"; // Rename table by prefixing schema name
             };
