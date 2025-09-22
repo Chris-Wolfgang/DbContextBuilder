@@ -1,8 +1,8 @@
 using System.Data.Common;
-using JetBrains.Annotations;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Wolfgang.DbContextBuilderCore;
 
@@ -19,12 +19,12 @@ public class DbContextBuilder<T> where T : DbContext
 		InMemory,
 		Sqlite
 	}
-    
+
+
 	private DbProvider _dbProvider = DbProvider.InMemory;
-    private readonly List<object> _seedData = new();
-    private IServiceProvider? _serviceProvider;
-    private string? _dumpTableNamesCommandText;
-    private Action<IReadOnlyCollection<string>>? _dumpTableNamesCallback;
+    private readonly List<object> _seedData = [];
+    private readonly ServiceCollection _serviceCollection = [];
+    private DbContextOptionsBuilder<T>? _dbContextOptionsBuilder;
 
 
     internal IGenerateRandomEntities RandomEntityGenerator { get; private set; } = new AutoFixtureRandomEntityGenerator();
@@ -35,21 +35,48 @@ public class DbContextBuilder<T> where T : DbContext
     /// Instructs the builder to use SQLite as the database provider.
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-    public DbContextBuilder<T> UseSqlite()
+    public DbContextBuilder<T> UseSqlite() // TODO Move to extension method
 	{
-		this._dbProvider = DbProvider.Sqlite;
-		return this;
+		_dbProvider = DbProvider.Sqlite;
+
+        // TODO Check is items exist in the list and don't add duplicates
+        // TODO Check if Sql Server provider is already registered and if so, remove it
+        _serviceCollection
+            .AddEntityFrameworkSqlite()
+            .AddSingleton<IModelCustomizer, SqliteModelCustomizer>();
+
+        return this;
 	}
 
-    
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    public DbContextBuilder<T> UseSqliteForMsSqlServer()  // TODO Move to extension method
+    {
+        _dbProvider = DbProvider.Sqlite;
+
+        // TODO Check is items exist in the list and don't add duplicates
+        // TODO Check if Sql Server provider is already registered and if so, remove it
+        _serviceCollection
+            .AddEntityFrameworkSqlite()
+            .AddSingleton<IModelCustomizer, SqliteForMsSqlServerModelCustomizer>();
+
+        return this;
+    }
+
+
 
     /// <summary>
     /// Instructs the builder to use InMemory as the database provider.
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-	public DbContextBuilder<T> UseInMemory()
+    public DbContextBuilder<T> UseInMemory()
 	{
-		this._dbProvider = DbProvider.InMemory;
+		_dbProvider = DbProvider.InMemory;
 		return this;
 	}
 
@@ -84,33 +111,17 @@ public class DbContextBuilder<T> where T : DbContext
 
 
     /// <summary>
-    /// Provides a method to override how the database is created since different databases
-    /// engines support different features
+    /// Specifies a specific instance of UseDbContextOptionsBuilder to use when creating the DbContext.
     /// </summary>
-    /// <param name="serviceProvider"></param>
+    /// <param name="dbContextOptionsBuilder"></param>
+    /// <returns></returns>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-    /// <remarks>
-    /// This method allows you to intercept the creation of the database and alter or
-    /// customize it. This is useful, for example, if your production database is SQL Server
-    /// or Oracle and is using features that are not supported by the InMemory or Sqlite
-    /// databases. Using this method and passing in your customizations, allows you to
-    /// alter or opt out altogether certain columns.
-    ///
-    /// Note: This does mean that the features that you change will not match your
-    /// production system and so testing those features is pointless, however you can still
-    /// test the rest of your code.
-    ///
-    /// One such option is say your production database has a column that is a computed
-    /// type using functions that is are not supported under InMemory or Sqlite database.
-    /// You could use this method to alter the table to just store an integer rather than
-    /// a calculation. As long as you seed the database correctly you can still use the
-    /// table in your tests.
-    /// </remarks>
-    public DbContextBuilder<T> UseServiceProvider(IServiceProvider serviceProvider)
+    /// <exception cref="ArgumentNullException">callback is null</exception>
+    public DbContextBuilder<T> UseDbContextOptionsBuilder(DbContextOptionsBuilder<T> dbContextOptionsBuilder)
     {
-        ArgumentNullException.ThrowIfNull(serviceProvider);
+        ArgumentNullException.ThrowIfNull(dbContextOptionsBuilder);
 
-        _serviceProvider = serviceProvider;
+        _dbContextOptionsBuilder = dbContextOptionsBuilder;
 
         return this;
     }
@@ -254,69 +265,6 @@ public class DbContextBuilder<T> where T : DbContext
 
 
     /// <summary>
-    /// When specified, tells the context builder to dump the names of all tables in the database
-    /// </summary>
-    /// <param name="commandText">The command to use to get the tables. Varies by database provider</param>
-    /// <param name="callback">A function to receive the results after the tables names are retrieved</param>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-    /// <exception cref="ArgumentException">commandText is either null or whitespace</exception>
-    /// <exception cref="ArgumentNullException">callback is null</exception>
-    [UsedImplicitly]
-    // TODO Move this to a configuration object that gets passed into the UseInMemory and UseSqlite methods
-    public DbContextBuilder<T> DumpTablesNames(string commandText, Action<IReadOnlyCollection<string>> callback)
-    {
-        // TODO write test methods
-        ArgumentNullException.ThrowIfNull(callback);
-
-        if (string.IsNullOrWhiteSpace(commandText))
-        {
-            throw new ArgumentException("Value cannot be null or whitespace.", nameof(commandText));
-        }
-
-        _dumpTableNamesCommandText = commandText;
-        _dumpTableNamesCallback = callback;
-
-        return this;
-    }
-
-
-
-    private static async Task<IReadOnlyCollection<string>> LogTableNamesAsync(DbConnection connection, string commandText)
-    {
-        var command = connection.CreateCommand();
-        command.CommandText = commandText;
-        await using var reader = await command.ExecuteReaderAsync();
-
-        if (reader.FieldCount != 2)
-        {
-            throw new InvalidOperationException
-            (
-                "Select statement must return exactly two columns. The first must be the schema name and the second the table name"
-            );
-        }
-
-        var tables = new List<string>();
-        while (await reader.ReadAsync())
-        {
-            var value = reader.GetValue(0);
-            var schemaName = value == DBNull.Value ? null : value.ToString();
-
-            value = reader.GetValue(1);
-            var tableName = value == DBNull.Value ? null : value.ToString();
-
-            var fullName = string.IsNullOrWhiteSpace(schemaName)
-                ? $"[{tableName}]"
-                : $"[{schemaName}].[{tableName}]";
-
-            tables.Add(fullName);
-        }
-        return tables;
-    }
-
-
-
-
-    /// <summary>
     /// Creates a new instance of T seeded with specified data."/>.
     /// </summary>
     /// <returns>instance of {T}</returns>
@@ -324,41 +272,31 @@ public class DbContextBuilder<T> where T : DbContext
     public async Task<T> BuildAsync()
     {
         // ReSharper disable once TooWideLocalVariableScope
-        DbConnection? connection; // variable must remain in outer scope
+        DbConnection? connection; // variable must remain in outer scope so it can be reused later
 
-        DbContextOptionsBuilder<T>? optionBuilder;
+        var optionBuilder = _dbContextOptionsBuilder ?? new DbContextOptionsBuilder<T>();
 
         switch (_dbProvider)
         {
             case DbProvider.InMemory:
-                optionBuilder = new DbContextOptionsBuilder<T>().UseInMemoryDatabase(Guid.NewGuid().ToString());
+                optionBuilder.UseInMemoryDatabase(Guid.NewGuid().ToString());
                 break;
             case DbProvider.Sqlite:
                 connection = new SqliteConnection("DataSource=:memory:");
                 await connection.OpenAsync();
-                optionBuilder = new DbContextOptionsBuilder<T>().UseSqlite(connection);
+                optionBuilder.UseSqlite(connection);
                 break;
             default:
-                throw new NotSupportedException($"Provider {this._dbProvider} is not supported.");
+                throw new NotSupportedException($"Provider {_dbProvider} is not supported.");
         }
 
-        if (_serviceProvider != null)
+        if (_serviceCollection.Count > 0)
         {
-            optionBuilder.UseInternalServiceProvider(_serviceProvider);
+            var provider = _serviceCollection.BuildServiceProvider();
+            optionBuilder.UseInternalServiceProvider(provider);
         }
 
-        var logs = new List<string>();
-
-        // TODO add UseVerboseOutput option to log SQL to console
-        var options = optionBuilder
-            .LogTo(Console.WriteLine)
-            //.LogTo( s => Debug.WriteLine(s)) // TODO Figure out logging
-            //.LogTo(logs.Add)
-            .LogTo(Console.WriteLine, LogLevel.Information)
-            .ConfigureWarnings(builder => builder.Throw())
-            .EnableSensitiveDataLogging()
-            .EnableDetailedErrors()
-            .Options;
+        var options = optionBuilder.Options;
 
         var context = (T)Activator.CreateInstance(typeof(T), options)!;
 
@@ -369,17 +307,11 @@ public class DbContextBuilder<T> where T : DbContext
         }
         catch (InvalidOperationException e)
         {
-            // TODO Improve exception
-            var ex = new InvalidOperationException("Failed to create database. See InnerExceptions and Logs in the Data property for additional information", e);
-            //ex.Data.Add("Logs", logs);
-            throw ex;
-        }
-
-        // TODO Need tests
-        if (_dumpTableNamesCommandText is not null && _dumpTableNamesCallback is not null)
-        {
-            var tableNames = await LogTableNamesAsync(context.Database.GetDbConnection(), _dumpTableNamesCommandText);
-            _dumpTableNamesCallback(tableNames);
+            // TODO Is this message correct and complete? The last line may be incomplete
+            const string msg = "Failed to create database. See InnerExceptions for details. " +
+                               "You can get addition information by creating a new instance of " +
+                               "DbContextOptionsBuilder<T> and passing into UseDbContextOptionsBuilder";
+            throw new InvalidOperationException(msg, e);
         }
 
         if (_seedData.Count > 0)
@@ -388,19 +320,7 @@ public class DbContextBuilder<T> where T : DbContext
             await context.SaveChangesAsync();
         }
 
-        // TODO Need tests
-        if (_dumpTableNamesCommandText is not null && _dumpTableNamesCallback is not null)
-        {
-            var tableNames = await LogTableNamesAsync(context.Database.GetDbConnection(), _dumpTableNamesCommandText);
-            _dumpTableNamesCallback(tableNames);
-        }
-
-
         // Create a new clean context instance to return
         return (T)Activator.CreateInstance(typeof(T), options)!;
     }
-
-
-
-
 }

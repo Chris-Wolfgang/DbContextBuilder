@@ -14,21 +14,7 @@ public class TestsWithDefaults(ITestOutputHelper testOutputHelper) : DbContextBu
     /// 
     /// </summary>
     /// <returns></returns>
-    protected override DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder()
-    {
-        return new DbContextBuilder<AdventureWorksDbContext>();
-    }
-
-
-
-    /// <summary>
-    /// The SQL command to select schema and table names from the database.
-    /// </summary>
-    /// <remarks>
-    /// If the database does not support schemas, like Sqlite, then return and empty string form the schema
-    /// </remarks>
-    protected override string SelectTablesCommandText => throw new NotImplementedException();
-
+    protected override DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder() => new();
 
 
     /// <summary>
@@ -37,12 +23,11 @@ public class TestsWithDefaults(ITestOutputHelper testOutputHelper) : DbContextBu
     [Fact]
     public void Default_RandomEntityGenerator_is_AutoFixture()
     {
-        // Arrange
+	    // Arrange
         var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
-        Assert.IsType<AutoFixtureRandomEntityGenerator>(sut.RandomEntityGenerator);
-
+        _ = Assert.IsType<AutoFixtureRandomEntityGenerator>(sut.RandomEntityGenerator);
     }
 
 

@@ -1,7 +1,8 @@
+using System.Text;
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
+
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
@@ -11,25 +12,16 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelper)
 {
 
-#pragma warning disable IDE0051
-    private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
-#pragma warning restore IDE0051
+#pragma warning disable IDE0052
+	private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
+#pragma warning restore IDE0052
 
-    /// <summary>
+	/// <summary>
     /// Creates an instance of DbContextBuilder with specific database
     /// and random entity generator to be used in the tests
     /// </summary>
     /// <returns></returns>
     protected abstract DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder();
-
-
-    /// <summary>
-    /// The SQL command to select schema and table names from the database.
-    /// </summary>
-    /// <remarks>
-    /// If the database does not support schemas, like Sqlite, then return and empty string form the schema
-    /// </remarks>
-    protected abstract string SelectTablesCommandText { get; }
 
 
 
@@ -384,9 +376,9 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
             CountryRegionCode = "US",
             Name = "United States",
             ModifiedDate = DateTime.UtcNow,
-            StateProvinces = new List<StateProvince>(),
-            SalesTerritories = new List<SalesTerritory>(),
-            CountryRegionCurrencies = new List<CountryRegionCurrency>(),
+            StateProvinces = [],
+            SalesTerritories = [],
+            CountryRegionCurrencies = [],
         };
         var seedCountry = expectedCountry with { };
 
@@ -560,8 +552,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     /// the array is null throws an ArgumentException.
     /// </summary>
     [Fact]
-    public void
-        SeedWith_params_when_passed_an_array_of_values_and_one_of_the_elements_is_null_throws_ArgumentException()
+    public void SeedWith_params_when_passed_an_array_of_values_and_one_of_the_elements_is_null_throws_ArgumentException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -640,27 +631,27 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
                 CountryRegionCode = "US",
                 Name = "United States",
                 ModifiedDate = DateTime.UtcNow,
-                StateProvinces = new List<StateProvince>(),
-                SalesTerritories = new List<SalesTerritory>(),
-                CountryRegionCurrencies = new List<CountryRegionCurrency>(),
+                StateProvinces = [],
+                SalesTerritories = [],
+                CountryRegionCurrencies = [],
             },
             new()
             {
                 CountryRegionCode = "CA",
                 Name = "Canada",
                 ModifiedDate = DateTime.UtcNow,
-                StateProvinces = new List<StateProvince>(),
-                SalesTerritories = new List<SalesTerritory>(),
-                CountryRegionCurrencies = new List<CountryRegionCurrency>(),
+                StateProvinces = [],
+                SalesTerritories = [],
+                CountryRegionCurrencies = [],
             },
             new()
             {
                 CountryRegionCode = "MX",
                 Name = "Mexico",
                 ModifiedDate = DateTime.UtcNow,
-                StateProvinces = new List<StateProvince>(),
-                SalesTerritories = new List<SalesTerritory>(),
-                CountryRegionCurrencies = new List<CountryRegionCurrency>(),
+                StateProvinces = [],
+                SalesTerritories = [],
+                CountryRegionCurrencies = [],
             }
         };
         var seedCountry = expectedCountry.Select(c => c with { });
@@ -700,8 +691,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     }
 
 
-
-
+    
     /// <summary>
     /// Verifies that calling SeedWithRandom{T}(int) returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
@@ -715,8 +705,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act
         var result = sut.SeedWithRandom<Address>(count);
 
-        // Assert
-        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+		// Assert
+		_ = Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
     }
 
 
@@ -810,8 +800,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Theory]
     [InlineData(7)]
     [InlineData(17)]
-    public async Task
-        SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
+    public async Task SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         var startingId = 1000;
         // Arrange
@@ -957,8 +946,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Theory]
     [InlineData(7)]
     [InlineData(17)]
-    public async Task
-        SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
+    public async Task SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         const int startingId = 1001;
         // Arrange
@@ -1031,57 +1019,62 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
     /// <summary>
-    /// Verifies that calling UseServiceProvider and passing null throws ArgumentNullException
+    /// Verifies that calling UseDbContextOptionsBuilder and passing null throws ArgumentNullException
     /// </summary>
     [Fact]
-    public void UseServiceProvider_when_passed_null_throws_ArgumentNullException()
+    public void Calling_UseDbContextOptionsBuilder_when_passed_null_throws_ArgumentNullException()
     {
         // Arrange
 
         var sut = CreateDbContextBuilder();
 
         // Act & Assert
-        var ex = Assert.Throws<ArgumentNullException>(() => sut.UseServiceProvider(null!));
-        Assert.Equal("serviceProvider", ex.ParamName);
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.UseDbContextOptionsBuilder(null!));
+        Assert.Equal("dbContextOptionsBuilder", ex.ParamName);
+
+
     }
 
 
 
     /// <summary>
-    /// Verifies that UseServiceProvider returns the DbContextBuilder{T} so it can be chained to other calls
+    /// Verifies that UseDbContextOptionsBuilder returns the DbContextBuilder{T} so it can be chained to other calls
     /// </summary>
     [Fact]
-    public void UseServiceProvider_returns_DbContextBuild()
+    public void Calling_UseDbContextOptionsBuilder_returns_DbContextBuild()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
-        var services = new ServiceCollection().BuildServiceProvider();
+        var optionsBuilder = new DbContextOptionsBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
-        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseServiceProvider(services));
+        Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseDbContextOptionsBuilder(optionsBuilder));
     }
 
 
 
-    // TODO r/w a table in a schema other than default. Sqlite give warning about schema
-
-
-    private async Task<IReadOnlyCollection<string>> LogTableNamesAsync(AdventureWorksDbContext context)
+    /// <summary>
+    /// Verifies that BuildAsync uses the DbOptionBuilder passed in by UseDbContextOptionsBuilder
+    /// </summary>
+    [Fact]
+    public async Task UseDbContextOptionsBuilder_after_calling_BuildAsync_uses_DbOptionBuilder_passed_in()
     {
-        var command = context.Database.GetDbConnection().CreateCommand();
-        command.CommandText = SelectTablesCommandText;
-        command.Connection = context.Database.GetDbConnection();
 
-        await using var reader = await command.ExecuteReaderAsync();
-        var tables = new List<string>();
-        while (await reader.ReadAsync())
-        {
-            var tableName = reader.GetString(0);
-            tables.Add(tableName);
-            Console.WriteLine(tableName);
-        }
+        // Arrange
+        var sut = CreateDbContextBuilder();
 
-        await reader.CloseAsync();
-        return tables;
+        var buffer = new StringBuilder(10_240);
+        var sw = new StringWriter(buffer);
+
+        var optionsBuilder = new DbContextOptionsBuilder<AdventureWorksDbContext>()
+            .LogTo(s => sw.WriteLine(s));
+        sut.UseDbContextOptionsBuilder(optionsBuilder);
+
+        // Act
+        await sut.BuildAsync();
+
+
+        // Assert
+        Assert.True(buffer.Length > 0, "Buffer length was expected to be greater than 0");
     }
 }
