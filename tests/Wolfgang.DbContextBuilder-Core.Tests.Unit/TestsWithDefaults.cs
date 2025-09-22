@@ -11,9 +11,9 @@ public class TestsWithDefaults(ITestOutputHelper testOutputHelper) : DbContextBu
 {
 
     /// <summary>
-    /// 
+    /// Creates a new instance of DbContextBuilder for AdventureWorksDbContext using default settings.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>A new DbContextBuilder for AdventureWorksDbContext.</returns>
     protected override DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder() => new();
 
 
