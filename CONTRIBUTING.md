@@ -11,7 +11,7 @@ You can contribute in several ways:
 - Improving documentation
 - Writing or improving tests
 
-Please note: Before coding anything please check with me first by entering an issues and getting approval for it. PR are more likely to get merged if I have aggreed to the changes
+Please note: Before coding anything please check with me first by entering an issue and getting approval for it. PRs are more likely to get merged if I have agreed to the changes.
 
 
 ## Getting Started
