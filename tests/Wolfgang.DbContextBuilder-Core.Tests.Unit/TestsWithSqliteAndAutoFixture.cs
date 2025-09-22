@@ -369,7 +369,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
                         // Try to find the column definition with "GENERATED ALWAYS AS"
                         var pattern = $@"\b{columnName}\b\s+[^\(]*GENERATED\s+ALWAYS\s+AS\s*\((.*?)\)";
                         var match = System.Text.RegularExpressions.Regex.Match(tableSql, pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                        if (match.Success && match.Groups.Count > 1)
+                        if (match is { Success: true, Groups.Count: > 1 })
                         {
                             computedValue = match.Groups[1].Value;
                         }
