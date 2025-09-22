@@ -300,7 +300,7 @@ public class DbContextBuilder<T> where T : DbContext
 
         var options = optionBuilder.Options;
 
-        var context = (T)Activator.CreateInstance(typeof(T), options)!;
+        await using var context = (T)Activator.CreateInstance(typeof(T), options)!;
 
         try
         {
