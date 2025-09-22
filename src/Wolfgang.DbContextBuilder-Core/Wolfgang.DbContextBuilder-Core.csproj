@@ -25,7 +25,7 @@
 
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<IsPackable>false</IsPackable>
+		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
 
 	</PropertyGroup>
