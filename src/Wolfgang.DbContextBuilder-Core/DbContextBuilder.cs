@@ -52,10 +52,10 @@ public class DbContextBuilder<T> where T : DbContext
 
 
     /// <summary>
-    /// 
+    /// Configures the builder to use SQLite as the database provider with SQL Server-specific adjustments,
+    /// such as default value mappings, to better mimic SQL Server behavior for testing or compatibility.
     /// </summary>
-    /// <returns></returns>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     public DbContextBuilder<T> UseSqliteForMsSqlServer()
     // TODO Move to extension method // DevSkim: ignore DS176209
     {
