@@ -11,9 +11,9 @@ public class TestsWithInMemoryDbAndAutoFixture(ITestOutputHelper testOutputHelpe
 {
 
     /// <summary>
-    /// 
+    /// Creates a DbContextBuilder configured to use the in-memory database and AutoFixture for entity generation.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>A DbContextBuilder for AdventureWorksDbContext with in-memory and AutoFixture configuration.</returns>
     protected override DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder()
     {
         return new DbContextBuilder<AdventureWorksDbContext>()
