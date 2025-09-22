@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class DbContextBuilder&lt;T&gt; | DbContextBuilder </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class DbContextBuilder&lt;T&gt; | DbContextBuilder ">
+      
+      <meta name="description" content="Uses the Builder pattern to create instances of DbContext types seeded with specified data.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/Chris-Wolfgang/DbContextBuilder/new/develop/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_DbContextBuilder_1.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.DbContextBuilder%601%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="DbContextBuilder">
+            DbContextBuilder
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1">
+
+
+
+  <h1 id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1" class="text-break">
+Class DbContextBuilder&lt;T&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/DbContextBuilder.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Wolfgang.html">Wolfgang</a>.<a class="xref" href="Wolfgang.DbContextBuilderCore.html">DbContextBuilderCore</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Wolfgang.DbContextBuilder-Core.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Uses the Builder pattern to create instances of DbContext types seeded with specified data.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class DbContextBuilder&lt;T&gt; where T : DbContext</code></pre>
+  </div>
+
+
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>T</code></dt>
+    <dd></dd>
+  </dl>
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">DbContextBuilder&lt;T&gt;</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_BuildAsync_" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.BuildAsync*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_BuildAsync" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.BuildAsync">
+  BuildAsync()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/DbContextBuilder.cs/#L274"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a new instance of T seeded with specified data.&quot;/&gt;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;T&gt; BuildAsync()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;T&gt;</dt>
+    <dd><p>instance of {T}</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The specified database provider is not supported</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWithRandom_" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWithRandom*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWithRandom__1_System_Int32_" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWithRandom``1(System.Int32)">
+  SeedWithRandom&lt;TEntity&gt;(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/DbContextBuilder.cs/#L194"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Populates the specified DbSet with random entities of type TEntity.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DbContextBuilder&lt;T&gt; SeedWithRandom&lt;TEntity&gt;(int count) where TEntity : class</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>count</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of items to create</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder</a>&lt;T&gt;</dt>
+    <dd><p><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder&lt;T&gt;</a></p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TEntity</code></dt>
+    <dd><p>The type of entity to create</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>count is less than 1</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWithRandom_" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWithRandom*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWithRandom__1_System_Int32_System_Func___0_System_Int32___0__" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWithRandom``1(System.Int32,System.Func{``0,System.Int32,``0})">
+  SeedWithRandom&lt;TEntity&gt;(int, Func&lt;TEntity, int, TEntity&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/DbContextBuilder.cs/#L249"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Populates the specified DbSet with random entities of type TEntity.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DbContextBuilder&lt;T&gt; SeedWithRandom&lt;TEntity&gt;(int count, Func&lt;TEntity, int, TEntity&gt; func) where TEntity : class</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>count</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of items to create</p>
+</dd>
+    <dt><code>func</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-3">Func</a>&lt;TEntity, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>, TEntity&gt;</dt>
+    <dd><p>A function that takes a TEntity and the index number of the entity and returns an updated TEntity</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder</a>&lt;T&gt;</dt>
+    <dd><p><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder&lt;T&gt;</a></p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TEntity</code></dt>
+    <dd><p>The type of entity to create</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>count is less than 1</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWithRandom_" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWithRandom*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWithRandom__1_System_Int32_System_Func___0___0__" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWithRandom``1(System.Int32,System.Func{``0,``0})">
+  SeedWithRandom&lt;TEntity&gt;(int, Func&lt;TEntity, TEntity&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/DbContextBuilder.cs/#L219"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Populates the specified DbSet with random entities of type TEntity.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DbContextBuilder&lt;T&gt; SeedWithRandom&lt;TEntity&gt;(int count, Func&lt;TEntity, TEntity&gt; func) where TEntity : class</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>count</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of items to create</p>
+</dd>
+    <dt><code>func</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-2">Func</a>&lt;TEntity, TEntity&gt;</dt>
+    <dd><p>A function that takes a TEntity and returns an updated TEntity</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder</a>&lt;T&gt;</dt>
+    <dd><p><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder&lt;T&gt;</a></p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TEntity</code></dt>
+    <dd><p>The type of entity to create</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>count is less than 1</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWith_" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWith*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWith__1_System_Collections_Generic_IEnumerable___0__" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWith``1(System.Collections.Generic.IEnumerable{``0})">
+  SeedWith&lt;TEntity&gt;(IEnumerable&lt;TEntity&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/DbContextBuilder.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Populates the specified DbSet with the provided entities.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DbContextBuilder&lt;T&gt; SeedWith&lt;TEntity&gt;(IEnumerable&lt;TEntity&gt; entities) where TEntity : class</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>entities</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;TEntity&gt;</dt>
+    <dd><p>The entities to populate the database with</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder</a>&lt;T&gt;</dt>
+    <dd><p><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder&lt;T&gt;</a></p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TEntity</code></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>entities is null</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWith_" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWith*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWith__1___0___" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWith``1(``0[])">
+  SeedWith&lt;TEntity&gt;(params TEntity[])
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/DbContextBuilder.cs/#L159"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Populates the specified DbSet with the provided entities.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DbContextBuilder&lt;T&gt; SeedWith&lt;TEntity&gt;(params TEntity[] entities) where TEntity : class</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>entities</code> TEntity[]</dt>
+    <dd><p>The entities to populate the database with</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder</a>&lt;T&gt;</dt>
+    <dd><p><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder&lt;T&gt;</a></p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TEntity</code></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>entities is null</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>entities contains a null item</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>entities contains a string</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseAutoFixture_" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseAutoFixture*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseAutoFixture" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseAutoFixture">
+  UseAutoFixture()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/DbContextBuilder.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Tell DbContextBuilder to use AutoFixture to create random entities.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DbContextBuilder&lt;T&gt; UseAutoFixture()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder</a>&lt;T&gt;</dt>
+    <dd><p><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder&lt;T&gt;</a></p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseCustomRandomEntityGenerator_" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseCustomRandomEntityGenerator*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseCustomRandomEntityGenerator_Wolfgang_DbContextBuilderCore_IGenerateRandomEntities_" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseCustomRandomEntityGenerator(Wolfgang.DbContextBuilderCore.IGenerateRandomEntities)">
+  UseCustomRandomEntityGenerator(IGenerateRandomEntities)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/DbContextBuilder.cs/#L106"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Allows the user to specify their own implementation of IGenerateRandomEntities
+for generating random entities.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DbContextBuilder&lt;T&gt; UseCustomRandomEntityGenerator(IGenerateRandomEntities generator)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>generator</code> <a class="xref" href="Wolfgang.DbContextBuilderCore.IGenerateRandomEntities.html">IGenerateRandomEntities</a></dt>
+    <dd><p>The generator to use</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder</a>&lt;T&gt;</dt>
+    <dd><p><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder&lt;T&gt;</a></p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseDbContextOptionsBuilder_" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseDbContextOptionsBuilder*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseDbContextOptionsBuilder_Microsoft_EntityFrameworkCore_DbContextOptionsBuilder__0__" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseDbContextOptionsBuilder(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder{`0})">
+  UseDbContextOptionsBuilder(DbContextOptionsBuilder&lt;T&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/DbContextBuilder.cs/#L122"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Specifies a specific instance of UseDbContextOptionsBuilder to use when creating the DbContext.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DbContextBuilder&lt;T&gt; UseDbContextOptionsBuilder(DbContextOptionsBuilder&lt;T&gt; dbContextOptionsBuilder)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>dbContextOptionsBuilder</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.entityframeworkcore.dbcontextoptionsbuilder-1">DbContextOptionsBuilder</a>&lt;T&gt;</dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder</a>&lt;T&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>callback is null</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseInMemory_" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseInMemory*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseInMemory" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseInMemory">
+  UseInMemory()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/DbContextBuilder.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Instructs the builder to use InMemory as the database provider.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DbContextBuilder&lt;T&gt; UseInMemory()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder</a>&lt;T&gt;</dt>
+    <dd><p><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder&lt;T&gt;</a></p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseSqlite_" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSqlite*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseSqlite" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSqlite">
+  UseSqlite()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/DbContextBuilder.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Instructs the builder to use SQLite as the database provider.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DbContextBuilder&lt;T&gt; UseSqlite()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder</a>&lt;T&gt;</dt>
+    <dd><p><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder&lt;T&gt;</a></p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseSqliteForMsSqlServer_" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSqliteForMsSqlServer*"></a>
+
+  <h3 id="Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseSqliteForMsSqlServer" data-uid="Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSqliteForMsSqlServer">
+  UseSqliteForMsSqlServer()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/DbContextBuilder.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Configures the builder to use SQLite as the database provider with SQL Server-specific adjustments,
+such as default value mappings, to better mimic SQL Server behavior for testing or compatibility.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DbContextBuilder&lt;T&gt; UseSqliteForMsSqlServer()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder</a>&lt;T&gt;</dt>
+    <dd><p><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder&lt;T&gt;</a></p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/develop/src/Wolfgang.DbContextBuilder-Core/DbContextBuilder.cs/#L15" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+### YamlMime:TableOfContent
+items:
+- uid: Wolfgang.DbContextBuilderCore
+  name: Wolfgang.DbContextBuilderCore
+  type: Namespace
+  items:
+  - uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1
+    name: DbContextBuilder<T>
+    type: Class
+  - uid: Wolfgang.DbContextBuilderCore.IGenerateRandomEntities
+    name: IGenerateRandomEntities
+    type: Interface
+  - uid: Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer
+    name: SqliteForMsSqlServerModelCustomizer
+    type: Class
+  - uid: Wolfgang.DbContextBuilderCore.SqliteModelCustomizer
+    name: SqliteModelCustomizer
+    type: Class
+memberLayout: SamePage
