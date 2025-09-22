@@ -310,9 +310,9 @@ public class DbContextBuilder<T> where T : DbContext
         catch (InvalidOperationException e)
         {
             // TODO Is this message correct and complete? The last line may be incomplete // DevSkim: ignore DS176209
-            const string msg = "Failed to create database. See InnerExceptions for details. " +
-                               "You can get addition information by creating a new instance of " +
-                               "DbContextOptionsBuilder<T> and passing into UseDbContextOptionsBuilder";
+            const string msg = "Failed to create database. See InnerException for details. " +
+                               "You can get additional information by creating a new instance of " +
+                               "DbContextOptionsBuilder<T> and passing it into UseDbContextOptionsBuilder.";
             throw new InvalidOperationException(msg, e);
         }
 
