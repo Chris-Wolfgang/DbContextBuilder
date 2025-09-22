@@ -133,7 +133,8 @@ public class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
                 OverrideDefaultValue(property);
             }
 
-            { // TODO Override join table handling
+            {
+                // TODO Override join table handling // DevSkim: ignore DS176209
                 // Heuristic: rename many-to-many join tables
                 var foreignKeys = entityType.GetForeignKeys().ToList();
                 var navigation = entityType.GetNavigations().ToList();
