@@ -36,12 +36,12 @@ public class DbContextBuilder<T> where T : DbContext
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
     public DbContextBuilder<T> UseSqlite()
-    // TODO Move to extension method // DevSkim: ignore DS176209
+    // TODO Move to extension method
     {
         _dbProvider = DbProvider.Sqlite;
 
-        // TODO Check is items exist in the list and don't add duplicates // DevSkim: ignore DS176209
-        // TODO Check if Sql Server provider is already registered and if so, remove it // DevSkim: ignore DS176209
+        // TODO Check is items exist in the list and don't add duplicates
+        // TODO Check if Sql Server provider is already registered and if so, remove it
         _serviceCollection
             .AddEntityFrameworkSqlite()
             .AddSingleton<IModelCustomizer, SqliteModelCustomizer>();
@@ -57,12 +57,12 @@ public class DbContextBuilder<T> where T : DbContext
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"/></returns>
     public DbContextBuilder<T> UseSqliteForMsSqlServer()
-    // TODO Move to extension method // DevSkim: ignore DS176209
+    // TODO Move to extension method
     {
         _dbProvider = DbProvider.Sqlite;
 
-        // TODO Check is items exist in the list and don't add duplicates // DevSkim: ignore DS176209
-        // TODO Check if Sql Server provider is already registered and if so, remove it // DevSkim: ignore DS176209
+        // TODO Check is items exist in the list and don't add duplicates
+        // TODO Check if Sql Server provider is already registered and if so, remove it
         _serviceCollection
             .AddEntityFrameworkSqlite()
             .AddSingleton<IModelCustomizer, SqliteForMsSqlServerModelCustomizer>();
@@ -309,7 +309,7 @@ public class DbContextBuilder<T> where T : DbContext
         }
         catch (InvalidOperationException e)
         {
-            // TODO Is this message correct and complete? The last line may be incomplete // DevSkim: ignore DS176209
+            // TODO Is this message correct and complete? The last line may be incomplete
             const string msg = "Failed to create database. See InnerException for details. " +
                                "You can get additional information by creating a new instance of " +
                                "DbContextOptionsBuilder<T> and passing it into UseDbContextOptionsBuilder.";

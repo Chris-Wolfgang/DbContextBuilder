@@ -134,7 +134,7 @@ public class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
             }
 
             {
-                // TODO Override join table handling // DevSkim: ignore DS176209
+                // TODO Override join table handling
                 // Heuristic: rename many-to-many join tables
                 var foreignKeys = entityType.GetForeignKeys().ToList();
                 var navigation = entityType.GetNavigations().ToList();
