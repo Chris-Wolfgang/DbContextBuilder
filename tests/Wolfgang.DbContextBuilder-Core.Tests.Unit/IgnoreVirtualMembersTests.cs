@@ -9,7 +9,7 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 public class IgnoreVirtualMembersTests
 {
     /// <summary>
-    /// Verifies IgnoreVirtualMembersCustomization ignores virtual properties
+    /// Verifies can create a instances of IgnoreVirtualMembers
     /// </summary>
     [Fact]
     public void Can_create_instance_of_IgnoreVirtualMembers()
