@@ -9,7 +9,7 @@ having to rely on an actual database whose data can be changed or deleted over t
 
 - Create DbContext instances with an in-memory database. By default, DbContextBuilder
 uses the Sqlite in-memory database provider. However, you can use other databases by passing
-in your own `DbConnection`
+in your own `DbConnection`.
 
 - Add your own data to the DbContext using the `SeedWith<T>` method
 
