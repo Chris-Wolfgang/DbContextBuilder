@@ -42,10 +42,24 @@ public class DbContextBuilder<T> where T : DbContext
 
         // TODO Check is items exist in the list and don't add duplicates
         // TODO Check if Sql Server provider is already registered and if so, remove it
-        _serviceCollection
-            .AddEntityFrameworkSqlite()
-            .AddSingleton<IModelCustomizer, SqliteModelCustomizer>();
+        // Remove any existing IModelCustomizer registrations to avoid duplicates/competing implementations
+        var modelCustomizerDescriptors = _serviceCollection
+            .Where(sd => sd.ServiceType == typeof(IModelCustomizer))
+            .ToList();
+        foreach (var descriptor in modelCustomizerDescriptors)
+        {
+            _serviceCollection.Remove(descriptor);
+        }
 
+        // Avoid registering EF services multiple times
+        if (!_serviceCollection.Any(sd =>
+            sd.ServiceType.FullName != null &&
+            sd.ServiceType.FullName.Contains("Microsoft.EntityFrameworkCore.Sqlite.SqliteOptionsExtension")))
+        {
+            _serviceCollection.AddEntityFrameworkSqlite();
+        }
+
+        _serviceCollection.AddSingleton<IModelCustomizer, SqliteModelCustomizer>();
         return this;
 	}
 
