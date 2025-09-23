@@ -2,6 +2,8 @@
 # If security settings have been properly configured, any branch that fails this workflow will be blocked from being merged into main and possibly other common branches link develop depending your specific settings
 
 name: PR Checks
+permissions:
+  contents: read
 
 on:
   pull_request:
