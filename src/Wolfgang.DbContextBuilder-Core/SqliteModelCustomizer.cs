@@ -216,6 +216,6 @@ public class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
         //        property.SetComputedColumnSql(rewrittenSql);
         //    }
         //}
-        property.SetComputedColumnSql(null!);
+        property.SetComputedColumnSql(null);
     }
 }
