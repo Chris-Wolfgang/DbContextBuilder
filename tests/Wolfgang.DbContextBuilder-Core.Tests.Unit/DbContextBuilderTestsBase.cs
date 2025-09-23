@@ -333,6 +333,74 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
 
+
+    /// <summary>
+    /// Verifies that calling SeedWith(IEnumerable{T}) with a list of values
+    /// if any of the values is null, throws ArgumentException.
+    /// </summary>
+    [Fact]
+    public void SeedWith_IEnumerable_when_passed_list_of_values_and_one_is_null_throws_ArgumentException()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        var addresses = new List<Address>
+        {
+            new()
+            {
+                AddressId = 1,
+                AddressLine1 = "123 Main St",
+                AddressLine2 = "Apt 4B",
+                City = "Anytown",
+                StateProvinceId = 1,
+                PostalCode = "12345",
+                Rowguid = Guid.NewGuid(),
+                ModifiedDate = DateTime.UtcNow
+            },
+            null!, // Verify method checks for null values
+
+            new()
+            {
+                AddressId = 2,
+                AddressLine1 = "456 Oak St",
+                City = "Another town",
+                StateProvinceId = 2,
+                PostalCode = "67890",
+                Rowguid = Guid.NewGuid(),
+                ModifiedDate = DateTime.UtcNow
+            }
+        };
+
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(addresses.AsEnumerable()));
+        Assert.Equal("entities", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that when calling SeedWith(IEnumerable{T}), if any of the elements in
+    /// the enumerable is a string, throws an ArgumentException.
+    /// </summary>
+    /// <remarks>
+    /// This test is needed because the T is restricted to class, which string is
+    /// </remarks>
+    [Fact]
+    public void SeedWith_IEnumerable_when_passed_an_list_of_strings_throws_ArgumentException()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        var invalidValues = new List<string> { "Dog", "Cat", "Bird" };
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(invalidValues.AsEnumerable()));
+        Assert.Equal("entities", ex.ParamName);
+    }
+
+
+    
     /// <summary>
     /// Verifies that calling SeedWith(IEnumerable{T}) returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>

@@ -150,14 +150,20 @@ public class DbContextBuilder<T> where T : DbContext
     /// <param name="entities">The entities to populate the database with</param>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
     /// <exception cref="ArgumentNullException">entities is null</exception>
+    /// <exception cref="ArgumentException">entities contains a null item</exception>
+    /// <exception cref="ArgumentException">entities contains a string</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(IEnumerable<TEntity> entities) 
         where TEntity : class
     {
         ArgumentNullException.ThrowIfNull(entities, nameof(entities));
 
-        _seedData.AddRange(entities);
+        if (typeof(TEntity) == typeof(string))
+        {
+            throw new ArgumentException("The type of TEntity cannot be string", nameof(entities));
+        }
 
-        return this;
+        var enumerable = entities as TEntity[] ?? entities.ToArray();
+        return SeedWith(enumerable);
     }
 
 
@@ -175,7 +181,9 @@ public class DbContextBuilder<T> where T : DbContext
     {
         ArgumentNullException.ThrowIfNull(entities, nameof(entities));
 
-
+        //var flattened = entities.SelectMany(entity
+        //    => entity is IEnumerable<TEntity> e ? e : [entity]);
+        // SeedWith(entities);
 
         foreach (var entity in entities)
         {
