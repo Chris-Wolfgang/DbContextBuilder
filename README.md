@@ -30,15 +30,22 @@ Here's a simple example of how to use DbContextBuilder to create a DbContext wit
 ```csharp
 // Create a DbContext with seeded random data and your test data
 var context = new DbContextBuilder<YourDbContext>()
-	.SeedWithRandom<YourEntity>(10)		// Seed with 10 random entities
+	// Seed with 10 random entities
+	.SeedWithRandom<YourEntity>(10)		
+	
+	// Seed with specific data
 	.SeedWith(new YourEntity
 		{
 			Id = 1,
 			Name = "Test Entity"
 		}
-	)									// Seed with specific data
-	.SeedWithRandom<YourEntity>(5)		// Seed with 5 random entities
-	.Build();							// Build the DbContext instance
+	)							
+	
+	// Seed with 5 random entities	
+	.SeedWithRandom<YourEntity>(5)		
+	
+	// Build the DbContext instance
+	.Build();							
 
 // Use the context in your tests
 var sut = new YourService(context);
