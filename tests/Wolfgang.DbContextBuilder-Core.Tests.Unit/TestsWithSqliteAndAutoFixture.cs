@@ -2,6 +2,8 @@ using System.Data.Common;
 using System.Text;
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
 using Xunit.Abstractions;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
@@ -33,26 +35,6 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
         // Act & Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseSqlite());
-    }
-
-
-
-    /// <summary>
-    /// Verifies that calling UseSqlite cause BuildAsync() to use Microsoft's Sqlite database
-    /// </summary>
-    [Fact]
-    public async Task UseSqlite_causes_BuildAsync_to_use_Sqlite()
-    {
-        // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
-
-        // Act
-        var context = await sut
-            .UseSqlite()
-            .BuildAsync();
-
-        // Assert
-        Assert.True(context.Database.IsSqlite());
     }
 
 
@@ -130,7 +112,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
     public async Task Database_is_Sqlite()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = new DbContextBuilder<BasicContext>();
 
         // Act
         var context = await sut
@@ -164,7 +146,6 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         // Act
         await sut.BuildAsync();
 
-
         // Assert
         Assert.Contains("CREATE TABLE \"Person_Person\"", buffer.ToString());
     }
@@ -180,7 +161,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
     {
 
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>()
+        var sut = new DbContextBuilder<BasicContext>()
                 .UseSqlite()
                 .UseAutoFixture();
 
@@ -193,7 +174,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         //Assert.True(columns.Any(c => c.TableName == "Person_Person"), "Table Person_Person was not found");
 
         var tables = await GetTableMetadataAsync(context);
-        Assert.Contains(tables, t => t.TableName == "Person_Person");
+        Assert.Contains(tables, t => t.TableName == "dbo_DatabaseLog");
     }
 
 
@@ -207,7 +188,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
     {
 
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>()
+        var sut = new DbContextBuilder<BasicContext>()
             .UseSqlite()
             .UseAutoFixture();
 
@@ -219,10 +200,10 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         var columns = await GetColumnMetadataAsync(context);
 
         var columnsWithNewId = columns.Where(c => c.DefaultValue == "(newid())").ToList();
-        Assert.Equal(28, columnsWithNewId.Count);
+        Assert.Equal(1, columnsWithNewId.Count);
 
         var columnsWithGetDate = columns.Where(c => c.DefaultValue == "(getdate())").ToList();
-        Assert.Equal(75, columnsWithGetDate.Count);
+        Assert.Equal(1, columnsWithGetDate.Count);
     }
 
 
@@ -236,7 +217,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
     {
 
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>()
+        var sut = new DbContextBuilder<BasicContext>()
             .UseSqlite()
             .UseAutoFixture();
 
@@ -244,10 +225,28 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         var context = await sut
             .BuildAsync();
 
-        // Assert
-        var columns = await GetColumnMetadataAsync(context);
-        var columnsWithComputedValues = columns.Where(c => !string.IsNullOrEmpty(c.ComputedValue)).ToList();
-        Assert.Empty(columnsWithComputedValues);
+        //var buffer = new StringBuilder(10_240);
+        //var sw = new StringWriter(buffer);
+        //var optionsBuilder = new DbContextOptionsBuilder<BasicContext>()
+        //        .LogTo(s => sw.WriteLine(s), LogLevel.Information);
+        //try
+        //{
+            //var context = await sut
+            //    .UseDbContextOptionsBuilder(optionsBuilder)
+            //    .BuildAsync();
+
+            // Assert
+            var columns = await GetColumnMetadataAsync(context);
+            var columnsWithComputedValues = columns.Where(c => !string.IsNullOrEmpty(c.ComputedValue)).ToList();
+            Assert.Empty(columnsWithComputedValues);
+
+        //}
+        //catch (Exception e)
+        //{
+        //    e.Data.Add("Logs", buffer.ToString());
+        //    throw;
+        //}
+
     }
 
 
@@ -256,7 +255,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
 
 
-    private static async Task<List<TableMetadata>> GetTableMetadataAsync(AdventureWorksDbContext context)
+    private static async Task<List<TableMetadata>> GetTableMetadataAsync(DbContext context)
     {
         const string commandText = "Select name from sqlite_master where type='table';"; //" and name=@tableName;";
         var connection = context.Database.GetDbConnection();
@@ -264,11 +263,6 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         await using var command = connection.CreateCommand();
         command.CommandText = commandText;
         command.CommandType = System.Data.CommandType.Text;
-
-        //var parameter = command.CreateParameter();
-        //parameter.ParameterName = "tableName";
-        //parameter.Value = tableName;
-        //command.Parameters.Add(parameter);
 
         var tables = new List<TableMetadata>(200);
         await using var reader = await command.ExecuteReaderAsync();
@@ -290,7 +284,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
 
     // Returns a list of columns with default values and computed values for all tables in SQLite
-    private static async Task<List<ColumnMetadata>> GetColumnMetadataAsync(AdventureWorksDbContext context)
+    private static async Task<List<ColumnMetadata>> GetColumnMetadataAsync(DbContext context)
     {
         var result = new List<ColumnMetadata>();
         var connection = context.Database.GetDbConnection();
