@@ -72,7 +72,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         Assert.True(context.Database.IsSqlite());
     }
 
-    
+
 
     /// <summary>
     /// Verifies that UseAutoFixture returns a DbContext{T} for chaining additional calls
@@ -168,7 +168,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         // Act
         var context = await sut
             .BuildAsync();
-        
+
         // Assert
         //var columns = await GetColumnMetadataAsync(context);
         //Assert.True(columns.Any(c => c.TableName == "Person_Person"), "Table Person_Person was not found");
@@ -225,27 +225,10 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         var context = await sut
             .BuildAsync();
 
-        //var buffer = new StringBuilder(10_240);
-        //var sw = new StringWriter(buffer);
-        //var optionsBuilder = new DbContextOptionsBuilder<BasicContext>()
-        //        .LogTo(s => sw.WriteLine(s), LogLevel.Information);
-        //try
-        //{
-            //var context = await sut
-            //    .UseDbContextOptionsBuilder(optionsBuilder)
-            //    .BuildAsync();
-
-            // Assert
-            var columns = await GetColumnMetadataAsync(context);
-            var columnsWithComputedValues = columns.Where(c => !string.IsNullOrEmpty(c.ComputedValue)).ToList();
-            Assert.Empty(columnsWithComputedValues);
-
-        //}
-        //catch (Exception e)
-        //{
-        //    e.Data.Add("Logs", buffer.ToString());
-        //    throw;
-        //}
+        // Assert
+        var columns = await GetColumnMetadataAsync(context);
+        var columnsWithComputedValues = columns.Where(c => !string.IsNullOrEmpty(c.ComputedValue)).ToList();
+        Assert.Empty(columnsWithComputedValues);
 
     }
 
@@ -379,7 +362,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
                             TableName: tableName,
                             ColumnName: columnName!,
                             DefaultValue: defaultValue,
-                            ComputedValue: computedValue 
+                            ComputedValue: computedValue
                         )
                     );
                 }
