@@ -41,7 +41,7 @@ public class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
     /// "dbo" is used as the schema name. You can override this behavior by assigning a
     /// custom implementation to this property
     /// </remarks>
-    public Func<(string? SchemaName, string TableName), string> OverrideTableRenameRenaming
+    public Func<(string? SchemaName, string TableName), string> OverrideTableRenaming
     {
         get =>
             _overrideTableRenameRenaming ??= t =>
@@ -57,6 +57,24 @@ public class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
     }
 
 
+    private Func<string?, string?>? _overrideComputedValueHandling;
+    /// <summary>
+    /// This method is called for each column that has a computed value defined in the model.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <remarks>
+    /// The default handling for this is not leave the computed value as is. However,
+    /// Sqlite has limited support for computed values and the functions used in the model may
+    /// be incompatible with SQLite. You can override this behavior by assigning a custom value
+    /// </remarks>
+    public Func<string?, string?> OverrideComputedValueHandling
+    {
+        get => _overrideComputedValueHandling ??= defaultValue => defaultValue;
+        set => _overrideComputedValueHandling = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
+
+
 
     /// <summary>
     /// A dictionary where the key is the default value as defined in the model and the value is the
@@ -67,6 +85,7 @@ public class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
     /// be replaced with datetime('now') and lower(hex(randomblob(16))) respectively.
     /// </remarks>
     public IDictionary<string, string> DefaultValueMap { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    // TODO unit test
 
 
     private Func<string?, string?>? _overrideDefaultValueHandling;
@@ -122,9 +141,8 @@ public class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
         {
             var originalTableName = entityType.GetTableName();
             var originalSchemaName = entityType.GetSchema();
-
-
-            RenameTable(entityType, OverrideTableRenameRenaming, originalTableName, originalSchemaName);
+            
+            RenameTable(entityType, OverrideTableRenaming, originalTableName, originalSchemaName);
 
             foreach (var property in entityType.GetProperties())
             {
@@ -133,27 +151,9 @@ public class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
                 OverrideDefaultValue(property);
             }
 
-            {
-                // TODO Override join table handling
-                // Heuristic: rename many-to-many join tables
-                var foreignKeys = entityType.GetForeignKeys().ToList();
-                var navigation = entityType.GetNavigations().ToList();
-
-                if (foreignKeys.Count == 2 && navigation.Count == 0)
-                {
-                    var left = foreignKeys[0].PrincipalEntityType;
-                    var right = foreignKeys[1].PrincipalEntityType;
-
-                    var leftName = left.GetTableName();
-                    var rightName = right.GetTableName();
-
-                    var joinName = $"{leftName}_{rightName}";
-                    entityType.SetTableName(joinName);
-                }
-            }
+            OverrideManyToManyTables(entityType);
         }
     }
-
 
 
     private static void RenameTable
@@ -194,9 +194,15 @@ public class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
     }
 
 
-
-    private static void OverrideComputedValue(IMutableProperty property)
+    private void OverrideComputedValue(IMutableProperty property)
     {
+        var originalComputedValueSql = property.GetComputedColumnSql();
+        var newComputedValueSql = OverrideComputedValueHandling(originalComputedValueSql);
+        if (originalComputedValueSql != newComputedValueSql)
+        {
+            property.SetComputedColumnSql(newComputedValueSql);
+        }
+
         //if (computedColumns.TryGetValue((originalSchemaName, originalTableName, property.Name), out var value))
         //{
         //    property.SetComputedColumnSql(value);
@@ -216,6 +222,28 @@ public class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
         //        property.SetComputedColumnSql(rewrittenSql);
         //    }
         //}
-        property.SetComputedColumnSql(null);
+        //property.SetComputedColumnSql(null);
+    }
+
+
+
+    private static void OverrideManyToManyTables(IMutableEntityType entityType)
+    {
+        // TODO Override join table handling
+        // Heuristic: rename many-to-many join tables
+        var foreignKeys = entityType.GetForeignKeys().ToList();
+        var navigation = entityType.GetNavigations().ToList();
+
+        if (foreignKeys.Count == 2 && navigation.Count == 0)
+        {
+            var left = foreignKeys[0].PrincipalEntityType;
+            var right = foreignKeys[1].PrincipalEntityType;
+
+            var leftName = left.GetTableName();
+            var rightName = right.GetTableName();
+
+            var joinName = $"{leftName}_{rightName}";
+            entityType.SetTableName(joinName);
+        }
     }
 }

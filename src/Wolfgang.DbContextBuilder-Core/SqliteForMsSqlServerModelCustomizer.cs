@@ -24,5 +24,22 @@ public class SqliteForMsSqlServerModelCustomizer : SqliteModelCustomizer
     {
         DefaultValueMap.Add("(newid())", "lower(hex(randomblob(16)))");
         DefaultValueMap.Add("(getdate())", "datetime('now')");
+
+
+        OverrideDefaultValueHandling = s =>
+        {
+            if (s == null)
+            {
+                return s;
+            }
+
+            return DefaultValueMap.TryGetValue(s, out var mappedValue)
+                ? mappedValue
+                : null;
+        };
+
+        OverrideComputedValueHandling = _ => null;
+
+        
     }
 }
