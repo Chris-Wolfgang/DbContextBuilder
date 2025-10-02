@@ -35,7 +35,7 @@ jobs:
         run: dotnet restore
 
       - name: Build Solution (Release)
-        # Specify any additional build options
+        
         run: dotnet build --no-restore --configuration Release
 
       - name: Run Tests and Collect Coverage for Each Test Project (Release)
