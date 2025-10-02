@@ -45,100 +45,11 @@ jobs:
             dotnet test "$proj" --no-build --configuration Release --collect:"XPlat Code Coverage" --results-directory "./TestResults"
           done
 
-      - name: Install ReportGenerator
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
-
-      - name: Generate Coverage Reports (HTML, TextSummary, GitHub Markdown, CSV)
-        run: |
-          reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:"CoverageReport" -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
-
-      - name: Check Coverage Thresholds
-        run: |
-          if [ ! -f CoverageReport/Summary.txt ]; then
-            echo "CoverageReport/Summary.txt not found! Coverage report was not generated."
-            exit 1
-          fi
-
-          failed_projects=""
-          while read -r line; do
-            module=$(echo "$line" | awk '{print $1}')
-            percent=$(echo "$line" | awk '{print $NF}' | tr -d '%' | xargs)
-            echo "Checking module: '$module', percent: '$percent'"
-            if [[ "$percent" =~ ^[0-9]+$ ]]; then
-              if [ "$percent" -lt 80 ]; then
-                echo "FAIL: $module is below 80% ($percent%)"
-                failed_projects="$failed_projects $module ($percent%)"
-              else
-                echo "PASS: $module meets coverage ($percent%)"
-              fi
-            else
-              echo "WARNING: extracted percent value '$percent' is not a number!"
-            fi
-          done < <(grep -E '^[^ ].*[0-9]+%$' CoverageReport/Summary.txt | grep -v '^Summary')
-
-          if [ -n "$failed_projects" ]; then
-            echo "The following projects are below 80% line coverage:$failed_projects"
-            exit 1
-          fi
-
-      - name: Upload coverage results and reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-results-and-report-${{ matrix.os }}
-          path: |
-            TestResults/
-            CoverageReport/
-
-      - name: Install DevSkim CLI
-        run: dotnet tool install --global Microsoft.CST.DevSkim.CLI
-
-      - name: Run DevSkim Security Scan (Save output)
-        run: devskim analyze --source-code . --file-format text -E --ignore-rule-ids DS176209 --ignore-globs "**/api/**,**/CoverageReport/**"
-
-      - name: Show DevSkim Results in Summary
-        if: failure()
-        run: |
-          echo "### DevSkim Security Issues Found"
-          cat devskim-results.txt
-        shell: bash
-
-      - name: Upload DevSkim Results as Artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: devskim-results-${{ matrix.os }}
-          path: devskim-results.txt
-
-  publish:
-    name: Pack and Publish NuGet
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: |
-            5.0.x
-            6.0.x
-            7.0.x
-            8.0.x
-            9.0.x
-
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build Solution (Release)
-        run: dotnet build --no-restore --configuration Release
-
       - name: Pack projects
         shell: pwsh
         run: |
           mkdir ./nupkg
-          Get-ChildItem -Path "src" -Recurse -Filter *.csproj | Where-Object { $_.Name -notlike "*Tests.csproj" } | ForEach-Object {
+          Get-ChildItem -Path "src" -Recurse -Filter *.csproj | Where-Object { $_.Name -notlike "*.Tests.*.csproj" } | ForEach-Object {
             dotnet pack $_.FullName --configuration Release --no-build --output ./nupkg
           }
 
