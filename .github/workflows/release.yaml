@@ -49,7 +49,7 @@ jobs:
         shell: pwsh
         run: |
           mkdir ./nupkg
-          Get-ChildItem -Path "src" -Recurse -Filter *.csproj | Where-Object { $_.Name -notlike "*.Tests.*.csproj" } | ForEach-Object {
+          Get-ChildItem -Path "src" -Recurse -Filter *.csproj | Where-Object { ($_.Name -notlike "*Test*.csproj") -and ($_.Name -notlike "*.Tests.csproj") } | ForEach-Object {
             dotnet pack $_.FullName --configuration Release --no-build --output ./nupkg
           }
 
