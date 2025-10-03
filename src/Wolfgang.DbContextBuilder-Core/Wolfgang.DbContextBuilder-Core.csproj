@@ -37,7 +37,7 @@
 	<ItemGroup>
 	  <None Include="..\..\dbcontext-builder.ico">
 	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
+	    <PackagePath>/</PackagePath>
 	  </None>
 	</ItemGroup>
 
