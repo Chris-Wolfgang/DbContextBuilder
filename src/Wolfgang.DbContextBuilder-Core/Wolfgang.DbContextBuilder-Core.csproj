@@ -17,7 +17,7 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageIcon>dbcontext-builder.png</PackageIcon>
-		<ApplicationIcon>dbcontext-builder.ico</ApplicationIcon>
+		<ApplicationIcon>Content\dbcontext-builder.ico</ApplicationIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
 		<PackageTags></PackageTags>
@@ -35,14 +35,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Content Include="dbcontext-builder.ico" />
+	  <Content Include="Content\dbcontext-builder.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Include="..\..\dbcontext-builder.png">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
 	  <None Include="..\..\README.md">
 	    <Pack>True</Pack>
 	    <PackagePath>\</PackagePath>
@@ -60,5 +56,12 @@
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.36" />
 	  <PackageReference Include="System.Net.Http" Version="4.3.4" />
 	  <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Content\dbcontext-builder.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
 	</ItemGroup>
 </Project>
