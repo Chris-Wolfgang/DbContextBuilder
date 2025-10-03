@@ -2,6 +2,7 @@
 # If security settings have been properly configured, any branch that fails this workflow will be blocked from being merged into main and possibly other common branches link develop depending your specific settings
 
 name: PR Checks
+
 permissions:
   contents: read
   
@@ -29,7 +30,7 @@ jobs:
             7.0.x
             8.0.x
             9.0.x
-      
+
       - name: Restore dependencies
         run: dotnet restore
 
