@@ -16,8 +16,8 @@
 		<AssemblyVersion>1.0.0</AssemblyVersion>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<PackageIcon></PackageIcon>
-		<ApplicationIcon></ApplicationIcon>
+		<PackageIcon>dbcontext-builder.png</PackageIcon>
+		<ApplicationIcon>dbcontext-builder.ico</ApplicationIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
 		<PackageTags></PackageTags>
@@ -33,6 +33,21 @@
 	<PropertyGroup>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <Content Include="dbcontext-builder.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="..\..\dbcontext-builder.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	  <None Include="..\..\README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
 
 	<ItemGroup>
 	  <PackageReference Include="AutoFixture" Version="4.18.1" />
