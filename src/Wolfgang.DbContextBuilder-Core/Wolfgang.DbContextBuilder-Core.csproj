@@ -15,7 +15,7 @@
 		<AssemblyVersion>1.0.0</AssemblyVersion>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<PackageIcon>dbcontext-builder.png</PackageIcon>
+		<PackageIcon>Content/dbcontext-builder.png</PackageIcon>
 		<ApplicationIcon>Content/dbcontext-builder.ico</ApplicationIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
