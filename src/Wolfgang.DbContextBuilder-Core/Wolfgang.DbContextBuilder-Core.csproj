@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
 		<TargetFrameworks>net6.0</TargetFrameworks>
@@ -31,10 +32,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Content Include="Content\dbcontext-builder.ico" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <PackageReference Include="AutoFixture" Version="4.18.1" />
 	  <PackageReference Include="coverlet.collector" Version="6.0.4">
 	    <PrivateAssets>all</PrivateAssets>
@@ -50,6 +47,7 @@
 	<ItemGroup>
 		<!-- Include the icon and README file directly in the package's root -->
 		<None Include="Content\dbcontext-builder.png" Pack="true" PackagePath="/" />
+		<None Include="Content\dbcontext-builder.ico" Pack="true" PackagePath="/" />
 		<None Include="..\..\README.md" Pack="True" PackagePath="/" />
 	</ItemGroup>
 </Project>
