@@ -74,7 +74,6 @@ jobs:
 
       - name: Pack NuGet Package for Each Project in Src (Release)
         run: |
-          mkdir -p ./nuget-packages
           find ./src -type f -name '*.csproj' | while read proj; do
             echo "Packing $proj"
             dotnet pack "$proj" --no-build --configuration Release --output ./nuget-packages			
