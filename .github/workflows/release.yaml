@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-    branches:
-      - main
 
 permissions:
   contents: read
@@ -41,7 +39,7 @@ jobs:
         run: |
           find ./tests -type f -name '*Test*.csproj' | while read proj; do
             echo "Testing $proj"
-            dotnet test "$proj" --no-build --configuration Release
+            dotnet test "$proj" --no-build --configuration Release --logger:"trx;LogFileName=TestResults.trx"
           done
 
       - name: Upload test results
@@ -49,8 +47,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.os }}
-          path: TestResults/
-
+          path: '**/TestResults*.trx'
 
   publish:
     name: Pack and Publish NuGet
@@ -83,7 +80,9 @@ jobs:
           done
 
       - name: Publish NuGet Package
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }} # Ensure this secret is set in repository settings
         run: |
           for pkg in ./nuget-packages/*.nupkg; do
-            echo dotnet nuget push "$pkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+            dotnet nuget push "$pkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json
           done
