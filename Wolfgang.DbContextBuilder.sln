@@ -20,7 +20,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExtraProjects", "ExtraProje
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdventureWorks", "extra-projects\AdventureWorks\AdventureWorks.csproj", "{7DF70A74-9815-468E-94AC-F8C00B175D41}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{4A414A11-35A9-4728-855B-D575C0A6FB8C}"
+	ProjectSection(SolutionItems) = preProject
+		.github\CODEOWNERS = .github\CODEOWNERS
+		.github\copilot-instructions.md = .github\copilot-instructions.md
+		.github\dependabot.yml = .github\dependabot.yml
+		.github\docfx.yaml = .github\docfx.yaml
+		.github\pull_request_template.md = .github\pull_request_template.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution Files", "{2D5E322A-0CBB-45D4-8D81-E4BBD5537FF1}"
 	ProjectSection(SolutionItems) = preProject
 		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
 		CONTRIBUTING.md = CONTRIBUTING.md
@@ -29,15 +38,20 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		SETUP.md = SETUP.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflows", "Workflows", "{995FD3AC-F899-4E98-BE05-FD521C2FEC57}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{4A414A11-35A9-4728-855B-D575C0A6FB8C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github", "github", "{5D2E4A5A-4CB1-4D29-8BF6-FE688F5534C7}"
 	ProjectSection(SolutionItems) = preProject
 		.github\CODEOWNERS = .github\CODEOWNERS
 		.github\copilot-instructions.md = .github\copilot-instructions.md
 		.github\dependabot.yml = .github\dependabot.yml
 		.github\docfx.yaml = .github\docfx.yaml
 		.github\pull_request_template.md = .github\pull_request_template.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{7A5E991F-1C0B-4FDC-A133-7639A4C9B9FB}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\create-labels.yaml = .github\workflows\create-labels.yaml
+		.github\workflows\pr.yaml = .github\workflows\pr.yaml
+		.github\workflows\release.yaml = .github\workflows\release.yaml
 	EndProjectSection
 EndProject
 Global
@@ -67,6 +81,8 @@ Global
 		{9FB5B239-05C0-554C-645D-43AD6EA620E4} = {FE76EF26-2FEF-446B-B219-AEE9E697D0ED}
 		{7DF70A74-9815-468E-94AC-F8C00B175D41} = {95EB5CAB-DBD1-4769-8D0A-770B03DBFA6A}
 		{4A414A11-35A9-4728-855B-D575C0A6FB8C} = {8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}
+		{5D2E4A5A-4CB1-4D29-8BF6-FE688F5534C7} = {2D5E322A-0CBB-45D4-8D81-E4BBD5537FF1}
+		{7A5E991F-1C0B-4FDC-A133-7639A4C9B9FB} = {5D2E4A5A-4CB1-4D29-8BF6-FE688F5534C7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {31C82D45-4E67-40D9-821C-1C2E54B0DF63}
