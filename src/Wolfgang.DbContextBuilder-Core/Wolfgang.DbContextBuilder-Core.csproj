@@ -17,7 +17,6 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageIcon>dbcontext-builder.png</PackageIcon>
-
 		<ApplicationIcon>Content\dbcontext-builder.ico</ApplicationIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
@@ -32,12 +31,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Content Include="Content\dbcontext-builder.ico">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-		<Content Include="Content\dbcontext-builder.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
+	  <Content Include="Content\dbcontext-builder.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -58,5 +52,4 @@
 		<None Include="Content\dbcontext-builder.png" Pack="true" PackagePath="/" />
 		<None Include="..\..\README.md" Pack="True" PackagePath="/" />
 	</ItemGroup>
-
 </Project>
