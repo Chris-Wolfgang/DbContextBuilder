@@ -17,6 +17,7 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageIcon>dbcontext-builder.png</PackageIcon>
+
 		<ApplicationIcon>Content\dbcontext-builder.ico</ApplicationIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
@@ -30,19 +31,13 @@
 
 	</PropertyGroup>
 
-	<PropertyGroup>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-	</PropertyGroup>
-
 	<ItemGroup>
-	  <Content Include="Content\dbcontext-builder.ico" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Include="..\..\README.md">
-	    <Pack>True</Pack>
-	    <PackagePath>/</PackagePath>
-	  </None>
+	  <Content Include="Content\dbcontext-builder.ico">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+		<Content Include="Content\dbcontext-builder.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -59,9 +54,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="Content\dbcontext-builder.png">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
+		<!-- Include the icon and README file directly in the package's root -->
+		<None Include="Content\dbcontext-builder.png" Pack="true" PackagePath="/" />
+		<None Include="..\..\README.md" Pack="True" PackagePath="/" />
 	</ItemGroup>
+
 </Project>
