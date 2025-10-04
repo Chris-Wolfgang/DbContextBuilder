@@ -20,15 +20,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExtraProjects", "ExtraProje
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdventureWorks", "extra-projects\AdventureWorks\AdventureWorks.csproj", "{7DF70A74-9815-468E-94AC-F8C00B175D41}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{4A414A11-35A9-4728-855B-D575C0A6FB8C}"
-	ProjectSection(SolutionItems) = preProject
-		.github\CODEOWNERS = .github\CODEOWNERS
-		.github\copilot-instructions.md = .github\copilot-instructions.md
-		.github\dependabot.yml = .github\dependabot.yml
-		.github\docfx.yaml = .github\docfx.yaml
-		.github\pull_request_template.md = .github\pull_request_template.md
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,7 +46,6 @@ Global
 		{F72FE13E-937F-7BA2-8FBA-CD45328555DE} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{9FB5B239-05C0-554C-645D-43AD6EA620E4} = {FE76EF26-2FEF-446B-B219-AEE9E697D0ED}
 		{7DF70A74-9815-468E-94AC-F8C00B175D41} = {95EB5CAB-DBD1-4769-8D0A-770B03DBFA6A}
-		{4A414A11-35A9-4728-855B-D575C0A6FB8C} = {8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {31C82D45-4E67-40D9-821C-1C2E54B0DF63}
