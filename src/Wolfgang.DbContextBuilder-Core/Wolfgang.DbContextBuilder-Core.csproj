@@ -46,7 +46,6 @@
 		<!-- Include the icon and README file directly in the package's root -->
 		<None Include="..\..\README.md">
 		  <Pack>True</Pack>
-		  <PackagePath>\</PackagePath>
 		</None>
 		<None Include="Content/dbcontext-builder.png" Pack="true" PackagePath="/" />
 		<None Include="Content/dbcontext-builder.ico" Pack="true" PackagePath="/" />
