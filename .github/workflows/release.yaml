@@ -11,8 +11,8 @@ permissions:
   contents: read
 
 jobs:
-  release:
-    name: Build, Test, Pack, and Publish
+  build-and-test:
+    name: Build and Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -51,12 +51,40 @@ jobs:
           name: test-results-${{ matrix.os }}
           path: TestResults/
 
-      - name: Pack NuGet Package
-        run: dotnet pack --no-build --configuration Release --output ./nuget-packages
+
+  publish:
+    name: Pack and Publish NuGet
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            5.0.x
+            6.0.x
+            7.0.x
+            8.0.x
+            9.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build Solution (Release)
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Pack NuGet Package for Each Project in Src (Release)
+        run: |
+          find ./src -type f -name '*.csproj' | while read proj; do
+            echo "Packing $proj"
+            dotnet pack "$proj" --no-build --configuration Release --output ./nuget-packages			
+          done
 
       - name: Publish NuGet Package
-        if: runner.os == 'Linux'
         run: |
           for pkg in ./nuget-packages/*.nupkg; do
-            dotnet nuget push "$pkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+            echo dotnet nuget push "$pkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
           done
