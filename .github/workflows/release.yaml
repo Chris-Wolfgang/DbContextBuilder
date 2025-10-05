@@ -35,11 +35,12 @@ jobs:
       - name: Build Solution (Release)
         run: dotnet build --no-restore --configuration Release
 
-      - name: Run Tests for Each Test Project (Release)
+      - name: Run tests for all test projects
+        shell: bash
         run: |
           find ./tests -type f -name '*Test*.csproj' | while read proj; do
-            echo "Testing $proj"
-            dotnet test "$proj" --no-build --configuration Release --logger:"trx;LogFileName=TestResults.trx"
+            echo "Running tests for $proj"
+            dotnet test "$proj" --no-build --configuration Release
           done
 
       - name: Upload test results
@@ -73,6 +74,7 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Pack NuGet Package for Each Project in Src (Release)
+        shell: bash
         run: |
           find ./src -type f -name '*.csproj' | while read proj; do
             echo "Packing $proj"
