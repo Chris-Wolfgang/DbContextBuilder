@@ -40,7 +40,7 @@ jobs:
         run: |
           find ./tests -type f -name '*Test*.csproj' | while read proj; do
             echo "Running tests for $proj"
-            dotnet test "$proj"
+            dotnet test "$proj" --no-build --configuration Release
           done
 
       - name: Upload test results
