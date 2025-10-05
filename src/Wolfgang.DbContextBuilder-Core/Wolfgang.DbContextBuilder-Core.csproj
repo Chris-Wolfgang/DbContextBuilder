@@ -3,7 +3,7 @@
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
 		<TargetFrameworks>net6.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.1.0-prelease2</Version>
+		<Version>0.1.0-prerelease2</Version>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<Title>$(AssemblyName)</Title>
 		<Authors>Chris Wolfgang</Authors>
