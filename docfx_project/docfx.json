@@ -1,27 +1,28 @@
 {
-  "metadata": [
-    {
-      "src": [
-        {
-          "files": ["../src/Wolfgang.DbContextBuilder-Core/Wolfgang.DbContextBuilder-Core.csproj"]
-        }
-      ],
-      "dest": "api"
-    }
-  ],
-  "build": {
-    "content": [
-      { "files": ["**/*.md", "api/**.yml"] }
+"metadata": [
+  {
+    "src": [
+      {
+        "files": ["src/Wolfgang.DbContextBuilder-Core/Wolfgang.DbContextBuilder-Core.csproj"]
+      }
     ],
-    "resource": [
-      { "files": ["images/**"] }
-    ],
-    "overwrite": [
-      { "files": ["../README.md"] }
-    ],
-    "dest": "_site",
-    "globalMetadata": {
-      "_appTitle": "DbContextBuilder API Documentation"
-    }
+    "dest": "api"
   }
+],
+
+"build": {
+	  "content": [
+		{ "files": ["**/*.md", "api/**.yml"] }
+	  ],
+	  "resource": [
+		{ "files": ["images/**"] }
+	  ],
+	  "overwrite": [
+		{ "files": ["README.md"] }
+	  ],
+	  "dest": "_site",
+	  "globalMetadata": {
+		"_appTitle": "DbContextBuilder API Documentation"
+	  }
+	}
 }
