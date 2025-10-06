@@ -34,7 +34,9 @@ var context = new DbContextBuilder<YourDbContext>()
 	.SeedWithRandom<YourEntity>(10)		
 	
 	// Seed with specific data
-	.SeedWith(new YourEntity
+	.SeedWith
+	(
+		new YourEntity
 		{
 			Id = 1,
 			Name = "Test Entity"
