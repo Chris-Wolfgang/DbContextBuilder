@@ -1,28 +1,53 @@
 {
-"metadata": [
-  {
-    "src": [
-      {
-        "files": ["src/Wolfgang.DbContextBuilder-Core/Wolfgang.DbContextBuilder-Core.csproj"]
-      }
+    "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+    "metadata": [
+        {
+            "src": [
+                {
+                    "src": "src",
+                    "files": [
+                        "**/*.csproj"
+                    ],
+                    "exclude": [
+                        "**/bin/**",
+                        "**/obj/**"
+                    ]
+                }
+            ],
+            "dest": "api"
+        }
     ],
-    "dest": "api"
-  }
-],
-
-"build": {
-	  "content": [
-		{ "files": ["**/*.md", "api/**.yml"] }
-	  ],
-	  "resource": [
-		{ "files": ["images/**"] }
-	  ],
-	  "overwrite": [
-		{ "files": ["README.md"] }
-	  ],
-	  "dest": "_site",
-	  "globalMetadata": {
-		"_appTitle": "DbContextBuilder API Documentation"
-	  }
-	}
+    "build": {
+        "content": [
+            {
+				"files": [
+				  "docs/toc.yml",
+				  "docs/*.md",
+				  "docs/articles/**.md",
+				  "api/**.yml",
+				  "api/toc.yaml",
+				  "api/index.md",
+				  "README.md"
+				]
+            }
+        ],
+        "resource": [
+            {
+                "files": [
+                    "images/**"
+                ]
+            }
+        ],
+        "output": "api",
+        "template": [
+            "default",
+            "modern"
+        ],
+        "globalMetadata": {
+            "_appName": "DbContextBuilder",
+            "_appTitle": "DbContextBuilder",
+            "_enableSearch": true,
+            "pdf": true
+        }
+    }
 }
