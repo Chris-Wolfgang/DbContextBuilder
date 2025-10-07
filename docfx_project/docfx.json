@@ -4,9 +4,10 @@
         {
             "src": [
                 {
-                    "src": "src",
+                    "src": "../",
                     "files": [
-                        "**/*.csproj"
+                        "**/*.csproj",
+						"DbContextBuilder/DbContextBuilder.csproj"
                     ],
                     "exclude": [
                         "**/bin/**",
@@ -28,14 +29,16 @@
 				  "api/toc.yaml",
 				  "api/index.md",
 				  "README.md"
-				]
+				],
+				"src": "../"
             }
         ],
         "resource": [
             {
                 "files": [
                     "images/**"
-                ]
+                ],
+				"src": "../"				
             }
         ],
         "output": "api",
