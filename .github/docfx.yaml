@@ -4,10 +4,15 @@ on:
   push:
     branches:
       - main
-
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  
 jobs:
   build-docs:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -15,13 +20,13 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.x'
 
       - name: Install DocFX
         run: dotnet tool install -g docfx
 
       - name: Build documentation
-        run: docfx docfx.json
+        run: docfx build docfx_project/docfx.json
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
