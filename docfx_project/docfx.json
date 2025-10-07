@@ -1,56 +1,51 @@
 {
-    "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
-    "metadata": [
+  "metadata": [
+    {
+      "src": [
         {
-            "src": [
-                {
-                    "src": "../",
-                    "files": [
-                        "**/*.csproj",
-						"DbContextBuilder/DbContextBuilder.csproj"
-                    ],
-                    "exclude": [
-                        "**/bin/**",
-                        "**/obj/**"
-                    ]
-                }
-            ],
-            "dest": "api"
+          "files": [
+            "DbContextBuilder/DbContextBuilder.csproj"
+          ],
+          "src": "../"
         }
-    ],
-    "build": {
-        "content": [
-            {
-				"files": [
-				  "docs/toc.yml",
-				  "docs/*.md",
-				  "docs/articles/**.md",
-				  "api/**.yml",
-				  "api/toc.yaml",
-				  "api/index.md",
-				  "README.md"
-				],
-				"src": "../"
-            }
-        ],
-        "resource": [
-            {
-                "files": [
-                    "images/**"
-                ],
-				"src": "../"				
-            }
-        ],
-        "output": "api",
-        "template": [
-            "default",
-            "modern"
-        ],
-        "globalMetadata": {
-            "_appName": "DbContextBuilder",
-            "_appTitle": "DbContextBuilder",
-            "_enableSearch": true,
-            "pdf": true
-        }
+      ],
+      "dest": "api"
     }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "docs/toc.yml",
+          "docs/*.md",
+          "docs/articles/**.md",
+          "api/**.yml",
+          "api/toc.yaml",
+          "api/index.md",
+          "README.md"
+        ],
+        "src": "../"
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ],
+        "src": "../"
+      }
+    ],
+    "overwrite": [
+      "docs/overrides/*.md"
+    ],
+    "dest": "_site",
+    "globalMetadata": {
+      "_appTitle": "DbContextBuilder",
+      "_appFavicon": "images/favicon.ico"
+    },
+    "template": [
+      "default",
+      "statictoc"
+    ]
+  }
 }
