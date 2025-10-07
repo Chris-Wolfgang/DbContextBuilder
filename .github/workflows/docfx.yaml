@@ -27,7 +27,8 @@ jobs:
         run: dotnet tool update docfx --global
 
       - name: Build Docs
-        run: docfx build docfx_project/docfx.json
+        run: docfx build 
+        working-directory: docfx_project
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
