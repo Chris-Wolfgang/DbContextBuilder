@@ -24,6 +24,13 @@ jobs:
         with:
           dotnet-version: '8.x'
 
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build Solution (Release)
+        # Specify any additional build options
+        run: dotnet build --no-restore --configuration Release
+        
       - name: Install DocFX
         run: dotnet tool install -g docfx
 
