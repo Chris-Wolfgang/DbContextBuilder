@@ -43,6 +43,11 @@
       "_appTitle": "DbContextBuilder",
       "_appFavicon": "images/favicon.ico"
     },
+    "fileMetadata": {
+      "outputFileName": {
+        "README.md": "index.html"
+      }
+    },	  
     "template": [
       "default",
       "statictoc"
