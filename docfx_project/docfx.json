@@ -42,9 +42,6 @@
     "globalMetadata": {
       "_appTitle": "DbContextBuilder",
       "_appFavicon": "images/favicon.ico"
-    },
-    "outputFileMap": {
-      "README.md": "index.html"
     },	  
     "template": [
       "default",
