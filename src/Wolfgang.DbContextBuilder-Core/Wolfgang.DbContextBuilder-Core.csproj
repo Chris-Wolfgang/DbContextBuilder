@@ -1,10 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿ <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
 		<TargetFrameworks>net6.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<Version>0.1.0-prerelease2</Version>
-		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<Title>$(AssemblyName)</Title>
 		<Authors>Chris Wolfgang</Authors>
 		<Description>A library for easily building DbContext for testing using in-memory database</Description>
@@ -20,7 +19,6 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
 		<PackageTags></PackageTags>
-
 
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -48,4 +46,10 @@
 		<None Include="Content\dbcontext-builder.png" Pack="true" PackagePath="/" />
 		<None Include="Content\dbcontext-builder.ico" Pack="true" PackagePath="/" />
 	</ItemGroup>
+
+	 <PropertyGroup>
+		 <GenerateDocumentationFile>true</GenerateDocumentationFile>
+		 <NoWarn>$(NoWarn);1591</NoWarn>
+	 </PropertyGroup>
+
 </Project>
