@@ -16,6 +16,7 @@
     "content": [
       {
         "files": [
+		  "index.md",
           "docs/toc.yml",
           "docs/*.md",
           "docs/articles/**.md",
