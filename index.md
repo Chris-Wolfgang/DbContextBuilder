@@ -3,3 +3,4 @@
 This is the homepage for the DbContextBuilder documentation.
 
 - [Getting Started](docs/getting-started.md)
+- [API Reference](api/index.md) 

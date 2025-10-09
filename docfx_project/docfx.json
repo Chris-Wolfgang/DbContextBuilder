@@ -4,7 +4,7 @@
       "src": [
         {
           "files": [
-            "DbContextBuilder/DbContextBuilder.csproj"
+			"src/Wolfgang.DbContextBuilder-Core/Wolfgang.DbContextBuilder-Core.csproj"
           ],
           "src": "../"
         }
@@ -17,16 +17,13 @@
       {
         "files": [
 		  "index.md",
+          "README.md",
           "docs/toc.yml",
-          "docs/*.md",
-          "docs/articles/**.md",
+		  "docs/**/*.md",
           "api/**.yml",
-          "api/toc.yaml",
-          "api/index.md",
-          "README.md"
-        ],
-        "src": "../"
-      }
+          "api/toc.yml"
+        ]
+	  }
     ],
     "resource": [
       {
