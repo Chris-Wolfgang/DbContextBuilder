@@ -23,7 +23,8 @@
           "api/**.yml",
           "api/toc.yml"
         ]
-	  }
+	  },
+	  "src": "../"
     ],
     "resource": [
       {
