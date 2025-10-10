@@ -9,4 +9,5 @@ This is the homepage for the DbContextBuilder documentation.
 
 - [Main Documentation Portal](./_site/index.html)
 - [Browse All API Docs](./_site/api/index.html)
-- [Browse All API Docs](./_site/api/toc.html)
+-
+- [Browse All API Docs](./api/toc.html)
