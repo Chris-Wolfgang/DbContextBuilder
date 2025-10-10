@@ -43,8 +43,6 @@
     },	  
     "template": [
       "default",
-	  "modern",
-      "statictoc"
-    ]
+	  "modern"    ]
   }
 }
