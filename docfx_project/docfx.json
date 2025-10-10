@@ -16,7 +16,7 @@
     "content": [
       {
         "files": [
-		  "index.md",
+		  "docs/index.md",
           "README.md",
           "docs/toc.yml",
 		  "docs/**/*.md",
@@ -42,7 +42,8 @@
       "_appFavicon": "images/favicon.ico"
     },	  
     "template": [
-      "default",
-	  "modern"    ]
+	  "modern",
+      "default"
+	]
   }
 }
