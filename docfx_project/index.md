@@ -2,11 +2,7 @@
 
 This is the homepage for the DbContextBuilder documentation.
 
+- [Read Me](https://github.com/Chris-Wolfgang/DbContextBuilder)
 - [Getting Started](docs/getting-started.md)
 - [API Reference](api/toc.html)
 
-## Browse Generated Documentation
-
-- [Main Documentation Portal](./_site/index.html)
-- [Browse All API Docs](./_site/api/index.html)
--
