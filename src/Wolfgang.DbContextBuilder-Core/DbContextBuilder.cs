@@ -1,7 +1,4 @@
-using System.Data.Common;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Wolfgang.DbContextBuilderCore;
@@ -14,75 +11,13 @@ namespace Wolfgang.DbContextBuilderCore;
 /// </summary>
 public class DbContextBuilder<T> where T : DbContext
 {
-	internal enum DbProvider
-	{
-		InMemory,
-		Sqlite
-	}
-
-
-	private DbProvider _dbProvider = DbProvider.InMemory;
     private readonly List<object> _seedData = [];
-    private readonly ServiceCollection _serviceCollection = [];
+    internal readonly ServiceCollection ServiceCollection = [];
     private DbContextOptionsBuilder<T>? _dbContextOptionsBuilder;
+    internal ICreateDbContext? CreateDbContext;
 
 
     internal IGenerateRandomEntities RandomEntityGenerator { get; private set; } = new AutoFixtureRandomEntityGenerator();
-
-
-
-    /// <summary>
-    /// Instructs the builder to use SQLite as the database provider.
-    /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-    public DbContextBuilder<T> UseSqlite()
-    // TODO Move to extension method
-    {
-        _dbProvider = DbProvider.Sqlite;
-
-        // TODO Check is items exist in the list and don't add duplicates
-        // TODO Check if Sql Server provider is already registered and if so, remove it
-        // Remove any existing IModelCustomizer registrations to avoid duplicates/competing implementations
-        var modelCustomizerDescriptors = _serviceCollection
-            .Where(sd => sd.ServiceType == typeof(IModelCustomizer))
-            .ToList();
-        foreach (var descriptor in modelCustomizerDescriptors)
-        {
-            _serviceCollection.Remove(descriptor);
-        }
-
-        // Avoid registering EF services multiple times
-        if (!_serviceCollection.Any(sd =>
-            sd.ServiceType.FullName != null &&
-            sd.ServiceType.FullName.Contains("Microsoft.EntityFrameworkCore.Sqlite.SqliteOptionsExtension")))
-        {
-            _serviceCollection.AddEntityFrameworkSqlite();
-        }
-
-        _serviceCollection.AddSingleton<IModelCustomizer, SqliteModelCustomizer>();
-        return this;
-	}
-
-
-
-    /// <summary>
-    /// Configures the builder to use SQLite as the database provider with SQL Server-specific adjustments,
-    /// such as default value mappings, to better mimic SQL Server behavior for testing or compatibility.
-    /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
-    public DbContextBuilder<T> UseSqliteForMsSqlServer()
-    // TODO Move to extension method
-    {
-        _dbProvider = DbProvider.Sqlite;
-
-        // TODO Check is items exist in the list and don't add duplicates
-        // TODO Check if Sql Server provider is already registered and if so, remove it
-        _serviceCollection
-            .AddEntityFrameworkSqlite()
-            .AddSingleton<IModelCustomizer, SqliteForMsSqlServerModelCustomizer>();
-
-        return this;
-    }
 
 
 
@@ -92,25 +27,12 @@ public class DbContextBuilder<T> where T : DbContext
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
     public DbContextBuilder<T> UseInMemory()
 	{
-		_dbProvider = DbProvider.InMemory;
-		return this;
+        CreateDbContext = new InMemoryDbContextCreator();
+        return this;
 	}
 
 
-
-    /// <summary>
-    /// Tell DbContextBuilder to use AutoFixture to create random entities.
-    /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-    public DbContextBuilder<T> UseAutoFixture()
-    {
-        RandomEntityGenerator = new AutoFixtureRandomEntityGenerator();
-
-        return this;
-    }
-
-
-
+    
     /// <summary>
     /// Allows the user to specify their own implementation of IGenerateRandomEntities
     /// for generating random entities.
@@ -181,10 +103,6 @@ public class DbContextBuilder<T> where T : DbContext
     {
         ArgumentNullException.ThrowIfNull(entities, nameof(entities));
 
-        //var flattened = entities.SelectMany(entity
-        //    => entity is IEnumerable<TEntity> e ? e : [entity]);
-        // SeedWith(entities);
-
         foreach (var entity in entities)
         {
             switch (entity)
@@ -247,8 +165,6 @@ public class DbContextBuilder<T> where T : DbContext
 
         ArgumentNullException.ThrowIfNull(func, nameof(func));
 
-
-
         var entities = RandomEntityGenerator
             .GenerateRandomEntities<TEntity>(count)
             .Select(func);
@@ -295,34 +211,19 @@ public class DbContextBuilder<T> where T : DbContext
     /// <exception cref="NotSupportedException">The specified database provider is not supported</exception>
     public async Task<T> BuildAsync()
     {
-        // ReSharper disable once TooWideLocalVariableScope
-        DbConnection? connection; // variable must remain in outer scope so it can be reused later
 
-        var optionBuilder = _dbContextOptionsBuilder ?? new DbContextOptionsBuilder<T>();
 
-        switch (_dbProvider)
+
+       var optionBuilder = _dbContextOptionsBuilder ?? new DbContextOptionsBuilder<T>();
+        if (ServiceCollection.Count > 0)
         {
-            case DbProvider.InMemory:
-                optionBuilder.UseInMemoryDatabase(Guid.NewGuid().ToString());
-                break;
-            case DbProvider.Sqlite:
-                connection = new SqliteConnection("DataSource=:memory:");
-                await connection.OpenAsync();
-                optionBuilder.UseSqlite(connection);
-                break;
-            default:
-                throw new NotSupportedException($"Provider {_dbProvider} is not supported.");
-        }
-
-        if (_serviceCollection.Count > 0)
-        {
-            var provider = _serviceCollection.BuildServiceProvider();
+            var provider = ServiceCollection.BuildServiceProvider();
             optionBuilder.UseInternalServiceProvider(provider);
         }
 
-        var options = optionBuilder.Options;
+        var contextCreator = CreateDbContext ??= new InMemoryDbContextCreator();
 
-        await using var context = (T)Activator.CreateInstance(typeof(T), options)!;
+        var context = await contextCreator.CreateDbContext(optionBuilder);
 
         try
         {
@@ -344,7 +245,6 @@ public class DbContextBuilder<T> where T : DbContext
             await context.SaveChangesAsync();
         }
 
-        // Create a new clean context instance to return
-        return (T)Activator.CreateInstance(typeof(T), options)!;
+        return await contextCreator.CreateDbContext(optionBuilder);
     }
 }
