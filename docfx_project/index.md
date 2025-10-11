@@ -11,7 +11,7 @@ a DbContext with predefined data, making it ideal for unit tests and integration
 having to rely on an actual database whose data can be changed or deleted over time
 
 
-- [ReadMe](Readme.html)
+- [ReadMe](https://github.com/Chris-Wolfgang/DbContextBuilder)
 - [Introduction](docs/introduction.html)
 - [Getting started](docs/getting-started.html)
 - [API](api/Wolfgang.DbContextBuilderCore.html)

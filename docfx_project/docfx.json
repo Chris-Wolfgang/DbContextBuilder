@@ -17,7 +17,6 @@
     "content": [
       {
 		"files": [
-			"README.md",
 			"**/*.{md,yml}"
 		],
         "exclude": [
