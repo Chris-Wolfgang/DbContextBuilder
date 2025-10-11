@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
@@ -25,14 +26,21 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
 
+
     /// <summary>
     /// Verifies that the test project can create an instance of DbContextBuilder can be created.
     /// </summary>
     [Fact]
     public void Can_create_instance_of_DbContextBuilder()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         var builder = new DbContextBuilder<AdventureWorksDbContext>();
         Assert.NotNull(builder);
+
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
     }
 
 
@@ -43,6 +51,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public async Task Calling_Build_returns_instance_of_specified_context()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -52,6 +62,9 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Assert
         Assert.NotNull(context);
         Assert.IsType<AdventureWorksDbContext>(context);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
     }
 
 
@@ -62,6 +75,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public async Task Can_create_multiple_instances_of_specified_context()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -75,6 +90,9 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         Assert.IsType<AdventureWorksDbContext>(context1);
         Assert.IsType<AdventureWorksDbContext>(context2);
         Assert.NotSame(context1, context2);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
     }
 
 
@@ -85,6 +103,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void Calling_UseInMemory_returns_DbContextBuilder()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -93,6 +113,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -103,6 +127,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void Calling_UseSqlite_returns_DbContextBuilder()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -111,9 +137,13 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
-    
+
 
     /// <summary>
     /// Verifies that calling UseAutoFixture returns the DbContextBuilder instance to allow for method chaining.
@@ -121,6 +151,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void Calling_UseAutoFixture_returns_DbContextBuilder()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -129,10 +161,14 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
-    
+
     /// <summary>
     /// Verifies that calling UseCustomRandomEntityGenerator returns the
     /// DbContextBuilder instance to allow for method chaining.
@@ -140,6 +176,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void Calling_UseCustomRandomEntityGenerator_returns_DbContextBuilder()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -150,6 +188,9 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
     }
 
 
@@ -161,12 +202,18 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void Calling_UseCustomRandomEntityGenerator_and_passing_in_null_throws_ArgumentNullException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentNullException> (() => sut.UseCustomRandomEntityGenerator(null!));
         Assert.Equal("generator", ex.ParamName);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -178,6 +225,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void Calling_UseCustomRandomEntityGenerator_sets_the_RandomEntityGenerator_property()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -188,6 +237,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Assert
         Assert.Equal(generator, sut.RandomEntityGenerator);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -200,6 +253,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public async Task A_newly_created_DbContext_contains_the_mapped_entities_but_the_sets_are_empty()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -212,6 +267,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         Assert.Empty(context.Addresses);
         Assert.Empty(context.People);
         Assert.Empty(context.Vendors);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -228,6 +287,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public async Task A_newly_created_DbContext_does_not_have_any_tracked_changes()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -312,6 +373,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Assert
         Assert.False(context.ChangeTracker.HasChanges());
         Assert.Empty(context.ChangeTracker.Entries());
+
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
     }
 
 
@@ -322,6 +387,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_IEnumerable_when_passed_null_throws_ArgumentNullException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
         IEnumerable<Address> entities = null!;
@@ -329,6 +396,11 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act & Assert
         var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWith(entities));
         Assert.Equal("entities", ex.ParamName);
+
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -341,6 +413,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_IEnumerable_when_passed_list_of_values_and_one_is_null_throws_ArgumentException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -375,6 +449,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(addresses.AsEnumerable()));
         Assert.Equal("entities", ex.ParamName);
+
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
     }
 
 
@@ -389,6 +467,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_IEnumerable_when_passed_an_list_of_strings_throws_ArgumentException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -397,10 +477,14 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(invalidValues.AsEnumerable()));
         Assert.Equal("entities", ex.ParamName);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
-    
+
     /// <summary>
     /// Verifies that calling SeedWith(IEnumerable{T}) returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
@@ -408,6 +492,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_IEnumerable_returns_DbContextBuild()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -426,6 +512,11 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -436,6 +527,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public async Task SeedsWith_IEnumerable_seeds_DbContext_with_specified_data()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -464,6 +557,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         actualCountry.ModifiedDate = DateTime.SpecifyKind(actualCountry.ModifiedDate, DateTimeKind.Utc);
 
         Assert.Equivalent(expectedCountry, actualCountry);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -475,6 +572,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_params_returns_DbContextBuild()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -506,6 +605,11 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -516,6 +620,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_params_when_passed_null_throws_ArgumentNullException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -524,6 +630,11 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act & Assert
         var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWith(addresses));
         Assert.Equal("entities", ex.ParamName);
+
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -537,6 +648,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_params_when_passed_list_of_values_and_one_is_null_throws_ArgumentException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -568,6 +681,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(address1, null!, address2));
         Assert.Equal("entities", ex.ParamName);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -579,6 +696,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_params_when_passed_mix_of_values_and_list_of_values_and_one_is_null_throws_ArgumentException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -611,6 +730,11 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(null!, addressList));
         Assert.Equal("entities", ex.ParamName);
+
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -622,6 +746,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_params_when_passed_an_array_of_values_and_one_of_the_elements_is_null_throws_ArgumentException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -657,6 +783,11 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith<Address>(addressList!));
         Assert.Equal("entities", ex.ParamName);
+
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -672,6 +803,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWith_params_when_passed_an_array_of_strings_throws_ArgumentException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -679,6 +812,11 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value"));
         Assert.Equal("entities", ex.ParamName);
+
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -689,6 +827,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public async Task SeedsWith_params_seeds_DbContext_with_specified_data()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -740,6 +880,11 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
             .ToArray();
 
         Assert.Equivalent(expectedCountry, actualCountry);
+
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -750,22 +895,33 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWithRandom_int_when_passed_value_less_than_1_throws_ArgumentException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<Address>(0));
         Assert.Equal("count", ex.ParamName);
+
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
-    
+
     /// <summary>
     /// Verifies that calling SeedWithRandom{T}(int) returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
     public void SeedWithRandom_int_returns_DbContextBuilder()
     {
+        var stopwatch = Stopwatch.StartNew();
+
+
         // Arrange
         var sut = CreateDbContextBuilder();
         const int count = 5;
@@ -775,6 +931,11 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 		// Assert
 		_ = Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -787,6 +948,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [InlineData(17)]
     public async Task SeedWithRandom_int_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -803,6 +966,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Assert
         Assert.NotNull(actualAddresses);
         Assert.Equal(count, actualAddresses.Count);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -813,6 +980,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_value_less_than_1_throws_ArgumentException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         Func<Address, Address> func = null!; 
 
@@ -821,6 +990,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom(0, func));
         Assert.Equal("count", ex.ParamName);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -831,6 +1004,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_null_for_func_throws_ArgumentException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
         Func<Address, Address> func = null!;
@@ -838,6 +1013,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act & Assert
         var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom(17, func));
         Assert.Equal("func", ex.ParamName);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -848,6 +1027,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWithRandom_int_func_TEntity_TEntity_returns_DbContextBuilder()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
         const int count = 5;
@@ -858,6 +1039,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -870,6 +1055,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [InlineData(17)]
     public async Task SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
+        var stopwatch = Stopwatch.StartNew();
+
         var startingId = 1000;
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -897,6 +1084,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Assert
         Assert.NotNull(actualPeople);
         Assert.Equal(count, actualPeople.Count);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -909,6 +1100,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [InlineData(17)]
     public async Task SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_values(int count)
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         const int startingId = 1001;
 
@@ -950,6 +1143,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
             .ToList();
 
         Assert.Equal(expectedBusinessEntityIds, actualBusinessEntityId);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -960,6 +1157,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_value_less_than_1_throws_ArgumentException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         Func<Address, int, Address> func = null!;
         var sut = CreateDbContextBuilder();
@@ -967,6 +1166,11 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom(0, func));
         Assert.Equal("count", ex.ParamName);
+
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -977,6 +1181,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_null_for_func_throws_ArgumentException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
         Func<Address, int, Address> func = null!;
@@ -984,6 +1190,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act & Assert
         var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom(17, func));
         Assert.Equal("func", ex.ParamName);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -994,6 +1204,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void SeedWithRandom_int_func_TEntity_int_TEntity_returns_DbContextBuilder()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
         const int count = 5;
@@ -1004,6 +1216,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -1016,6 +1232,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [InlineData(17)]
     public async Task SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
+        var stopwatch = Stopwatch.StartNew();
+
         const int startingId = 1001;
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -1043,6 +1261,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Assert
         Assert.NotNull(actualPeople);
         Assert.Equal(count, actualPeople.Count);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -1055,6 +1277,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [InlineData(17)]
     public async Task SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_values(int count)
     {
+        var stopwatch = Stopwatch.StartNew();
+
         const int startingId = 1001;
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -1082,6 +1306,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Assert
         Assert.NotNull(actualPeople);
         Assert.Equal(count, actualPeople.Count);
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -1092,6 +1320,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void Calling_UseDbContextOptionsBuilder_when_passed_null_throws_ArgumentNullException()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
 
         var sut = CreateDbContextBuilder();
@@ -1101,6 +1331,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         Assert.Equal("dbContextOptionsBuilder", ex.ParamName);
 
 
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
     }
 
 
@@ -1111,12 +1343,18 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void Calling_UseDbContextOptionsBuilder_returns_DbContextBuild()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
         var optionsBuilder = new DbContextOptionsBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseDbContextOptionsBuilder(optionsBuilder));
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -1127,6 +1365,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public async Task UseDbContextOptionsBuilder_after_calling_BuildAsync_uses_DbOptionBuilder_passed_in()
     {
+        var stopwatch = Stopwatch.StartNew();
 
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -1144,6 +1383,10 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Assert
         Assert.True(buffer.Length > 0, "Buffer length was expected to be greater than 0");
+
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
+
     }
 
 
@@ -1154,6 +1397,8 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public void Calling_UseInMemory_multiple_times_still_works()
     {
+        var stopwatch = Stopwatch.StartNew();
+
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -1165,47 +1410,9 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Assert
         Assert.NotNull(context);
-    }
 
+        stopwatch.Stop();
+        Assert.True(stopwatch.ElapsedMilliseconds < TestConstants.MaxTestRuntimeMs, $"Runtime of {stopwatch.ElapsedMilliseconds} was greater than the maximum allowed time of {TestConstants.MaxTestRuntimeMs}");
 
-
-    /// <summary>
-    /// Verifies that calling UseSqlite multiple times doesn't cause issues 
-    /// </summary>
-    [Fact]
-    public void Calling_UseSqlite_multiple_times_still_works()
-    {
-        // Arrange
-        var sut = CreateDbContextBuilder();
-
-        // Act
-        var context = sut
-            .UseSqlite()
-            .UseSqlite()
-            .BuildAsync();
-
-        // Assert
-        Assert.NotNull(context);
-    }
-
-
-
-    /// <summary>
-    /// Verifies that calling UseSqliteForMsSqlServer multiple times doesn't cause issues 
-    /// </summary>
-    [Fact]
-    public void Calling_UseSqliteForMsSqlServer_multiple_times_still_works()
-    {
-        // Arrange
-        var sut = CreateDbContextBuilder();
-
-        // Act
-        var context = sut
-            .UseSqliteForMsSqlServer()
-            .UseSqliteForMsSqlServer()
-            .BuildAsync();
-
-        // Assert
-        Assert.NotNull(context);
     }
 }
