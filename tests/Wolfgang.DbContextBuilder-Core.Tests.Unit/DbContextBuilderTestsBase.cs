@@ -1145,4 +1145,67 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Assert
         Assert.True(buffer.Length > 0, "Buffer length was expected to be greater than 0");
     }
+
+
+
+    /// <summary>
+    /// Verifies that calling UseInMemory multiple times doesn't cause issues 
+    /// </summary>
+    [Fact]
+    public void Calling_UseInMemory_multiple_times_still_works()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        // Act
+        var context = sut
+            .UseInMemory()
+            .UseInMemory()
+            .BuildAsync();
+
+        // Assert
+        Assert.NotNull(context);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling UseSqlite multiple times doesn't cause issues 
+    /// </summary>
+    [Fact]
+    public void Calling_UseSqlite_multiple_times_still_works()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        // Act
+        var context = sut
+            .UseSqlite()
+            .UseSqlite()
+            .BuildAsync();
+
+        // Assert
+        Assert.NotNull(context);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling UseSqliteForMsSqlServer multiple times doesn't cause issues 
+    /// </summary>
+    [Fact]
+    public void Calling_UseSqliteForMsSqlServer_multiple_times_still_works()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        // Act
+        var context = sut
+            .UseSqliteForMsSqlServer()
+            .UseSqliteForMsSqlServer()
+            .BuildAsync();
+
+        // Assert
+        Assert.NotNull(context);
+    }
 }

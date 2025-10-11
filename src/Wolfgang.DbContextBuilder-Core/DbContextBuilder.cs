@@ -12,9 +12,11 @@ namespace Wolfgang.DbContextBuilderCore;
 public class DbContextBuilder<T> where T : DbContext
 {
     private readonly List<object> _seedData = [];
-    internal readonly ServiceCollection ServiceCollection = [];
     private DbContextOptionsBuilder<T>? _dbContextOptionsBuilder;
-    internal ICreateDbContext? CreateDbContext;
+
+
+    internal ServiceCollection ServiceCollection { get; } = [];
+    internal ICreateDbContext? CreateDbContext { get; set; }
 
 
     internal IGenerateRandomEntities RandomEntityGenerator { get; private set; } = new AutoFixtureRandomEntityGenerator();
@@ -211,10 +213,7 @@ public class DbContextBuilder<T> where T : DbContext
     /// <exception cref="NotSupportedException">The specified database provider is not supported</exception>
     public async Task<T> BuildAsync()
     {
-
-
-
-       var optionBuilder = _dbContextOptionsBuilder ?? new DbContextOptionsBuilder<T>();
+        var optionBuilder = _dbContextOptionsBuilder ?? new DbContextOptionsBuilder<T>();
         if (ServiceCollection.Count > 0)
         {
             var provider = ServiceCollection.BuildServiceProvider();
