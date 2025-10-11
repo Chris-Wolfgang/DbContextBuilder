@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
   "metadata": [
     {
       "src": [
@@ -16,35 +17,30 @@
     "content": [
       {
         "files": [
-		  "docs/index.md",
-          "README.md",
-          "docs/toc.yml",
-		  "docs/**/*.md",
-          "api/**.yml",
-          "api/toc.yml"
+          "**/*.{md,yml}"
+        ],
+        "exclude": [
+          "_site/**"
         ]
-	  },
-	  "src": "../"
+      }
     ],
     "resource": [
       {
         "files": [
           "images/**"
-        ],
-        "src": "../"
+        ]
       }
     ],
-    "overwrite": [
-      "docs/overrides/*.md"
-    ],
-    "dest": "_site",
-    "globalMetadata": {
-      "_appTitle": "DbContextBuilder",
-      "_appFavicon": "images/favicon.ico"
-    },	  
+    "output": "_site",
     "template": [
-	  "modern",
-      "default"
-	]
+      "default",
+      "modern"
+    ],
+    "globalMetadata": {
+      "_appName": "",
+      "_appTitle": "DbContextBuilder",
+      "_enableSearch": true,
+      "pdf": true
+    }
   }
 }

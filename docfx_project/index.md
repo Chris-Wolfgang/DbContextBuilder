@@ -1,8 +1,11 @@
-# Welcome to DbContextBuilder Docs
+---
+_layout: landing
+---
 
-This is the homepage for the DbContextBuilder documentation.
+# This is the **HOMEPAGE**.
 
-- [Read Me](https://github.com/Chris-Wolfgang/DbContextBuilder)
-- [Getting Started](docs/getting-started.md)
-- [API Reference](api/toc.html)
+Refer to [Markdown](http://daringfireball.net/projects/markdown/) for how to write markdown files.
 
+## Quick Start Notes:
+
+1. Add images to the *images* folder if the file is referencing an image.
