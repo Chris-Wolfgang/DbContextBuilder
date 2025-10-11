@@ -18,4 +18,4 @@ having to rely on an actual database whose data can be changed or deleted over t
 
 ## Quick Start Notes:
 
-1. Add images to the *images* folder if the file is referencing an image.
+<!--1. Add images to the *images* folder if the file is referencing an image.-->
