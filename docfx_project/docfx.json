@@ -22,9 +22,9 @@
 		  "docs/**/*.md",
           "api/**.yml",
           "api/toc.yml"
-        ]
-	  },
-	  "src": "../"
+        ],
+	    "src": "../"
+		}
     ],
     "resource": [
       {
