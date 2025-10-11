@@ -16,9 +16,10 @@
   "build": {
     "content": [
       {
-        "files": [
-          "**/*.{md,yml}"
-        ],
+		"files": [
+			"README.md",
+			"**/*.{md,yml}"
+		],
         "exclude": [
           "_site/**"
         ]
