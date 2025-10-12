@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     /// </summary>
     /// <returns></returns>
     protected abstract DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder();
+
 
 
 
@@ -113,7 +115,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
     }
 
-    
+
 
     /// <summary>
     /// Verifies that calling UseAutoFixture returns the DbContextBuilder instance to allow for method chaining.
@@ -132,7 +134,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     }
 
 
-    
+
     /// <summary>
     /// Verifies that calling UseCustomRandomEntityGenerator returns the
     /// DbContextBuilder instance to allow for method chaining.
@@ -400,7 +402,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     }
 
 
-    
+
     /// <summary>
     /// Verifies that calling SeedWith(IEnumerable{T}) returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
@@ -759,7 +761,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     }
 
 
-    
+
     /// <summary>
     /// Verifies that calling SeedWithRandom{T}(int) returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
@@ -1099,8 +1101,6 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
         // Act & Assert
         var ex = Assert.Throws<ArgumentNullException>(() => sut.UseDbContextOptionsBuilder(null!));
         Assert.Equal("dbContextOptionsBuilder", ex.ParamName);
-
-
     }
 
 
@@ -1127,7 +1127,6 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
     [Fact]
     public async Task UseDbContextOptionsBuilder_after_calling_BuildAsync_uses_DbOptionBuilder_passed_in()
     {
-
         // Arrange
         var sut = CreateDbContextBuilder();
 
@@ -1144,5 +1143,26 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
         // Assert
         Assert.True(buffer.Length > 0, "Buffer length was expected to be greater than 0");
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling UseInMemory multiple times doesn't cause issues 
+    /// </summary>
+    [Fact]
+    public void Calling_UseInMemory_multiple_times_still_works()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        // Act
+        var context = sut
+            .UseInMemory()
+            .UseInMemory()
+            .BuildAsync();
+
+        // Assert
+        Assert.NotNull(context);
     }
 }

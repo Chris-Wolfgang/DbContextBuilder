@@ -2,7 +2,6 @@ using System.Data.Common;
 using System.Text;
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
 using Xunit.Abstractions;
 
@@ -394,5 +393,49 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
         }
 
         return tableNames;
+    }
+
+
+
+
+
+    /// <summary>
+    /// Verifies that calling UseSqlite multiple times doesn't cause issues 
+    /// </summary>
+    [Fact]
+    public void Calling_UseSqlite_multiple_times_still_works()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        // Act
+        var context = sut
+            .UseSqlite()
+            .UseSqlite()
+            .BuildAsync();
+
+        // Assert
+        Assert.NotNull(context);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling UseSqliteForMsSqlServer multiple times doesn't cause issues 
+    /// </summary>
+    [Fact]
+    public void Calling_UseSqliteForMsSqlServer_multiple_times_still_works()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        // Act
+        var context = sut
+            .UseSqliteForMsSqlServer()
+            .UseSqliteForMsSqlServer()
+            .BuildAsync();
+
+        // Assert
+        Assert.NotNull(context);
     }
 }
