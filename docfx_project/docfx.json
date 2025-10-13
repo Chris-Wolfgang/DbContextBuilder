@@ -32,7 +32,6 @@
       }
     ],
     "output": "_site",
-	"homepage": "docs/index.md",  // <--- Add this line
     "template": [
       "modern",
       "default"
