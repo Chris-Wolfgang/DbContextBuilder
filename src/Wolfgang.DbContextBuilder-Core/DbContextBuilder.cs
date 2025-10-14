@@ -19,7 +19,7 @@ public class DbContextBuilder<T> where T : DbContext
     internal ICreateDbContext? CreateDbContext { get; set; }
 
 
-    internal IGenerateRandomEntities RandomEntityGenerator { get; private set; } = new AutoFixtureRandomEntityGenerator();
+    internal ICreateRandomEntities RandomEntityCreator { get; private set; } = new AutoFixtureRandomEntityCreator();
 
 
 
@@ -36,15 +36,15 @@ public class DbContextBuilder<T> where T : DbContext
 
     
     /// <summary>
-    /// Allows the user to specify their own implementation of IGenerateRandomEntities
-    /// for generating random entities.
+    /// Allows the user to specify their own implementation of ICreateRandomEntities
+    /// for creating random entities.
     /// </summary>
-    /// <param name="generator">The generator to use</param>
+    /// <param name="creator">The creator to use</param>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-    public DbContextBuilder<T> UseCustomRandomEntityGenerator(IGenerateRandomEntities generator)
+    public DbContextBuilder<T> UseCustomRandomEntityCreator(ICreateRandomEntities creator)
     {
-        ArgumentNullException.ThrowIfNull(generator);
-        RandomEntityGenerator = generator;
+        ArgumentNullException.ThrowIfNull(creator);
+        RandomEntityCreator = creator;
         return this;
     }
 
@@ -140,8 +140,8 @@ public class DbContextBuilder<T> where T : DbContext
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
         }
 
-        var entities = RandomEntityGenerator
-            .GenerateRandomEntities<TEntity>(count);
+        var entities = RandomEntityCreator
+            .CreateRandomEntities<TEntity>(count);
 
         _seedData.AddRange(entities);
 
@@ -167,8 +167,8 @@ public class DbContextBuilder<T> where T : DbContext
 
         ArgumentNullException.ThrowIfNull(func, nameof(func));
 
-        var entities = RandomEntityGenerator
-            .GenerateRandomEntities<TEntity>(count)
+        var entities = RandomEntityCreator
+            .CreateRandomEntities<TEntity>(count)
             .Select(func);
             
         _seedData.AddRange(entities);
@@ -195,8 +195,8 @@ public class DbContextBuilder<T> where T : DbContext
 
         ArgumentNullException.ThrowIfNull(func, nameof(func));
 
-        var entities = RandomEntityGenerator
-            .GenerateRandomEntities<TEntity>(count)
+        var entities = RandomEntityCreator
+            .CreateRandomEntities<TEntity>(count)
             .Select(func);
 
         _seedData.AddRange(entities);

@@ -7,11 +7,11 @@ namespace Wolfgang.DbContextBuilderCore;
 
 
 /// <summary>
-/// Provides an API to generate random entities for seeding databases.
+/// Provides an API to create random entities for seeding databases.
 /// </summary>
-internal class AutoFixtureRandomEntityGenerator : IGenerateRandomEntities
+internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
 {
-    public AutoFixtureRandomEntityGenerator()
+    public AutoFixtureRandomEntityCreator()
     {
         // AutoFixture 4.x does not have built in support for DateOnly and TimeOnly. Version is supposed to 
         Fixture.Customize<DateOnly>(o => o.FromFactory((DateTime dt) => DateOnly.FromDateTime(dt)));
@@ -30,19 +30,16 @@ internal class AutoFixtureRandomEntityGenerator : IGenerateRandomEntities
 
 
     /// <summary>
-    /// Creates an instance of AutoFixtureRandomEntityGenerator using the specified Fixture
-    /// for generating random entities.
+    /// Creates an instance of <see cref="AutoFixtureRandomEntityCreator"/> using the specified Fixture
+    /// for creating random entities.
     /// </summary>
-    /// <param name="fixture">The fixture to use when generating random entities</param>
-    public AutoFixtureRandomEntityGenerator(Fixture fixture)
-    {
+    /// <param name="fixture">The fixture to use when creating random entities</param>
+    public AutoFixtureRandomEntityCreator(Fixture fixture) =>
         Fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-    }
-
 
 
     /// <summary>
-    /// The AutoFixture Fixture instance used to generate random data.
+    /// The AutoFixture Fixture instance used to create random data.
     /// </summary>
     public Fixture Fixture { get; } = new();
 
@@ -54,7 +51,7 @@ internal class AutoFixtureRandomEntityGenerator : IGenerateRandomEntities
     /// <param name="count">The number of entities to create</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
     /// <returns>An IEnumerable{TEntity}</returns>
-    public IEnumerable<TEntity> GenerateRandomEntities<TEntity>(int count)
+    public IEnumerable<TEntity> CreateRandomEntities<TEntity>(int count)
         where TEntity : class
         => count < 1
             ? throw new ArgumentOutOfRangeException(nameof(count), count, "Value cannot be less than 1")
@@ -80,8 +77,6 @@ internal class AutoFixtureRandomEntityGenerator : IGenerateRandomEntities
                 .OfType<ThrowingRecursionBehavior>()
                 .ToList()
                 .ForEach(behavior => fixture.Behaviors.Remove(behavior));
-
-
         }
     }
 

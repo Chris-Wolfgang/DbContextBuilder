@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 
@@ -106,8 +106,8 @@ namespace AdventureWorks.Models
         public virtual DbSet<WorkOrder> WorkOrders { get; set; } = null!;
         public virtual DbSet<WorkOrderRouting> WorkOrderRoutings { get; set; } = null!;
 
-        // Unable to generate entity type for table 'Production.Document' since its primary key could not be scaffolded. Please see the warning messages.
-        // Unable to generate entity type for table 'Production.ProductDocument' since its primary key could not be scaffolded. Please see the warning messages.
+        // Unable to create entity type for table 'Production.Document' since its primary key could not be scaffolded. Please see the warning messages.
+        // Unable to create entity type for table 'Production.ProductDocument' since its primary key could not be scaffolded. Please see the warning messages.
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

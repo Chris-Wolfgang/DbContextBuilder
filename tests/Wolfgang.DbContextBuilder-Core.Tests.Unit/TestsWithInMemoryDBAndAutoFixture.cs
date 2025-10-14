@@ -11,16 +11,13 @@ public class TestsWithInMemoryDbAndAutoFixture(ITestOutputHelper testOutputHelpe
 {
 
     /// <summary>
-    /// Creates a DbContextBuilder configured to use the in-memory database and AutoFixture for entity generation.
+    /// Creates a DbContextBuilder configured to use the in-memory database and AutoFixture for random entity creation.
     /// </summary>
     /// <returns>A DbContextBuilder for AdventureWorksDbContext with in-memory and AutoFixture configuration.</returns>
-    protected override DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder()
-    {
-        return new DbContextBuilder<AdventureWorksDbContext>()
+    protected override DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder() =>
+        new DbContextBuilder<AdventureWorksDbContext>()
             .UseInMemory()
             .UseAutoFixture();
-    }
-
 
 
     /// <summary>
@@ -54,16 +51,16 @@ public class TestsWithInMemoryDbAndAutoFixture(ITestOutputHelper testOutputHelpe
 
 
     /// <summary>
-    /// Verifies that the RandomEntityGenerator used is an instance of AutoFixtureRandomEntityGenerator
+    /// Verifies that the RandomEntityCreator used is an instance of AutoFixtureRandomEntityCreator
     /// </summary>
     [Fact]
-    public void RandomEntityGenerator_is_AutoFixture()
+    public void RandomEntityCreator_is_AutoFixture()
     {
         // Arrange
         var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
-        Assert.IsType<AutoFixtureRandomEntityGenerator>(sut.RandomEntityGenerator);
+        Assert.IsType<AutoFixtureRandomEntityCreator>(sut.RandomEntityCreator);
 
     }
 
@@ -81,7 +78,6 @@ public class TestsWithInMemoryDbAndAutoFixture(ITestOutputHelper testOutputHelpe
         // Act & Assert
         Assert.True(sut.Database.IsInMemory());
     }
-
 
 
 }
