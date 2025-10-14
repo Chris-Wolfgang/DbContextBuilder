@@ -89,16 +89,16 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
 
 
     /// <summary>
-    /// Verifies that the RandomEntityGenerator used is an instance of AutoFixtureRandomEntityGenerator
+    /// Verifies that the RandomEntityCreator used is an instance of AutoFixtureRandomEntityCreator
     /// </summary>
     [Fact]
-    public void RandomEntityGenerator_is_AutoFixture()
+    public void RandomEntityCreator_is_AutoFixture()
     {
         // Arrange
         var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
-        Assert.IsType<AutoFixtureRandomEntityGenerator>(sut.RandomEntityGenerator);
+        Assert.IsType<AutoFixtureRandomEntityCreator>(sut.RandomEntityCreator);
 
     }
 
@@ -289,7 +289,7 @@ public class TestsWithSqliteAndAutoFixture(ITestOutputHelper testOutputHelper) :
                 string? computedValue = null;
 
                 // Try to get computed value using PRAGMA table_xinfo (if available) or sqlite_master
-                // SQLite stores generated columns in the "generated" column in PRAGMA table_xinfo (SQLite 3.31+)
+                // SQLite stores computed columns in the "generated" column in PRAGMA table_xinfo (SQLite 3.31+)
                 // Fallback: parse the SQL from sqlite_master
 
                 // Try PRAGMA table_xinfo first

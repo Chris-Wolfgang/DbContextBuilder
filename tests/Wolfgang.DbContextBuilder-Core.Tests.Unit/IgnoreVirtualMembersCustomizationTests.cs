@@ -1,5 +1,5 @@
 using AutoFixture;
-using static Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityGenerator;
+using static Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 /// <summary>

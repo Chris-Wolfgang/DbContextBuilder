@@ -1,18 +1,18 @@
-﻿using AutoFixture;
+using AutoFixture;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
 /// <summary>
-/// Tests for the AutoFixtureRandomEntityGenerator class
+/// Tests for the AutoFixtureRandomEntityCreator class
 /// </summary>
-public class AutoFixtureRandomEntityGeneratorTests : IGenerateRandomEntitiesTestsBase
+public class AutoFixtureRandomEntityCreatorTests : ICreateRandomEntitiesTestsBase
 {
 	/// <summary>
-	/// Creates an instance of AutoFixtureRandomEntityGenerator to be tested.
+	/// Creates an instance of  <see cref="AutoFixtureRandomEntityCreator"/> to be tested.
 	/// </summary>
 	/// <returns></returns>
 	/// <exception cref="NotImplementedException"></exception>
-	protected override IGenerateRandomEntities CreateRandomEntityGenerator() => new AutoFixtureRandomEntityGenerator();
+	protected override ICreateRandomEntities CreateRandomEntityCreator() => new AutoFixtureRandomEntityCreator();
 
 
 
@@ -23,7 +23,7 @@ public class AutoFixtureRandomEntityGeneratorTests : IGenerateRandomEntitiesTest
 	public void Property_Fixture_is_not_null()
 	{
 		// Arrange
-		var sut = new AutoFixtureRandomEntityGenerator();
+		var sut = new AutoFixtureRandomEntityCreator();
 
 		// Act & Assert
 		Assert.NotNull(sut.Fixture);
@@ -38,7 +38,7 @@ public class AutoFixtureRandomEntityGeneratorTests : IGenerateRandomEntitiesTest
 	public void Ctor_Fixture_when_passed_null_throws_ArgumentNullException()
 	{
 		// Act & Assert
-		var ex = Assert.Throws<ArgumentNullException>(() => new AutoFixtureRandomEntityGenerator(null!));
+		var ex = Assert.Throws<ArgumentNullException>(() => new AutoFixtureRandomEntityCreator(null!));
 		Assert.Equal("fixture", ex.ParamName);
 	}
 
@@ -54,7 +54,7 @@ public class AutoFixtureRandomEntityGeneratorTests : IGenerateRandomEntitiesTest
 		var fixture = new Fixture();
 
 		// Act
-		var sut = new AutoFixtureRandomEntityGenerator(fixture);
+		var sut = new AutoFixtureRandomEntityCreator(fixture);
 
 		// Assert
 		Assert.Equal(fixture, sut.Fixture);
