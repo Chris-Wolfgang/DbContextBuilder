@@ -19,7 +19,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 	/// <summary>
     /// Creates an instance of DbContextBuilder with specific database
-    /// and random entity generator to be used in the tests
+    /// and random entity creator to be used in the tests
     /// </summary>
     /// <returns></returns>
     protected abstract DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder();
@@ -136,19 +136,19 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
     /// <summary>
-    /// Verifies that calling UseCustomRandomEntityGenerator returns the
+    /// Verifies that calling UseCustomRandomEntityCreator returns the
     /// DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseCustomRandomEntityGenerator_returns_DbContextBuilder()
+    public void Calling_UseCustomRandomEntityCreator_returns_DbContextBuilder()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
 
-        var generator = new AutoFixtureRandomEntityGenerator();
+        var creator = new AutoFixtureRandomEntityCreator();
 
         // Act
-        var result = sut.UseCustomRandomEntityGenerator(generator);
+        var result = sut.UseCustomRandomEntityCreator(creator);
 
         // Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
@@ -157,39 +157,39 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
     /// <summary>
-    /// Verifies that calling UseCustomRandomEntityGenerator and passing null
+    /// Verifies that calling UseCustomRandomEntityCreator and passing null
     /// throws ArgumentNullException
     /// </summary>
     [Fact]
-    public void Calling_UseCustomRandomEntityGenerator_and_passing_in_null_throws_ArgumentNullException()
+    public void Calling_UseCustomEntityCreator_and_passing_in_null_throws_ArgumentNullException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
 
         // Act & Assert
-        var ex = Assert.Throws<ArgumentNullException> (() => sut.UseCustomRandomEntityGenerator(null!));
-        Assert.Equal("generator", ex.ParamName);
+        var ex = Assert.Throws<ArgumentNullException> (() => sut.UseCustomRandomEntityCreator(null!));
+        Assert.Equal("creator", ex.ParamName);
     }
 
 
 
     /// <summary>
-    /// Verifies that calling UseCustomRandomEntityGenerator sets Fixture
+    /// Verifies that calling UseCustomRandomEntityCreator sets Fixture
     /// property to the value passed in
     /// </summary>
     [Fact]
-    public void Calling_UseCustomRandomEntityGenerator_sets_the_RandomEntityGenerator_property()
+    public void Calling_UseCustomRandomEntityCreator_sets_the_RandomEntityCreator_property()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
 
-        var generator = new AutoFixtureRandomEntityGenerator();
+        var creator = new AutoFixtureRandomEntityCreator();
 
         // Act
-        sut.UseCustomRandomEntityGenerator(generator);
+        sut.UseCustomRandomEntityCreator(creator);
 
         // Assert
-        Assert.Equal(generator, sut.RandomEntityGenerator);
+        Assert.Equal(creator, sut.RandomEntityCreator);
     }
 
 
@@ -782,7 +782,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
     /// <summary>
-    /// Verifies that a newly created DbContext contains the specified number of randomly generated entities.
+    /// Verifies that a newly created DbContext contains the specified number of randomly created entities.
     /// </summary>
     [Theory]
     [InlineData(7)]
@@ -865,7 +865,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
     /// <summary>
-    /// Verifies that a newly created DbContext contains the specified number of randomly generated entities.
+    /// Verifies that a newly created DbContext contains the specified number of randomly created entities.
     /// </summary>
     [Theory]
     [InlineData(7)]
@@ -904,7 +904,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
     /// <summary>
-    /// Verifies that a newly created DbContext contains the specified number of randomly generated entities.
+    /// Verifies that a newly created DbContext contains the specified number of randomly created entities.
     /// </summary>
     [Theory]
     [InlineData(7)]
@@ -1011,7 +1011,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
     /// <summary>
-    /// Verifies that a newly created DbContext contains the specified number of randomly generated entities.
+    /// Verifies that a newly created DbContext contains the specified number of randomly created entities.
     /// </summary>
     [Theory]
     [InlineData(7)]
@@ -1050,7 +1050,7 @@ public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelp
 
 
     /// <summary>
-    /// Verifies that a newly created DbContext contains the specified number of randomly generated entities.
+    /// Verifies that a newly created DbContext contains the specified number of randomly created entities.
     /// </summary>
     [Theory]
     [InlineData(7)]

@@ -18,16 +18,16 @@ public class TestsWithDefaults(ITestOutputHelper testOutputHelper) : DbContextBu
 
 
     /// <summary>
-    /// Verifies that the default RandomEntityGenerator is an instance of AutoFixtureRandomEntityGenerator
+    /// Verifies that the default RandomEntityCreator is an instance of AutoFixtureRandomEntityCreate
     /// </summary>
     [Fact]
-    public void Default_RandomEntityGenerator_is_AutoFixture()
+    public void Default_RandomEntityCreate_is_AutoFixture()
     {
 	    // Arrange
         var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
-        _ = Assert.IsType<AutoFixtureRandomEntityGenerator>(sut.RandomEntityGenerator);
+        _ = Assert.IsType<AutoFixtureRandomEntityCreator>(sut.RandomEntityCreator);
     }
 
 

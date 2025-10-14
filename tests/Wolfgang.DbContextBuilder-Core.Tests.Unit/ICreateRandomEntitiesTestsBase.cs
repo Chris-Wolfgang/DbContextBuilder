@@ -1,19 +1,19 @@
-﻿using AdventureWorks.Models;
+using AdventureWorks.Models;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit
 {
     /// <summary>
-    /// Provides a base class for tests related to the IGenerateRandomEntities interface.
+    /// Provides a base class for tests related to the ICreateRandomEntities interface.
     /// </summary>
     // ReSharper disable once InconsistentNaming
-    public abstract class IGenerateRandomEntitiesTestsBase 
+    public abstract class ICreateRandomEntitiesTestsBase 
     {
 
         /// <summary>
-        /// Creates an instance of the specific implementation of IGenerateRandomEntities to be tested.
+        /// Creates an instance of the specific implementation of ICreateRandomEntities to be tested.
         /// </summary>
-        /// <returns><see cref="IGenerateRandomEntities"/>Representing the object to test</returns>
-        protected abstract IGenerateRandomEntities CreateRandomEntityGenerator();
+        /// <returns><see cref="ICreateRandomEntities"/>Representing the object to test</returns>
+        protected abstract ICreateRandomEntities CreateRandomEntityCreator();
 
 
 
@@ -24,7 +24,7 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit
         public void Can_create_instance_of_SystemUnderTest()
         {
             // Arrange & Act
-            var sut = CreateRandomEntityGenerator();
+            var sut = CreateRandomEntityCreator();
             
             // Assert
             Assert.NotNull(sut);
@@ -33,19 +33,19 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit
 
 
         /// <summary>
-        /// Verifies that GenerateRandomEntities returns the specified number of items
+        /// Verifies that CreateRandomEntities returns the specified number of items
         /// </summary>
         /// <param name="count"></param>
         [Theory]
         [InlineData(7)]
         [InlineData(17)]
-        public void GenerateRandomEntities_returns_the_specified_number_of_items(int count)
+        public void CreateRandomEntities_returns_the_specified_number_of_items(int count)
         {
             // Arrange
-            var sut = CreateRandomEntityGenerator();
+            var sut = CreateRandomEntityCreator();
 
             // Act
-            var entities = sut.GenerateRandomEntities<Person>(count).ToList();
+            var entities = sut.CreateRandomEntities<Person>(count).ToList();
 
             // Assert
             Assert.Equal(count, entities.Count);
@@ -58,15 +58,15 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit
         /// Verifies that passing count less than 1, throws an ArgumentOutOfRangeException
         /// </summary>
         [Fact]
-        public void Calling_GenerateRandomEntities_with_value_less_than_1_throws_ArgumentOutOfRangeException()
+        public void Calling_CreateRandomEntities_with_value_less_than_1_throws_ArgumentOutOfRangeException()
         {
 
             // Arrange
-            var sut = CreateRandomEntityGenerator();
+            var sut = CreateRandomEntityCreator();
             const int count = 0;
 
             // Act
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => sut.GenerateRandomEntities<Address>(count));
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => sut.CreateRandomEntities<Address>(count));
 
             // Assert
             Assert.NotNull(exception);
