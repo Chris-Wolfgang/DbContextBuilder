@@ -18,7 +18,7 @@ public class NoCircularReferencesCustomizationTests
         // Arrange
         
         // Act
-        var unused = new AutoFixtureRandomEntityGenerator.NoCircularReferencesCustomization();
+        var unused = new AutoFixtureRandomEntityCreator.NoCircularReferencesCustomization();
     }
 
 
@@ -30,7 +30,7 @@ public class NoCircularReferencesCustomizationTests
     public void Customize_when_passed_null_throws_ArgumentNullException()
     {
         // Arrange
-        var sut = new AutoFixtureRandomEntityGenerator.NoCircularReferencesCustomization();
+        var sut = new AutoFixtureRandomEntityCreator.NoCircularReferencesCustomization();
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentNullException>(() =>sut.Customize(null!));
@@ -46,7 +46,7 @@ public class NoCircularReferencesCustomizationTests
     public void Customize_when_Behaviors_does_not_contain_NoCircularReferencesGuard_adds_it()
     {
         // Arrange
-        var sut = new AutoFixtureRandomEntityGenerator.NoCircularReferencesCustomization();
+        var sut = new AutoFixtureRandomEntityCreator.NoCircularReferencesCustomization();
         var fixture = new Fixture();
         fixture.Behaviors.Clear();
 
@@ -66,7 +66,7 @@ public class NoCircularReferencesCustomizationTests
     public void Customize_when_Behaviors_contains_NoCircularReferencesGuard_does_not_add_second_occurrence()
     {
         // Arrange
-        var sut = new AutoFixtureRandomEntityGenerator.NoCircularReferencesCustomization();
+        var sut = new AutoFixtureRandomEntityCreator.NoCircularReferencesCustomization();
         var fixture = new Fixture();
         fixture.Behaviors.Clear();
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
@@ -90,7 +90,7 @@ public class NoCircularReferencesCustomizationTests
     public void Customize_when_Behaviors_contains_ThrowingRecursionBehavior_removes_it()
     {
         // Arrange
-        var sut = new AutoFixtureRandomEntityGenerator.NoCircularReferencesCustomization();
+        var sut = new AutoFixtureRandomEntityCreator.NoCircularReferencesCustomization();
         var fixture = new Fixture();
         fixture.Behaviors.Clear();
         fixture.Behaviors.Add(new ThrowingRecursionBehavior());
@@ -113,7 +113,7 @@ public class NoCircularReferencesCustomizationTests
     public void Customize_when_Behaviors_does_not_contain_ThrowingRecursionBehavior_it_does_error()
     {
         // Arrange
-        var sut = new AutoFixtureRandomEntityGenerator.NoCircularReferencesCustomization();
+        var sut = new AutoFixtureRandomEntityCreator.NoCircularReferencesCustomization();
         var fixture = new Fixture();
         fixture.Behaviors.Clear();
         var countBefore = fixture.Behaviors.OfType<ThrowingRecursionBehavior>().Count();

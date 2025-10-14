@@ -15,7 +15,7 @@ public class IgnoreVirtualMembersTests
     public void Can_create_instance_of_IgnoreVirtualMembers()
     {
         // Act & Assert
-        var sut = new AutoFixtureRandomEntityGenerator.IgnoreVirtualMembers();
+        var sut = new AutoFixtureRandomEntityCreator.IgnoreVirtualMembers();
     }
 
 
@@ -26,7 +26,7 @@ public class IgnoreVirtualMembersTests
     public void Create_when_passed_null_request_throws_ArgumentNullException()
     {
         // Arrange
-        var sut = new AutoFixtureRandomEntityGenerator.IgnoreVirtualMembers();
+        var sut = new AutoFixtureRandomEntityCreator.IgnoreVirtualMembers();
         var builder = new FixedBuilder(new object());
         var context = new SpecimenContext(builder);
 
@@ -45,7 +45,7 @@ public class IgnoreVirtualMembersTests
     public void Create_when_passed_null_context_throws_ArgumentNullException()
     {
         // Arrange
-        var sut = new AutoFixtureRandomEntityGenerator.IgnoreVirtualMembers();
+        var sut = new AutoFixtureRandomEntityCreator.IgnoreVirtualMembers();
         var request = new object();
 
 
