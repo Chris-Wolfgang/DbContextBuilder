@@ -18,7 +18,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExtraProjects", "ExtraProje
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdventureWorks", "extra-projects\AdventureWorks\AdventureWorks.csproj", "{7DF70A74-9815-468E-94AC-F8C00B175D41}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wolfgang.DbContextBuilder-Core-EF6", "src\Wolfgang.DbContextBuilder-Core\Wolfgang.DbContextBuilder-Core-EF6.csproj", "{F0CF8D6D-641B-168E-E46D-E5D35CBD2359}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wolfgang.DbContextBuilder-Core.Tests.Unit-EF6", "tests\Wolfgang.DbContextBuilder-Core.Tests.Unit\Wolfgang.DbContextBuilder-Core.Tests.Unit-EF6.csproj", "{61EBCD1F-3C74-9FA7-000A-36F124514796}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
