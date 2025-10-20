@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Wolfgang.DbContextBuilder-Core.Tests.Unit")]
+[assembly: InternalsVisibleTo("Wolfgang.DbContextBuilder-Core.Tests.Unit-EF6")]
 
 
 // TODO Create implementations for Bogus 

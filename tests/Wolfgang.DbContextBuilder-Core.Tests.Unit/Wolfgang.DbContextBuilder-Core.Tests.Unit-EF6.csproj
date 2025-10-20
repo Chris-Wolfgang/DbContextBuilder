@@ -8,7 +8,7 @@
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<Title>$(AssemblyName)</Title>
 		<Authors>Chris Wolfgang</Authors>
-		<Description>Unit tests for Wolfgang.DbContextBuilder-Core</Description>
+		<Description>Unit tests for Wolfgang.DbContextBuilder-Core-EF6</Description>
 		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
 		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -136,7 +136,7 @@
 	  </ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core\Wolfgang.DbContextBuilder-Core.csproj" />
+	  <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core\Wolfgang.DbContextBuilder-Core-EF6.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
