@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Moq;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
@@ -20,6 +19,8 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
+#elif EF_CORE_7 || EF_CORE_8 
+        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -56,6 +57,8 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
+#elif EF_CORE_7 || EF_CORE_8 
+        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -78,6 +81,8 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
+#elif EF_CORE_7 || EF_CORE_8 
+        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -115,7 +120,8 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-        var sut = new SqliteModelCustomizer(dependencies);
+#elif EF_CORE_7 || EF_CORE_8 
+        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -123,12 +129,12 @@ public class SqliteModelCustomizerTests
 
         var sut = new SqliteModelCustomizer(dependencies) {
             OverrideTableRenaming = tuple =>
-        {
-            var schemaPrefix = $"{tuple.SchemaName ?? "dbo"}$";
+            {
+                var schemaPrefix = $"{tuple.SchemaName ?? "dbo"}$";
 
-            return tuple.TableName.StartsWith(schemaPrefix, StringComparison.OrdinalIgnoreCase)
-                ? tuple.TableName
-                : $"{tuple.SchemaName ?? "dbo"}${tuple.TableName}";
+                return tuple.TableName.StartsWith(schemaPrefix, StringComparison.OrdinalIgnoreCase)
+                    ? tuple.TableName
+                    : $"{tuple.SchemaName ?? "dbo"}${tuple.TableName}";
             }
         };
 
@@ -163,6 +169,8 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
+#elif EF_CORE_7 || EF_CORE_8 
+        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -185,6 +193,8 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
+#elif EF_CORE_7 || EF_CORE_8 
+        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -210,7 +220,8 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-        var sut = new SqliteModelCustomizer(dependencies);
+#elif EF_CORE_7 || EF_CORE_8 
+        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -218,7 +229,7 @@ public class SqliteModelCustomizerTests
 
         var sut = new SqliteModelCustomizer(dependencies)
         {
-        // Act & Assert
+            // Act & Assert
             OverrideDefaultValueHandling = _ => null
         };
 
@@ -242,6 +253,8 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
+#elif EF_CORE_7 || EF_CORE_8 
+        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -264,6 +277,8 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
+#elif EF_CORE_7 || EF_CORE_8 
+        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -289,7 +304,8 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-        var sut = new SqliteModelCustomizer(dependencies);
+#elif EF_CORE_7 || EF_CORE_8 
+        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -297,7 +313,7 @@ public class SqliteModelCustomizerTests
 
         var sut = new SqliteModelCustomizer(dependencies)
         {
-        // Act & Assert
+            // Act & Assert
             OverrideComputedValueHandling = _ => null
         };
 

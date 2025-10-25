@@ -1,0 +1,56 @@
+﻿ <Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
+		<TargetFrameworks>net7.0</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<Version>0.2.0</Version>
+		<Title>Wolfgang.DbContextBuilder for EF Core 7</Title>
+		<Authors>Chris Wolfgang</Authors>
+		<Description>A library for easily building DbContext for testing using in-memory database</Description>
+		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
+		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
+		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageIcon>dbcontext-builder.png</PackageIcon>
+		<ApplicationIcon>Content/dbcontext-builder.ico</ApplicationIcon>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<SignAssembly>False</SignAssembly>
+		<PackageTags></PackageTags>
+
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsPackable>true</IsPackable>
+		<IsTestProject>false</IsTestProject>
+		<DefineConstants>$(DefineConstants);EF_CORE_7;EF_CORE_7_OR_GREATER</DefineConstants>
+
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="AutoFixture" Version="4.18.1" />
+	  <PackageReference Include="coverlet.collector" Version="6.0.4">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.20" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.20" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.20" />
+	  <PackageReference Include="System.Net.Http" Version="4.3.4" />
+	  <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Include the icon and README file directly in the package's root -->
+		<None Include="..\..\README.md" Pack="True" PackagePath="/" />
+		<None Include="Content\dbcontext-builder.png" Pack="true" PackagePath="/" />
+		<None Include="Content\dbcontext-builder.ico" Pack="true" PackagePath="/" />
+	</ItemGroup>
+
+	 <PropertyGroup>
+		 <GenerateDocumentationFile>true</GenerateDocumentationFile>
+		 <NoWarn>$(NoWarn);1591</NoWarn>
+	 </PropertyGroup>
+
+</Project>

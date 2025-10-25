@@ -31,11 +31,12 @@ internal class BasicContext : DbContext
         {
             entity.HasKey(e => e.DatabaseLogId)
                 .HasName("PK_DatabaseLog_DatabaseLogID");
-
+#if EF_CORE_6
             entity.ToTable("DatabaseLog");
-
             entity.HasComment("Audit table tracking all DDL changes made to the AdventureWorks database. Data is captured by the database trigger ddlDatabaseTriggerLog.");
-
+#else
+            entity.ToTable("DatabaseLog", t => t.HasComment("Audit table tracking all DDL changes made to the AdventureWorks database. Data is captured by the database trigger ddlDatabaseTriggerLog."));
+#endif
             entity.Property(e => e.DatabaseLogId)
                 .HasColumnName("DatabaseLogID")
                 .HasComment("Primary key for DatabaseLog records.");
