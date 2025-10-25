@@ -1,0 +1,158 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>Wolfgang.DbContextBuilderCore.Tests.Unit</RootNamespace>
+		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<Version>0.2.0</Version>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+		<Title>$(AssemblyName)</Title>
+		<Authors>Chris Wolfgang</Authors>
+		<Description>Unit tests for Wolfgang.DbContextBuilder-Core-EF8</Description>
+		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
+		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
+		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageIcon></PackageIcon>
+		<ApplicationIcon></ApplicationIcon>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<SignAssembly>False</SignAssembly>
+		<PackageTags></PackageTags>
+
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsTestProject>true</IsTestProject>
+		<DefineConstants>$(DefineConstants);EF_CORE_8;EF_CORE_8_OR_GREATER</DefineConstants>
+
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\Address.cs" Link="Models\Generated\Address.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\AddressType.cs" Link="Models\Generated\AddressType.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\AdventureWorksDbContext.cs" Link="Models\Generated\AdventureWorksDbContext.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\AwbuildVersion.cs" Link="Models\Generated\AwbuildVersion.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\BillOfMaterial.cs" Link="Models\Generated\BillOfMaterial.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\BusinessEntity.cs" Link="Models\Generated\BusinessEntity.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\BusinessEntityAddress.cs" Link="Models\Generated\BusinessEntityAddress.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\BusinessEntityContact.cs" Link="Models\Generated\BusinessEntityContact.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ContactType.cs" Link="Models\Generated\ContactType.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\CountryRegion.cs" Link="Models\Generated\CountryRegion.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\CountryRegionCurrency.cs" Link="Models\Generated\CountryRegionCurrency.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\CreditCard.cs" Link="Models\Generated\CreditCard.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\Culture.cs" Link="Models\Generated\Culture.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\Currency.cs" Link="Models\Generated\Currency.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\CurrencyRate.cs" Link="Models\Generated\CurrencyRate.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\Customer.cs" Link="Models\Generated\Customer.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\DatabaseLog.cs" Link="Models\Generated\DatabaseLog.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\Department.cs" Link="Models\Generated\Department.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\EmailAddress.cs" Link="Models\Generated\EmailAddress.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\Employee.cs" Link="Models\Generated\Employee.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\EmployeeDepartmentHistory.cs" Link="Models\Generated\EmployeeDepartmentHistory.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\EmployeePayHistory.cs" Link="Models\Generated\EmployeePayHistory.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ErrorLog.cs" Link="Models\Generated\ErrorLog.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\Illustration.cs" Link="Models\Generated\Illustration.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\JobCandidate.cs" Link="Models\Generated\JobCandidate.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\Location.cs" Link="Models\Generated\Location.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\Password.cs" Link="Models\Generated\Password.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\Person.cs" Link="Models\Generated\Person.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\PersonCreditCard.cs" Link="Models\Generated\PersonCreditCard.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\PersonPhone.cs" Link="Models\Generated\PersonPhone.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\PhoneNumberType.cs" Link="Models\Generated\PhoneNumberType.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\Product.cs" Link="Models\Generated\Product.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ProductCategory.cs" Link="Models\Generated\ProductCategory.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ProductCostHistory.cs" Link="Models\Generated\ProductCostHistory.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ProductDescription.cs" Link="Models\Generated\ProductDescription.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ProductInventory.cs" Link="Models\Generated\ProductInventory.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ProductListPriceHistory.cs" Link="Models\Generated\ProductListPriceHistory.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ProductModel.cs" Link="Models\Generated\ProductModel.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ProductModelIllustration.cs" Link="Models\Generated\ProductModelIllustration.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ProductModelProductDescriptionCulture.cs" Link="Models\Generated\ProductModelProductDescriptionCulture.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ProductPhoto.cs" Link="Models\Generated\ProductPhoto.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ProductProductPhoto.cs" Link="Models\Generated\ProductProductPhoto.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ProductReview.cs" Link="Models\Generated\ProductReview.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ProductSubcategory.cs" Link="Models\Generated\ProductSubcategory.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ProductVendor.cs" Link="Models\Generated\ProductVendor.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\PurchaseOrderDetail.cs" Link="Models\Generated\PurchaseOrderDetail.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\PurchaseOrderHeader.cs" Link="Models\Generated\PurchaseOrderHeader.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\SalesOrderDetail.cs" Link="Models\Generated\SalesOrderDetail.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\SalesOrderHeader.cs" Link="Models\Generated\SalesOrderHeader.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\SalesOrderHeaderSalesReason.cs" Link="Models\Generated\SalesOrderHeaderSalesReason.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\SalesPerson.cs" Link="Models\Generated\SalesPerson.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\SalesPersonQuotaHistory.cs" Link="Models\Generated\SalesPersonQuotaHistory.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\SalesReason.cs" Link="Models\Generated\SalesReason.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\SalesTaxRate.cs" Link="Models\Generated\SalesTaxRate.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\SalesTerritory.cs" Link="Models\Generated\SalesTerritory.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\SalesTerritoryHistory.cs" Link="Models\Generated\SalesTerritoryHistory.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ScrapReason.cs" Link="Models\Generated\ScrapReason.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\Shift.cs" Link="Models\Generated\Shift.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ShipMethod.cs" Link="Models\Generated\ShipMethod.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\ShoppingCartItem.cs" Link="Models\Generated\ShoppingCartItem.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\SpecialOffer.cs" Link="Models\Generated\SpecialOffer.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\SpecialOfferProduct.cs" Link="Models\Generated\SpecialOfferProduct.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\StateProvince.cs" Link="Models\Generated\StateProvince.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\Store.cs" Link="Models\Generated\Store.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\TransactionHistory.cs" Link="Models\Generated\TransactionHistory.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\TransactionHistoryArchive.cs" Link="Models\Generated\TransactionHistoryArchive.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\UnitMeasure.cs" Link="Models\Generated\UnitMeasure.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VAdditionalContactInfo.cs" Link="Models\Generated\VAdditionalContactInfo.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VEmployee.cs" Link="Models\Generated\VEmployee.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VEmployeeDepartment.cs" Link="Models\Generated\VEmployeeDepartment.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VEmployeeDepartmentHistory.cs" Link="Models\Generated\VEmployeeDepartmentHistory.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\Vendor.cs" Link="Models\Generated\Vendor.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VIndividualCustomer.cs" Link="Models\Generated\VIndividualCustomer.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VJobCandidate.cs" Link="Models\Generated\VJobCandidate.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VJobCandidateEducation.cs" Link="Models\Generated\VJobCandidateEducation.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VJobCandidateEmployment.cs" Link="Models\Generated\VJobCandidateEmployment.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VPersonDemographic.cs" Link="Models\Generated\VPersonDemographic.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VProductAndDescription.cs" Link="Models\Generated\VProductAndDescription.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VProductModelCatalogDescription.cs" Link="Models\Generated\VProductModelCatalogDescription.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VProductModelInstruction.cs" Link="Models\Generated\VProductModelInstruction.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VSalesPerson.cs" Link="Models\Generated\VSalesPerson.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VSalesPersonSalesByFiscalYear.cs" Link="Models\Generated\VSalesPersonSalesByFiscalYear.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VStateProvinceCountryRegion.cs" Link="Models\Generated\VStateProvinceCountryRegion.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VStoreWithAddress.cs" Link="Models\Generated\VStoreWithAddress.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VStoreWithContact.cs" Link="Models\Generated\VStoreWithContact.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VStoreWithDemographic.cs" Link="Models\Generated\VStoreWithDemographic.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VVendorWithAddress.cs" Link="Models\Generated\VVendorWithAddress.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VVendorWithContact.cs" Link="Models\Generated\VVendorWithContact.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\WorkOrder.cs" Link="Models\Generated\WorkOrder.cs" />
+		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\WorkOrderRouting.cs" Link="Models\Generated\WorkOrderRouting.cs" />
+	</ItemGroup>
+
+
+
+	<ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="System.Text.Json" Version="9.0.10" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+  </ItemGroup>
+
+
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core\Wolfgang.DbContextBuilder-Core-EF8.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Xunit" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Models\Generated\" />
+	</ItemGroup>
+
+
+
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);CA1707</NoWarn>
+	</PropertyGroup>
+</Project>
