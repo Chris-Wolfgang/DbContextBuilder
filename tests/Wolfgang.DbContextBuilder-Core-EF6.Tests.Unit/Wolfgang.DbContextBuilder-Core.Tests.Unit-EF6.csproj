@@ -120,6 +120,20 @@
 	  <Compile Include="..\..\extra-projects\AdventureWorks-EF6\Models\Generated\VVendorWithContact.cs" Link="Models\Generated\VVendorWithContact.cs" />
 	  <Compile Include="..\..\extra-projects\AdventureWorks-EF6\Models\Generated\WorkOrder.cs" Link="Models\Generated\WorkOrder.cs" />
 	  <Compile Include="..\..\extra-projects\AdventureWorks-EF6\Models\Generated\WorkOrderRouting.cs" Link="Models\Generated\WorkOrderRouting.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\AutoFixtureRandomEntityCreatorTests.cs" Link="AutoFixtureRandomEntityCreatorTests.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\DbContextBuilderTestsBase.cs" Link="DbContextBuilderTestsBase.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\ICreateRandomEntitiesTestsBase.cs" Link="ICreateRandomEntitiesTestsBase.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\IgnoreVirtualMembersCustomizationTests.cs" Link="IgnoreVirtualMembersCustomizationTests.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\IgnoreVirtualMembersTests.cs" Link="IgnoreVirtualMembersTests.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\Models\BasicContext.cs" Link="Models\BasicContext.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\Models\TableWithDefaults.cs" Link="Models\TableWithDefaults.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\NoCircularReferencesCustomizationTests.cs" Link="NoCircularReferencesCustomizationTests.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\SqliteForMsSqlServerModelCustomizerTests.cs" Link="SqliteForMsSqlServerModelCustomizerTests.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\SqliteModelCustomizerTests.cs" Link="SqliteModelCustomizerTests.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestConstants.cs" Link="TestConstants.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestsWithDefaults.cs" Link="TestsWithDefaults.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestsWithInMemoryDBAndAutoFixture.cs" Link="TestsWithInMemoryDBAndAutoFixture.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestsWithSqliteAndAutoFixture.cs" Link="TestsWithSqliteAndAutoFixture.cs" />
 	</ItemGroup>
 
 
@@ -136,15 +150,15 @@
 	  </ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core\Wolfgang.DbContextBuilder-Core-EF6.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Using Include="Xunit" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Folder Include="Models\Generated\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core-EF6\Wolfgang.DbContextBuilder-Core-EF6.csproj" />
 	</ItemGroup>
 
 
