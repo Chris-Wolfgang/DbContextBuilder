@@ -30,8 +30,6 @@
 		 <DefineConstants>$(DefineConstants);EF_CORE_8;EF_CORE_8_OR_GREATER</DefineConstants>
 	 </PropertyGroup>
 
-
-
 	 <ItemGroup>
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\AutoFixtureRandomEntityCreator.cs" Link="AutoFixtureRandomEntityCreator.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilder.cs" Link="DbContextBuilder.cs" />
@@ -46,17 +44,23 @@
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteForMsSqlServerModelCustomizer.cs" Link="SqliteForMsSqlServerModelCustomizer.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteModelCustomizer.cs" Link="SqliteModelCustomizer.cs" />
 	 </ItemGroup>
+
+
 	<ItemGroup>
 	  <PackageReference Include="AutoFixture" Version="4.18.1" />
 	  <PackageReference Include="coverlet.collector" Version="6.0.4">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
-	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.21" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.21" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.21" />
+
 	  <PackageReference Include="System.Net.Http" Version="4.3.4" />
 	  <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+
+
+	  <!-- Lock EF to version 8.x but not 9 or later -->
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="[8.0.21,9.0.0)" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="[8.0.21,9.0.0)" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[8.0.21,9.0.0)" />
 	</ItemGroup>
 
 	<ItemGroup>

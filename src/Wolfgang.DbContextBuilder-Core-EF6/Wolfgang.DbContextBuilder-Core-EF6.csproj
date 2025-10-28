@@ -52,11 +52,15 @@
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
-	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.36" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.36" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.36" />
+
 	  <PackageReference Include="System.Net.Http" Version="4.3.4" />
 	  <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+
+
+	  <!-- Lock EF to version 6.x but not 7 or later -->
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="[6.0.36,7.0.0)" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="[6.0.36,7.0.0)" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[6.0.36,7.0.0)" />
 	</ItemGroup>
 
 	<ItemGroup>
