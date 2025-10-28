@@ -76,10 +76,10 @@ jobs:
       - name: Pack NuGet Package for Each Project in Src (Release)
         shell: bash
         run: |
-            dotnet pack --no-build --configuration Release --output ./nuget-packages src\Wolfgang.DbContextBuilder-Core-EF6\Wolfgang.DbContextBuilder-Core-EF6.csproj
-            dotnet pack --no-build --configuration Release --output ./nuget-packages src\Wolfgang.DbContextBuilder-Core-EF7\Wolfgang.DbContextBuilder-Core-EF7.csproj
-            dotnet pack --no-build --configuration Release --output ./nuget-packages src\Wolfgang.DbContextBuilder-Core-EF8\Wolfgang.DbContextBuilder-Core-EF8.csproj
-            dotnet pack --no-build --configuration Release --output ./nuget-packages src\Wolfgang.DbContextBuilder-Core-EF9\Wolfgang.DbContextBuilder-Core-EF9.csproj
+            dotnet pack src/Wolfgang.DbContextBuilder-Core-EF6/Wolfgang.DbContextBuilder-Core-EF6.csproj --no-build --configuration Release --output ./nuget-packages 
+            dotnet pack src/Wolfgang.DbContextBuilder-Core-EF7/Wolfgang.DbContextBuilder-Core-EF7.csproj --no-build --configuration Release --output ./nuget-packages 
+            dotnet pack src/Wolfgang.DbContextBuilder-Core-EF8/Wolfgang.DbContextBuilder-Core-EF8.csproj --no-build --configuration Release --output ./nuget-packages 
+            dotnet pack src/Wolfgang.DbContextBuilder-Core-EF9/Wolfgang.DbContextBuilder-Core-EF9.csproj --no-build --configuration Release --output ./nuget-packages 
             
       - name: Publish NuGet Package
         env:
