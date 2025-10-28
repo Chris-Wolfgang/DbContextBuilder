@@ -136,15 +136,15 @@
 	  </ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core\Wolfgang.DbContextBuilder-Core.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Using Include="Xunit" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Folder Include="Models\Generated\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core-EF6\Wolfgang.DbContextBuilder-Core-EF6.csproj" />
 	</ItemGroup>
 
 

@@ -2,13 +2,13 @@
 
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore.Tests.Unit</RootNamespace>
-		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+		<TargetFrameworks>net9.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<Version>0.2.0</Version>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<Title>$(AssemblyName)</Title>
 		<Authors>Chris Wolfgang</Authors>
-		<Description>Unit tests for Wolfgang.DbContextBuilder-Core-EF8</Description>
+		<Description>Unit tests for Wolfgang.DbContextBuilder-Core-EF9</Description>
 		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
 		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -25,7 +25,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<IsTestProject>true</IsTestProject>
-		<DefineConstants>$(DefineConstants);EF_CORE_8;EF_CORE_8_OR_GREATER</DefineConstants>
+		<DefineConstants>$(DefineConstants);EF_CORE_9;EF_CORE_9_OR_GREATER</DefineConstants>
 
 	</PropertyGroup>
 
@@ -120,6 +120,20 @@
 		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\VVendorWithContact.cs" Link="Models\Generated\VVendorWithContact.cs" />
 		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\WorkOrder.cs" Link="Models\Generated\WorkOrder.cs" />
 		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\WorkOrderRouting.cs" Link="Models\Generated\WorkOrderRouting.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\AutoFixtureRandomEntityCreatorTests.cs" Link="AutoFixtureRandomEntityCreatorTests.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\DbContextBuilderTestsBase.cs" Link="DbContextBuilderTestsBase.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\ICreateRandomEntitiesTestsBase.cs" Link="ICreateRandomEntitiesTestsBase.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\IgnoreVirtualMembersCustomizationTests.cs" Link="IgnoreVirtualMembersCustomizationTests.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\IgnoreVirtualMembersTests.cs" Link="IgnoreVirtualMembersTests.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\Models\BasicContext.cs" Link="Models\BasicContext.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\Models\TableWithDefaults.cs" Link="Models\TableWithDefaults.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\NoCircularReferencesCustomizationTests.cs" Link="NoCircularReferencesCustomizationTests.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\SqliteForMsSqlServerModelCustomizerTests.cs" Link="SqliteForMsSqlServerModelCustomizerTests.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\SqliteModelCustomizerTests.cs" Link="SqliteModelCustomizerTests.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestConstants.cs" Link="TestConstants.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestsWithDefaults.cs" Link="TestsWithDefaults.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestsWithInMemoryDBAndAutoFixture.cs" Link="TestsWithInMemoryDBAndAutoFixture.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestsWithSqliteAndAutoFixture.cs" Link="TestsWithSqliteAndAutoFixture.cs" />
 	</ItemGroup>
 
 
@@ -131,16 +145,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
-    <PackageReference Include="System.Text.Json" Version="9.0.10" />
     <PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
   </ItemGroup>
-
-
-
-	<ItemGroup>
-		<ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core\Wolfgang.DbContextBuilder-Core-EF8.csproj" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<Using Include="Xunit" />
@@ -150,6 +157,9 @@
 		<Folder Include="Models\Generated\" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core-EF9\Wolfgang.DbContextBuilder-Core-EF9.csproj" />
+	</ItemGroup>
 
 
 	<PropertyGroup>

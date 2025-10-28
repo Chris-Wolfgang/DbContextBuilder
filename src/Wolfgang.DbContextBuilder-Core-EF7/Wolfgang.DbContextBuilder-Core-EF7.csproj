@@ -15,7 +15,7 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageIcon>dbcontext-builder.png</PackageIcon>
-		<ApplicationIcon>Content/dbcontext-builder.ico</ApplicationIcon>
+		<ApplicationIcon>dbcontext-builder.ico</ApplicationIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
 		<PackageTags></PackageTags>
@@ -24,10 +24,26 @@
 		<Nullable>enable</Nullable>
 		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
-		<DefineConstants>$(DefineConstants);EF_CORE_7;EF_CORE_7_OR_GREATER</DefineConstants>
-
 	</PropertyGroup>
 
+	 <PropertyGroup>
+		<DefineConstants>$(DefineConstants);EF_CORE_7;EF_CORE_7_OR_GREATER</DefineConstants>
+	</PropertyGroup>
+
+	 <ItemGroup>
+	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\AutoFixtureRandomEntityCreator.cs" Link="AutoFixtureRandomEntityCreator.cs" />
+	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilder.cs" Link="DbContextBuilder.cs" />
+	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderAutoFixtureExtensions.cs" Link="DbContextBuilderAutoFixtureExtensions.cs" />
+	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderSqliteExtensions.cs" Link="DbContextBuilderSqliteExtensions.cs" />
+	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderSqlServerExtensions.cs" Link="DbContextBuilderSqlServerExtensions.cs" />
+	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\global.cs" Link="global.cs" />
+	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\ICreateDbContext.cs" Link="ICreateDbContext.cs" />
+	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\ICreateRandomEntities.cs" Link="ICreateRandomEntities.cs" />
+	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\InMemoryDbContextCreator.cs" Link="InMemoryDbContextCreator.cs" />
+	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteDbContextCreator.cs" Link="SqliteDbContextCreator.cs" />
+	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteForMsSqlServerModelCustomizer.cs" Link="SqliteForMsSqlServerModelCustomizer.cs" />
+	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteModelCustomizer.cs" Link="SqliteModelCustomizer.cs" />
+	 </ItemGroup>
 	<ItemGroup>
 	  <PackageReference Include="AutoFixture" Version="4.18.1" />
 	  <PackageReference Include="coverlet.collector" Version="6.0.4">
@@ -44,8 +60,13 @@
 	<ItemGroup>
 		<!-- Include the icon and README file directly in the package's root -->
 		<None Include="..\..\README.md" Pack="True" PackagePath="/" />
-		<None Include="Content\dbcontext-builder.png" Pack="true" PackagePath="/" />
-		<None Include="Content\dbcontext-builder.ico" Pack="true" PackagePath="/" />
+		<None Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder.png">
+		  <Pack>True</Pack>
+		  <PackagePath>\</PackagePath>
+		</None>
+                <Content Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder.png" Link="Content\dbcontext-builder.png" />
+                <Content Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder-inverted.png" Link="Content\dbcontext-builder-inverted.png" />
+                <Content Include="dbcontext-builder.ico" Link="Content\dbcontext-builder.ico" />
 	</ItemGroup>
 
 	 <PropertyGroup>
