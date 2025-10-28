@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Moq;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
@@ -17,8 +16,12 @@ public class SqliteModelCustomizerTests
     public void Can_create_instance_of_SqliteModelCustomizer()
     {
         // Arrange
+#if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
 
         // Act & Assert
         // ReSharper disable once UnusedVariable
@@ -49,8 +52,13 @@ public class SqliteModelCustomizerTests
     public void OverrideTableRenameRenaming_when_set_to_null_throws_ArgumentNullException()
     {
         // Arrange
+#if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
         var sut = new SqliteModelCustomizer(dependencies);
 
         var ex = Assert.Throws<ArgumentNullException>(() => sut.OverrideTableRenaming = null!);
@@ -66,8 +74,13 @@ public class SqliteModelCustomizerTests
     public void OverrideTableRenaming_can_rename_table_with_default_implementation()
     {
         // Arrange
+#if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
         var sut = new SqliteModelCustomizer(dependencies);
 
         // Act & Assert
@@ -98,17 +111,23 @@ public class SqliteModelCustomizerTests
     public void OverrideTableRenaming_can_rename_table_with_custom_implementation()
     {
         // Arrange
+#if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-        var sut = new SqliteModelCustomizer(dependencies);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
 
-        sut.OverrideTableRenaming = tuple =>
-        {
-            var schemaPrefix = $"{tuple.SchemaName ?? "dbo"}$";
 
-            return tuple.TableName.StartsWith(schemaPrefix, StringComparison.OrdinalIgnoreCase)
-                ? tuple.TableName
-                : $"{tuple.SchemaName ?? "dbo"}${tuple.TableName}";
+        var sut = new SqliteModelCustomizer(dependencies) {
+            OverrideTableRenaming = tuple =>
+            {
+                var schemaPrefix = $"{tuple.SchemaName ?? "dbo"}$";
+
+                return tuple.TableName.StartsWith(schemaPrefix, StringComparison.OrdinalIgnoreCase)
+                    ? tuple.TableName
+                    : $"{tuple.SchemaName ?? "dbo"}${tuple.TableName}";
+            }
         };
 
         // Act & Assert
@@ -139,8 +158,13 @@ public class SqliteModelCustomizerTests
     public void OverrideDefaultValueHandling_when_set_to_null_throws_ArgumentNullException()
     {
         // Arrange
+#if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
         var sut = new SqliteModelCustomizer(dependencies);
 
         var ex = Assert.Throws<ArgumentNullException>(() => sut.OverrideDefaultValueHandling = null!);
@@ -156,8 +180,13 @@ public class SqliteModelCustomizerTests
     public void OverrideDefaultValueHandling_default_implementation_leaves_default_value_as_is()
     {
         // Arrange
+#if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
         var sut = new SqliteModelCustomizer(dependencies);
 
         // Act & Assert
@@ -176,12 +205,19 @@ public class SqliteModelCustomizerTests
     public void OverrideDefaultValueHandling_uses_custom_method_when_provided()
     {
         // Arrange
+#if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-        var sut = new SqliteModelCustomizer(dependencies);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
 
-        // Act & Assert
-        sut.OverrideDefaultValueHandling = s => null;
+
+        var sut = new SqliteModelCustomizer(dependencies)
+        {
+            // Act & Assert
+            OverrideDefaultValueHandling = _ => null
+        };
 
         Assert.Null(sut.OverrideDefaultValueHandling("(getdate())"));
         Assert.Null(sut.OverrideDefaultValueHandling("(newid())"));
@@ -200,8 +236,13 @@ public class SqliteModelCustomizerTests
     public void OverrideComputedValueHandling_when_set_to_null_throws_ArgumentNullException()
     {
         // Arrange
+#if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
         var sut = new SqliteModelCustomizer(dependencies);
 
         var ex = Assert.Throws<ArgumentNullException>(() => sut.OverrideComputedValueHandling = null!);
@@ -217,8 +258,13 @@ public class SqliteModelCustomizerTests
     public void OverrideComputedValueHandling_default_implementation_set_default_to_null()
     {
         // Arrange
+#if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
         var sut = new SqliteModelCustomizer(dependencies);
 
         // Act & Assert
@@ -237,12 +283,19 @@ public class SqliteModelCustomizerTests
     public void OverrideComputedValueHandling_uses_custom_method_when_provided()
     {
         // Arrange
+#if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-        var sut = new SqliteModelCustomizer(dependencies);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
 
-        // Act & Assert
-        sut.OverrideComputedValueHandling = s => null;
+
+        var sut = new SqliteModelCustomizer(dependencies)
+        {
+            // Act & Assert
+            OverrideComputedValueHandling = _ => null
+        };
 
         Assert.Null(sut.OverrideComputedValueHandling("(isnull('AW'+[dbo].[ufnLeadingZeros]([CustomerID]),''))"));
         Assert.Null(sut.OverrideComputedValueHandling("([OrganizationNode].[GetLevel]())"));

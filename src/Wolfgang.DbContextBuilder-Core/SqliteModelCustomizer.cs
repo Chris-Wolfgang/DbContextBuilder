@@ -7,7 +7,6 @@ namespace Wolfgang.DbContextBuilderCore;
 /// <summary>
 /// Overrides the default model creation process in the DbContext{T} with configurations suitable for SQLite.
 /// </summary>
-/// <param name="dependencies"></param>
 /// <remarks>
 /// Unless the production database you are testing is also SQLite, there will be differences between
 /// your database and the context's configuration definition and SQLite's capabilities. This class
@@ -15,15 +14,14 @@ namespace Wolfgang.DbContextBuilderCore;
 /// basic capabilities like,
 ///   1. Renaming tables to avoid schema issues since SQLite does not support schemas.
 ///   2. Removing computed values for columns since SQLite may not support the same functions.
-///
+/// 
 /// You can override the functionality provided in this class or if you will be frequently working
 /// in the same database engine, you can create your own ModelCustomizer, either from scratch or
 /// derived from this one, and override the desired functionality. Once you created you can reuse
 /// it over and over again. For example, you want to create a SqliteForOracleModelCustomizer that
 /// has overrides to make an DbContext created for Oracle work in SQLite.
 /// </remarks>
-public class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
-    : ModelCustomizer(dependencies)
+public class SqliteModelCustomizer : ModelCustomizer
 {
 
 
@@ -89,6 +87,28 @@ public class SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
 
 
     private Func<string?, string?>? _overrideDefaultValueHandling;
+
+    /// <summary>
+    /// Overrides the default model creation process in the DbContext{T} with configurations suitable for SQLite.
+    /// </summary>
+    /// <param name="dependencies"></param>
+    /// <remarks>
+    /// Unless the production database you are testing is also SQLite, there will be differences between
+    /// your database and the context's configuration definition and SQLite's capabilities. This class
+    /// provides some basic overrides to make your DbContext work in SQLite. This class provides some
+    /// basic capabilities like,
+    ///   1. Renaming tables to avoid schema issues since SQLite does not support schemas.
+    ///   2. Removing computed values for columns since SQLite may not support the same functions.
+    ///
+    /// You can override the functionality provided in this class or if you will be frequently working
+    /// in the same database engine, you can create your own ModelCustomizer, either from scratch or
+    /// derived from this one, and override the desired functionality. Once you created you can reuse
+    /// it over and over again. For example, you want to create a SqliteForOracleModelCustomizer that
+    /// has overrides to make an DbContext created for Oracle work in SQLite.
+    /// </remarks>
+    public SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
+        : base(dependencies) => ArgumentNullException.ThrowIfNull(dependencies);
+
     /// <summary>
     /// This method is called for each column that has a default value defined in the model.
     /// </summary>

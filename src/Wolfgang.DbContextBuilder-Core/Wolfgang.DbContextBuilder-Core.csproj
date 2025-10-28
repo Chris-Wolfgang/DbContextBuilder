@@ -3,8 +3,8 @@
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
 		<TargetFrameworks>net6.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.2.0</Version>
-		<Title>$(AssemblyName)</Title>
+		<Version>0.3.0</Version>
+		<Title>Wolfgang.DbContextBuilder for EF</Title>
 		<Authors>Chris Wolfgang</Authors>
 		<Description>A library for easily building DbContext for testing using in-memory database</Description>
 		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
@@ -24,6 +24,7 @@
 		<Nullable>enable</Nullable>
 		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
+		<DefineConstants>$(DefineConstants);EF_CORE_6;EF_CORE_6_OR_GREATER</DefineConstants>
 
 	</PropertyGroup>
 
