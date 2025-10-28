@@ -1,0 +1,38 @@
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+using System.Diagnostics.CodeAnalysis;
+
+namespace AdventureWorks.Models;
+
+/// <summary>
+/// Work shift lookup table.
+/// </summary>
+[ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
+public partial record Shift
+{
+	/// <summary>
+	/// Primary key for Shift records.
+	/// </summary>
+	public byte ShiftId { get; set; }
+
+	/// <summary>
+	/// Shift description.
+	/// </summary>
+	public string Name { get; set; } = null!;
+
+	/// <summary>
+	/// Shift start time.
+	/// </summary>
+	public TimeOnly StartTime { get; set; }
+
+	/// <summary>
+	/// Shift end time.
+	/// </summary>
+	public TimeOnly EndTime { get; set; }
+
+	/// <summary>
+	/// Date and time the record was last updated.
+	/// </summary>
+	public DateTime ModifiedDate { get; set; }
+
+	public virtual ICollection<EmployeeDepartmentHistory> EmployeeDepartmentHistories { get; set; } = new List<EmployeeDepartmentHistory>();
+}
