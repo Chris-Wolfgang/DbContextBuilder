@@ -1,0 +1,33 @@
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+using System.Diagnostics.CodeAnalysis;
+
+namespace AdventureWorks.Models;
+
+/// <summary>
+/// Lookup table of customer purchase reasons.
+/// </summary>
+[ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
+public partial record SalesReason
+{
+	/// <summary>
+	/// Primary key for SalesReason records.
+	/// </summary>
+	public int SalesReasonId { get; set; }
+
+	/// <summary>
+	/// Sales reason description.
+	/// </summary>
+	public string Name { get; set; } = null!;
+
+	/// <summary>
+	/// Category the sales reason belongs to.
+	/// </summary>
+	public string ReasonType { get; set; } = null!;
+
+	/// <summary>
+	/// Date and time the record was last updated.
+	/// </summary>
+	public DateTime ModifiedDate { get; set; }
+
+	public virtual ICollection<SalesOrderHeaderSalesReason> SalesOrderHeaderSalesReasons { get; set; } = new List<SalesOrderHeaderSalesReason>();
+}

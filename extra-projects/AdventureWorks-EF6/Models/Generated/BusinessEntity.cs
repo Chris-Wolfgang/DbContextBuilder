@@ -1,0 +1,36 @@
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+using System.Diagnostics.CodeAnalysis;
+
+namespace AdventureWorks.Models;
+
+/// <summary>
+/// Source of the ID that connects vendors, customers, and employees with address and contact information.
+/// </summary>
+[ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
+public partial record BusinessEntity
+{
+	/// <summary>
+	/// Primary key for all customers, vendors, and employees.
+	/// </summary>
+	public int BusinessEntityId { get; set; }
+
+	/// <summary>
+	/// ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.
+	/// </summary>
+	public Guid Rowguid { get; set; }
+
+	/// <summary>
+	/// Date and time the record was last updated.
+	/// </summary>
+	public DateTime ModifiedDate { get; set; }
+
+	public virtual ICollection<BusinessEntityAddress> BusinessEntityAddresses { get; set; } = new List<BusinessEntityAddress>();
+
+	public virtual ICollection<BusinessEntityContact> BusinessEntityContacts { get; set; } = new List<BusinessEntityContact>();
+
+	public virtual Person? Person { get; set; }
+
+	public virtual Store? Store { get; set; }
+
+	public virtual Vendor? Vendor { get; set; }
+}
