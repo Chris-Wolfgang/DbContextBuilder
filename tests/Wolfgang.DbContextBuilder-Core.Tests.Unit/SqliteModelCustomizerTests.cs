@@ -19,8 +19,6 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-#elif EF_CORE_7 || EF_CORE_8 
-        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -57,8 +55,6 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-#elif EF_CORE_7 || EF_CORE_8 
-        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -81,8 +77,6 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-#elif EF_CORE_7 || EF_CORE_8 
-        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -120,8 +114,6 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-#elif EF_CORE_7 || EF_CORE_8 
-        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -169,8 +161,6 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-#elif EF_CORE_7 || EF_CORE_8 
-        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -193,8 +183,6 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-#elif EF_CORE_7 || EF_CORE_8 
-        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -220,8 +208,6 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-#elif EF_CORE_7 || EF_CORE_8 
-        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -253,8 +239,6 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-#elif EF_CORE_7 || EF_CORE_8 
-        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -277,8 +261,6 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-#elif EF_CORE_7 || EF_CORE_8 
-        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
@@ -304,8 +286,6 @@ public class SqliteModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-#elif EF_CORE_7 || EF_CORE_8 
-        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
