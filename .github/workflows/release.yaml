@@ -76,11 +76,11 @@ jobs:
       - name: Pack NuGet Package for Each Project in Src (Release)
         shell: bash
         run: |
-          find ./src -type f -name '*.csproj' | while read proj; do
-            echo "Packing $proj"
-            dotnet pack "$proj" --no-build --configuration Release --output ./nuget-packages			
-          done
-
+            dotnet pack src/Wolfgang.DbContextBuilder-Core-EF6/Wolfgang.DbContextBuilder-Core-EF6.csproj --no-build --configuration Release --output ./nuget-packages 
+            dotnet pack src/Wolfgang.DbContextBuilder-Core-EF7/Wolfgang.DbContextBuilder-Core-EF7.csproj --no-build --configuration Release --output ./nuget-packages 
+            dotnet pack src/Wolfgang.DbContextBuilder-Core-EF8/Wolfgang.DbContextBuilder-Core-EF8.csproj --no-build --configuration Release --output ./nuget-packages 
+            dotnet pack src/Wolfgang.DbContextBuilder-Core-EF9/Wolfgang.DbContextBuilder-Core-EF9.csproj --no-build --configuration Release --output ./nuget-packages 
+            
       - name: Publish NuGet Package
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }} # Ensure this secret is set in repository settings
