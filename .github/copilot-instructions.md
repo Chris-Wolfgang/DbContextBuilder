@@ -1,162 +1,201 @@
-# Copilot Coding Agent Instructions
+# DbContextBuilder Copilot Coding Agent Instructions
+
+Always reference these instructions first and only fallback to search or additional context gathering if the information provided here is incomplete or found to be incorrect.
 
 ## Repository Summary
 
-This is a **repository template** for creating new .NET repositories. It provides a standardized structure with comprehensive GitHub integration, CI/CD workflows, and development tooling. The template is designed for .NET 8.0 projects using C# and follows Microsoft's recommended project organization patterns.
+**DbContextBuilder** is a .NET 8.0 library that uses the Builder pattern to create Entity Framework Core DbContext instances with an in-memory database for testing purposes. The library allows developers to easily set up DbContext instances with predefined and random data, making it ideal for unit tests and integration tests without relying on actual databases.
 
-**Repository Type**: Template (not a working project)  
+**Repository Type**: .NET Library  
 **Target Platform**: .NET 8.0  
 **Primary Language**: C#  
-**Size**: Small template (~15 configuration files, empty project folders)  
+**NuGet Package**: Wolfgang.DbContextBuilder  
+**Main Features**: Builder pattern, in-memory database seeding, random data generation
 
 ## Build and Validation Instructions
 
 ### Prerequisites
-- .NET 8.0.x SDK (always install if not present)
-- ReportGenerator tool (installed via `dotnet tool install -g dotnet-reportgenerator-globaltool`)
-- DevSkim CLI (installed via `dotnet tool install --global Microsoft.CST.DevSkim.CLI`)
+- .NET 8.0.x SDK (always verify: `dotnet --version`)
+- ReportGenerator tool: `dotnet tool install -g dotnet-reportgenerator-globaltool`
+- DevSkim CLI: `dotnet tool install --global Microsoft.CST.DevSkim.CLI`
 
-### Build Process (For Repositories Created from This Template)
-**IMPORTANT**: This template has no buildable projects. These commands apply to repositories created FROM this template.
+### Complete Build and Test Workflow
+Run these commands in the repository root in this exact order:
 
-1. **Restore Dependencies** (always run first):
+1. **Restore Dependencies** (2 seconds):
    ```bash
    dotnet restore
    ```
 
-2. **Build Solution**:
+2. **Build Solution** (4-5 seconds):
    ```bash
    dotnet build --no-restore --configuration Release
    ```
 
-3. **Run Tests with Coverage**:
+3. **Run Tests with Coverage** (3-4 seconds):
    ```bash
-   # Find and test all test projects
    find ./tests -type f -name '*Test*.csproj' | while read proj; do
+     echo "Testing $proj"
      dotnet test "$proj" --no-build --configuration Release --collect:"XPlat Code Coverage" --results-directory "./TestResults"
    done
    ```
 
-4. **Generate Coverage Reports**:
+4. **Generate Coverage Reports** (< 1 second):
    ```bash
    reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:"CoverageReport" -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
    ```
 
-5. **Security Scanning**:
+5. **Check Coverage Threshold** (manual verification):
    ```bash
+   cat CoverageReport/Summary.txt
+   ```
+   - **REQUIREMENT**: Line coverage must be ≥ 80% for CI to pass
+   - Current baseline: ~76% (needs improvement for CI)
+
+6. **Security Scanning** (< 1 second):
+   ```bash
+   # Clean artifacts first to avoid false positives
+   rm -rf CoverageReport TestResults
    devskim analyze --source-code . -f text --output-file devskim-results.txt -E
    ```
 
 ### Critical Build Requirements
-- **Code Coverage**: Minimum 80% line coverage required for all projects
-- **Security Scanning**: DevSkim must pass with no errors
-- **Build Configuration**: Always use Release configuration for CI
-- **Test Pattern**: Test projects must match `*Test*.csproj` pattern in `/tests` folder
+- **Code Coverage**: Minimum 80% line coverage required for CI pipeline
+- **Security Scanning**: DevSkim must pass with exit code 0 (no errors)
+- **Test Pattern**: Test projects must match `*Test*.csproj` in `/tests` folder
+- **Analyzer Rules**: CA1707 (underscores in names) is suppressed for test methods
 
-### Common Issues and Workarounds
-- **Timeout Issues**: Coverage and security scans can take 5-10 minutes for larger projects
-- **Coverage Threshold Failures**: If below 80%, the build will fail - this is by design
-- **Missing Test Projects**: The workflow expects at least one test project in `/tests` folder
-- **DevSkim False Positives**: Review `devskim-results.txt` for any security findings
+### Build Performance Expectations
+- **Total build time**: ~10-12 seconds for complete workflow
+- **Test execution**: ~3-4 seconds (5 tests)
+- **Coverage generation**: < 1 second
+- **Security scan**: < 1 second (on clean source)
+- **NEVER CANCEL**: Even though builds are fast, always allow 30+ seconds timeout
 
-## Project Layout and Architecture
+## Project Structure and Navigation
 
-### Standard Directory Structure
+### Directory Layout
 ```
-root/
-├── MySolution.sln              # Solution file (create in root)
-├── src/                        # Application projects
-│   ├── MyApp/
-│   │   └── MyApp.csproj
-│   └── MyLib/
-│       └── MyLib.csproj
-├── tests/                      # Test projects (required)
-│   ├── MyApp.Tests/
-│   │   └── MyApp.Tests.csproj
-│   └── MyLib.Tests/
-│       └── MyLib.Tests.csproj
-├── benchmarks/                 # Performance benchmarks (optional)
-│   └── MyApp.Benchmarks/
-│       └── MyApp.Benchmarks.csproj
-├── examples/                   # Example projects (optional)
-├── docs/                       # Documentation
-└── .github/                    # GitHub configuration
+DbContextBuilder/
+├── DbContextBuilder.sln              # Main solution file
+├── src/                              # Library source code
+│   └── Wolfgang.DbContextBuilder/    # Main library project
+│       ├── Wolfgang.DbContextBuilder.csproj
+│       └── Class1.cs                 # DbContextBuilder<T> implementation
+├── tests/                            # Test projects
+│   └── Wolfgang.DbContextBuilder.Tests/
+│       ├── Wolfgang.DbContextBuilder.Tests.csproj
+│       └── UnitTest1.cs              # DbContextBuilder tests
+├── .editorconfig                     # Code style rules (CA1707 suppressed)
+├── .github/workflows/pr.yaml         # CI/CD pipeline
+└── README.md                         # Library documentation
 ```
 
-### Key Configuration Files
-- **`.editorconfig`**: Code style rules (C# file-scoped namespaces, var preferences, analyzer severity)
-- **`.gitignore`**: Comprehensive .NET gitignore (Visual Studio, build artifacts, packages)
-- **`SETUP.md`**: Detailed repository setup instructions (delete after setup)
-- **`CONTRIBUTING.md`**: Empty - populate with contribution guidelines
-- **`CODE_OF_CONDUCT.md`**: Standard Contributor Covenant v2.0
+### Key Files and Their Purpose
+- **`src/Wolfgang.DbContextBuilder/Class1.cs`**: Main `DbContextBuilder<T>` class implementation
+- **`tests/Wolfgang.DbContextBuilder.Tests/UnitTest1.cs`**: Comprehensive test suite (5 tests)
+- **`.editorconfig`**: Code style configuration with CA1707 suppressed for test methods
+- **`DbContextBuilder.sln`**: Solution file containing both projects
 
-### GitHub Integration
-- **Workflows**: `.github/workflows/pr.yaml` - Comprehensive CI/CD pipeline
-- **Issue Templates**: Bug reports (YAML) and feature requests (Markdown)
-- **PR Template**: Structured pull request template with checklists
-- **CODEOWNERS**: Default owner `@Chris-Wolfgang`, update usernames as needed
-- **Dependabot**: Configured for NuGet packages in all project directories
+### Dependencies
+**Main Library** (`src/Wolfgang.DbContextBuilder/`):
+- `Microsoft.EntityFrameworkCore` (9.0.8)
+- `Microsoft.EntityFrameworkCore.Sqlite` (9.0.8) 
+- `Microsoft.EntityFrameworkCore.InMemory` (9.0.8)
 
-### Continuous Integration Pipeline (`.github/workflows/pr.yaml`)
-The workflow runs on pull requests to `main` branch and includes:
+**Test Project** (`tests/Wolfgang.DbContextBuilder.Tests/`):
+- `Microsoft.EntityFrameworkCore.InMemory` (9.0.8)
+- `xunit` (test framework)
+- Project reference to main library
 
-1. **Environment**: Ubuntu Latest with .NET 8.0.x
-2. **Build Steps**: Checkout → Setup .NET → Restore → Build → Test → Coverage → Security
-3. **Artifacts**: Coverage reports and DevSkim results uploaded
-4. **Branch Protection**: Configured to require this workflow to pass before merging
+## Development Workflow
 
-**Security Note**: Workflow includes safeguard `if: github.repository != 'Chris-Wolfgang/repo-template'` to prevent running on the template itself.
+### Adding New Features
+1. **Always run full build first** to ensure clean baseline
+2. **Implement in** `src/Wolfgang.DbContextBuilder/Class1.cs`
+3. **Add tests in** `tests/Wolfgang.DbContextBuilder.Tests/UnitTest1.cs`
+4. **Run build and test cycle** after each change
+5. **Verify coverage stays ≥ 80%** before committing
 
-### Branch Protection Configuration
-When using this template, configure these settings in GitHub (detailed in `SETUP.md`):
-- Require status checks to pass before merging
-- Require branches to be up to date
-- Require pull request reviews (including Copilot reviews)
-- Restrict deletions and block force pushes
-- Require code scanning
+### Testing DbContextBuilder Functionality
+The library provides these main methods:
+- `SeedWith<T>(entity)`: Add specific test data
+- `SeedWithRandom<T>(count)`: Generate random entities with unique IDs
+- `UseConnection(connection)`: Use custom database connection
+- `UseDatabaseName(name)`: Custom database name for InMemory provider
+- `Build()`: Create configured DbContext instance
 
-## Key Files and Locations
+### Test Scenarios to Validate
+Always test these user scenarios after making changes:
+1. **Basic seeding**: Create DbContext with specific entity data
+2. **Random data**: Generate entities with unique random IDs
+3. **Combined seeding**: Mix specific and random data
+4. **Error handling**: Invalid inputs (null entities, zero/negative counts)
+5. **Custom connections**: Use different database providers
 
-### Root Directory Files
-- `README.md` - Basic template description (update for your project)
-- `LICENSE` - Mozilla Public License 2.0
-- `SETUP.md` - Template setup instructions (delete after setup)
-- `.editorconfig` - Code style configuration
-- `.gitignore` - .NET-specific gitignore
+### Example Usage Validation
+Test this code pattern works correctly:
+```csharp
+var context = new DbContextBuilder<YourDbContext>()
+    .SeedWithRandom<YourEntity>(10)
+    .SeedWith(new YourEntity { Id = 1, Name = "Test Entity" })
+    .SeedWithRandom<YourEntity>(5)
+    .Build();
+```
 
-### GitHub Directory (`.github/`)
-- `workflows/pr.yaml` - Main CI/CD pipeline
-- `ISSUE_TEMPLATE/` - Bug report (YAML) and feature request templates
-- `pull_request_template.md` - PR template with checklists
-- `CODEOWNERS` - Code ownership rules
-- `dependabot.yml` - Dependency update configuration
+## CI/CD Pipeline (`.github/workflows/pr.yaml`)
 
-### Project Directories (Currently Empty in Template)
-- `src/` - Application source code
-- `tests/` - Unit and integration tests
-- `benchmarks/` - Performance benchmarks
-- `examples/` - Example usage projects
-- `docs/` - Documentation (contains placeholder `index.html`)
+### Pipeline Steps
+1. **Setup .NET 8.0.x** on Ubuntu Latest
+2. **Restore dependencies** (`dotnet restore`)
+3. **Build Release configuration** (`dotnet build --no-restore --configuration Release`)
+4. **Run tests with coverage** (find all `*Test*.csproj` files)
+5. **Generate coverage reports** (ReportGenerator)
+6. **Check 80% coverage threshold** (fails if below)
+7. **Security scan** (DevSkim)
+8. **Upload artifacts** (coverage reports, security results)
 
-## Agent Guidelines
+### Known CI Issues
+- **Coverage below 80%**: Currently at ~76%, will fail CI until improved
+- **False positives**: DevSkim may flag generated coverage report files
+- **Build isolation**: Workflow only runs if `github.repository != 'Chris-Wolfgang/repo-template'`
 
-### Trust These Instructions
-This information has been validated against the template structure and GitHub workflows. **Only search for additional information if these instructions are incomplete or found to be incorrect.**
+## Common Tasks and Troubleshooting
 
-### When Working with This Template
-1. **Creating New Projects**: Follow the structure outlined in `SETUP.md`
-2. **Adding Dependencies**: Use `dotnet add package` commands
-3. **Code Style**: Follow `.editorconfig` rules (file-scoped namespaces, explicit typing)
-4. **Testing**: Ensure test projects follow `*Test*.csproj` naming convention
-5. **Coverage**: Aim for >80% code coverage to pass CI
-6. **Security**: Review DevSkim findings and address security concerns
+### Increasing Code Coverage
+Current coverage is 76.4%. To reach 80%:
+1. Add tests for uncovered branches in `DbContextBuilder<T>`
+2. Test the `UseConnection()` and `UseDatabaseName()` methods
+3. Add edge case tests for reflection-based ID setting
+4. Verify full method coverage for all public methods
 
-### Validation Steps
-Before submitting changes:
-1. Run `dotnet restore && dotnet build --configuration Release`
-2. Run tests with coverage collection
-3. Verify coverage meets 80% threshold
-4. Run DevSkim security scan
-5. Ensure all GitHub Actions checks pass
+### Security Scan Issues
+If DevSkim fails:
+1. **Clean artifacts first**: `rm -rf CoverageReport TestResults`
+2. **Check DevSkim output**: `cat devskim-results.txt`
+3. **Common issues**: Generated files, hardcoded URLs, setTimeout calls
+4. **Resolution**: Move problematic files to `.gitignore` or address findings
 
-This template provides a solid foundation for .NET projects with enterprise-grade CI/CD, security scanning, and development best practices built-in.
+### Test Failures
+Common test issues:
+1. **Duplicate entity IDs**: Fixed by random ID generation in `SeedWithRandom`
+2. **Database connection**: Uses InMemory provider, not SQLite
+3. **Entity tracking**: Each test uses unique database name
+
+### Dependencies and Packages
+To add new Entity Framework providers:
+```bash
+cd src/Wolfgang.DbContextBuilder
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer  # Example
+```
+
+## Validation Checklist
+Before committing changes, always verify:
+- [ ] `dotnet restore` succeeds (< 5 seconds)
+- [ ] `dotnet build --configuration Release` succeeds (< 10 seconds) 
+- [ ] All tests pass (`dotnet test --configuration Release`)
+- [ ] Coverage ≥ 80% (`cat CoverageReport/Summary.txt`)
+- [ ] Security scan passes (`devskim analyze` exit code 0)
+- [ ] Manual functionality test with sample DbContext
+
+This library enables rapid Entity Framework testing with minimal setup. Focus on maintaining the builder pattern simplicity while ensuring robust in-memory database functionality.
