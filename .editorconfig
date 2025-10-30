@@ -51,6 +51,9 @@ dotnet_diagnostic.sa1101.severity = error
 # Suppress a specific warning (example: unused variable)
 dotnet_diagnostic.cs0168.severity = none
 
+# Allow underscores in test method names
+dotnet_diagnostic.CA1707.severity = none
+
 # Require 'using' directives to be inside namespaces
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = true
