@@ -3,7 +3,7 @@
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
 		<TargetFrameworks>net7.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.3.0</Version>
+		<Version>0.3.2</Version>
 		<Title>Wolfgang.DbContextBuilder for EF Core 7</Title>
 		<Authors>Chris Wolfgang</Authors>
 		<Description>A library for easily building DbContext for testing using in-memory database</Description>
