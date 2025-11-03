@@ -58,8 +58,8 @@
 
 
 	  <!-- Lock EF to version 6.x but not 7 or later -->
-	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="[6.0.36,7.0.0)" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="[6.0.36,7.0.0)" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.20" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.20" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[6.0.36,7.0.0)" />
 	</ItemGroup>
 
