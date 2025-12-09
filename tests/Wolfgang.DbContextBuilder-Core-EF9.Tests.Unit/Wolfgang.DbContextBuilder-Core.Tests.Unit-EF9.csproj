@@ -4,7 +4,7 @@
 		<RootNamespace>Wolfgang.DbContextBuilderCore.Tests.Unit</RootNamespace>
 		<TargetFrameworks>net9.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.3.2</Version>
+		<Version>0.3.3</Version>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<Title>$(AssemblyName)</Title>
 		<Authors>Chris Wolfgang</Authors>
