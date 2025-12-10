@@ -3,7 +3,7 @@
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
 		<TargetFrameworks>net6.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.3.2</Version>
+		<Version>0.3.3</Version>
 		<Title>Wolfgang.DbContextBuilder for EF Core 6</Title>
 		<Authors>Chris Wolfgang</Authors>
 		<Description>A library for easily building DbContext for testing using in-memory database</Description>
@@ -36,7 +36,7 @@
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderAutoFixtureExtensions.cs" Link="DbContextBuilderAutoFixtureExtensions.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderSqliteExtensions.cs" Link="DbContextBuilderSqliteExtensions.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderSqlServerExtensions.cs" Link="DbContextBuilderSqlServerExtensions.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\global.cs" Link="global.cs" />
+	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\Assembly.cs" Link="Assembly.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\ICreateDbContext.cs" Link="ICreateDbContext.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\ICreateRandomEntities.cs" Link="ICreateRandomEntities.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\InMemoryDbContextCreator.cs" Link="InMemoryDbContextCreator.cs" />
