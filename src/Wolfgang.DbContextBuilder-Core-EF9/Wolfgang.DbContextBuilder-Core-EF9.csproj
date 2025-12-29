@@ -1,7 +1,7 @@
 ﻿ <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
-		<TargetFrameworks>net9.0</TargetFrameworks>
+		<TargetFramework>net9.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Version>0.3.3</Version>
 		<Title>Wolfgang.DbContextBuilder for EF Core 9</Title>

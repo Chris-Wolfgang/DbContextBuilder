@@ -9,7 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Azure.Identity" Version="1.17.0" />
+		<PackageReference Include="Azure.Identity" Version="1.17.1" />
 		<PackageReference Include="coverlet.collector" Version="6.0.4">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -24,7 +24,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="System.Formats.Asn1" Version="9.0.10" />
-		<PackageReference Include="System.Text.Json" Version="9.0.10" />
+		<PackageReference Include="System.Formats.Asn1" Version="10.0.1" />
+		<PackageReference Include="System.Text.Json" Version="10.0.1" />
 	</ItemGroup>
 </Project>

@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore.Tests.Unit</RootNamespace>
-		<TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+		<TargetFramework>net6.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Version>0.3.3</Version>
 		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
@@ -131,8 +131,11 @@
 	    </PackageReference>
 	    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
 	    <PackageReference Include="Moq" Version="4.20.72" />
-	    <PackageReference Include="xunit" Version="2.5.3" />
-	    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+	    <PackageReference Include="xunit" Version="2.9.3" />
+	    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+	      <PrivateAssets>all</PrivateAssets>
+	      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	    </PackageReference>
 	  </ItemGroup>
 
 	<ItemGroup>
