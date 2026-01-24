@@ -61,9 +61,9 @@
 
 
 	  <!-- Lock EF to version 9.x but not 10 or later -->
-	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="[9.0.10,10.0.0)" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="[9.0.10,10.0.0)" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[9.0.10,10.0.0)" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="[9.0.12,10.0.0)" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="[9.0.12,10.0.0)" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[9.0.12,10.0.0)" />
 	</ItemGroup>
 
 	<ItemGroup>
