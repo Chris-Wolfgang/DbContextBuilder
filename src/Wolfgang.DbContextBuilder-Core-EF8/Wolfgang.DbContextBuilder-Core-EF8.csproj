@@ -1,7 +1,7 @@
 ﻿ <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
-		<TargetFrameworks>net8.0</TargetFrameworks>
+		<TargetFramework>net8.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Version>0.3.3</Version>
 		<Title>Wolfgang.DbContextBuilder for EF Core 8</Title>
@@ -58,9 +58,9 @@
 
 
 	  <!-- Lock EF to version 8.x but not 9 or later -->
-	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="[8.0.21,9.0.0)" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="[8.0.21,9.0.0)" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[8.0.21,9.0.0)" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="[8.0.23,9.0.0)" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="[8.0.23,9.0.0)" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[8.0.23,9.0.0)" />
 	</ItemGroup>
 
 	<ItemGroup>
