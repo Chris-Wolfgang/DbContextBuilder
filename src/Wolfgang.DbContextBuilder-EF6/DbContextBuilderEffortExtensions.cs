@@ -12,6 +12,7 @@ public static class DbContextBuilderEffortExtensions
     /// Instructs the builder to use Effort as the in-memory database provider.
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <c>null</c>.</exception>
     public static DbContextBuilder<T> UseEffort<T>(this DbContextBuilder<T> builder) where T : DbContext
     {
         if (builder == null)

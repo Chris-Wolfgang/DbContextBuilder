@@ -12,6 +12,7 @@ public static class DbContextBuilderAutoFixtureExtensions
     /// Tell DbContextBuilder to use AutoFixture to create random entities.
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <c>null</c>.</exception>
     public static DbContextBuilder<T> UseAutoFixture<T>(this DbContextBuilder<T> builder) where T : DbContext
     {
         if (builder == null)

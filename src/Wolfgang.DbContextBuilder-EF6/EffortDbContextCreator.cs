@@ -10,7 +10,7 @@ namespace Wolfgang.DbContextBuilderEF6;
 /// <summary>
 /// Creates <see cref="DbContext"/> instances backed by an Effort in-memory database.
 /// </summary>
-internal class EffortDbContextCreator : ICreateDbContext
+internal sealed class EffortDbContextCreator : ICreateDbContext
 {
     private readonly DbConnection _connection;
     private bool _disposed;

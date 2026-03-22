@@ -36,6 +36,7 @@ public class DbContextBuilder<T> where T : DbContext
     /// </summary>
     /// <param name="creator">The creator to use</param>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <exception cref="ArgumentNullException"><paramref name="creator"/> is <c>null</c>.</exception>
     public DbContextBuilder<T> UseCustomRandomEntityCreator(ICreateRandomEntities creator)
     {
         if (creator == null)
@@ -145,6 +146,7 @@ public class DbContextBuilder<T> where T : DbContext
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="func"/> is <c>null</c>.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, TEntity> func) where TEntity : class
     {
         if (count < 1)
@@ -176,6 +178,7 @@ public class DbContextBuilder<T> where T : DbContext
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="func"/> is <c>null</c>.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, int, TEntity> func) where TEntity : class
     {
         if (count < 1)
