@@ -149,6 +149,9 @@ public class SqliteModelCustomizer : ModelCustomizer
         DbContext context
     )
     {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+        ArgumentNullException.ThrowIfNull(context);
+
         base.Customize(modelBuilder, context);
 
         if (!context.Database.IsSqlite())
@@ -190,14 +193,16 @@ public class SqliteModelCustomizer : ModelCustomizer
         }
 
         var newTableName = getNewName((originalSchemaName, originalTableName));
-        if (newTableName != originalTableName)
+        if (!string.Equals(newTableName, originalTableName, StringComparison.Ordinal))
         {
             entityType.SetTableName(newTableName);
         }
 
         if (originalSchemaName != null)
         {
+#pragma warning disable MA0003 // EF extension method parameter name varies across versions
             entityType.SetSchema(null);
+#pragma warning restore MA0003
         }
     }
 
@@ -207,7 +212,7 @@ public class SqliteModelCustomizer : ModelCustomizer
     {
         var currentDefaultValue = property.GetDefaultValueSql();
         var newDefaultValue = OverrideDefaultValueHandling(currentDefaultValue);
-        if (currentDefaultValue != newDefaultValue)
+        if (!string.Equals(currentDefaultValue, newDefaultValue, StringComparison.Ordinal))
         {
             property.SetDefaultValueSql(newDefaultValue);
         }
@@ -218,7 +223,7 @@ public class SqliteModelCustomizer : ModelCustomizer
     {
         var originalComputedValueSql = property.GetComputedColumnSql();
         var newComputedValueSql = OverrideComputedValueHandling(originalComputedValueSql);
-        if (originalComputedValueSql != newComputedValueSql)
+        if (!string.Equals(originalComputedValueSql, newComputedValueSql, StringComparison.Ordinal))
         {
             property.SetComputedColumnSql(newComputedValueSql);
         }
