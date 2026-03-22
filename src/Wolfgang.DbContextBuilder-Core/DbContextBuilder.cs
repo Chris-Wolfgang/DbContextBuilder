@@ -79,7 +79,7 @@ public class DbContextBuilder<T> where T : DbContext
     public DbContextBuilder<T> SeedWith<TEntity>(IEnumerable<TEntity> entities) 
         where TEntity : class
     {
-        ArgumentNullException.ThrowIfNull(entities, nameof(entities));
+        ArgumentNullException.ThrowIfNull(entities);
 
         if (typeof(TEntity) == typeof(string))
         {
@@ -103,7 +103,7 @@ public class DbContextBuilder<T> where T : DbContext
     public DbContextBuilder<T> SeedWith<TEntity>(params TEntity[] entities) 
         where TEntity : class
     {
-        ArgumentNullException.ThrowIfNull(entities, nameof(entities));
+        ArgumentNullException.ThrowIfNull(entities);
 
         foreach (var entity in entities)
         {
@@ -165,7 +165,7 @@ public class DbContextBuilder<T> where T : DbContext
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
         }
 
-        ArgumentNullException.ThrowIfNull(func, nameof(func));
+        ArgumentNullException.ThrowIfNull(func);
 
         var entities = RandomEntityCreator
             .CreateRandomEntities<TEntity>(count)
@@ -193,7 +193,7 @@ public class DbContextBuilder<T> where T : DbContext
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
         }
 
-        ArgumentNullException.ThrowIfNull(func, nameof(func));
+        ArgumentNullException.ThrowIfNull(func);
 
         var entities = RandomEntityCreator
             .CreateRandomEntities<TEntity>(count)

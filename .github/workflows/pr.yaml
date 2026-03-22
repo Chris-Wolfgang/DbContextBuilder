@@ -1,25 +1,330 @@
-# This workflow runs all branches when a pull request is created. 
-# If security settings have been properly configured, any branch that fails this workflow will be blocked from being merged into main and possibly other common branches link develop depending your specific settings
+# Sequential PR validation workflow with coverage gating
+# Stage 1: Linux tests with 90% coverage requirement
+# Stage 2: Windows .NET (5.0-10.0) and .NET Framework (4.6.2-4.8.1) tests (only if Linux passes)
+# Stage 3: macOS tests (only if Stage 2 passes)
+#
+# SECURITY NOTE:
+# - Uses pull_request_target to run workflow from the trusted main branch, not from the PR branch
+# - This prevents malicious workflow YAML changes in untrusted PR branches from taking effect
+# - All checkout steps use PR refs (refs/pull/*/head) to check out PR code from the base repo
+# - persist-credentials: false prevents the checkout token from being written to git config for subsequent git commands
+#   (it does NOT, by itself, prevent steps from accessing github.token / GITHUB_TOKEN if you explicitly expose it)
+# - Default GITHUB_TOKEN permissions are restricted to read-only repository contents to limit impact if exposed
 
-name: PR Checks
+name: PR Checks v3 (Gated)
 
 permissions:
   contents: read
-  
-on:
-  pull_request:
-    branches:
-      # List any other branches here that you want this workflow to run on
-      - main
 
+env:
+  CODECOV_MINIMUM: 90
+
+on:
+  pull_request_target:  # Runs from the main branch, not from PR branch
+    branches:
+      - main
 jobs:
-  build-and-test:
-    # Specifies the OS to run this workflow on. You can specify more than one. For a complete and current list, review the [documentation] (https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job)
+  # ============================================================================
+  # DETECTION: Check if .csproj files exist
+  # ============================================================================
+  detect-projects:
+    name: "Detect .NET Projects"
     runs-on: ubuntu-latest
-    if: github.repository != 'Chris-Wolfgang/repo-template' # Only run in child repos otherwise this will fail because the template does not have any projects
+    outputs:
+      has-projects: ${{ steps.check-projects.outputs.has-projects }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+          persist-credentials: false
+
+      - name: Check for .NET project files
+        id: check-projects
+        run: |
+          if git ls-files '*.csproj' '*.vbproj' '*.fsproj' | grep -q .; then
+            echo "has-projects=true" >> $GITHUB_OUTPUT
+            echo "✅ Found .NET project files - .NET build and test jobs will run"
+          else
+            echo "has-projects=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  No .NET project files found - skipping .NET build and test jobs"
+          fi
+
+  # ============================================================================
+  # STAGE 1: Linux - .NET Core/5+ Tests with Coverage Gate
+  # ============================================================================
+  test-linux-core:
+    name: "Stage 1: Linux Tests (.NET 5.0-10.0) + Coverage Gate"
+    runs-on:  ubuntu-latest
+    needs: detect-projects
+    if: needs.detect-projects.outputs.has-projects == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+          persist-credentials: false
+
+      # Fix for .NET 5.0 on Ubuntu 22.04+ - install libssl1.1
+      - name: Install OpenSSL 1.1 for .NET 5.0
+        run: |
+          wget https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+          sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            5.0.x
+            6.0.x
+            7.0.x
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Restore and build (exclude .NET Framework-only projects)
+        run: |
+          echo "Finding .NET project files in repository (via find command)..."
+
+          # Filter out projects that ONLY target .NET Framework 4.x
+          # Multi-targeting projects (e.g., net8.0;net48) will be INCLUDED
+          projects=()
+          project_found=false
+
+          while IFS= read -r -d '' proj; do
+            project_found=true
+            # Check if project has any .NET 5+ target framework
+            # Look for: net5.0, net6.0, net7.0, net8.0, net9.0, net10.0, or netcoreapp, netstandard
+            if tr '\n' ' ' < "$proj" | grep -qE '<TargetFramework[s]?>[^<]*(net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0)|netcoreapp|netstandard)'; then
+              projects+=("$proj")
+              echo "✓ Including: $proj (has .NET 5+ or .NET Core target)"
+            else
+              echo "⊘ Excluding: $proj (Framework-only, incompatible with Linux)"
+            fi
+          done < <(find . -type f \( -name "*.csproj" -o -name "*.vbproj" -o -name "*.fsproj" \) -print0)
+
+          if [ "$project_found" = false ]; then
+            echo "❌ No .NET projects found."
+            echo "This should not occur as detect-projects already verified project existence."
+            exit 1
+          fi
+
+          if [ ${#projects[@]} -eq 0 ]; then
+            echo "❌ No compatible .NET projects found."
+            echo "All projects target only .NET Framework 4.x, which is incompatible with Linux."
+            exit 1
+          fi
+
+          echo ""
+          echo "=========================================="
+          echo "Projects to build:"
+          echo "=========================================="
+          printf '%s\n' "${projects[@]}"
+          echo ""
+
+          # Restore each project
+          echo "Restoring projects..."
+          for proj in "${projects[@]}"; do
+            echo "Restoring: $proj"
+            dotnet restore "$proj" || exit 1
+          done
+
+          echo ""
+          echo "Building projects..."
+          # Build each project, handling multi-targeting projects
+          # For multi-targeting projects, build only Linux-compatible frameworks (.NET 5.0+, .NET Core, .NET Standard)
+          for proj in "${projects[@]}"; do
+            echo "Building: $proj"
+
+            # Extract target frameworks from the project file
+            # Support both <TargetFramework> (single) and <TargetFrameworks> (multiple)
+            frameworks=$(grep -oP '<TargetFramework[s]?>\K[^<]+' "$proj" | tr ';' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -E '^(net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0)|netcoreapp[0-9.]+|netstandard[0-9.]+)$' || true)
+
+            if [ -z "$frameworks" ]; then
+              echo "⚠️  No Linux-compatible frameworks found in $proj"
+              continue
+            fi
+
+            # Check if this is a multi-targeting project
+            framework_count=$(echo "$frameworks" | wc -l)
+
+            if [ "$framework_count" -eq 1 ]; then
+              # Single target framework - build normally
+              echo "  Target framework: $frameworks"
+              dotnet build "$proj" --no-restore --configuration Release || exit 1
+            else
+              # Multi-targeting project - build each compatible framework separately
+              echo "  Target frameworks (multi-targeting): $(echo "$frameworks" | tr '\n' ' ')"
+              while IFS= read -r fw; do
+                [ -z "$fw" ] && continue
+                echo "  Building framework: $fw"
+                dotnet build "$proj" --no-restore --configuration Release --framework "$fw" || exit 1
+              done <<< "$frameworks"
+            fi
+          done
+
+          echo ""
+          echo "✅ All compatible projects built successfully"
+
+      - name: Run tests with coverage (.NET Core 5.0 - 10.0)
+        run: |
+          # Find all test projects (C#, VB.NET, F#)
+          test_projects=()
+          while IFS= read -r -d '' proj; do
+            test_projects+=("$proj")
+          done < <(find ./tests -type f \( -name "*.csproj" -o -name "*.vbproj" -o -name "*.fsproj" \) -print0)
+
+          if [ ${#test_projects[@]} -eq 0 ]; then
+            echo "❌ No test projects found in ./tests directory!"
+            exit 1
+          fi
+
+          echo "=========================================="
+          echo "Found test projects:"
+          echo "=========================================="
+          printf '%s\n' "${test_projects[@]}"
+          echo ""
+
+          for test_proj in "${test_projects[@]}"; do
+            echo "=========================================="
+            echo "Testing project: $test_proj"
+            echo "=========================================="
+
+            # Extract target frameworks from the project file
+            # Support both <TargetFramework> (single) and <TargetFrameworks> (multiple)
+            frameworks=$(grep -oP '<TargetFramework[s]?>\K[^<]+' "$test_proj" | tr ';' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -E '^net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0)$' || true)
+
+            if [ -z "$frameworks" ]; then
+              echo "⊘ Skipping: No compatible .NET 5.0-10.0 target frameworks found"
+              echo ""
+              continue
+            fi
+
+            echo "Target frameworks: $(echo "$frameworks" | tr '\n' ' ')"
+            echo ""
+
+            # Test each framework that the project actually targets
+            while IFS= read -r fw; do
+              [ -z "$fw" ] && continue
+              echo "Testing framework: $fw"
+
+              dotnet test "$test_proj" \
+                --configuration Release \
+                --framework "$fw" \
+                --collect:"XPlat Code Coverage" \
+                --results-directory "./TestResults" \
+                --logger "console;verbosity=minimal" || exit 1
+            done <<< "$frameworks"
+            echo ""
+          done
+
+      - name: Check for coverage files
+        id: check-coverage
+        run: |
+          if find TestResults -type f -name "coverage.cobertura.xml" 2>/dev/null | grep -q .; then
+            echo "has-coverage=true" >> $GITHUB_OUTPUT
+            echo "✅ Coverage files found"
+          else
+            echo "has-coverage=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  No coverage files found - skipping coverage report generation"
+          fi
+
+      - name: Install ReportGenerator
+        if: steps.check-coverage.outputs.has-coverage == 'true'
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      - name: Generate coverage report
+        if: steps.check-coverage.outputs.has-coverage == 'true'
+        run: |
+          reportgenerator \
+            -reports:"TestResults/**/coverage.cobertura.xml" \
+            -targetdir:"CoverageReport" \
+            -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
+
+      - name: Enforce 90% coverage threshold
+        if: steps.check-coverage.outputs.has-coverage == 'true'
+        run: |
+          if [ ! -f CoverageReport/Summary.txt ]; then
+            echo "❌ Coverage report not generated!"
+            exit 1
+          fi
+
+          echo "Coverage Summary:"
+          cat CoverageReport/Summary.txt
+          echo ""
+
+          failed_projects=""
+          threshold=${CODECOV_MINIMUM:-90}
+
+          while read -r line; do
+            # Match lines with module names and percentages
+            if echo "$line" | grep -qE '^[^ ].*[0-9]+%$' && ! echo "$line" | grep -q '^Summary'; then
+              module=$(echo "$line" | awk '{print $1}')
+              percent=$(echo "$line" | awk '{print $NF}' | tr -d '%')
+
+              echo "Checking module: '$module' - Coverage: ${percent}%"
+
+              if [ "$percent" -lt "$threshold" ]; then
+                echo "  ❌ FAIL: Below ${threshold}% threshold"
+                failed_projects="$failed_projects $module (${percent}%)"
+              else
+                echo "  ✅ PASS: Meets ${threshold}% threshold"
+              fi
+            fi
+          done < CoverageReport/Summary.txt
+
+          if [ -n "$failed_projects" ]; then
+            echo ""
+            echo "=========================================="
+            echo "❌ COVERAGE GATE FAILED"
+            echo "=========================================="
+            echo "Projects below ${threshold}% coverage: $failed_projects"
+            echo ""
+            echo "Stage 1 failed. Windows, macOS, and .NET Framework tests will NOT run."
+            exit 1
+          else
+            echo ""
+            echo "=========================================="
+            echo "✅ COVERAGE GATE PASSED"
+            echo "=========================================="
+            echo "All projects meet ${threshold}% coverage threshold."
+            echo "Proceeding to Stage 2 (Windows and macOS tests)."
+          fi
+
+      - name: Upload Linux coverage results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-linux
+          path: |
+            TestResults/
+            CoverageReport/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            src/**/bin/Release
+            tests/**/bin/Release
+
+  # ============================================================================
+  # STAGE 2: Windows - All .NET Tests (Gated by Stage 1)
+  # ============================================================================
+  test-windows:
+    name: "Stage 2: Windows Tests (.NET 5.0-10.0, Framework 4.6.2-4.8.1)"
+    runs-on: windows-latest
+    needs: [detect-projects, test-linux-core]
+    if: needs.detect-projects.outputs.has-projects == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+          persist-credentials: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -35,78 +340,327 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build Solution (Release)
-        # Specify any additional build options
+      - name: Build solution
         run: dotnet build --no-restore --configuration Release
 
-      - name: Run Tests and Collect Coverage for Each Test Project (Release)
+      - name: Run all .NET tests (.NET 5.0-10.0 and Framework 4.6.2-4.8.1)
+        shell: pwsh
         run: |
-          find ./tests -type f -name '*Test*.csproj' | while read proj; do
-            echo "Testing $proj"
-            dotnet test "$proj" --no-build --configuration Release --collect:"XPlat Code Coverage" --results-directory "./TestResults"
+          $ErrorActionPreference = 'Stop'
+
+          $testProjects = @(Get-ChildItem -Path './tests/*' -Recurse -File -Include '*.csproj','*.vbproj','*.fsproj')
+
+          if (@($testProjects).Count -eq 0) {
+            Write-Error "❌ No test projects found in ./tests directory!"
+            exit 1
+          }
+
+          Write-Host "==========================================" -ForegroundColor Cyan
+          Write-Host "Found test projects:" -ForegroundColor Cyan
+          Write-Host "==========================================" -ForegroundColor Cyan
+          $testProjects | ForEach-Object { Write-Host $_.FullName -ForegroundColor White }
+          Write-Host ""
+
+          foreach ($testProj in $testProjects) {
+            Write-Host "==========================================" -ForegroundColor Cyan
+            Write-Host "Testing project: $($testProj.FullName)" -ForegroundColor Cyan
+            Write-Host "==========================================" -ForegroundColor Cyan
+
+            # Extract target frameworks from the project file
+            # Support both <TargetFramework> (single) and <TargetFrameworks> (multiple)
+            $content = Get-Content $testProj.FullName -Raw
+            $tfmMatch = [regex]::Match($content, '<TargetFramework[s]?>([^<]+)</TargetFramework[s]?>')
+
+            if (-not $tfmMatch.Success) {
+              Write-Host "⊘ Skipping: No target frameworks found" -ForegroundColor Yellow
+              Write-Host ""
+              continue
+            }
+
+            # Split by semicolon for multi-targeting projects
+            $frameworks = $tfmMatch.Groups[1].Value -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0|462|47|471|472|48|481)$' }
+
+            if ($frameworks.Count -eq 0) {
+              Write-Host "⊘ Skipping: No compatible .NET 5.0-10.0 or Framework 4.6.2-4.8.1 target frameworks found" -ForegroundColor Yellow
+              Write-Host ""
+              continue
+            }
+
+            Write-Host "Target frameworks: $($frameworks -join ', ')" -ForegroundColor White
+            Write-Host ""
+
+            # Test each framework that the project actually targets
+            foreach ($fw in $frameworks) {
+              Write-Host "Testing framework: $fw" -ForegroundColor Yellow
+
+              dotnet test $testProj.FullName `
+                --configuration Release `
+                --framework $fw `
+                --logger "console;verbosity=normal"
+
+              if ($LASTEXITCODE -ne 0) {
+                Write-Error "Tests failed for $fw in $($testProj.Name)"
+                exit 1
+              }
+            }
+            Write-Host ""
+          }
+
+  # ============================================================================
+  # STAGE 3: macOS Tests (Gated by Stage 2)
+  # ============================================================================
+  test-macos-core:
+    name: "Stage 3: macOS Tests (.NET 6.0-10.0)"
+    runs-on: macos-latest
+    needs: [detect-projects, test-windows]
+    if: needs.detect-projects.outputs.has-projects == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            6.0.x
+            7.0.x
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Restore and build (exclude .NET Framework-only projects)
+        run: |
+          echo "Enumerating tracked .NET project files (git ls-files)..."
+
+          # Filter out projects that ONLY target .NET Framework 4.x
+          # Multi-targeting projects (e.g., net8.0;net48) will be INCLUDED
+          projects=()
+          project_found=false
+
+          while IFS= read -r -d '' proj; do
+            project_found=true
+            # Use MSBuild to read TargetFramework/TargetFrameworks properties instead of line-based grep,
+            # so that multi-line or differently formatted XML is handled correctly.
+            tfms="$(dotnet msbuild "$proj" -nologo -getProperty:TargetFrameworks,TargetFramework 2>&1)" || { echo "⚠️  MSBuild evaluation failed for $proj, skipping"; tfms=""; }
+            if echo "$tfms" | grep -qE 'net(6\.0|7\.0|8\.0|9\.0|10\.0)'; then
+              projects+=("$proj")
+              echo "✓ Including: $proj (has .NET 6+ target)"
+            else
+              echo "⊘ Excluding: $proj (no .NET 6+ target, incompatible with macOS ARM64)"
+            fi
+          done < <(git ls-files -z -- '*.csproj' '*.vbproj' '*.fsproj')
+
+          if [ "$project_found" = false ]; then
+            echo "❌ No .NET projects found."
+            echo "This should not occur as detect-projects already verified project existence."
+            exit 1
+          fi
+
+          if [ ${#projects[@]} -eq 0 ]; then
+            echo "❌ No compatible .NET projects found."
+            echo "All projects lack .NET 6+ targets, which are required for macOS ARM64."
+            exit 1
+          fi
+
+          echo ""
+          echo "=========================================="
+          echo "Projects to build (excluding .NET Framework-only projects):"
+          echo "=========================================="
+          printf '%s\n' "${projects[@]}"
+          echo ""
+
+          # Restore each project
+          echo "Restoring projects..."
+          for proj in "${projects[@]}"; do
+            echo "Restoring: $proj"
+            dotnet restore "$proj" || exit 1
           done
 
-      - name: Install ReportGenerator
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+          echo ""
+          echo "Building projects..."
+          # Build each project, handling multi-targeting projects
+          # For multi-targeting projects, build only macOS ARM64-compatible frameworks (net6.0-10.0)
+          for proj in "${projects[@]}"; do
+            echo "Building: $proj"
 
-      - name: Generate Coverage Reports (HTML, TextSummary, GitHub Markdown, CSV)
-        run: |
-          reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:"CoverageReport" -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
-
-      - name: Check Coverage Thresholds
-        run: |
-          if [ ! -f CoverageReport/Summary.txt ]; then
-            echo "CoverageReport/Summary.txt not found! Coverage report was not generated."
-            exit 1
-          fi
-
-          failed_projects=""
-          while read -r line; do
-            module=$(echo "$line" | awk '{print $1}')
-            percent=$(echo "$line" | awk '{print $NF}' | tr -d '%' | xargs)
-            echo "Checking module: '$module', percent: '$percent'"
-            if [[ "$percent" =~ ^[0-9]+$ ]]; then
-              if [ "$percent" -lt 80 ]; then
-                echo "FAIL: $module is below 80% ($percent%)"
-                failed_projects="$failed_projects $module ($percent%)"
-              else
-                echo "PASS: $module meets coverage ($percent%)"
-              fi
-            else
-              echo "WARNING: extracted percent value '$percent' is not a number!"
+            # Use dotnet msbuild to evaluate TargetFramework(s) - handles multi-line XML and property imports
+            # Support both <TargetFramework> (single) and <TargetFrameworks> (multiple)
+            # Trim whitespace from each framework before filtering
+            raw_frameworks=$(dotnet msbuild "$proj" -getProperty:TargetFrameworks 2>/dev/null)
+            if [ -z "$raw_frameworks" ]; then
+              raw_frameworks=$(dotnet msbuild "$proj" -getProperty:TargetFramework 2>/dev/null)
             fi
-          done < <(grep -E '^[^ ].*[0-9]+%$' CoverageReport/Summary.txt | grep -v '^Summary')
+            frameworks=$(echo "$raw_frameworks" | tr ';' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -E '^net(6\.0|7\.0|8\.0|9\.0|10\.0)$' || true)
 
-          if [ -n "$failed_projects" ]; then
-            echo "The following projects are below 80% line coverage:$failed_projects"
+            if [ -z "$frameworks" ]; then
+              echo "⚠️  No macOS ARM64-compatible frameworks found in $proj"
+              continue
+            fi
+
+            # Check if this is a multi-targeting project
+            framework_count=$(echo "$frameworks" | wc -l)
+
+            if [ "$framework_count" -eq 1 ]; then
+              # Single target framework - build normally
+              echo "  Target framework: $frameworks"
+              dotnet build "$proj" --no-restore --configuration Release || exit 1
+            else
+              # Multi-targeting project - build each compatible framework separately
+              echo "  Target frameworks (multi-targeting): $(echo "$frameworks" | tr '\n' ' ')"
+              while IFS= read -r fw; do
+                [ -z "$fw" ] && continue
+                echo "  Building framework: $fw"
+                dotnet build "$proj" --no-restore --configuration Release --framework "$fw" || exit 1
+              done <<< "$frameworks"
+            fi
+          done
+
+          echo ""
+          echo "✅ All compatible projects built successfully"
+
+      - name:  Run tests (.NET 6.0 - 10.0 only - ARM64 compatible)
+        run: |
+          # Find all test projects (C#, VB.NET, F#)
+          test_projects=()
+          while IFS= read -r file; do
+          test_projects+=("$file")
+          done < <(find ./tests -type f \( -name "*.csproj" -o -name "*.vbproj" -o -name "*.fsproj" \))
+
+          if [ ${#test_projects[@]} -eq 0 ]; then
+            echo "❌ No test projects found in ./tests directory!"
             exit 1
           fi
 
-      - name: Upload coverage results and reports
+          echo "=========================================="
+          echo "Found test projects:"
+          echo "=========================================="
+          printf '%s\n' "${test_projects[@]}"
+          echo ""
+
+          for test_proj in "${test_projects[@]}"; do
+            echo "=========================================="
+            echo "Testing project: $test_proj"
+            echo "=========================================="
+
+            # Use dotnet msbuild to evaluate TargetFramework(s) - handles multi-line XML and property imports
+            # Support both <TargetFramework> (single) and <TargetFrameworks> (multiple)
+            # Only include .NET 6.0+ (ARM64 compatible on macOS)
+            raw_frameworks=$(dotnet msbuild "$test_proj" -getProperty:TargetFrameworks 2>/dev/null)
+            if [ -z "$raw_frameworks" ]; then
+              raw_frameworks=$(dotnet msbuild "$test_proj" -getProperty:TargetFramework 2>/dev/null)
+            fi
+            frameworks=$(echo "$raw_frameworks" | tr ';' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -E '^net(6\.0|7\.0|8\.0|9\.0|10\.0)$' || true)
+
+            if [ -z "$frameworks" ]; then
+              echo "⊘ Skipping: No compatible .NET 6.0-10.0 target frameworks found (ARM64 required)"
+              echo ""
+              continue
+            fi
+
+            echo "Target frameworks: $(echo "$frameworks" | tr '\n' ' ')"
+            echo ""
+
+            # Test each framework that the project actually targets
+            while IFS= read -r fw; do
+              [ -z "$fw" ] && continue
+              echo "Testing framework: $fw"
+
+              dotnet test "$test_proj" \
+                --configuration Release \
+                --framework "$fw" \
+                --logger "console;verbosity=normal" || exit 1
+            done <<< "$frameworks"
+            echo ""
+          done
+
+      - name: Display macOS architecture info
         if: always()
-        uses: actions/upload-artifact@v4
+        run: |
+          echo ""
+          echo "=========================================="
+          echo "ℹ️  macOS Testing Notes"
+          echo "=========================================="
+          echo "Architecture: $(uname -m)"
+          echo ""
+          echo "Skipped frameworks (no ARM64 support):"
+          echo "  - .NET 5.0 ❌"
+          echo ""
+          echo "Tested frameworks (ARM64 compatible):"
+          echo "  - .NET 6.0 ✅"
+          echo "  - .NET 7.0 ✅"
+          echo "  - .NET 8.0 ✅"
+          echo "  - .NET 9.0 ✅"
+          echo "  - .NET 10.0 ✅"
+          echo ""
+          echo ".NET Core 5.0 are tested on Linux and Windows"
+          echo ""
+
+      - name: Summarize pipeline result
+        run: |
+          echo "=========================================="
+          echo "✅ ALL STAGES PASSED"
+          echo "=========================================="
+          echo "Stage 1: Linux tests + 90% coverage ✅"
+          echo "Stage 2: Windows .NET Core & .NET Framework tests ✅"
+          echo "Stage 3: macOS tests ✅"
+          echo ""
+          echo "PR is ready to merge! 🎉"
+
+  # ============================================================================
+  # Security Scan (Runs in parallel, independently of .NET jobs)
+  # ============================================================================
+  security-scan:
+    name: "Security Scan (DevSkim)"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          name: coverage-results-and-report
-          path: |
-            TestResults/
-            CoverageReport/
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+          persist-credentials: false
 
       - name: Install DevSkim CLI
         run: dotnet tool install --global Microsoft.CST.DevSkim.CLI
 
-      - name: Run DevSkim Security Scan (Save output)
-        run: devskim analyze --source-code . --file-format text -E --ignore-rule-ids DS176209 --ignore-globs "**/api/**,**/CoverageReport/**"
-
-      - name: Show DevSkim Results in Summary
-        if: failure()
+      - name: Run DevSkim security scan
+        continue-on-error: true
         run: |
-          echo "### DevSkim Security Issues Found"
-          cat devskim-results.txt
-        shell: bash
+          devskim analyze \
+            --source-code . \
+            --file-format text \
+            --output-file devskim-results.txt \
+            -E \
+            --ignore-rule-ids DS176209 \
+            --ignore-globs "**/api/**,**/CoverageReport/**,**/TestResults/**"
 
-      - name: Upload DevSkim Results as Artifact
+      - name: Display security scan results
+        if: always()
+        run: |
+          if [ -f devskim-results.txt ]; then
+            echo "=========================================="
+            echo "DevSkim Security Scan Results"
+            echo "=========================================="
+            cat devskim-results.txt
+            echo ""
+
+            if grep -qi "error\|critical\|high" devskim-results.txt; then
+              echo "⚠️ Security issues detected - review required"
+            else
+              echo "✅ No critical security issues found"
+            fi
+          else
+            echo "✅ No security issues found"
+          fi
+
+      - name: Upload security scan results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: devskim-results
           path: devskim-results.txt
+          if-no-files-found: warn

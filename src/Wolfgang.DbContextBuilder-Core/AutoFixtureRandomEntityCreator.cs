@@ -51,6 +51,7 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
     /// <param name="count">The number of entities to create</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
     /// <returns>An IEnumerable{TEntity}</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> is less than 1.</exception>
     public IEnumerable<TEntity> CreateRandomEntities<TEntity>(int count)
         where TEntity : class
         => count < 1
