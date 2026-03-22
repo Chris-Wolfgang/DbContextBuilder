@@ -14,7 +14,11 @@ public static class DbContextBuilderSqliteExtensions
     (
         this DbContextBuilder<TDbContext> builder
     )
-    where TDbContext : DbContext => UseSqlite(builder, typeof(SqliteModelCustomizer));
+    where TDbContext : DbContext
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        return UseSqlite(builder, typeof(SqliteModelCustomizer));
+    }
 
 
 
@@ -27,7 +31,11 @@ public static class DbContextBuilderSqliteExtensions
     (
         this DbContextBuilder<TDbContext> builder
     )
-    where TDbContext : DbContext => UseSqlite(builder, typeof(SqliteForMsSqlServerModelCustomizer));
+    where TDbContext : DbContext
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        return UseSqlite(builder, typeof(SqliteForMsSqlServerModelCustomizer));
+    }
 
 
 
