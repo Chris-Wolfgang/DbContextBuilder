@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<RootNamespace>Wolfgang.DbContextBuilderEF6</RootNamespace>
+		<TargetFrameworks>net462;net47;net471;net472;net48;net481</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<Version>0.1.0</Version>
+		<Title>Wolfgang.DbContextBuilder for Entity Framework 6</Title>
+		<Authors>Chris Wolfgang</Authors>
+		<Description>A library for easily building DbContext for testing using in-memory database with Entity Framework 6</Description>
+		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
+		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
+		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageIcon>dbcontext-builder.png</PackageIcon>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<SignAssembly>False</SignAssembly>
+		<PackageTags></PackageTags>
+		<Nullable>enable</Nullable>
+		<IsPackable>true</IsPackable>
+		<IsTestProject>false</IsTestProject>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<DefineConstants>$(DefineConstants);EF_TRADITIONAL_6</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="AutoFixture" Version="4.18.1" />
+		<PackageReference Include="EntityFramework" Version="[6.4.4,7.0.0)" />
+		<PackageReference Include="Effort.EF6" Version="2.2.17" />
+		<PackageReference Include="coverlet.collector" Version="8.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\..\README.md" Pack="True" PackagePath="/" />
+		<None Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<Content Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder.png" Link="Content\dbcontext-builder.png" />
+		<Content Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder-inverted.png" Link="Content\dbcontext-builder-inverted.png" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);1591</NoWarn>
+	</PropertyGroup>
+</Project>

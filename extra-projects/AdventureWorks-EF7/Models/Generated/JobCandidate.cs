@@ -1,0 +1,33 @@
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+using System.Diagnostics.CodeAnalysis;
+
+namespace AdventureWorks.Models;
+
+/// <summary>
+/// Résumés submitted to Human Resources by job applicants.
+/// </summary>
+[ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
+public partial record JobCandidate
+{
+	/// <summary>
+	/// Primary key for JobCandidate records.
+	/// </summary>
+	public int JobCandidateId { get; set; }
+
+	/// <summary>
+	/// Employee identification number if applicant was hired. Foreign key to Employee.BusinessEntityID.
+	/// </summary>
+	public int? BusinessEntityId { get; set; }
+
+	/// <summary>
+	/// Résumé in XML format.
+	/// </summary>
+	public string? Resume { get; set; }
+
+	/// <summary>
+	/// Date and time the record was last updated.
+	/// </summary>
+	public DateTime ModifiedDate { get; set; }
+
+	public virtual Employee? BusinessEntity { get; set; }
+}
