@@ -12,3 +12,27 @@ updates:
       dotnet-dependencies:
         patterns:
           - "*"
+        exclude-patterns:
+          - "Microsoft.EntityFrameworkCore"
+          - "Microsoft.EntityFrameworkCore.*"
+          - "xunit.runner.visualstudio"
+    ignore:
+      # EF Core packages are version-pinned per project to specific major versions
+      # (e.g., [6.0.36,7.0.0) for EF6, [7.0.20,8.0.0) for EF7, etc.)
+      # Dependabot does not understand NuGet version range syntax and will
+      # break these pins by bumping to the latest major version.
+      - dependency-name: "Microsoft.EntityFrameworkCore"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.EntityFrameworkCore.InMemory"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.EntityFrameworkCore.Sqlite"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.EntityFrameworkCore.SqlServer"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.EntityFrameworkCore.Tools"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.EntityFrameworkCore.Design"
+        update-types: ["version-update:semver-major"]
+      # xunit.runner.visualstudio 3.x is incompatible with xunit 2.x
+      - dependency-name: "xunit.runner.visualstudio"
+        versions: [">=3.0.0"]
