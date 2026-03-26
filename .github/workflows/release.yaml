@@ -342,10 +342,13 @@ jobs:
           }
 
           # Check whether any .nupkg files were actually created
+            ./nuget-packages/*.bom.json
           $packages = Get-ChildItem -Path $packagesPath -Filter '*.nupkg' -ErrorAction SilentlyContinue
+            ./nuget-packages/*.bom.json
 
           if ($packages.Count -eq 0) {
             Write-Warning "No .nupkg files were produced during packing - downstream publish and release jobs will be skipped"
+            ./nuget-packages/*.bom.json
             "has-packages=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
             exit 0
           }
@@ -358,13 +361,16 @@ jobs:
         shell: pwsh
         run: |
           $packages = Get-ChildItem -Path 'nuget-packages' -Filter '*.nupkg' -ErrorAction SilentlyContinue
+            ./nuget-packages/*.bom.json
 
           if ($packages.Count -eq 0) {
             Write-Warning "No .nupkg files found - skipping smoke test"
+            ./nuget-packages/*.bom.json
             exit 0
           }
 
           # Helper to read package ID and version from the .nuspec inside a .nupkg
+            ./nuget-packages/*.bom.json
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           function Get-PackageMetadata {
             param (
@@ -464,6 +470,35 @@ jobs:
             Pop-Location
           }
 
+      - name: Generate SBOM (CycloneDX)
+        if: steps.check-packages.outputs.has-packages == 'true'
+        shell: pwsh
+        run: |
+          dotnet tool install --global CycloneDX
+
+          $sbomDir = Join-Path $PWD 'nuget-packages'
+          $srcProjects = Get-ChildItem -Path 'src' -Filter '*.csproj' -Recurse -ErrorAction SilentlyContinue
+
+          if ($srcProjects.Count -eq 0) {
+            Write-Warning "No projects found in src/ - skipping SBOM generation"
+            return
+          }
+
+          foreach ($proj in $srcProjects) {
+            $sbomName = "$($proj.BaseName).bom.json"
+            $sbomPath = Join-Path $sbomDir $sbomName
+
+            Write-Host "📋 Generating SBOM for $($proj.Name)" -ForegroundColor Cyan
+            dotnet CycloneDX $proj.FullName --output $sbomDir --filename $sbomName --json
+
+            if ($LASTEXITCODE -ne 0) {
+              Write-Warning "⚠️ SBOM generation failed for $($proj.Name) - continuing"
+            } else {
+              Write-Host "✅ SBOM generated: $sbomName" -ForegroundColor Green
+            }
+          }
+
+
       - name: Upload NuGet packages
         uses: actions/upload-artifact@v4
         with:
@@ -514,9 +549,11 @@ jobs:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
           $packages = Get-ChildItem -Path './packages' -Filter '*.nupkg' -ErrorAction SilentlyContinue
+            ./nuget-packages/*.bom.json
 
           if ($packages.Count -eq 0) {
             Write-Warning "No .nupkg files found - nothing to publish"
+            ./nuget-packages/*.bom.json
             exit 0
           }
 
@@ -583,4 +620,5 @@ jobs:
           tag_name: ${{ github.event.release.tag_name }}
           files: |
             ./nuget-packages/*.nupkg
+            ./nuget-packages/*.bom.json
             release-coverage.zip
