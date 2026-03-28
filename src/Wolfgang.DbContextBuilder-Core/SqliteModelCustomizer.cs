@@ -83,7 +83,6 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// be replaced with datetime('now') and lower(hex(randomblob(16))) respectively.
     /// </remarks>
     public IDictionary<string, string> DefaultValueMap { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-    // TODO unit test
 
 
     private Func<string?, string?>? _overrideDefaultValueHandling;
@@ -228,33 +227,12 @@ public class SqliteModelCustomizer : ModelCustomizer
             property.SetComputedColumnSql(newComputedValueSql);
         }
 
-        //if (computedColumns.TryGetValue((originalSchemaName, originalTableName, property.Name), out var value))
-        //{
-        //    property.SetComputedColumnSql(value);
-        //}
-        //else
-        //{
-        //    var sql = property.GetComputedColumnSql();
-        //    if (!string.IsNullOrEmpty(sql))
-        //    {
-        //        var rewrittenSql = sql.Replace("ISNULL", "IFNULL", StringComparison.OrdinalIgnoreCase)
-        //                .Replace("N'", "'", StringComparison.OrdinalIgnoreCase)
-        //                .Replace("+", "||", StringComparison.OrdinalIgnoreCase)
-        //            //.Replace("CONVERT", "CAST", StringComparison.OrdinalIgnoreCase)
-        //            //.Replace("[dbo].", "")
-        //            //.Replace("dbo.", "")
-        //            ;
-        //        property.SetComputedColumnSql(rewrittenSql);
-        //    }
-        //}
-        //property.SetComputedColumnSql(null);
     }
 
 
 
     private static void OverrideManyToManyTables(IMutableEntityType entityType)
     {
-        // TODO Override join table handling
         // Heuristic: rename many-to-many join tables
         var foreignKeys = entityType.GetForeignKeys().ToList();
         var navigation = entityType.GetNavigations().ToList();
