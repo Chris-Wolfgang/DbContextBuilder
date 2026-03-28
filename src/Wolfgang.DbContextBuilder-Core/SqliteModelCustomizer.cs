@@ -173,7 +173,7 @@ public class SqliteModelCustomizer : ModelCustomizer
                 OverrideDefaultValue(property);
             }
 
-            OverrideManyToManyTables(entityType);
+            OverrideManyToManyTableHandling(entityType);
         }
     }
 
@@ -231,22 +231,38 @@ public class SqliteModelCustomizer : ModelCustomizer
 
 
 
-    private static void OverrideManyToManyTables(IMutableEntityType entityType)
+    private Action<IMutableEntityType>? _overrideManyToManyTableHandling;
+
+    /// <summary>
+    /// This action is called for each entity type to handle many-to-many join table renaming.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <remarks>
+    /// The default implementation uses a heuristic to detect many-to-many join tables:
+    /// an entity type with exactly two foreign keys and no navigations is assumed to be a join table.
+    /// When detected, the table is renamed to "{LeftTable}_{RightTable}". You can override this
+    /// behavior by assigning a custom implementation to this property.
+    /// </remarks>
+    public Action<IMutableEntityType> OverrideManyToManyTableHandling
     {
-        // Heuristic: rename many-to-many join tables
-        var foreignKeys = entityType.GetForeignKeys().ToList();
-        var navigation = entityType.GetNavigations().ToList();
+        get =>
+            _overrideManyToManyTableHandling ??= entityType =>
+            {
+                var foreignKeys = entityType.GetForeignKeys().ToList();
+                var navigation = entityType.GetNavigations().ToList();
 
-        if (foreignKeys.Count == 2 && navigation.Count == 0)
-        {
-            var left = foreignKeys[0].PrincipalEntityType;
-            var right = foreignKeys[1].PrincipalEntityType;
+                if (foreignKeys.Count == 2 && navigation.Count == 0)
+                {
+                    var left = foreignKeys[0].PrincipalEntityType;
+                    var right = foreignKeys[1].PrincipalEntityType;
 
-            var leftName = left.GetTableName();
-            var rightName = right.GetTableName();
+                    var leftName = left.GetTableName();
+                    var rightName = right.GetTableName();
 
-            var joinName = $"{leftName}_{rightName}";
-            entityType.SetTableName(joinName);
-        }
+                    var joinName = $"{leftName}_{rightName}";
+                    entityType.SetTableName(joinName);
+                }
+            };
+        set => _overrideManyToManyTableHandling = value ?? throw new ArgumentNullException(nameof(value));
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Moq;
 using Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
 
@@ -383,5 +384,144 @@ public class SqliteModelCustomizerTests
 
         // Act — should return early without error since it's not SQLite
         sut.Customize(new ModelBuilder(), context);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that setting OverrideManyToManyTableHandling to null throws ArgumentNullException.
+    /// </summary>
+    [Fact]
+    public void OverrideManyToManyTableHandling_when_set_to_null_throws_ArgumentNullException()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.OverrideManyToManyTableHandling = null!);
+        Assert.Equal("value", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that a custom OverrideManyToManyTableHandling delegate is used when assigned.
+    /// </summary>
+    [Fact]
+    public void OverrideManyToManyTableHandling_uses_custom_action_when_provided()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var invoked = false;
+        var sut = new SqliteModelCustomizer(dependencies)
+        {
+            OverrideManyToManyTableHandling = _ => invoked = true
+        };
+
+        // Act
+        sut.OverrideManyToManyTableHandling(Mock.Of<IMutableEntityType>());
+
+        // Assert
+        Assert.True(invoked);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that the default OverrideManyToManyTableHandling renames a join table
+    /// when the entity has exactly 2 foreign keys and no navigations.
+    /// </summary>
+    [Fact]
+    public void OverrideManyToManyTableHandling_default_implementation_renames_join_table()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+
+        // Build a real model with a many-to-many join entity
+        var modelBuilder = new ModelBuilder();
+
+        modelBuilder.Entity("Left", b =>
+        {
+            b.Property<int>("Id");
+            b.HasKey("Id");
+            b.ToTable("Orders");
+        });
+
+        modelBuilder.Entity("Right", b =>
+        {
+            b.Property<int>("Id");
+            b.HasKey("Id");
+            b.ToTable("Products");
+        });
+
+        modelBuilder.Entity("JoinTable", b =>
+        {
+            b.Property<int>("LeftId");
+            b.Property<int>("RightId");
+            b.HasKey("LeftId", "RightId");
+            b.ToTable("JoinTable");
+            b.HasOne("Left").WithMany().HasForeignKey("LeftId");
+            b.HasOne("Right").WithMany().HasForeignKey("RightId");
+        });
+
+        var model = modelBuilder.FinalizeModel();
+        var joinEntityType = model.FindEntityType("JoinTable")!;
+
+        // Verify preconditions: 2 FKs, 0 navigations
+        Assert.Equal(2, joinEntityType.GetForeignKeys().Count());
+        Assert.Empty(joinEntityType.GetNavigations());
+
+        // Act — use a mutable copy so SetTableName works
+        var mutableModelBuilder = new ModelBuilder();
+
+        mutableModelBuilder.Entity("Left", b =>
+        {
+            b.Property<int>("Id");
+            b.HasKey("Id");
+            b.ToTable("Orders");
+        });
+
+        mutableModelBuilder.Entity("Right", b =>
+        {
+            b.Property<int>("Id");
+            b.HasKey("Id");
+            b.ToTable("Products");
+        });
+
+        mutableModelBuilder.Entity("JoinTable", b =>
+        {
+            b.Property<int>("LeftId");
+            b.Property<int>("RightId");
+            b.HasKey("LeftId", "RightId");
+            b.ToTable("JoinTable");
+            b.HasOne("Left").WithMany().HasForeignKey("LeftId");
+            b.HasOne("Right").WithMany().HasForeignKey("RightId");
+        });
+
+        var mutableJoinEntity = mutableModelBuilder.Model.FindEntityType("JoinTable")!;
+        sut.OverrideManyToManyTableHandling(mutableJoinEntity);
+
+        // Assert
+        Assert.Equal("Orders_Products", mutableJoinEntity.GetTableName());
     }
 }
