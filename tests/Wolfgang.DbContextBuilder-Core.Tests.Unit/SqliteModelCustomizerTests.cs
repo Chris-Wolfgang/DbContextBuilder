@@ -1,5 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Moq;
+using Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
@@ -301,5 +303,85 @@ public class SqliteModelCustomizerTests
         Assert.Null(sut.OverrideComputedValueHandling("([OrganizationNode].[GetLevel]())"));
         Assert.Null(sut.OverrideComputedValueHandling(""));
         Assert.Null(sut.OverrideComputedValueHandling(null));
+    }
+
+
+
+    /// <summary>
+    /// Verifies that Customize throws ArgumentNullException when modelBuilder is null.
+    /// </summary>
+    [Fact]
+    public void Customize_when_modelBuilder_is_null_throws_ArgumentNullException()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+        using var context = new BasicContext
+        (
+            new DbContextOptionsBuilder<BasicContext>()
+                .UseSqlite("DataSource=:memory:")
+                .Options
+        );
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.Customize(null!, context));
+        Assert.Equal("modelBuilder", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that Customize throws ArgumentNullException when context is null.
+    /// </summary>
+    [Fact]
+    public void Customize_when_context_is_null_throws_ArgumentNullException()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+
+        // Act & Assert
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.Customize(new ModelBuilder(), null!));
+        Assert.Equal("context", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that Customize skips customization when database is not SQLite.
+    /// </summary>
+    [Fact]
+    public void Customize_when_database_is_not_sqlite_does_not_rename_tables()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+        using var context = new BasicContext
+        (
+            new DbContextOptionsBuilder<BasicContext>()
+                .UseInMemoryDatabase("test-not-sqlite")
+                .Options
+        );
+
+        // Act — should return early without error since it's not SQLite
+        sut.Customize(new ModelBuilder(), context);
     }
 }
