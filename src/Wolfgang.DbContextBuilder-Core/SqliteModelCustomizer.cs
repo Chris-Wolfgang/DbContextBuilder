@@ -255,13 +255,12 @@ public class SqliteModelCustomizer : ModelCustomizer
     private static void DefaultOverrideManyToManyTableHandling(IMutableEntityType entityType)
     {
         // Heuristic: an entity with exactly 2 foreign keys and no navigations is a join table
-        var foreignKeys = entityType.GetForeignKeys();
-        var navigations = entityType.GetNavigations();
+        var foreignKeys = entityType.GetForeignKeys().Take(3).ToList();
 
-        if (foreignKeys.Take(3).Count() == 2 && !navigations.Any())
+        if (foreignKeys.Count == 2 && !entityType.GetNavigations().Any())
         {
-            var left = foreignKeys.First().PrincipalEntityType;
-            var right = foreignKeys.Skip(1).First().PrincipalEntityType;
+            var left = foreignKeys[0].PrincipalEntityType;
+            var right = foreignKeys[1].PrincipalEntityType;
 
             var leftName = left.GetTableName();
             var rightName = right.GetTableName();
