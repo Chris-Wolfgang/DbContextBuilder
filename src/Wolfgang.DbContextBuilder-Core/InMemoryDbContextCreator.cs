@@ -7,7 +7,7 @@ internal class InMemoryDbContextCreator : ICreateDbContext
 
     private readonly string _databaseName = Guid.NewGuid().ToString();
 
-    public Task<TDbContext> CreateDbContext<TDbContext>(DbContextOptionsBuilder<TDbContext> optionsBuilder) where TDbContext : DbContext
+    public Task<TDbContext> CreateDbContextAsync<TDbContext>(DbContextOptionsBuilder<TDbContext> optionsBuilder) where TDbContext : DbContext
     {
         optionsBuilder.UseInMemoryDatabase(_databaseName);
         var options = optionsBuilder.Options;

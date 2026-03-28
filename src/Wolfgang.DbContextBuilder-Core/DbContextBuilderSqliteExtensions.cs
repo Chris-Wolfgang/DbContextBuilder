@@ -51,9 +51,6 @@ public static class DbContextBuilderSqliteExtensions
     ) where TDbContext : DbContext
     {
 
-        // TODO Check is items exist in the list and don't add duplicates
-        // TODO Check if Sql Server provider is already registered and if so, remove it
-
         // Remove any existing IModelCustomizer registrations to avoid duplicates/competing implementations
         var modelCustomizerDescriptors = builder.ServiceCollection
             .Where(sd => sd.ServiceType == typeof(IModelCustomizer))
