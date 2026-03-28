@@ -15,7 +15,7 @@ internal sealed class SqliteDbContextCreator : ICreateDbContext, IDisposable
     }
 
 
-    public Task<TDbContext> CreateDbContext<TDbContext>(DbContextOptionsBuilder<TDbContext> optionsBuilder) where TDbContext : DbContext
+    public Task<TDbContext> CreateDbContextAsync<TDbContext>(DbContextOptionsBuilder<TDbContext> optionsBuilder) where TDbContext : DbContext
     {
 
         optionsBuilder.UseSqlite(_connection);
