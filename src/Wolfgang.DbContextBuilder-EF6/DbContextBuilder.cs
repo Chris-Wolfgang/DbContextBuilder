@@ -248,7 +248,7 @@ public class DbContextBuilder<T> where T : DbContext
             {
                 context.Set(entity.GetType()).Add(entity);
             }
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         return contextCreator.CreateDbContext<T>();
