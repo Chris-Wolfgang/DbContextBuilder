@@ -246,23 +246,28 @@ public class SqliteModelCustomizer : ModelCustomizer
     public Action<IMutableEntityType> OverrideManyToManyTableHandling
     {
         get =>
-            _overrideManyToManyTableHandling ??= entityType =>
-            {
-                var foreignKeys = entityType.GetForeignKeys().ToList();
-                var navigation = entityType.GetNavigations().ToList();
-
-                if (foreignKeys.Count == 2 && navigation.Count == 0)
-                {
-                    var left = foreignKeys[0].PrincipalEntityType;
-                    var right = foreignKeys[1].PrincipalEntityType;
-
-                    var leftName = left.GetTableName();
-                    var rightName = right.GetTableName();
-
-                    var joinName = $"{leftName}_{rightName}";
-                    entityType.SetTableName(joinName);
-                }
-            };
+            _overrideManyToManyTableHandling ??= DefaultOverrideManyToManyTableHandling;
         set => _overrideManyToManyTableHandling = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
+
+
+    private static void DefaultOverrideManyToManyTableHandling(IMutableEntityType entityType)
+    {
+        // Heuristic: rename many-to-many join tables
+        var foreignKeys = entityType.GetForeignKeys().ToList();
+        var navigations = entityType.GetNavigations().ToList();
+
+        if (foreignKeys.Count == 2 && navigations.Count == 0)
+        {
+            var left = foreignKeys[0].PrincipalEntityType;
+            var right = foreignKeys[1].PrincipalEntityType;
+
+            var leftName = left.GetTableName();
+            var rightName = right.GetTableName();
+
+            var joinName = $"{leftName}_{rightName}";
+            entityType.SetTableName(joinName);
+        }
     }
 }
