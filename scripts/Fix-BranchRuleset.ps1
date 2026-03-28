@@ -228,6 +228,15 @@ if ($errors -gt 0) {
 } else {
     Write-Host "All changes applied successfully." -ForegroundColor Green
     Write-Host ""
-    Write-Host "Next step: Run .\Setup-BranchRuleset.ps1 to create a fresh ruleset." -ForegroundColor Cyan
-    Write-Host "View rulesets at: https://github.com/$Repository/settings/rules" -ForegroundColor Cyan
+
+    # Invoke Setup-BranchRuleset.ps1 to create a fresh ruleset
+    $setupScript = Join-Path $PSScriptRoot "Setup-BranchRuleset.ps1"
+    if (Test-Path $setupScript) {
+        Write-Host "Running Setup-BranchRuleset.ps1 to create a fresh ruleset..." -ForegroundColor Cyan
+        Write-Host ""
+        & $setupScript -Repository $Repository
+    } else {
+        Write-Host "Setup-BranchRuleset.ps1 not found. Run it manually to create a fresh ruleset." -ForegroundColor Yellow
+        Write-Host "View rulesets at: https://github.com/$Repository/settings/rules" -ForegroundColor Cyan
+    }
 }
