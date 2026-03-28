@@ -222,16 +222,15 @@ public class DbContextBuilder<T> where T : DbContext
 
         var contextCreator = CreateDbContext ??= new InMemoryDbContextCreator();
 
-        var context = await contextCreator.CreateDbContext(optionBuilder);
+        var context = await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
 
         try
         {
             // Create a context to initialize and seed the database
-            await context.Database.EnsureCreatedAsync();
+            await context.Database.EnsureCreatedAsync().ConfigureAwait(false);
         }
         catch (InvalidOperationException e)
         {
-            // TODO Is this message correct and complete? The last line may be incomplete
             const string msg = "Failed to create database. See InnerException for details. " +
                                "You can get additional information by creating a new instance of " +
                                "DbContextOptionsBuilder<T> and passing it into UseDbContextOptionsBuilder.";
@@ -241,9 +240,9 @@ public class DbContextBuilder<T> where T : DbContext
         if (_seedData.Count > 0)
         {
             context.AddRange(_seedData.AsEnumerable());
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        return await contextCreator.CreateDbContext(optionBuilder);
+        return await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
     }
 }
