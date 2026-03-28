@@ -254,14 +254,14 @@ public class SqliteModelCustomizer : ModelCustomizer
 
     private static void DefaultOverrideManyToManyTableHandling(IMutableEntityType entityType)
     {
-        // Heuristic: rename many-to-many join tables
-        var foreignKeys = entityType.GetForeignKeys().ToList();
-        var navigations = entityType.GetNavigations().ToList();
+        // Heuristic: an entity with exactly 2 foreign keys and no navigations is a join table
+        var foreignKeys = entityType.GetForeignKeys();
+        var navigations = entityType.GetNavigations();
 
-        if (foreignKeys.Count == 2 && navigations.Count == 0)
+        if (foreignKeys.Take(3).Count() == 2 && !navigations.Any())
         {
-            var left = foreignKeys[0].PrincipalEntityType;
-            var right = foreignKeys[1].PrincipalEntityType;
+            var left = foreignKeys.First().PrincipalEntityType;
+            var right = foreignKeys.Skip(1).First().PrincipalEntityType;
 
             var leftName = left.GetTableName();
             var rightName = right.GetTableName();
