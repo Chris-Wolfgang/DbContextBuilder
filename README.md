@@ -29,10 +29,10 @@ Install-Package Wolfgang.DbContextBuilder
 Here's a simple example of how to use DbContextBuilder to create a DbContext with seeded data:
 ```csharp
 // Create a DbContext with seeded random data and your test data
-var context = new DbContextBuilder<YourDbContext>()
+var context = await new DbContextBuilder<YourDbContext>()
 	// Seed with 10 random entities
-	.SeedWithRandom<YourEntity>(10)		
-	
+	.SeedWithRandom<YourEntity>(10)
+
 	// Seed with specific data
 	.SeedWith
 	(
@@ -41,11 +41,11 @@ var context = new DbContextBuilder<YourDbContext>()
 			Id = 1,
 			Name = "Test Entity"
 		}
-	)							
-	
-	// Seed with 5 random entities	
-	.SeedWithRandom<YourEntity>(5)		
-	
+	)
+
+	// Seed with 5 random entities
+	.SeedWithRandom<YourEntity>(5)
+
 	// Build the DbContext instance
 	.BuildAsync();							
 
