@@ -9,7 +9,7 @@ namespace Wolfgang.DbContextBuilderCore;
 /// <summary>
 /// Uses the Builder pattern to create instances of DbContext types seeded with specified data.
 /// </summary>
-public class DbContextBuilder<T> where T : DbContext
+public class DbContextBuilder<T> : IDisposable where T : DbContext
 {
     private readonly List<object> _seedData = [];
     private DbContextOptionsBuilder<T>? _dbContextOptionsBuilder;
@@ -222,27 +222,54 @@ public class DbContextBuilder<T> where T : DbContext
 
         var contextCreator = CreateDbContext ??= new InMemoryDbContextCreator();
 
-        var context = await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
+        // Create a temporary context to initialize and seed the database, then dispose it
+        await using (var seedContext = await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false))
+        {
+            try
+            {
+                await seedContext.Database.EnsureCreatedAsync().ConfigureAwait(false);
+            }
+            catch (InvalidOperationException e)
+            {
+                const string msg = "Failed to create database. See InnerException for details. " +
+                                   "You can get additional information by creating a new instance of " +
+                                   "DbContextOptionsBuilder<T> and passing it into UseDbContextOptionsBuilder.";
+                throw new InvalidOperationException(msg, e);
+            }
 
-        try
-        {
-            // Create a context to initialize and seed the database
-            await context.Database.EnsureCreatedAsync().ConfigureAwait(false);
-        }
-        catch (InvalidOperationException e)
-        {
-            const string msg = "Failed to create database. See InnerException for details. " +
-                               "You can get additional information by creating a new instance of " +
-                               "DbContextOptionsBuilder<T> and passing it into UseDbContextOptionsBuilder.";
-            throw new InvalidOperationException(msg, e);
-        }
-
-        if (_seedData.Count > 0)
-        {
-            context.AddRange(_seedData.AsEnumerable());
-            await context.SaveChangesAsync().ConfigureAwait(false);
+            if (_seedData.Count > 0)
+            {
+                seedContext.AddRange(_seedData.AsEnumerable());
+                await seedContext.SaveChangesAsync().ConfigureAwait(false);
+            }
         }
 
         return await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
+    }
+
+
+
+    /// <summary>
+    /// Disposes the underlying database context creator, releasing any held resources
+    /// (e.g., the SQLite in-memory connection).
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+
+
+    /// <summary>
+    /// Releases unmanaged and optionally managed resources.
+    /// </summary>
+    /// <param name="disposing">true to release both managed and unmanaged resources.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing && CreateDbContext is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
     }
 }
