@@ -9,8 +9,15 @@ namespace Wolfgang.DbContextBuilderCore;
 /// <summary>
 /// Uses the Builder pattern to create instances of DbContext types seeded with specified data.
 /// </summary>
+/// <remarks>
+/// When using the SQLite provider, the builder holds an open SQLite in-memory connection.
+/// Dispose the builder only after all <see cref="DbContext"/> instances returned by
+/// <see cref="BuildAsync"/> are no longer in use, as disposing the builder closes the
+/// shared connection and destroys the in-memory database.
+/// </remarks>
 public class DbContextBuilder<T> : IDisposable where T : DbContext
 {
+    private bool _disposed;
     private readonly List<object> _seedData = [];
     private DbContextOptionsBuilder<T>? _dbContextOptionsBuilder;
 
@@ -211,8 +218,14 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// </summary>
     /// <returns>instance of {T}</returns>
     /// <exception cref="NotSupportedException">The specified database provider is not supported</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public async Task<T> BuildAsync()
     {
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(DbContextBuilder<T>));
+        }
+
         var optionBuilder = _dbContextOptionsBuilder ?? new DbContextOptionsBuilder<T>();
         if (ServiceCollection.Count > 0)
         {
@@ -267,9 +280,16 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <param name="disposing">true to release both managed and unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         if (disposing && CreateDbContext is IDisposable disposable)
         {
             disposable.Dispose();
         }
+
+        _disposed = true;
     }
 }
