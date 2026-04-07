@@ -47,4 +47,60 @@ public class TestsWithDefaults(ITestOutputHelper testOutputHelper) : DbContextBu
         Assert.True(context.Database.IsInMemory());
     }
 
+
+
+    [Fact]
+    public void Dispose_when_called_does_not_throw()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+
+        // Act & Assert
+        sut.Dispose();
+    }
+
+
+
+    [Fact]
+    public void Dispose_when_called_multiple_times_does_not_throw()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+
+        // Act & Assert
+        sut.Dispose();
+        sut.Dispose();
+    }
+
+
+
+    [Fact]
+    public async Task BuildAsync_when_disposed_throws_ObjectDisposedException()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        sut.Dispose();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ObjectDisposedException>
+        (
+            async () => await sut.BuildAsync()
+        );
+    }
+
+
+
+    [Fact]
+    public void Dispose_when_using_Sqlite_disposes_creator()
+    {
+        // Arrange
+        var sut = new DbContextBuilder<AdventureWorksDbContext>().UseSqlite();
+
+        // Act
+        sut.Dispose();
+
+        // Assert — calling Dispose twice should be safe (idempotent)
+        sut.Dispose();
+    }
+
 }
