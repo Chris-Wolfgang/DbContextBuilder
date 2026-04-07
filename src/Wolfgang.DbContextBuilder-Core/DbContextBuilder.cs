@@ -9,8 +9,15 @@ namespace Wolfgang.DbContextBuilderCore;
 /// <summary>
 /// Uses the Builder pattern to create instances of DbContext types seeded with specified data.
 /// </summary>
-public class DbContextBuilder<T> where T : DbContext
+/// <remarks>
+/// When using the SQLite provider, the builder holds an open SQLite in-memory connection.
+/// Dispose the builder only after all <see cref="DbContext"/> instances returned by
+/// <see cref="BuildAsync"/> are no longer in use, as disposing the builder closes the
+/// shared connection and destroys the in-memory database.
+/// </remarks>
+public class DbContextBuilder<T> : IDisposable where T : DbContext
 {
+    private bool _disposed;
     private readonly List<object> _seedData = [];
     private DbContextOptionsBuilder<T>? _dbContextOptionsBuilder;
 
@@ -211,8 +218,14 @@ public class DbContextBuilder<T> where T : DbContext
     /// </summary>
     /// <returns>instance of {T}</returns>
     /// <exception cref="NotSupportedException">The specified database provider is not supported</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public async Task<T> BuildAsync()
     {
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(DbContextBuilder<T>));
+        }
+
         var optionBuilder = _dbContextOptionsBuilder ?? new DbContextOptionsBuilder<T>();
         if (ServiceCollection.Count > 0)
         {
@@ -222,27 +235,62 @@ public class DbContextBuilder<T> where T : DbContext
 
         var contextCreator = CreateDbContext ??= new InMemoryDbContextCreator();
 
-        var context = await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
+        // Create a temporary context to initialize and seed the database, then dispose it
+        var seedContext = await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
+        await using (seedContext.ConfigureAwait(false))
+        {
+            try
+            {
+                await seedContext.Database.EnsureCreatedAsync().ConfigureAwait(false);
+            }
+            catch (InvalidOperationException e)
+            {
+                const string msg = "Failed to create database. See InnerException for details. " +
+                                   "You can get additional information by creating a new instance of " +
+                                   "DbContextOptionsBuilder<T> and passing it into UseDbContextOptionsBuilder.";
+                throw new InvalidOperationException(msg, e);
+            }
 
-        try
-        {
-            // Create a context to initialize and seed the database
-            await context.Database.EnsureCreatedAsync().ConfigureAwait(false);
-        }
-        catch (InvalidOperationException e)
-        {
-            const string msg = "Failed to create database. See InnerException for details. " +
-                               "You can get additional information by creating a new instance of " +
-                               "DbContextOptionsBuilder<T> and passing it into UseDbContextOptionsBuilder.";
-            throw new InvalidOperationException(msg, e);
-        }
-
-        if (_seedData.Count > 0)
-        {
-            context.AddRange(_seedData.AsEnumerable());
-            await context.SaveChangesAsync().ConfigureAwait(false);
+            if (_seedData.Count > 0)
+            {
+                seedContext.AddRange(_seedData.AsEnumerable());
+                await seedContext.SaveChangesAsync().ConfigureAwait(false);
+            }
         }
 
         return await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
+    }
+
+
+
+    /// <summary>
+    /// Disposes the underlying database context creator, releasing any held resources
+    /// (e.g., the SQLite in-memory connection).
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+
+
+    /// <summary>
+    /// Releases unmanaged and optionally managed resources.
+    /// </summary>
+    /// <param name="disposing">true to release both managed and unmanaged resources.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (disposing && CreateDbContext is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+
+        _disposed = true;
     }
 }
