@@ -49,6 +49,9 @@ public class TestsWithDefaults(ITestOutputHelper testOutputHelper) : DbContextBu
 
 
 
+    /// <summary>
+    /// Verifies that Dispose can be called without error on a default builder.
+    /// </summary>
     [Fact]
     public void Dispose_when_called_does_not_throw()
     {
@@ -61,6 +64,9 @@ public class TestsWithDefaults(ITestOutputHelper testOutputHelper) : DbContextBu
 
 
 
+    /// <summary>
+    /// Verifies that Dispose is idempotent (safe to call multiple times).
+    /// </summary>
     [Fact]
     public void Dispose_when_called_multiple_times_does_not_throw()
     {
@@ -74,6 +80,9 @@ public class TestsWithDefaults(ITestOutputHelper testOutputHelper) : DbContextBu
 
 
 
+    /// <summary>
+    /// Verifies that BuildAsync throws ObjectDisposedException after Dispose.
+    /// </summary>
     [Fact]
     public async Task BuildAsync_when_disposed_throws_ObjectDisposedException()
     {
@@ -90,6 +99,9 @@ public class TestsWithDefaults(ITestOutputHelper testOutputHelper) : DbContextBu
 
 
 
+    /// <summary>
+    /// Verifies that Dispose is safe when using the Sqlite provider.
+    /// </summary>
     [Fact]
     public void Dispose_when_using_Sqlite_disposes_creator()
     {
