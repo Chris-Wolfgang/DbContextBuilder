@@ -236,7 +236,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         var contextCreator = CreateDbContext ??= new InMemoryDbContextCreator();
 
         // Create a temporary context to initialize and seed the database, then dispose it
-        await using (var seedContext = await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false))
+        var seedContext = await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
+        await using (seedContext.ConfigureAwait(false))
         {
             try
             {
