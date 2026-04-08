@@ -1,8 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using AutoFixture;
 using AutoFixture.Kernel;
 
-namespace Wolfgang.DbContextBuilderCore;
+namespace Wolfgang.DbContextBuilderEF6;
 
 
 
@@ -13,10 +16,6 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
 {
     public AutoFixtureRandomEntityCreator()
     {
-        // AutoFixture 4.x does not have built in support for DateOnly and TimeOnly. Version is supposed to 
-        Fixture.Customize<DateOnly>(o => o.FromFactory((DateTime dt) => DateOnly.FromDateTime(dt)));
-        Fixture.Customize<TimeOnly>(o => o.FromFactory((DateTime dt) => TimeOnly.FromDateTime(dt)));
-
         // Prevents issues with circular references
         Fixture.Behaviors
             .OfType<ThrowingRecursionBehavior>()
@@ -34,8 +33,10 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
     /// for creating random entities.
     /// </summary>
     /// <param name="fixture">The fixture to use when creating random entities</param>
-    public AutoFixtureRandomEntityCreator(Fixture fixture) =>
+    public AutoFixtureRandomEntityCreator(Fixture fixture)
+    {
         Fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+    }
 
 
     /// <summary>
@@ -67,7 +68,10 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
     {
         public void Customize(IFixture fixture)
         {
-            ArgumentNullException.ThrowIfNull(fixture);
+            if (fixture == null)
+            {
+                throw new ArgumentNullException(nameof(fixture));
+            }
 
             if (!fixture.Behaviors.OfType<OmitOnRecursionBehavior>().Any())
             {
@@ -87,7 +91,11 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
     {
         public void Customize(IFixture fixture)
         {
-            ArgumentNullException.ThrowIfNull(fixture);
+            if (fixture == null)
+            {
+                throw new ArgumentNullException(nameof(fixture));
+            }
+
             if (fixture.Customizations.OfType<IgnoreVirtualMembers>().Any())
             {
                 return;
@@ -96,14 +104,21 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
         }
     }
 
-    
+
 
     internal class IgnoreVirtualMembers : ISpecimenBuilder
     {
         public object? Create(object request, ISpecimenContext context)
         {
-            ArgumentNullException.ThrowIfNull(request);
-            ArgumentNullException.ThrowIfNull(context);
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
 
             var propertyInfo = request as PropertyInfo;
             if (propertyInfo == null)

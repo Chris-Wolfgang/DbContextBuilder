@@ -1,54 +1,292 @@
 name: Deploy DocFX Pages
 
 on:
-  push:
-    branches:
-      - main # Your primary branch
+  # Called by release.yaml after a GitHub Release is published.
+  # Callers may pass an explicit 'version' string (e.g. v1.2.3); when omitted,
+  # the destination directory is derived from github.ref_name automatically.
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version tag for documentation (e.g., v1.0.0). Defaults to the triggering ref name.'
+        required: false
+        default: ''
+        type: string
+      deploy_to_pages:
+        description: 'Deploy to GitHub Pages'
+        required: false
+        type: boolean
+        default: true
+      deploy_as_latest:
+        description: 'Also deploy to the site root (/) and versions/latest/ as the current latest version'
+        required: false
+        type: boolean
+        default: true
+  # Manual trigger for ad-hoc builds or dry-runs.
+  # Leave 'version' blank to use the selected branch or tag name as the destination.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag for documentation (e.g., v1.0.0). Leave blank to use the ref name.'
+        required: false
+        default: ''
+      deploy_to_pages:
+        description: 'Deploy to GitHub Pages (uncheck for dry-run)'
+        type: boolean
+        default: true
+      deploy_as_latest:
+        description: 'Also deploy to the site root (/) and versions/latest/ (uncheck when rebuilding older versions)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read  # Default to read-only; the build-and-deploy job overrides with write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    name: Build & Deploy Documentation
+    runs-on: windows-latest
 
     permissions:
-      contents: read # Allow read access for checkout
-      pages: write      # Allow write access for Pages deployment
-      id-token: write   # Allow writing of ID tokens for deployment
+      contents: write # Allow write access for gh-pages branch
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history needed to enumerate all v* tags
+          persist-credentials: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: |
+            5.0.x
+            6.0.x
+            7.0.x
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+        shell: pwsh
+
+      - name: Build solution
+        run: dotnet build --configuration Release --no-restore
+        shell: pwsh
 
       - name: Install DocFX
-        run: dotnet tool update docfx --global
+        run: dotnet tool update docfx --global || dotnet tool install docfx --global
+        shell: pwsh
 
-      - name: Build DocFx Metadata
-        run: docfx metadata 
+      - name: Build DocFX Metadata
+        run: docfx metadata
         working-directory: docfx_project
+        shell: pwsh
 
       - name: Build Docs
-        run: docfx build 
+        run: docfx build
         working-directory: docfx_project
+        shell: pwsh
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docfx_project/_site # The path to the folder to upload
+      - name: Verify build output
+        run: |
+          if (-Not (Test-Path "docfx_project/_site")) {
+          Write-Host "Error: docfx_project/_site directory not found!"
+          exit 1
+          }  
+          Write-Host "Build successful. Contents of _site:" 
+          Get-ChildItem "docfx_project/_site"
+          Write-Host "API documentation:"
+          Get-ChildItem "docfx_project/_site/api"
+        shell: pwsh
 
-  deploy:
-    needs: build
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Generate versions.json
+        # Produces versions.json consumed by the DocFX version-switcher dropdown.
+        # Site layout:
+        #   /<repo>/               ← version-picker index.html (deployed to root)
+        #   /<repo>/versions/latest/  ← latest docs (alias under versions/)
+        #   /<repo>/versions/v1.2.3/  ← versioned docs (under versions/)
+        # versions.json format expected by the dropdown:
+        #   [{ "version": "latest", "url": "/<repo>/versions/latest/" }, { "version": "v1.2.3", "url": "/<repo>/versions/v1.2.3/" }]
+        # URLs must include the repo path segment because this is a GitHub Pages project site
+        # (https://<owner>.github.io/<repo>/), not a root user/org site.
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        shell: pwsh
+        run: |
+          $tags = git tag -l 'v*' | Where-Object { $_ -ne '' }
+
+          # Strict SemVer pattern: vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-PRERELEASE
+          $semverRe = '^v(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-(?<prerelease>[0-9A-Za-z.-]+))?$'
+
+          $taggedVersions = foreach ($t in $tags) {
+            if ($t -match $semverRe) {
+              # Stable releases (no prerelease) have Stable=1; prerelease builds have Stable=0.
+              # Sorting descending by Stable places stable (1) before prerelease (0) of the same version.
+              $stable = if ([string]::IsNullOrEmpty($Matches['prerelease'])) { 1 } else { 0 }
+              [PSCustomObject]@{
+                Tag    = $t
+                Major  = [int]$Matches['major']
+                Minor  = [int]$Matches['minor']
+                Patch  = [int]$Matches['patch']
+                Stable = $stable
+              }
+            }
+          }
+
+          # Sort descending by SemVer components so newest stable version comes first
+          $orderedTags = $taggedVersions |
+            Sort-Object -Property Major, Minor, Patch, Stable -Descending |
+            Select-Object -ExpandProperty Tag
+
+          # Build the base path for this GitHub Pages project site: /<repo-name>/
+          # GITHUB_REPOSITORY is "owner/repo"; we need just the repo name.
+          $repoName = ($env:GITHUB_REPOSITORY -split '/')[-1]
+          $base = if ($repoName) { "/$repoName/" } else { "/" }
+
+          # "latest" points to the versions/latest/ folder; each version points to versions/<tag>/.
+          [array]$versions = @([PSCustomObject]@{ version = 'latest'; url = "${base}versions/latest/" })
+          foreach ($t in $orderedTags) {
+            $versions += [PSCustomObject]@{ version = $t; url = "${base}versions/$t/" }
+          }
+
+          ConvertTo-Json -InputObject $versions -Depth 3 |
+            Set-Content -Path 'docfx_project/_site/versions.json' -Encoding utf8NoBOM
+          Write-Host "Generated versions.json with $($versions.Count) version(s): $($versions | ForEach-Object { $_.version })"
+
+      - name: Compute destination directory
+        # Determines the versioned subfolder name for the docs deployment (e.g. /v1.2.3/).
+        # Uses the explicit 'version' input when provided; otherwise falls back to
+        # github.ref_name so the workflow works without callers passing a version.
+        # Sanitization steps (applied in order):
+        #   1. Replace forward slashes with hyphens (prevents nested paths).
+        #   2. Replace any character outside [A-Za-z0-9._-] with a hyphen.
+        #   3. Collapse consecutive hyphens into one.
+        #   4. Strip leading dots and hyphens (avoids hidden/awkward directory names).
+        #   5. Fall back to "latest" if the result is empty, ".", or "..".
+        id: dest
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          REF_NAME: ${{ github.ref_name }}
+        shell: pwsh
+        run: |
+          $raw = if ($env:INPUT_VERSION -ne '') { $env:INPUT_VERSION } else { $env:REF_NAME }
+          $sanitized = $raw -replace '/', '-'
+          $sanitized = $sanitized -replace '[^A-Za-z0-9._\-]', '-'
+          $sanitized = $sanitized -replace '-{2,}', '-'
+          $sanitized = $sanitized -replace '^[.\-]+', ''
+          if ([string]::IsNullOrEmpty($sanitized) -or $sanitized -eq '.' -or $sanitized -eq '..') {
+            $sanitized = 'latest'
+          }
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "dir=$sanitized"
+
+      - name: Deploy docs to GitHub Pages
+        # Assembles the full gh-pages state and pushes a single commit, avoiding the
+        # multiple sequential pushes that would trigger pages-build-deployment repeatedly.
+        #
+        # Layout written to gh-pages in one commit:
+        #   versions/<version>/   – versioned docs (real DocFX index.html)
+        #   versions/latest/      – latest alias   (real DocFX index.html) [deploy_as_latest only]
+        #   /                     – version-picker index.html + shared assets [deploy_as_latest only]
+        #
+        # Stale root files from the previous build are removed before copying new content,
+        # so outdated DocFX assets do not linger.  The versions/ folder is always preserved
+        # so that all prior versioned docs remain accessible.
+        if: inputs.deploy_to_pages != false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          VERSION_DIR: ${{ steps.dest.outputs.dir }}
+          DEPLOY_AS_LATEST: ${{ inputs.deploy_as_latest != false }}
+        shell: pwsh
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git remote set-url origin "https://x-access-token:$($env:GITHUB_TOKEN)@github.com/$($env:GITHUB_REPOSITORY).git"
+
+          $WORK_DIR = Join-Path $env:RUNNER_TEMP 'gh-pages-deploy'
+          $siteDir  = Resolve-Path 'docfx_project/_site'
+
+          # Set up gh-pages worktree (or start fresh if the branch does not exist yet)
+          $branchExists = git ls-remote --heads origin gh-pages
+          if ($branchExists) {
+            git fetch origin gh-pages
+            git show-ref --verify --quiet refs/heads/gh-pages
+            if ($LASTEXITCODE -ne 0) { git branch gh-pages origin/gh-pages }
+            git worktree remove $WORK_DIR --force 2>&1 | Out-Null
+            if (Test-Path $WORK_DIR) { Remove-Item $WORK_DIR -Recurse -Force }
+            git worktree add $WORK_DIR gh-pages
+          } else {
+            Write-Host "ℹ️ gh-pages does not exist yet — starting fresh."
+            New-Item -ItemType Directory -Force -Path $WORK_DIR | Out-Null
+          }
+
+          # Remove stale root files; preserve versions/, .git, .nojekyll, CNAME
+          Get-ChildItem -Path $WORK_DIR -Force | Where-Object {
+            $_.Name -notin @('.git', 'CNAME', '.nojekyll', 'versions')
+          } | Remove-Item -Recurse -Force
+
+          # Ensure .nojekyll exists so GitHub Pages does not run Jekyll
+          New-Item -ItemType File -Path (Join-Path $WORK_DIR '.nojekyll') -Force | Out-Null
+
+          # Deploy versioned docs (real DocFX index.html — before version picker overwrites it)
+          $versionedDir = Join-Path $WORK_DIR "versions/$($env:VERSION_DIR)"
+          New-Item -ItemType Directory -Force -Path $versionedDir | Out-Null
+          Copy-Item -Path "$siteDir/*" -Destination $versionedDir -Recurse -Force
+          Write-Host "✅ Copied docs to versions/$($env:VERSION_DIR)/"
+
+          if ($env:DEPLOY_AS_LATEST -eq 'true') {
+            # Deploy to versions/latest/ (real DocFX index.html)
+            $latestDir = Join-Path $WORK_DIR 'versions/latest'
+            New-Item -ItemType Directory -Force -Path $latestDir | Out-Null
+            Copy-Item -Path "$siteDir/*" -Destination $latestDir -Recurse -Force
+            Write-Host "✅ Copied docs to versions/latest/"
+
+            # Generate version-picker index.html and overwrite _site/index.html.
+            # This happens AFTER the versioned copies above, so those directories
+            # retain the real DocFX landing page while the root gets the picker.
+            $repoName = ($env:GITHUB_REPOSITORY -split '/')[-1]
+            $title    = if ($repoName) { "$repoName Documentation" } else { "Documentation" }
+            $versions = Get-Content "$siteDir/versions.json" -Raw | ConvertFrom-Json
+
+            $listItems = foreach ($v in $versions) {
+              $liClass = if ($v.version -eq 'latest') { ' class="latest"' } else { '' }
+              $label   = if ($v.version -eq 'latest') { 'latest (stable)' } else { $v.version }
+              "      <li${liClass}><a href=`"$($v.url)`">$label</a></li>"
+            }
+            $listHtml = $listItems -join "`n"
+
+            if (-not (Test-Path '.github/version-picker-template.html')) {
+              Write-Error "Error: .github/version-picker-template.html not found; cannot generate root index.html."
+              exit 1
+            }
+
+            $template = Get-Content '.github/version-picker-template.html' -Raw
+            $html = $template -replace '\{\{TITLE\}\}', $title `
+                              -replace '\{\{VERSION_LIST\}\}', $listHtml
+            $html | Set-Content -Path "$siteDir/index.html" -Encoding utf8NoBOM
+            Write-Host "Generated version-picker index.html with $($versions.Count) version link(s)."
+
+            # Deploy version picker + shared assets to site root
+            Copy-Item -Path "$siteDir/*" -Destination $WORK_DIR -Recurse -Force
+            Write-Host "✅ Copied version picker to site root"
+          }
+
+          # Single commit and push
+          git -C $WORK_DIR add -A
+          git -C $WORK_DIR diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            $msg = if ($env:DEPLOY_AS_LATEST -eq 'true') {
+              "docs: deploy $($env:VERSION_DIR) and update latest"
+            } else {
+              "docs: deploy $($env:VERSION_DIR)"
+            }
+            git -C $WORK_DIR commit -m $msg
+            git -C $WORK_DIR push origin HEAD:gh-pages
+            Write-Host "✅ Documentation deployed in a single commit."
+          } else {
+            Write-Host "ℹ️ No documentation changes to deploy."
+          }
+
+          git worktree remove $WORK_DIR --force 2>&1 | Out-Null

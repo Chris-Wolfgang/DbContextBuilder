@@ -14,7 +14,11 @@ public static class DbContextBuilderSqliteExtensions
     (
         this DbContextBuilder<TDbContext> builder
     )
-    where TDbContext : DbContext => UseSqlite(builder, typeof(SqliteModelCustomizer));
+    where TDbContext : DbContext
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        return UseSqlite(builder, typeof(SqliteModelCustomizer));
+    }
 
 
 
@@ -27,7 +31,11 @@ public static class DbContextBuilderSqliteExtensions
     (
         this DbContextBuilder<TDbContext> builder
     )
-    where TDbContext : DbContext => UseSqlite(builder, typeof(SqliteForMsSqlServerModelCustomizer));
+    where TDbContext : DbContext
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        return UseSqlite(builder, typeof(SqliteForMsSqlServerModelCustomizer));
+    }
 
 
 
@@ -42,9 +50,6 @@ public static class DbContextBuilderSqliteExtensions
         Type modelCustomizerType
     ) where TDbContext : DbContext
     {
-
-        // TODO Check is items exist in the list and don't add duplicates
-        // TODO Check if Sql Server provider is already registered and if so, remove it
 
         // Remove any existing IModelCustomizer registrations to avoid duplicates/competing implementations
         var modelCustomizerDescriptors = builder.ServiceCollection

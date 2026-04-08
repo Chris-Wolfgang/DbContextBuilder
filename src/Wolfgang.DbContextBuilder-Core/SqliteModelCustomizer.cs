@@ -83,7 +83,6 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// be replaced with datetime('now') and lower(hex(randomblob(16))) respectively.
     /// </remarks>
     public IDictionary<string, string> DefaultValueMap { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-    // TODO unit test
 
 
     private Func<string?, string?>? _overrideDefaultValueHandling;
@@ -149,6 +148,9 @@ public class SqliteModelCustomizer : ModelCustomizer
         DbContext context
     )
     {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+        ArgumentNullException.ThrowIfNull(context);
+
         base.Customize(modelBuilder, context);
 
         if (!context.Database.IsSqlite())
@@ -171,7 +173,7 @@ public class SqliteModelCustomizer : ModelCustomizer
                 OverrideDefaultValue(property);
             }
 
-            OverrideManyToManyTables(entityType);
+            OverrideManyToManyTableHandling(entityType);
         }
     }
 
@@ -190,14 +192,16 @@ public class SqliteModelCustomizer : ModelCustomizer
         }
 
         var newTableName = getNewName((originalSchemaName, originalTableName));
-        if (newTableName != originalTableName)
+        if (!string.Equals(newTableName, originalTableName, StringComparison.Ordinal))
         {
             entityType.SetTableName(newTableName);
         }
 
         if (originalSchemaName != null)
         {
+#pragma warning disable MA0003 // EF extension method parameter name varies across versions
             entityType.SetSchema(null);
+#pragma warning restore MA0003
         }
     }
 
@@ -207,7 +211,7 @@ public class SqliteModelCustomizer : ModelCustomizer
     {
         var currentDefaultValue = property.GetDefaultValueSql();
         var newDefaultValue = OverrideDefaultValueHandling(currentDefaultValue);
-        if (currentDefaultValue != newDefaultValue)
+        if (!string.Equals(currentDefaultValue, newDefaultValue, StringComparison.Ordinal))
         {
             property.SetDefaultValueSql(newDefaultValue);
         }
@@ -218,43 +222,42 @@ public class SqliteModelCustomizer : ModelCustomizer
     {
         var originalComputedValueSql = property.GetComputedColumnSql();
         var newComputedValueSql = OverrideComputedValueHandling(originalComputedValueSql);
-        if (originalComputedValueSql != newComputedValueSql)
+        if (!string.Equals(originalComputedValueSql, newComputedValueSql, StringComparison.Ordinal))
         {
             property.SetComputedColumnSql(newComputedValueSql);
         }
 
-        //if (computedColumns.TryGetValue((originalSchemaName, originalTableName, property.Name), out var value))
-        //{
-        //    property.SetComputedColumnSql(value);
-        //}
-        //else
-        //{
-        //    var sql = property.GetComputedColumnSql();
-        //    if (!string.IsNullOrEmpty(sql))
-        //    {
-        //        var rewrittenSql = sql.Replace("ISNULL", "IFNULL", StringComparison.OrdinalIgnoreCase)
-        //                .Replace("N'", "'", StringComparison.OrdinalIgnoreCase)
-        //                .Replace("+", "||", StringComparison.OrdinalIgnoreCase)
-        //            //.Replace("CONVERT", "CAST", StringComparison.OrdinalIgnoreCase)
-        //            //.Replace("[dbo].", "")
-        //            //.Replace("dbo.", "")
-        //            ;
-        //        property.SetComputedColumnSql(rewrittenSql);
-        //    }
-        //}
-        //property.SetComputedColumnSql(null);
     }
 
 
 
-    private static void OverrideManyToManyTables(IMutableEntityType entityType)
-    {
-        // TODO Override join table handling
-        // Heuristic: rename many-to-many join tables
-        var foreignKeys = entityType.GetForeignKeys().ToList();
-        var navigation = entityType.GetNavigations().ToList();
+    private Action<IMutableEntityType>? _overrideManyToManyTableHandling;
 
-        if (foreignKeys.Count == 2 && navigation.Count == 0)
+    /// <summary>
+    /// This action is called for each entity type to handle many-to-many join table renaming.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <remarks>
+    /// The default implementation uses a heuristic to detect many-to-many join tables:
+    /// an entity type with exactly two foreign keys and no navigations is assumed to be a join table.
+    /// When detected, the table is renamed to "{LeftTable}_{RightTable}". You can override this
+    /// behavior by assigning a custom implementation to this property.
+    /// </remarks>
+    public Action<IMutableEntityType> OverrideManyToManyTableHandling
+    {
+        get =>
+            _overrideManyToManyTableHandling ??= DefaultOverrideManyToManyTableHandling;
+        set => _overrideManyToManyTableHandling = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
+
+
+    private static void DefaultOverrideManyToManyTableHandling(IMutableEntityType entityType)
+    {
+        // Heuristic: an entity with exactly 2 foreign keys and no navigations is a join table
+        var foreignKeys = entityType.GetForeignKeys().Take(3).ToList();
+
+        if (foreignKeys.Count == 2 && !entityType.GetNavigations().Any())
         {
             var left = foreignKeys[0].PrincipalEntityType;
             var right = foreignKeys[1].PrincipalEntityType;
