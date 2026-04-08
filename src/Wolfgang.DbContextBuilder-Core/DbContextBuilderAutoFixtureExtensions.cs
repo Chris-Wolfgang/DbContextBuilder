@@ -9,6 +9,7 @@ public static class DbContextBuilderAutoFixtureExtensions
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
     public static DbContextBuilder<T> UseAutoFixture<T>(this DbContextBuilder<T> builder) where T : DbContext
     {
+        ArgumentNullException.ThrowIfNull(builder);
         builder.UseCustomRandomEntityCreator(new AutoFixtureRandomEntityCreator());
 
         return builder;

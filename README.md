@@ -8,8 +8,8 @@ having to rely on an actual database whose data can be changed or deleted over t
 ## Features
 
 - Create DbContext instances with an in-memory database. By default, DbContextBuilder
-uses the Sqlite in-memory database provider. However, you can use other databases by passing
-in your own `DbConnection`.
+uses the EF Core InMemory provider. Use `.UseSqlite()` for a SQLite in-memory database,
+or pass in your own `DbContextOptionsBuilder` for other providers.
 
 - Add your own data to the DbContext using the `SeedWith<T>` method
 
@@ -29,10 +29,10 @@ Install-Package Wolfgang.DbContextBuilder
 Here's a simple example of how to use DbContextBuilder to create a DbContext with seeded data:
 ```csharp
 // Create a DbContext with seeded random data and your test data
-var context = new DbContextBuilder<YourDbContext>()
+var context = await new DbContextBuilder<YourDbContext>()
 	// Seed with 10 random entities
-	.SeedWithRandom<YourEntity>(10)		
-	
+	.SeedWithRandom<YourEntity>(10)
+
 	// Seed with specific data
 	.SeedWith
 	(
@@ -41,13 +41,13 @@ var context = new DbContextBuilder<YourDbContext>()
 			Id = 1,
 			Name = "Test Entity"
 		}
-	)							
-	
-	// Seed with 5 random entities	
-	.SeedWithRandom<YourEntity>(5)		
-	
+	)
+
+	// Seed with 5 random entities
+	.SeedWithRandom<YourEntity>(5)
+
 	// Build the DbContext instance
-	.Build();							
+	.BuildAsync();							
 
 // Use the context in your tests
 var sut = new YourService(context);

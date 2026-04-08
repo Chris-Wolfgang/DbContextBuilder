@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <!-- Enable .NET analyzers -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <!-- Suppress warning about NetAnalyzers package since we're using SDK built-in -->
+    <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
+
+    <!-- Treat warnings as errors in Release builds -->
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+
+    <!-- Downgrade TODO/commented-out-code analyzer rules to warnings (tracked in issues, not build-blocking) -->
+    <!-- MA0026: Meziantou - TODO comments -->
+    <!-- S1135:  SonarAnalyzer - TODO comments -->
+    <!-- S125:   SonarAnalyzer - Commented-out code -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);MA0026;S1135;S125</WarningsNotAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Include BannedSymbols.txt as AdditionalFiles for code analysis -->
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
+  </ItemGroup>
+
+</Project>

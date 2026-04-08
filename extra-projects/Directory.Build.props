@@ -1,0 +1,22 @@
+<Project>
+  <!-- Override the root Directory.Build.props for extra-projects (sample/demo projects) -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <!-- Remove all analyzer package references inherited from root -->
+  <ItemGroup>
+    <PackageReference Remove="Roslynator.Analyzers" />
+    <PackageReference Remove="AsyncFixer" />
+    <PackageReference Remove="Microsoft.VisualStudio.Threading.Analyzers" />
+    <PackageReference Remove="Microsoft.CodeAnalysis.BannedApiAnalyzers" />
+    <PackageReference Remove="Meziantou.Analyzer" />
+    <PackageReference Remove="SonarAnalyzer.CSharp" />
+  </ItemGroup>
+
+  <!-- Remove BannedSymbols.txt reference -->
+  <ItemGroup>
+    <AdditionalFiles Remove="@(AdditionalFiles)" />
+  </ItemGroup>
+</Project>

@@ -35,7 +35,6 @@
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilder.cs" Link="DbContextBuilder.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderAutoFixtureExtensions.cs" Link="DbContextBuilderAutoFixtureExtensions.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderSqliteExtensions.cs" Link="DbContextBuilderSqliteExtensions.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderSqlServerExtensions.cs" Link="DbContextBuilderSqlServerExtensions.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\Assembly.cs" Link="Assembly.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\ICreateDbContext.cs" Link="ICreateDbContext.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\ICreateRandomEntities.cs" Link="ICreateRandomEntities.cs" />
@@ -48,13 +47,11 @@
 
 	<ItemGroup>
 	  <PackageReference Include="AutoFixture" Version="4.18.1" />
-	  <PackageReference Include="coverlet.collector" Version="6.0.4">
+	  <PackageReference Include="coverlet.collector" Version="8.0.1">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
 
-	  <PackageReference Include="System.Net.Http" Version="4.3.4" />
-	  <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
 
 
 	  <!-- Lock EF to version 7.x but not 8 or later -->
@@ -80,4 +77,31 @@
 		 <NoWarn>$(NoWarn);1591</NoWarn>
 	 </PropertyGroup>
 
+
+  <ItemGroup>
+    <PackageReference Include="Roslynator.Analyzers" Version="4.15.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="AsyncFixer" Version="2.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="4.14.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.44">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.22.0.136894">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 </Project>

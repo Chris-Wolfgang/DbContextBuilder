@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Wolfgang.DbContextBuilderCore;
 
-internal class SqliteDbContextCreator : ICreateDbContext
+internal sealed class SqliteDbContextCreator : ICreateDbContext, IDisposable
 {
 
     private readonly SqliteConnection _connection;
@@ -15,7 +15,7 @@ internal class SqliteDbContextCreator : ICreateDbContext
     }
 
 
-    public Task<TDbContext> CreateDbContext<TDbContext>(DbContextOptionsBuilder<TDbContext> optionsBuilder) where TDbContext : DbContext
+    public Task<TDbContext> CreateDbContextAsync<TDbContext>(DbContextOptionsBuilder<TDbContext> optionsBuilder) where TDbContext : DbContext
     {
 
         optionsBuilder.UseSqlite(_connection);
@@ -23,5 +23,11 @@ internal class SqliteDbContextCreator : ICreateDbContext
         var options = optionsBuilder.Options;
 
         return Task.FromResult((TDbContext)Activator.CreateInstance(typeof(TDbContext), options)!);
+    }
+
+
+    public void Dispose()
+    {
+        _connection.Dispose();
     }
 }
