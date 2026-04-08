@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Include BannedSymbols.txt as AdditionalFiles for BannedApiAnalyzers -->
+    <!-- Include BannedSymbols.txt as AdditionalFiles for code analysis -->
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
   </ItemGroup>
 
