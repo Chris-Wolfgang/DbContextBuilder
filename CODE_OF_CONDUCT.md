@@ -64,8 +64,11 @@ representative at an online or offline event.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement at
-.
+reported to the community leaders responsible for enforcement by using the
+**Security** tab at the top of this repository and clicking
+**Report a vulnerability**. Although this channel is primarily designed for
+security reports, it provides a private way to reach the maintainers.
+Please note in the report that it is a Code of Conduct concern.
 All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the
