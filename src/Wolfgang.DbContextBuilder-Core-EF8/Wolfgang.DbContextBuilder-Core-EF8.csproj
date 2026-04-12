@@ -1,7 +1,7 @@
 ﻿ <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
-		<TargetFrameworks>net8.0</TargetFrameworks>
+		<TargetFramework>net8.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Version>0.3.3</Version>
 		<Title>Wolfgang.DbContextBuilder for EF Core 8</Title>
@@ -47,7 +47,7 @@
 
 	<ItemGroup>
 	  <PackageReference Include="AutoFixture" Version="4.18.1" />
-	  <PackageReference Include="coverlet.collector" Version="8.0.1">
+	  <PackageReference Include="coverlet.collector" Version="6.0.4">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
