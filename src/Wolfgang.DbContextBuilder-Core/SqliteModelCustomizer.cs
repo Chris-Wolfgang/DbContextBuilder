@@ -26,7 +26,7 @@ public class SqliteModelCustomizer : ModelCustomizer
 
 
 
-    private Func<(string? SchemaName, string TableName), string>? _overrideTableRenameRenaming;
+    private Func<(string? SchemaName, string TableName), string>? _overrideTableRenaming;
     /// <summary>
     /// This method is called for each table in the database to rename the table since SQLite
     /// does not support schemas.  
@@ -42,7 +42,7 @@ public class SqliteModelCustomizer : ModelCustomizer
     public Func<(string? SchemaName, string TableName), string> OverrideTableRenaming
     {
         get =>
-            _overrideTableRenameRenaming ??= t =>
+            _overrideTableRenaming ??= t =>
             {
                 var schemaPrefix = t.SchemaName ?? "dbo";
 
@@ -51,7 +51,7 @@ public class SqliteModelCustomizer : ModelCustomizer
                     ? t.TableName // Table has already been renamed so just return it
                     : $"{schemaPrefix}_{t.TableName}"; // Rename table by prefixing schema name
             };
-        set => _overrideTableRenameRenaming = value ?? throw new ArgumentNullException(nameof(value));
+        set => _overrideTableRenaming = value ?? throw new ArgumentNullException(nameof(value));
     }
 
 
@@ -61,7 +61,7 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// </summary>
     /// <exception cref="ArgumentNullException"></exception>
     /// <remarks>
-    /// The default handling for this is not leave the computed value as is. However,
+    /// The default handling for this is to leave the computed value as is. However,
     /// Sqlite has limited support for computed values and the functions used in the model may
     /// be incompatible with SQLite. You can override this behavior by assigning a custom value
     /// </remarks>
@@ -88,23 +88,10 @@ public class SqliteModelCustomizer : ModelCustomizer
     private Func<string?, string?>? _overrideDefaultValueHandling;
 
     /// <summary>
-    /// Overrides the default model creation process in the DbContext{T} with configurations suitable for SQLite.
+    /// Initializes a new instance of the <see cref="SqliteModelCustomizer"/> class.
     /// </summary>
-    /// <param name="dependencies"></param>
-    /// <remarks>
-    /// Unless the production database you are testing is also SQLite, there will be differences between
-    /// your database and the context's configuration definition and SQLite's capabilities. This class
-    /// provides some basic overrides to make your DbContext work in SQLite. This class provides some
-    /// basic capabilities like,
-    ///   1. Renaming tables to avoid schema issues since SQLite does not support schemas.
-    ///   2. Removing computed values for columns since SQLite may not support the same functions.
-    ///
-    /// You can override the functionality provided in this class or if you will be frequently working
-    /// in the same database engine, you can create your own ModelCustomizer, either from scratch or
-    /// derived from this one, and override the desired functionality. Once you created you can reuse
-    /// it over and over again. For example, you want to create a SqliteForOracleModelCustomizer that
-    /// has overrides to make an DbContext created for Oracle work in SQLite.
-    /// </remarks>
+    /// <param name="dependencies">The dependencies for the model customizer.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="dependencies"/> is null.</exception>
     public SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
         : base(dependencies) => ArgumentNullException.ThrowIfNull(dependencies);
 
@@ -140,8 +127,8 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// <summary>
     /// Overrides the default model creation process in the DbContext{T} with configurations suitable for SQLite.
     /// </summary>
-    /// <param name="modelBuilder"></param>
-    /// <param name="context"></param>
+    /// <param name="modelBuilder">The builder being used to construct the model.</param>
+    /// <param name="context">The context instance that the model is being created for.</param>
     public override void Customize
     (
         ModelBuilder modelBuilder,

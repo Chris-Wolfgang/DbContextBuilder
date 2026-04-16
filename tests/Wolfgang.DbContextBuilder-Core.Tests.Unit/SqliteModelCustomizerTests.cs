@@ -196,7 +196,7 @@ public class SqliteModelCustomizerTests
         Assert.Equal("(getdate())", sut.OverrideDefaultValueHandling("(getdate())"));
         Assert.Equal("(newid())", sut.OverrideDefaultValueHandling("(newid())"));
         Assert.Equal("", sut.OverrideDefaultValueHandling(""));
-        Assert.Equal(null, sut.OverrideDefaultValueHandling(null));
+        Assert.Null(sut.OverrideDefaultValueHandling(null));
     }
 
 
@@ -274,7 +274,7 @@ public class SqliteModelCustomizerTests
         Assert.Equal("(isnull('AW'+[dbo].[ufnLeadingZeros]([CustomerID]),''))", sut.OverrideComputedValueHandling("(isnull('AW'+[dbo].[ufnLeadingZeros]([CustomerID]),''))"));
         Assert.Equal("([OrganizationNode].[GetLevel]())", sut.OverrideComputedValueHandling("([OrganizationNode].[GetLevel]())"));
         Assert.Equal("", sut.OverrideComputedValueHandling(""));
-        Assert.Equal(null, sut.OverrideComputedValueHandling(null));
+        Assert.Null(sut.OverrideComputedValueHandling(null));
     }
 
 

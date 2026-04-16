@@ -1,7 +1,6 @@
 using System.Text;
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
-using Xunit.Abstractions;
 
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
@@ -9,12 +8,8 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 /// <summary>
 /// A base class that contains all the common unit tests for DbContextBuilder.
 /// </summary>
-public abstract class DbContextBuilderTestsBase(ITestOutputHelper testOutputHelper)
+public abstract class DbContextBuilderTestsBase
 {
-
-#pragma warning disable IDE0052
-	private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
-#pragma warning restore IDE0052
 
 	/// <summary>
     /// Creates an instance of DbContextBuilder with specific database

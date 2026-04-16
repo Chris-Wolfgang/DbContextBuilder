@@ -1,13 +1,11 @@
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
-using Xunit.Abstractions;
-
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
 /// <summary>
 /// Runs all the tests using the default values for DbContextBuilder
 /// </summary>
-public class TestsWithInMemoryDbAndAutoFixture(ITestOutputHelper testOutputHelper) : DbContextBuilderTestsBase(testOutputHelper)
+public class TestsWithInMemoryDbAndAutoFixture : DbContextBuilderTestsBase
 {
 
     /// <summary>

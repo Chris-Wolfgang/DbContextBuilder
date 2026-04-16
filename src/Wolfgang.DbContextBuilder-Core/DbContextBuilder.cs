@@ -35,10 +35,10 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
     public DbContextBuilder<T> UseInMemory()
-	{
+    {
         CreateDbContext = new InMemoryDbContextCreator();
         return this;
-	}
+    }
 
 
     
@@ -60,10 +60,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Specifies a specific instance of UseDbContextOptionsBuilder to use when creating the DbContext.
     /// </summary>
-    /// <param name="dbContextOptionsBuilder"></param>
-    /// <returns></returns>
+    /// <param name="dbContextOptionsBuilder">The options builder to use when creating the DbContext.</param>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-    /// <exception cref="ArgumentNullException">callback is null</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="dbContextOptionsBuilder"/> is null.</exception>
     public DbContextBuilder<T> UseDbContextOptionsBuilder(DbContextOptionsBuilder<T> dbContextOptionsBuilder)
     {
         ArgumentNullException.ThrowIfNull(dbContextOptionsBuilder);
@@ -214,7 +213,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
     /// <summary>
-    /// Creates a new instance of T seeded with specified data."/>.
+    /// Creates a new instance of T seeded with specified data.
     /// </summary>
     /// <returns>instance of {T}</returns>
     /// <exception cref="NotSupportedException">The specified database provider is not supported</exception>
