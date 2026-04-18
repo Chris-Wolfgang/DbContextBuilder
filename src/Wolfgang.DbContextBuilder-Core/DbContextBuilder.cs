@@ -58,7 +58,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
     /// <summary>
-    /// Specifies a specific instance of UseDbContextOptionsBuilder to use when creating the DbContext.
+    /// Specifies a specific <see cref="DbContextOptionsBuilder{TContext}"/> instance to use when creating the DbContext.
     /// </summary>
     /// <param name="dbContextOptionsBuilder">The options builder to use when creating the DbContext.</param>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>

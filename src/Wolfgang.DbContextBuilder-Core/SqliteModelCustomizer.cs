@@ -63,7 +63,8 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// <remarks>
     /// The default handling for this is to leave the computed value as is. However,
     /// Sqlite has limited support for computed values and the functions used in the model may
-    /// be incompatible with SQLite. You can override this behavior by assigning a custom value
+    /// be incompatible with SQLite. You can override this behavior by assigning a custom
+    /// implementation to this property.
     /// </remarks>
     public Func<string?, string?> OverrideComputedValueHandling
     {

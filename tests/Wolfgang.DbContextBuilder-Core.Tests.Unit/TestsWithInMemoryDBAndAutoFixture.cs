@@ -1,5 +1,6 @@
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
+
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
 /// <summary>
