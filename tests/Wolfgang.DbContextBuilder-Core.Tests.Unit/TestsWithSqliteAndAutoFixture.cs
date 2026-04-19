@@ -171,7 +171,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
         //Assert.True(columns.Any(c => c.TableName == "Person_Person"), "Table Person_Person was not found");
 
         var tables = await GetTableMetadataAsync(context);
-        Assert.Contains(tables, t => t.TableName == "dbo_DatabaseLog");
+        Assert.Contains(tables, t => string.Equals(t.TableName, "dbo_DatabaseLog", StringComparison.Ordinal));
     }
 
 
@@ -196,10 +196,10 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
         // Assert
         var columns = await GetColumnMetadataAsync(context);
 
-        var columnsWithNewId = columns.Where(c => c.DefaultValue == "(newid())").ToList();
+        var columnsWithNewId = columns.Where(c => string.Equals(c.DefaultValue, "(newid())", StringComparison.Ordinal)).ToList();
         Assert.Equal(1, columnsWithNewId.Count);
 
-        var columnsWithGetDate = columns.Where(c => c.DefaultValue == "(getdate())").ToList();
+        var columnsWithGetDate = columns.Where(c => string.Equals(c.DefaultValue, "(getdate())", StringComparison.Ordinal)).ToList();
         Assert.Equal(1, columnsWithGetDate.Count);
     }
 
