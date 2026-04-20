@@ -1,13 +1,12 @@
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
-using Xunit.Abstractions;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
 /// <summary>
 /// Runs all the tests using the default values for DbContextBuilder
 /// </summary>
-public class TestsWithDefaults(ITestOutputHelper testOutputHelper) : DbContextBuilderTestsBase(testOutputHelper)
+public class TestsWithDefaults : DbContextBuilderTestsBase
 {
 
     /// <summary>
@@ -23,7 +22,7 @@ public class TestsWithDefaults(ITestOutputHelper testOutputHelper) : DbContextBu
     [Fact]
     public void Default_RandomEntityCreate_is_AutoFixture()
     {
-	    // Arrange
+        // Arrange
         var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert

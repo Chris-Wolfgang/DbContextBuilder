@@ -3,9 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Wolfgang.DbContextBuilderCore;
 
-
-
-
 /// <summary>
 /// Uses the Builder pattern to create instances of DbContext types seeded with specified data.
 /// </summary>
@@ -35,13 +32,13 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
     public DbContextBuilder<T> UseInMemory()
-	{
+    {
         CreateDbContext = new InMemoryDbContextCreator();
         return this;
-	}
+    }
 
 
-    
+
     /// <summary>
     /// Allows the user to specify their own implementation of ICreateRandomEntities
     /// for creating random entities.
@@ -58,12 +55,11 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
     /// <summary>
-    /// Specifies a specific instance of UseDbContextOptionsBuilder to use when creating the DbContext.
+    /// Specifies a specific <see cref="DbContextOptionsBuilder{TContext}"/> instance to use when creating the DbContext.
     /// </summary>
-    /// <param name="dbContextOptionsBuilder"></param>
-    /// <returns></returns>
+    /// <param name="dbContextOptionsBuilder">The options builder to use when creating the DbContext.</param>
     /// <returns><see cref="DbContextBuilder{T}"></see></returns>
-    /// <exception cref="ArgumentNullException">callback is null</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="dbContextOptionsBuilder"/> is null.</exception>
     public DbContextBuilder<T> UseDbContextOptionsBuilder(DbContextOptionsBuilder<T> dbContextOptionsBuilder)
     {
         ArgumentNullException.ThrowIfNull(dbContextOptionsBuilder);
@@ -83,7 +79,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
-    public DbContextBuilder<T> SeedWith<TEntity>(IEnumerable<TEntity> entities) 
+    public DbContextBuilder<T> SeedWith<TEntity>(IEnumerable<TEntity> entities)
         where TEntity : class
     {
         ArgumentNullException.ThrowIfNull(entities);
@@ -107,7 +103,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
-    public DbContextBuilder<T> SeedWith<TEntity>(params TEntity[] entities) 
+    public DbContextBuilder<T> SeedWith<TEntity>(params TEntity[] entities)
         where TEntity : class
     {
         ArgumentNullException.ThrowIfNull(entities);
@@ -177,7 +173,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         var entities = RandomEntityCreator
             .CreateRandomEntities<TEntity>(count)
             .Select(func);
-            
+
         _seedData.AddRange(entities);
 
         return this;
@@ -214,7 +210,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
     /// <summary>
-    /// Creates a new instance of T seeded with specified data."/>.
+    /// Creates a new instance of T seeded with specified data.
     /// </summary>
     /// <returns>instance of {T}</returns>
     /// <exception cref="NotSupportedException">The specified database provider is not supported</exception>

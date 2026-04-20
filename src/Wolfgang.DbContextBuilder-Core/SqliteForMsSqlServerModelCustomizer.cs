@@ -15,7 +15,7 @@ public class SqliteForMsSqlServerModelCustomizer : SqliteModelCustomizer
     /// <summary>
     /// Creates a new instance of the <see cref="SqliteForMsSqlServerModelCustomizer"/> class.
     /// </summary>
-    /// <param name="dependencies"></param>
+    /// <param name="dependencies">The dependencies for the model customizer.</param>
     /// <remarks>
     /// This class should not be created directly but rather added to the service collection by
     /// calling the UseSqliteForMsSqlServerModelCustomizer method on the DbContextBuilder class
