@@ -3,9 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Wolfgang.DbContextBuilderCore;
 
-
-
-
 /// <summary>
 /// Uses the Builder pattern to create instances of DbContext types seeded with specified data.
 /// </summary>
@@ -41,7 +38,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     }
 
 
-    
+
     /// <summary>
     /// Allows the user to specify their own implementation of ICreateRandomEntities
     /// for creating random entities.
@@ -82,7 +79,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
-    public DbContextBuilder<T> SeedWith<TEntity>(IEnumerable<TEntity> entities) 
+    public DbContextBuilder<T> SeedWith<TEntity>(IEnumerable<TEntity> entities)
         where TEntity : class
     {
         ArgumentNullException.ThrowIfNull(entities);
@@ -106,7 +103,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
-    public DbContextBuilder<T> SeedWith<TEntity>(params TEntity[] entities) 
+    public DbContextBuilder<T> SeedWith<TEntity>(params TEntity[] entities)
         where TEntity : class
     {
         ArgumentNullException.ThrowIfNull(entities);
@@ -176,7 +173,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         var entities = RandomEntityCreator
             .CreateRandomEntities<TEntity>(count)
             .Select(func);
-            
+
         _seedData.AddRange(entities);
 
         return this;

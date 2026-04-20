@@ -22,7 +22,7 @@ public class TestsWithDefaults : DbContextBuilderTestsBase
     [Fact]
     public void Default_RandomEntityCreate_is_AutoFixture()
     {
-	    // Arrange
+        // Arrange
         var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert

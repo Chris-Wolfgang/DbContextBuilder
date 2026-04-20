@@ -26,9 +26,8 @@ public class SqliteModelCustomizerTests
         var dependencies = new ModelCustomizerDependencies();
 #endif
 
-        // Act & Assert
-        // ReSharper disable once UnusedVariable
-        var sut = new SqliteModelCustomizer(dependencies);
+        // Act & Assert — constructor should not throw
+        _ = new SqliteModelCustomizer(dependencies);
     }
 
 
@@ -356,6 +355,44 @@ public class SqliteModelCustomizerTests
         // Act & Assert
         var ex = Assert.Throws<ArgumentNullException>(() => sut.Customize(new ModelBuilder(), null!));
         Assert.Equal("context", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that Customize throws InvalidOperationException when an entity has no table name.
+    /// </summary>
+    [Fact]
+    public void Customize_when_entity_has_no_table_name_throws_InvalidOperationException()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+        using var context = new BasicContext
+        (
+            new DbContextOptionsBuilder<BasicContext>()
+                .UseSqlite("DataSource=:memory:")
+                .Options
+        );
+
+        // Build a model where an entity has no table name (keyless query-type pattern)
+        var modelBuilder = new ModelBuilder();
+        modelBuilder.Entity("NoTableEntity", b =>
+        {
+            b.Property<int>("Id");
+            b.HasKey("Id");
+            b.ToTable((string?)null);
+        });
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => sut.Customize(modelBuilder, context));
+        Assert.Contains("has no table name", ex.Message, StringComparison.Ordinal);
     }
 
 

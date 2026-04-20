@@ -11,11 +11,11 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 public abstract class DbContextBuilderTestsBase
 {
 
-	/// <summary>
+    /// <summary>
     /// Creates an instance of DbContextBuilder with specific database
     /// and random entity creator to be used in the tests
     /// </summary>
-    /// <returns></returns>
+    /// <returns>A configured <see cref="DbContextBuilder{AdventureWorksDbContext}"/> instance.</returns>
     protected abstract DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder();
 
 
@@ -769,8 +769,8 @@ public abstract class DbContextBuilderTestsBase
         // Act
         var result = sut.SeedWithRandom<Address>(count);
 
-		// Assert
-		_ = Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
+        // Assert
+        _ = Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(result);
     }
 
 
@@ -1142,16 +1142,50 @@ public abstract class DbContextBuilderTestsBase
 
 
     /// <summary>
-    /// Verifies that calling UseInMemory multiple times doesn't cause issues 
+    /// Verifies that BuildAsync wraps an InvalidOperationException from EnsureCreatedAsync with a helpful message.
     /// </summary>
     [Fact]
-    public void Calling_UseInMemory_multiple_times_still_works()
+    public async Task BuildAsync_when_EnsureCreated_throws_InvalidOperationException_wraps_with_helpful_message()
     {
-        // Arrange
-        var sut = CreateDbContextBuilder();
+        // Arrange — configure a context creator that returns a context with no provider,
+        // so EnsureCreatedAsync throws InvalidOperationException and exercises the catch block.
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<AdventureWorksDbContext>();
+        sut.UseDbContextOptionsBuilder(optionsBuilder);
+        sut.CreateDbContext = new NoProviderDbContextCreator();
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.BuildAsync());
+        Assert.Contains("Failed to create database", ex.Message, StringComparison.Ordinal);
+        Assert.NotNull(ex.InnerException);
+    }
+
+    private sealed class NoProviderDbContextCreator : ICreateDbContext
+    {
+        public Task<TDbContext> CreateDbContextAsync<TDbContext>(DbContextOptionsBuilder<TDbContext> optionsBuilder)
+            where TDbContext : DbContext
+        {
+            ArgumentNullException.ThrowIfNull(optionsBuilder);
+            // Deliberately do not configure a provider so EnsureCreatedAsync throws.
+            var options = optionsBuilder.Options;
+            return Task.FromResult((TDbContext)Activator.CreateInstance(typeof(TDbContext), options)!);
+        }
+    }
+
+
+
+    /// <summary>
+    /// Verifies that calling UseInMemory multiple times doesn't cause issues
+    /// </summary>
+    [Fact]
+    public async Task Calling_UseInMemory_multiple_times_still_works()
+    {
+        // Arrange — use a fresh builder so this test is provider-agnostic
+        // (the base builder may already be configured for a different provider).
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act
-        var context = sut
+        await using var context = await sut
             .UseInMemory()
             .UseInMemory()
             .BuildAsync();

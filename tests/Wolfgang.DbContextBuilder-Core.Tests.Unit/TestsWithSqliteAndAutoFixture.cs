@@ -3,6 +3,7 @@ using System.Text;
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
 using Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
+
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
 /// <summary>
@@ -144,7 +145,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
         await sut.BuildAsync();
 
         // Assert
-        Assert.Contains("CREATE TABLE \"Person_Person\"", buffer.ToString());
+        Assert.Contains("CREATE TABLE \"Person_Person\"", buffer.ToString(), StringComparison.Ordinal);
     }
 
 
@@ -167,9 +168,6 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
             .BuildAsync();
 
         // Assert
-        //var columns = await GetColumnMetadataAsync(context);
-        //Assert.True(columns.Any(c => c.TableName == "Person_Person"), "Table Person_Person was not found");
-
         var tables = await GetTableMetadataAsync(context);
         Assert.Contains(tables, t => string.Equals(t.TableName, "dbo_DatabaseLog", StringComparison.Ordinal));
     }
@@ -197,10 +195,10 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
         var columns = await GetColumnMetadataAsync(context);
 
         var columnsWithNewId = columns.Where(c => string.Equals(c.DefaultValue, "(newid())", StringComparison.Ordinal)).ToList();
-        Assert.Equal(1, columnsWithNewId.Count);
+        Assert.Single(columnsWithNewId);
 
         var columnsWithGetDate = columns.Where(c => string.Equals(c.DefaultValue, "(getdate())", StringComparison.Ordinal)).ToList();
-        Assert.Equal(1, columnsWithGetDate.Count);
+        Assert.Single(columnsWithGetDate);
     }
 
 
@@ -237,7 +235,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
 
     private static async Task<List<TableMetadata>> GetTableMetadataAsync(DbContext context)
     {
-        const string commandText = "Select name from sqlite_master where type='table';"; //" and name=@tableName;";
+        const string commandText = "Select name from sqlite_master where type='table';";
         var connection = context.Database.GetDbConnection();
 
         await using var command = connection.CreateCommand();
@@ -305,7 +303,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
                         if (string.Equals(xinfoColName, columnName, StringComparison.OrdinalIgnoreCase))
                         {
                             var generated = xinfoReader["generated"].ToString();
-                            if (!string.IsNullOrEmpty(generated) && generated != "0")
+                            if (!string.IsNullOrEmpty(generated) && !string.Equals(generated, "0", StringComparison.Ordinal))
                             {
                                 // Try to get the expression from the "hidden" column
                                 computedValue = xinfoReader["dflt_value"].ToString();
@@ -342,7 +340,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
                     {
                         // Try to find the column definition with "GENERATED ALWAYS AS"
                         var pattern = $@"\b{columnName}\b\s+[^\(]*GENERATED\s+ALWAYS\s+AS\s*\((.*?)\)";
-                        var match = System.Text.RegularExpressions.Regex.Match(tableSql, pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                        var match = System.Text.RegularExpressions.Regex.Match(tableSql, pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1));
                         if (match is { Success: true, Groups.Count: > 1 })
                         {
                             computedValue = match.Groups[1].Value;
@@ -401,13 +399,13 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     /// Verifies that calling UseSqlite multiple times doesn't cause issues 
     /// </summary>
     [Fact]
-    public void Calling_UseSqlite_multiple_times_still_works()
+    public async Task Calling_UseSqlite_multiple_times_still_works()
     {
-        // Arrange
-        var sut = CreateDbContextBuilder();
+        // Arrange — use a fresh builder so we test the specific provider combination
+        using var sut = new DbContextBuilder<BasicContext>();
 
         // Act
-        var context = sut
+        await using var context = await sut
             .UseSqlite()
             .UseSqlite()
             .BuildAsync();
@@ -419,16 +417,16 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
 
 
     /// <summary>
-    /// Verifies that calling UseSqliteForMsSqlServer multiple times doesn't cause issues 
+    /// Verifies that calling UseSqliteForMsSqlServer multiple times doesn't cause issues
     /// </summary>
     [Fact]
-    public void Calling_UseSqliteForMsSqlServer_multiple_times_still_works()
+    public async Task Calling_UseSqliteForMsSqlServer_multiple_times_still_works()
     {
-        // Arrange
-        var sut = CreateDbContextBuilder();
+        // Arrange — use a fresh builder so we test the specific provider combination
+        using var sut = new DbContextBuilder<BasicContext>();
 
         // Act
-        var context = sut
+        await using var context = await sut
             .UseSqliteForMsSqlServer()
             .UseSqliteForMsSqlServer()
             .BuildAsync();
