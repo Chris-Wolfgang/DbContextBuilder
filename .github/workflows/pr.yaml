@@ -44,7 +44,7 @@ jobs:
     if: github.repository != 'Chris-Wolfgang/repo-template'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           persist-credentials: false
@@ -71,7 +71,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           persist-credentials: false
@@ -197,7 +197,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           persist-credentials: false
@@ -302,7 +302,7 @@ jobs:
           sudo rm /etc/apt/sources.list.d/focal-security.list
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
             3.1.x
@@ -523,7 +523,7 @@ jobs:
 
       - name: Upload Linux coverage results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-linux
           path: |
@@ -531,7 +531,7 @@ jobs:
             CoverageReport/
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-output
           path: |
@@ -549,7 +549,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           persist-credentials: false
@@ -645,7 +645,7 @@ jobs:
           Write-Host "✅ Configuration files secured - using versions from main branch"
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
             3.1.x
@@ -815,7 +815,7 @@ jobs:
 
       - name: Upload Windows coverage results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-windows
           path: |
@@ -833,7 +833,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           persist-credentials: false
@@ -929,7 +929,7 @@ jobs:
           echo "✅ Configuration files secured - using versions from main branch"
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
             6.0.x
@@ -1140,7 +1140,7 @@ jobs:
 
       - name: Upload macOS coverage results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-macos
           path: |
@@ -1190,7 +1190,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           persist-credentials: false
@@ -1319,7 +1319,7 @@ jobs:
 
       - name: Upload security scan results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: devskim-results
           path: devskim-results.txt
