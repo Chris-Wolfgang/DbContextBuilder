@@ -8,6 +8,13 @@ on:
   schedule:
     - cron: '0 0 * * 0'  # Weekly on Sunday at midnight UTC
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read  # Default to read-only; the analyze job overrides where required
+
 jobs:
   analyze:
     name: "Security Scan (CodeQL)"
@@ -25,6 +32,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v6
+      with:
+        persist-credentials: false
 
     - name: Check for C# source code
       id: check-csharp
@@ -32,7 +41,7 @@ jobs:
       run: |
         Write-Host "=== CodeQL C# Source Code Detection ===" -ForegroundColor Cyan
         Write-Host "Searching for C# source files using git index..." -ForegroundColor Cyan
-
+        
         # Use git ls-files to efficiently find C# files (respects .gitignore and doesn't traverse excluded dirs)
         $csharpFiles = @()
         try {
@@ -51,16 +60,16 @@ jobs:
           $csharpFiles = @(Get-ChildItem -Path . -Recurse -Include *.cs,*.csproj -File -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName)
         }
         $csharpFileCount = $csharpFiles.Count
-
+        
         Write-Host "" -ForegroundColor Cyan
         if ($csharpFileCount -eq 0) {
-          Write-Host "No C# source code found." -ForegroundColor Yellow
+          Write-Host "⚠️  No C# source code found." -ForegroundColor Yellow
           Write-Host "   This appears to be an empty repository or a repository without projects." -ForegroundColor Yellow
           Write-Host "   CodeQL analysis will be SKIPPED, but the job will complete successfully." -ForegroundColor Yellow
           Write-Host "   This ensures branch protection requirements are met." -ForegroundColor Yellow
           echo "has-csharp=false" >> $env:GITHUB_OUTPUT
         } else {
-          Write-Host "Found $csharpFileCount C# file(s)." -ForegroundColor Green
+          Write-Host "✅ Found $csharpFileCount C# file(s)." -ForegroundColor Green
           Write-Host "   CodeQL analysis will PROCEED." -ForegroundColor Green
           echo "has-csharp=true" >> $env:GITHUB_OUTPUT
         }
@@ -84,10 +93,10 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "Building solution for CodeQL analysis..."
-
+        
         # Find solution file (.sln or .slnx)
         $solution = Get-ChildItem -Path . -Recurse -Depth 2 -Include "*.sln", "*.slnx" | Select-Object -First 1
-
+        
         if ($solution) {
           Write-Host "Found solution: $($solution.FullName)"
           dotnet restore $solution.FullName
@@ -113,8 +122,8 @@ jobs:
             exit $LASTEXITCODE
           }
         }
-
-        Write-Host "Build completed for CodeQL analysis"
+        
+        Write-Host "✅ Build completed for CodeQL analysis"
 
     - name: Perform CodeQL Analysis
       id: perform-codeql-analysis
@@ -128,50 +137,50 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "=== CodeQL Security Scan Complete ===" -ForegroundColor Cyan
-
+        
         # Check the outcome of previous steps
         $checkCsharpOutcome = "${{ steps.check-csharp.outcome }}"
         $hasCsharp = "${{ steps.check-csharp.outputs.has-csharp }}"
         $buildOutcome = "${{ steps.build.outcome }}"
         $codeqlOutcome = "${{ steps.perform-codeql-analysis.outcome }}"
-
+        
         # Determine overall status
         $hasFailure = $false
         $failureMessages = @()
-
+        
         # Check if check-csharp step failed
         if ($checkCsharpOutcome -eq "failure") {
           $hasFailure = $true
-          $failureMessages += "C# source code detection failed"
+          $failureMessages += "❌ C# source code detection failed"
         }
-
+        
         # Check if build step failed (only relevant if C# code exists)
         if ($hasCsharp -eq "true" -and $buildOutcome -eq "failure") {
           $hasFailure = $true
-          $failureMessages += "Build failed during CodeQL analysis"
+          $failureMessages += "❌ Build failed during CodeQL analysis"
         }
-
+        
         # Check if CodeQL analysis step failed (only relevant if C# code exists)
         if ($hasCsharp -eq "true" -and $codeqlOutcome -eq "failure") {
           $hasFailure = $true
-          $failureMessages += "CodeQL analysis failed"
+          $failureMessages += "❌ CodeQL analysis failed"
         }
-
+        
         # Display results based on actual step outcomes
         if ($hasFailure) {
-          Write-Host "Security scan completed with errors:" -ForegroundColor Red
+          Write-Host "❌ Security scan completed with errors:" -ForegroundColor Red
           foreach ($msg in $failureMessages) {
             Write-Host "   $msg" -ForegroundColor Red
           }
           exit 1
         } elseif ($hasCsharp -eq "true") {
-          Write-Host "CodeQL analysis completed successfully." -ForegroundColor Green
+          Write-Host "✅ CodeQL analysis completed successfully." -ForegroundColor Green
           Write-Host "   Results have been uploaded to GitHub Security." -ForegroundColor Green
         } elseif ($hasCsharp -eq "false") {
-          Write-Host "Security scan completed successfully (no C# code to analyze)." -ForegroundColor Green
+          Write-Host "✅ Security scan completed successfully (no C# code to analyze)." -ForegroundColor Green
           Write-Host "   This job ran successfully and reports a passing status to branch protection." -ForegroundColor Green
         } else {
-          Write-Host "Security scan job completed." -ForegroundColor Green
+          Write-Host "✅ Security scan job completed." -ForegroundColor Green
           Write-Host "   Job status reported to branch protection." -ForegroundColor Green
         }
         Write-Host "========================================" -ForegroundColor Cyan
