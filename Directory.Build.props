@@ -1,26 +1,59 @@
 <Project>
   <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+
     <!-- Enable .NET analyzers -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-
+    
     <!-- Suppress warning about NetAnalyzers package since we're using SDK built-in -->
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
-
+    
     <!-- Treat warnings as errors in Release builds -->
     <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
-
-    <!-- Downgrade TODO/commented-out-code analyzer rules to warnings (tracked in issues, not build-blocking) -->
-    <!-- MA0026: Meziantou - TODO comments -->
-    <!-- S1135:  SonarAnalyzer - TODO comments -->
-    <!-- S125:   SonarAnalyzer - Commented-out code -->
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);MA0026;S1135;S125</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Include BannedSymbols.txt as AdditionalFiles for code analysis -->
+    <!-- Include BannedSymbols.txt as AdditionalFiles for BannedApiAnalyzers -->
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Roslynator - Code quality and refactoring -->
+    <PackageReference Include="Roslynator.Analyzers" Version="4.15.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    
+    <!-- AsyncFixer - Async/await best practices -->
+    <PackageReference Include="AsyncFixer" Version="2.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    
+    <!-- Microsoft Threading Analyzers - Thread safety -->
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    
+    <!-- BannedApiAnalyzers - Prevent usage of specific APIs -->
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="4.14.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    
+    <!-- Meziantou - Comprehensive code quality -->
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.58">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+
+    <!-- SonarAnalyzer - Industry-standard analysis -->
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.25.0.139117">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 </Project>
