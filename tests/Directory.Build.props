@@ -1,6 +1,0 @@
-<Project>
-  <!-- Override the root Directory.Build.props for test projects -->
-  <PropertyGroup>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-  </PropertyGroup>
-</Project>
