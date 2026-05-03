@@ -425,6 +425,38 @@ jobs:
             exit 0
           }
           
+          # Convert a TFM moniker (e.g. net462, net48, net6.0, netcoreapp3.1, netstandard2.0)
+          # to a sortable [Version] so we can pick the "lowest" supported TFM. .NET Framework
+          # TFMs are encoded as 4.x.y so they sort before .NET Core/5+ TFMs.
+          function ConvertTo-TfmVersion {
+            param([string] $Tfm)
+
+            $t = $Tfm.ToLowerInvariant()
+
+            if ($t -match '^net(\d)(\d)(\d)?$') {
+              # net462 → 4.6.2, net48 → 4.8.0, net481 → 4.8.1
+              $major = [int]$Matches[1]
+              $minor = [int]$Matches[2]
+              $patch = if ($Matches[3]) { [int]$Matches[3] } else { 0 }
+              return [Version]::new($major, $minor, $patch)
+            }
+            if ($t -match '^net(\d+)\.(\d+)$') {
+              # net6.0, net10.0
+              return [Version]::new([int]$Matches[1], [int]$Matches[2])
+            }
+            if ($t -match '^netcoreapp(\d+)\.(\d+)$') {
+              # netcoreapp3.1 → sort before net5+ by treating major as-is
+              return [Version]::new([int]$Matches[1], [int]$Matches[2])
+            }
+            if ($t -match '^netstandard(\d+)\.(\d+)$') {
+              # netstandard sorts very low so it's preferred when present
+              return [Version]::new(0, [int]$Matches[1], [int]$Matches[2])
+            }
+
+            # Unknown TFM — sort last so it doesn't get picked over a known one
+            return [Version]::new(99, 99, 99)
+          }
+
           # Helper to read package ID, version, and supported target frameworks from the .nupkg
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           function Get-PackageMetadata {
@@ -514,7 +546,7 @@ jobs:
 
               # Pick the lowest TFM the package supports (most conservative compatibility check)
               $targetFramework = $metadata.TargetFrameworks |
-                Sort-Object { [Version]([regex]::Match($_, '(\d+\.\d+)').Value) } |
+                Sort-Object { ConvertTo-TfmVersion $_ } |
                 Select-Object -First 1
 
               $projectIndex++
