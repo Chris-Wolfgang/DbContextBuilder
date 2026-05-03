@@ -425,7 +425,7 @@ jobs:
             exit 0
           }
           
-          # Helper to read package ID and version from the .nuspec inside a .nupkg
+          # Helper to read package ID, version, and supported target frameworks from the .nupkg
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           function Get-PackageMetadata {
             param (
@@ -450,14 +450,21 @@ jobs:
                 if ([string]::IsNullOrWhiteSpace($id) -or [string]::IsNullOrWhiteSpace($version)) {
                   throw "Failed to read id/version from nuspec in '$NupkgPath'."
                 }
-
-                [PSCustomObject]@{
-                  Id      = $id
-                  Version = $version
-                }
               }
               finally {
                 $stream.Dispose()
+              }
+
+              # Discover target frameworks from lib/ folder entries (e.g. lib/net10.0/Foo.dll)
+              $tfms = $zip.Entries |
+                Where-Object { $_.FullName -match '^lib/([^/]+)/' } |
+                ForEach-Object { ($_.FullName -split '/')[1] } |
+                Sort-Object -Unique
+
+              [PSCustomObject]@{
+                Id               = $id
+                Version          = $version
+                TargetFrameworks = @($tfms)
               }
             }
             finally {
@@ -490,37 +497,53 @@ jobs:
           
           Push-Location $testDir
           try {
-            dotnet new console -n SmokeTest -f net8.0
-            
-            # Try to install the newly created package(s)
+            # Test each package in its own project targeting a TFM the package supports.
+            # Packages that pin to a single TFM (e.g. EF6→net6.0, EF10→net10.0) cannot share a project.
+            $projectIndex = 0
             foreach ($package in $packages) {
               Write-Host "🧪 Smoke testing package: $($package.Name)" -ForegroundColor Yellow
-              
+
               $metadata = Get-PackageMetadata -NupkgPath $package.FullName
               $packageId = $metadata.Id
               $packageVersion = $metadata.Version
-              
-              dotnet add SmokeTest/SmokeTest.csproj package $packageId --version $packageVersion --source '../nuget-packages'
-              
+
+              if ($metadata.TargetFrameworks.Count -eq 0) {
+                Write-Error "❌ Package $($package.Name) has no target frameworks declared in its lib/ folder"
+                exit 1
+              }
+
+              # Pick the lowest TFM the package supports (most conservative compatibility check)
+              $targetFramework = $metadata.TargetFrameworks |
+                Sort-Object { [Version]([regex]::Match($_, '(\d+\.\d+)').Value) } |
+                Select-Object -First 1
+
+              $projectIndex++
+              $projectName = "SmokeTest$projectIndex"
+              Write-Host "   Creating $projectName targeting $targetFramework" -ForegroundColor DarkGray
+
+              dotnet new console -n $projectName -f $targetFramework
               if ($LASTEXITCODE -ne 0) {
-                Write-Error "❌ Failed to install package $($package.Name)"
+                Write-Error "❌ Failed to create test project for $targetFramework"
                 exit $LASTEXITCODE
               }
-              
-              Write-Host "✅ Package $($package.Name) installed successfully" -ForegroundColor Green
+
+              dotnet add "$projectName/$projectName.csproj" package $packageId --version $packageVersion --source '../nuget-packages'
+              if ($LASTEXITCODE -ne 0) {
+                Write-Error "❌ Failed to install package $($package.Name) into $projectName ($targetFramework)"
+                exit $LASTEXITCODE
+              }
+
+              dotnet build "$projectName/$projectName.csproj"
+              if ($LASTEXITCODE -ne 0) {
+                Write-Error "❌ Smoke test for $($package.Name) failed to build on $targetFramework"
+                exit $LASTEXITCODE
+              }
+
+              Write-Host "✅ Package $($package.Name) is installable and buildable on $targetFramework" -ForegroundColor Green
             }
-            
-            # Try to build the test project with the package
-            Write-Host "Building smoke test project..." -ForegroundColor Yellow
-            dotnet build SmokeTest/SmokeTest.csproj
-            
-            if ($LASTEXITCODE -ne 0) {
-              Write-Error "❌ Smoke test project failed to build with installed packages"
-              exit $LASTEXITCODE
-            }
-            
-            Write-Host "✅ Smoke test passed - packages are installable and buildable" -ForegroundColor Green
-            
+
+            Write-Host "✅ Smoke test passed - all packages are installable and buildable" -ForegroundColor Green
+
           } finally {
             Pop-Location
           }
