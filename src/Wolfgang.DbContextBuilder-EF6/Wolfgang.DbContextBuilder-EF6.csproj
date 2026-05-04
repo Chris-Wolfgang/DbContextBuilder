@@ -3,7 +3,7 @@
 		<RootNamespace>Wolfgang.DbContextBuilderEF6</RootNamespace>
 		<TargetFrameworks>net462;net47;net471;net472;net48;net481</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.5.0</Version>
+		<Version>0.6.0</Version>
 		<Title>Wolfgang.DbContextBuilder for Entity Framework 6</Title>
 		<Authors>Chris Wolfgang</Authors>
 		<Description>A library for easily building DbContext for testing using in-memory database with Entity Framework 6</Description>
