@@ -745,16 +745,34 @@ jobs:
         run: zip -r release-coverage.zip ./release-coverage
 
       - name: Attach artifacts to release
-        # Immutable releases lock the asset list at publish time, so this step
-        # cannot succeed when that setting is enabled. Treat as best-effort:
-        # the .nupkg files are already on NuGet.org and stored as workflow
-        # artifacts on this run.
-        continue-on-error: true
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
-        with:
-          tag_name: ${{ github.event.release.tag_name }}
-          files: |
-            ./nuget-packages/*.nupkg
-            ./nuget-packages/*.bom.json
-            release-coverage.zip
+        # Tolerate the "immutable release" case (assets are locked at publish
+        # time so post-publish uploads are rejected) — but fail loudly for any
+        # other error. The .nupkg/.bom.json/coverage files are already on
+        # NuGet.org and stored as workflow artifacts on this run, so the
+        # release-page attachment is a convenience, not the canonical channel.
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -uo pipefail
+          shopt -s nullglob
+          files=(./nuget-packages/*.nupkg ./nuget-packages/*.bom.json release-coverage.zip)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No artifacts found to attach."
+            exit 0
+          fi
+
+          if err=$(gh release upload "$TAG" "${files[@]}" --clobber 2>&1); then
+            echo "$err"
+            exit 0
+          fi
+
+          echo "$err"
+          if echo "$err" | grep -qiE "immutable release|cannot upload asset"; then
+            echo "::warning::Skipping asset attachment — release is immutable. Packages are still on NuGet.org and stored as workflow artifacts on this run."
+            exit 0
+          fi
+          exit 1
 
