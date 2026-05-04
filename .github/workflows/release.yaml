@@ -553,10 +553,31 @@ jobs:
               $projectName = "SmokeTest$projectIndex"
               Write-Host "   Creating $projectName targeting $targetFramework" -ForegroundColor DarkGray
 
-              dotnet new console -n $projectName -f $targetFramework
-              if ($LASTEXITCODE -ne 0) {
-                Write-Error "❌ Failed to create test project for $targetFramework"
-                exit $LASTEXITCODE
+              # `dotnet new console` doesn't support .NET Framework TFMs (net4xx).
+              # Scaffold a minimal csproj manually for those; use the template otherwise.
+              if ($targetFramework -match '^net\d{2,3}$') {
+                New-Item -ItemType Directory -Force -Path $projectName | Out-Null
+                $csprojPath = Join-Path $projectName "$projectName.csproj"
+                @(
+                  '<Project Sdk="Microsoft.NET.Sdk">'
+                  '  <PropertyGroup>'
+                  '    <OutputType>Exe</OutputType>'
+                  "    <TargetFramework>$targetFramework</TargetFramework>"
+                  '  </PropertyGroup>'
+                  '</Project>'
+                ) | Set-Content -Path $csprojPath -Encoding UTF8
+
+                $programPath = Join-Path $projectName 'Program.cs'
+                @(
+                  'using System;'
+                  'class Program { static void Main() { Console.WriteLine("Smoke test"); } }'
+                ) | Set-Content -Path $programPath -Encoding UTF8
+              } else {
+                dotnet new console -n $projectName -f $targetFramework
+                if ($LASTEXITCODE -ne 0) {
+                  Write-Error "❌ Failed to create test project for $targetFramework"
+                  exit $LASTEXITCODE
+                }
               }
 
               dotnet add "$projectName/$projectName.csproj" package $packageId --version $packageVersion --source '../nuget-packages'
