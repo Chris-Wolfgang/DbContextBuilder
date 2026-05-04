@@ -745,6 +745,11 @@ jobs:
         run: zip -r release-coverage.zip ./release-coverage
 
       - name: Attach artifacts to release
+        # Immutable releases lock the asset list at publish time, so this step
+        # cannot succeed when that setting is enabled. Treat as best-effort:
+        # the .nupkg files are already on NuGet.org and stored as workflow
+        # artifacts on this run.
+        continue-on-error: true
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
         with:
           tag_name: ${{ github.event.release.tag_name }}
