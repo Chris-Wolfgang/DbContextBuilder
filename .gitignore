@@ -10,7 +10,6 @@
 *.userosscache
 *.sln.docstates
 *.env
-
 # Claude Code
 .claude/
 
@@ -420,5 +419,15 @@ FodyWeavers.xsd
 *.msm
 *.msp
 
-# CoverageReport
+# Test results and coverage
+TestResults/
 CoverageReport/
+
+# Release workflow temporary directories
+package-smoke-test/
+nuget-packages/
+
+# DocFX generated files
+docfx_project/_site/
+docfx_project/obj/
+
