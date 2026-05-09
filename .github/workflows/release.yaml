@@ -1,9 +1,10 @@
-name: Release on Published Release
+name: Release on Tag Push
 
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*'
 
 permissions:
   contents: read  # Default to read-only; individual jobs declare write where required
@@ -26,7 +27,7 @@ jobs:
       - name: Validate release tag matches csproj version
         shell: pwsh
         env:
-          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+          RELEASE_TAG_NAME: ${{ github.ref_name }}
         run: |
           # Strip leading 'v' or 'v.' from the tag (v0.3.0 -> 0.3.0, v.0.1.0 -> 0.1.0)
           $tagName = $env:RELEASE_TAG_NAME
@@ -718,7 +719,7 @@ jobs:
       contents: write  # Required by docfx.yaml to push to gh-pages branch
     uses: ./.github/workflows/docfx.yaml
     with:
-      version: ${{ github.event.release.tag_name }}
+      version: ${{ github.ref_name }}
 
   # Attach NuGet packages and coverage report to the GitHub Release page
   update-release-artifacts:
@@ -744,10 +745,16 @@ jobs:
       - name: Zip coverage report
         run: zip -r release-coverage.zip ./release-coverage
 
-      - name: Attach artifacts to release
+      - name: Create release with artifacts
+        # On tag push, this creates a brand-new GitHub Release with assets
+        # attached at creation time. Avoids the "immutable release" rejection
+        # that happens when uploading to an already-published release.
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
         with:
-          tag_name: ${{ github.event.release.tag_name }}
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          make_latest: 'true'
           files: |
             ./nuget-packages/*.nupkg
             ./nuget-packages/*.bom.json
