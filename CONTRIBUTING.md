@@ -1,6 +1,6 @@
-# Contributing to DbContextBuilder
+# Contributing to Wolfgang.DbContextBuilder
 
-Thank you for your interest in contributing to **DbContextBuilder**! We welcome contributions to help improve this project.
+Thank you for your interest in contributing to **Wolfgang.DbContextBuilder**! We welcome contributions to help improve this project.
 
 ## How Can You Contribute?
 
