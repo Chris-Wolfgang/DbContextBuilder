@@ -274,60 +274,17 @@ jobs:
           echo ""
           echo "✅ Configuration files secured - using versions from main branch"
 
-      - name: Fetch trusted configuration files from main branch
-        # Skip for Dependabot — its package-version bumps to protected files (e.g.
-        # Directory.Build.props) are legitimate and should not be overwritten by main's
-        # older versions. Dependabot's identity is GitHub-controlled and not spoofable.
-        if: github.event.pull_request.user.login != 'dependabot[bot]'
-        run: |
-          echo "Fetching configuration files from main branch to prevent malicious overrides..."
-
-          # Fetch the main branch
-          git fetch origin main:main-branch
-
-          # List of configuration files that should come from trusted main branch
-          config_files=(
-            ".editorconfig"
-            "Directory.Build.props"
-            "Directory.Build.targets"
-            "BannedSymbols.txt"
-            "*.globalconfig"
-            "*.ruleset"
-            ".github/workflows/*.yml"
-            ".github/workflows/*.yaml"
-          )
-
-          # Copy each configuration file from main branch if it exists
-          for config_file in "${config_files[@]}"; do
-            # Handle glob patterns
-            if [[ "$config_file" == *"*"* ]]; then
-              # Find files matching the pattern in main branch
-              git ls-tree -r --name-only main-branch | grep -E "${config_file//\*/.*}" | while read -r file; do
-                if [ -n "$file" ]; then
-                  echo "  ✓ Copying $file from main branch"
-                  mkdir -p "$(dirname "$file")"
-                  git show "main-branch:$file" > "$file" || echo "  ⚠️  Failed to copy $file"
-                fi
-              done
-            else
-              # Check if file exists in main branch
-              if git cat-file -e "main-branch:$config_file" 2>/dev/null; then
-                echo "  ✓ Copying $config_file from main branch"
-                git show "main-branch:$config_file" > "$config_file"
-              else
-                echo "  ℹ️  $config_file not found in main branch, skipping"
-              fi
-            fi
-          done
-
-          echo ""
-          echo "✅ Configuration files secured - using versions from main branch"
-
       # Fix for .NET 5.0 on Ubuntu 22.04+ - install libssl1.1 from the focal-security
       # repository so APT verifies the package via GPG instead of a plain wget download.
       - name: Install OpenSSL 1.1 for .NET 5.0
         run: |
-          echo "deb https://security.ubuntu.com/ubuntu focal-security main" | sudo tee /etc/apt/sources.list.d/focal-security.list
+          # signed-by= points apt at the Canonical archive keyring that ships on all
+          # GitHub-hosted Ubuntu runners. It contains the same signing key Canonical
+          # uses across releases (focal, jammy, noble), so it can verify focal-security
+          # packages from a non-focal runner without disabling signature checking.
+          # Earlier iteration used [trusted=yes] (skipping verification) as a quick
+          # unblock; this restores end-to-end signature verification.
+          echo "deb [signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://security.ubuntu.com/ubuntu focal-security main" | sudo tee /etc/apt/sources.list.d/focal-security.list
           sudo apt-get update -q
           sudo apt-get install --yes libssl1.1
           sudo rm /etc/apt/sources.list.d/focal-security.list
@@ -343,6 +300,12 @@ jobs:
             8.0.x
             9.0.x
             10.0.x
+
+      - name: Restore .NET workloads
+        # Some projects (MAUI / MauiHybrid / Android / iOS / WPF) declare workloads via
+        # their TFMs (e.g. net10.0-android). For workload-bearing repos this installs them
+        # before restore; for pure libraries it's a fast no-op.
+        run: dotnet workload restore
 
       - name: Restore and build (exclude .NET Framework-only projects)
         run: |
@@ -609,6 +572,10 @@ jobs:
           persist-credentials: false
       
       - name: Fetch trusted configuration files from main branch
+        # Skip for Dependabot — its package-version bumps to protected files (e.g.
+        # Directory.Build.props) are legitimate and should not be overwritten by main's
+        # older versions. Dependabot's identity is GitHub-controlled and not spoofable.
+        if: github.event.pull_request.user.login != 'dependabot[bot]'
         shell: pwsh
         run: |
           Write-Host "Fetching configuration files from main branch to prevent malicious overrides..."
@@ -650,51 +617,6 @@ jobs:
             }
           }
           
-          Write-Host ""
-          Write-Host "✅ Configuration files secured - using versions from main branch"
-
-      - name: Fetch trusted configuration files from main branch
-        shell: pwsh
-        run: |
-          Write-Host "Fetching configuration files from main branch to prevent malicious overrides..."
-
-          # Fetch the main branch
-          git fetch origin main:main-branch
-
-          # List of configuration files that should come from trusted main branch
-          $configFiles = @(
-            ".editorconfig",
-            "Directory.Build.props",
-            "Directory.Build.targets",
-            "BannedSymbols.txt"
-          )
-
-          # Copy each configuration file from main branch if it exists
-          foreach ($configFile in $configFiles) {
-            # Check if file exists in main branch
-            $exists = git cat-file -e "main-branch:$configFile" 2>&1
-            if ($LASTEXITCODE -eq 0) {
-              Write-Host "  ✓ Copying $configFile from main branch"
-              git show "main-branch:$configFile" | Out-File -FilePath $configFile -Encoding UTF8NoBOM -NoNewline
-            } else {
-              Write-Host "  ℹ️  $configFile not found in main branch, skipping"
-            }
-          }
-
-          # Handle glob patterns for .globalconfig, .ruleset, and workflow files
-          $globPatterns = @("*.globalconfig", "*.ruleset", ".github/workflows/*.yml", ".github/workflows/*.yaml")
-          foreach ($pattern in $globPatterns) {
-            $files = git ls-tree -r --name-only main-branch | Select-String -Pattern $pattern.Replace("*", ".*")
-            foreach ($file in $files) {
-              if ($file) {
-                Write-Host "  ✓ Copying $file from main branch"
-                $dir = Split-Path -Parent $file
-                if ($dir) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
-                git show "main-branch:$file" | Out-File -FilePath $file -Encoding UTF8NoBOM -NoNewline
-              }
-            }
-          }
-
           Write-Host ""
           Write-Host "✅ Configuration files secured - using versions from main branch"
 
@@ -709,6 +631,12 @@ jobs:
             8.0.x
             9.0.x
             10.0.x
+
+      - name: Restore .NET workloads
+        # Some projects (MAUI / MauiHybrid / Android / iOS / WPF) declare workloads via
+        # their TFMs (e.g. net10.0-android). For workload-bearing repos this installs them
+        # before restore; for pure libraries it's a fast no-op.
+        run: dotnet workload restore
 
       - name: Restore dependencies
         run: dotnet restore
@@ -948,55 +876,6 @@ jobs:
           echo ""
           echo "✅ Configuration files secured - using versions from main branch"
 
-      - name: Fetch trusted configuration files from main branch
-        # Skip for Dependabot — its package-version bumps to protected files (e.g.
-        # Directory.Build.props) are legitimate and should not be overwritten by main's
-        # older versions. Dependabot's identity is GitHub-controlled and not spoofable.
-        if: github.event.pull_request.user.login != 'dependabot[bot]'
-        run: |
-          echo "Fetching configuration files from main branch to prevent malicious overrides..."
-
-          # Fetch the main branch
-          git fetch origin main:main-branch
-
-          # List of configuration files that should come from trusted main branch
-          config_files=(
-            ".editorconfig"
-            "Directory.Build.props"
-            "Directory.Build.targets"
-            "BannedSymbols.txt"
-            "*.globalconfig"
-            "*.ruleset"
-            ".github/workflows/*.yml"
-            ".github/workflows/*.yaml"
-          )
-
-          # Copy each configuration file from main branch if it exists
-          for config_file in "${config_files[@]}"; do
-            # Handle glob patterns
-            if [[ "$config_file" == *"*"* ]]; then
-              # Find files matching the pattern in main branch
-              git ls-tree -r --name-only main-branch | grep -E "${config_file//\*/.*}" | while read -r file; do
-                if [ -n "$file" ]; then
-                  echo "  ✓ Copying $file from main branch"
-                  mkdir -p "$(dirname "$file")"
-                  git show "main-branch:$file" > "$file" || echo "  ⚠️  Failed to copy $file"
-                fi
-              done
-            else
-              # Check if file exists in main branch
-              if git cat-file -e "main-branch:$config_file" 2>/dev/null; then
-                echo "  ✓ Copying $config_file from main branch"
-                git show "main-branch:$config_file" > "$config_file"
-              else
-                echo "  ℹ️  $config_file not found in main branch, skipping"
-              fi
-            fi
-          done
-
-          echo ""
-          echo "✅ Configuration files secured - using versions from main branch"
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
@@ -1006,6 +885,12 @@ jobs:
             8.0.x
             9.0.x
             10.0.x
+
+      - name: Restore .NET workloads
+        # Some projects (MAUI / MauiHybrid / Android / iOS / WPF) declare workloads via
+        # their TFMs (e.g. net10.0-android). For workload-bearing repos this installs them
+        # before restore; for pure libraries it's a fast no-op.
+        run: dotnet workload restore
 
       - name: Restore and build (exclude .NET Framework-only projects)
         run: |
@@ -1328,55 +1213,6 @@ jobs:
             fi
           done
           
-          echo ""
-          echo "✅ Configuration files secured - using versions from main branch"
-
-      - name: Fetch trusted configuration files from main branch
-        # Skip for Dependabot — its package-version bumps to protected files (e.g.
-        # Directory.Build.props) are legitimate and should not be overwritten by main's
-        # older versions. Dependabot's identity is GitHub-controlled and not spoofable.
-        if: github.event.pull_request.user.login != 'dependabot[bot]'
-        run: |
-          echo "Fetching configuration files from main branch to prevent malicious overrides..."
-
-          # Fetch the main branch
-          git fetch origin main:main-branch
-
-          # List of configuration files that should come from trusted main branch
-          config_files=(
-            ".editorconfig"
-            "Directory.Build.props"
-            "Directory.Build.targets"
-            "BannedSymbols.txt"
-            "*.globalconfig"
-            "*.ruleset"
-            ".github/workflows/*.yml"
-            ".github/workflows/*.yaml"
-          )
-
-          # Copy each configuration file from main branch if it exists
-          for config_file in "${config_files[@]}"; do
-            # Handle glob patterns
-            if [[ "$config_file" == *"*"* ]]; then
-              # Find files matching the pattern in main branch
-              git ls-tree -r --name-only main-branch | grep -E "${config_file//\*/.*}" | while read -r file; do
-                if [ -n "$file" ]; then
-                  echo "  ✓ Copying $file from main branch"
-                  mkdir -p "$(dirname "$file")"
-                  git show "main-branch:$file" > "$file" || echo "  ⚠️  Failed to copy $file"
-                fi
-              done
-            else
-              # Check if file exists in main branch
-              if git cat-file -e "main-branch:$config_file" 2>/dev/null; then
-                echo "  ✓ Copying $config_file from main branch"
-                git show "main-branch:$config_file" > "$config_file"
-              else
-                echo "  ℹ️  $config_file not found in main branch, skipping"
-              fi
-            fi
-          done
-
           echo ""
           echo "✅ Configuration files secured - using versions from main branch"
 
