@@ -21,7 +21,6 @@
 		<PackageTags></PackageTags>
 
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
 		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
 		<DefineConstants>$(DefineConstants);EF_CORE_6;EF_CORE_6_OR_GREATER</DefineConstants>

@@ -14,7 +14,6 @@
 		<AssemblyVersion>1.0.0</AssemblyVersion>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
-		<Nullable>enable</Nullable>
 		<IsTestProject>true</IsTestProject>
 	</PropertyGroup>
 

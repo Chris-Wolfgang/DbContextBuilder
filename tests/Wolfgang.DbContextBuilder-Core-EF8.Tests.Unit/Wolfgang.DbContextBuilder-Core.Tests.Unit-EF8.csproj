@@ -23,7 +23,6 @@
 		<PackageTags></PackageTags>
 
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
 		<IsTestProject>true</IsTestProject>
 		<DefineConstants>$(DefineConstants);EF_CORE_8;EF_CORE_8_OR_GREATER</DefineConstants>
 

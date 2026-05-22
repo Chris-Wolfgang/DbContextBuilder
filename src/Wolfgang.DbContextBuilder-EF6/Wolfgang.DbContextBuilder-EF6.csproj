@@ -18,7 +18,6 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
 		<PackageTags></PackageTags>
-		<Nullable>enable</Nullable>
 		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
 	</PropertyGroup>
