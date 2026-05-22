@@ -1,0 +1,18 @@
+<Project>
+  <!--
+    DELIBERATE C1 DEVIATION from the canonical repo-template.
+
+    The canonical template drops tests/Directory.Build.props so test projects
+    are held to TreatWarningsAsErrors (initiative C — "hold tests to the
+    higher standard"). DbContextBuilder's test projects compile the
+    EF-scaffolded AdventureWorks models, which carry pre-existing warning
+    debt — CS8669 on generated nullable annotations, CS1591 missing XML docs.
+
+    Until that debt is cleared (re-scaffold the AdventureWorks models with
+    modern EF — tracked as a maintenance issue) test projects keep
+    TreatWarningsAsErrors disabled so Release builds stay green.
+  -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>
