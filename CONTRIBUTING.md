@@ -1,6 +1,6 @@
-# Contributing to DbContextBuilder
+# Contributing to {{PROJECT_NAME}}
 
-Thank you for your interest in contributing to **DbContextBuilder**! We welcome contributions to help improve this project.
+Thank you for your interest in contributing to **{{PROJECT_NAME}}**! We welcome contributions to help improve this project.
 
 ## How Can You Contribute?
 
@@ -32,7 +32,7 @@ You can contribute in several ways:
    ```
 5. **Open a pull request** describing your changes.
 
-6. **PR Checks:**
+6. **PR Checks:**  
    Once you create a pull request (PR), several Continuous Integration (CI) steps will run automatically. These may include:
    - Building the project
    - Running automated tests
@@ -89,7 +89,7 @@ All code is analyzed by these tools during build:
 
 This library **prohibits synchronous blocking calls** via `BannedSymbols.txt`. The following APIs are **banned**:
 
-#### Blocking Async Operations
+#### ❌ Blocking Async Operations
 ```csharp
 // Banned - blocks threads
 task.Wait();
@@ -101,7 +101,7 @@ await task;
 await Task.WhenAll(tasks);
 ```
 
-#### Synchronous I/O
+#### ❌ Synchronous I/O
 ```csharp
 // Banned
 File.ReadAllText(path);
@@ -114,7 +114,7 @@ await stream.ReadAsync(buffer, 0, count);
 await streamReader.ReadLineAsync();
 ```
 
-#### Thread Blocking
+#### ❌ Thread Blocking
 ```csharp
 // Banned
 Thread.Sleep(1000);
@@ -125,7 +125,7 @@ await Task.Delay(1000);
 // Avoid blocking console reads in async code
 ```
 
-#### Obsolete/Insecure APIs
+#### ❌ Obsolete/Insecure APIs
 ```csharp
 // Banned
 var client = new WebClient();
@@ -180,7 +180,12 @@ dotnet format
 
 # Check formatting without changes (CI mode)
 dotnet format --verify-no-changes
+
+# PowerShell formatting script
+pwsh ./format.ps1
 ```
+
+See [README-FORMATTING.md](README-FORMATTING.md) for detailed formatting rules.
 
 ---
 
@@ -231,4 +236,4 @@ Please be respectful and considerate in all interactions. See [CODE_OF_CONDUCT.m
 
 ---
 
-Thank you for contributing!
+Thank you for contributing! 🎉

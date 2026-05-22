@@ -4,6 +4,18 @@
 
 Fixes/Complete # (issue)
 
+<!--
+If this PR addresses a Maintenance framework sub-issue, link it explicitly so the
+project board auto-marks the item as Done on merge:
+
+  Fixes #<maintenance-task-issue-number>
+
+The Maintenance framework tracks ongoing improvement work (security, performance,
+testing, cleanup, docs, API, CI/CD) — see the parent `Maintenance: <repo>` issue
+for details.
+-->
+
+
 ## Type of change
 
 Please delete options that are not relevant.
