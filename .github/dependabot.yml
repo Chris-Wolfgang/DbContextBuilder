@@ -36,3 +36,16 @@ updates:
       # xunit.runner.visualstudio 3.x is incompatible with xunit 2.x
       - dependency-name: "xunit.runner.visualstudio"
         versions: [">=3.0.0"]
+
+  # Keep third-party GitHub Actions pinned in workflows up to date.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
