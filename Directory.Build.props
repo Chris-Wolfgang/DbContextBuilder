@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
-    <Nullable Condition="'$(MSBuildProjectExtension)' == '.csproj'">enable</Nullable>
+    <Nullable Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(UsingMicrosoftNETSdk)' == 'true'">enable</Nullable>
 
     <!-- Enable .NET analyzers -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
