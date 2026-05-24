@@ -264,7 +264,7 @@ jobs:
           }
           $existingUrl = "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/versions.json"
           try {
-            $existingRaw = (Invoke-WebRequest -Uri $existingUrl -UseBasicParsing -ErrorAction Stop).Content
+            $existingRaw = (Invoke-WebRequest -Uri $existingUrl -ErrorAction Stop).Content
           } catch {
             Write-Host "::notice::No existing versions.json at $existingUrl - first deploy, skipping preservation check."
             exit 0
