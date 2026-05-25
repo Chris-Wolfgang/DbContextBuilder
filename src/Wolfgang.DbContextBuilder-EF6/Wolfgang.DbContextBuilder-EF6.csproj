@@ -5,7 +5,6 @@
 		<LangVersion>latest</LangVersion>
 		<Version>0.6.1</Version>
 		<Title>Wolfgang.DbContextBuilder for Entity Framework 6</Title>
-		<Authors>Chris Wolfgang</Authors>
 		<Description>A library for easily building DbContext for testing using in-memory database with Entity Framework 6</Description>
 		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
 		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
