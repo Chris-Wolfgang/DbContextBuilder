@@ -594,8 +594,17 @@ jobs:
         if: steps.check.outputs.found == 'true'
         uses: actions/setup-dotnet@v5
         with:
+          # Install the same SDK set as validate-release so dotnet build can
+          # compile every TFM the solution targets (some test projects span
+          # netcoreapp3.1 → net10.0). Without these, the docs verify step
+          # fails on repos with broad multi-targeting.
           dotnet-version: |
+            3.1.x
+            5.0.x
+            6.0.x
+            7.0.x
             8.0.x
+            9.0.x
             10.0.x
 
       - name: Restore dependencies
