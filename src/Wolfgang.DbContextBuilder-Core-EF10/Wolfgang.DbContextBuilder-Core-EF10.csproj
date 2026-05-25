@@ -6,7 +6,6 @@
 		<Version>0.6.1</Version>
 		<Title>Wolfgang.DbContextBuilder for EF Core 10</Title>
 		<Description>A library for easily building DbContext for testing using in-memory database</Description>
-		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
 		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
