@@ -266,8 +266,18 @@ jobs:
           try {
             $existingRaw = (Invoke-WebRequest -Uri $existingUrl -ErrorAction Stop).Content
           } catch {
-            Write-Host "::notice::No existing versions.json at $existingUrl - first deploy, skipping preservation check."
-            exit 0
+            # Only treat a true 404 as "first deploy". Other errors (network,
+            # DNS, Pages outage, auth/redirect) must NOT silently bypass the
+            # preservation check — they could let a deploy that drops version
+            # entries from the picker slip through.
+            $status = $null
+            if ($_.Exception.Response) { $status = [int]$_.Exception.Response.StatusCode }
+            if ($status -eq 404) {
+              Write-Host "::notice::No existing versions.json at $existingUrl (404) - first deploy, skipping preservation check."
+              exit 0
+            }
+            Write-Error "Failed to fetch existing versions.json from $existingUrl (status=$status): $($_.Exception.Message). Aborting deploy to avoid masking a transient error."
+            exit 1
           }
           try {
             $existing = $existingRaw | ConvertFrom-Json
