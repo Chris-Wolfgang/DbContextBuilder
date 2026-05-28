@@ -4,6 +4,13 @@
 		<TargetFramework>net7.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Version>0.6.1</Version>
+		<!-- Pin AssemblyVersion to a fixed binding-stability baseline so consumers
+		     do not need to recompile / add binding redirects on every minor/patch
+		     bump. Bump only on a deliberate breaking API change. FileVersion +
+		     InformationalVersion (the latter auto-derived from <Version>) carry
+		     the actual release version. -->
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<FileVersion>$([System.Text.RegularExpressions.Regex]::Replace("$(Version)", "[-+].*$", "")).0</FileVersion>
 		<Title>Wolfgang.DbContextBuilder for EF Core 7</Title>
 		<Authors>Chris Wolfgang</Authors>
 		<Description>A library for easily building DbContext for testing using in-memory database</Description>
