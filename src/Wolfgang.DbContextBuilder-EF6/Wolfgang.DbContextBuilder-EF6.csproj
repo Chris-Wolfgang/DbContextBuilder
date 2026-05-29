@@ -20,6 +20,7 @@
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageIcon>dbcontext-builder.png</PackageIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);1591</NoWarn>
 		<SignAssembly>False</SignAssembly>
 		<PackageTags></PackageTags>
 		<IsPackable>true</IsPackable>
@@ -49,11 +50,6 @@
 		<Content Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder.png" Link="Content\dbcontext-builder.png" />
 		<Content Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder-inverted.png" Link="Content\dbcontext-builder-inverted.png" />
 	</ItemGroup>
-
-	<PropertyGroup>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<NoWarn>$(NoWarn);1591</NoWarn>
-	</PropertyGroup>
 
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
 

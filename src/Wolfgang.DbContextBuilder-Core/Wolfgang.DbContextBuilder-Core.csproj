@@ -21,6 +21,7 @@
 		<PackageIcon>dbcontext-builder.png</PackageIcon>
 		<ApplicationIcon>Content/dbcontext-builder.ico</ApplicationIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);1591</NoWarn>
 		<SignAssembly>False</SignAssembly>
 		<PackageTags></PackageTags>
 
@@ -49,11 +50,6 @@
 		<None Include="Content\dbcontext-builder.png" Pack="true" PackagePath="/" />
 		<None Include="Content\dbcontext-builder.ico" Pack="true" PackagePath="/" />
 	</ItemGroup>
-
-	 <PropertyGroup>
-		 <GenerateDocumentationFile>true</GenerateDocumentationFile>
-		 <NoWarn>$(NoWarn);1591</NoWarn>
-	 </PropertyGroup>
 
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
 
