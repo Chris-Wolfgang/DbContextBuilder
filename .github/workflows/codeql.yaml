@@ -80,12 +80,43 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
+        # security-extended adds the broader security query pack on top of the
+        # default queries (more rules, slightly longer scans).
+        queries: security-extended
 
     - name: Setup .NET
       if: steps.check-csharp.outputs.has-csharp == 'true'
       uses: actions/setup-dotnet@v5
       with:
         dotnet-version: '10.0.x'
+
+    - name: Restore .NET workloads
+      if: steps.check-csharp.outputs.has-csharp == 'true'
+      shell: pwsh
+      run: |
+        # Skip entirely if no csproj declares a workload-bearing TFM (android/ios/
+        # maccatalyst/maui/tvos/tizen/browser) — netX.Y-windows TFMs use
+        # SDK-bundled projection assemblies, not the workload installer, so
+        # they're intentionally excluded. Saves ~5-15s on pure-library
+        # repos and removes a network-dependent failure mode.
+        $hasWorkloadTfm = @(Get-ChildItem -Recurse -Filter *.csproj |
+                           Select-String -Pattern 'net\d+\.\d+-(android|ios|maccatalyst|maui|tvos|tizen|browser)' -List).Count -gt 0
+        if (-not $hasWorkloadTfm) {
+          Write-Host "No workload-bearing TFMs — skipping dotnet workload restore"
+          exit 0
+        }
+        $solution = Get-ChildItem -Path . -Recurse -Depth 2 -Include "*.sln", "*.slnx" | Select-Object -First 1
+        if ($solution) {
+          Write-Host "Restoring workloads for $($solution.FullName)"
+          dotnet workload restore "$($solution.FullName)"
+        } else {
+          Write-Host "No solution found; restoring workloads for all projects"
+          dotnet workload restore
+        }
+        if ($LASTEXITCODE -ne 0) {
+          Write-Error "dotnet workload restore failed with exit code $LASTEXITCODE"
+          exit $LASTEXITCODE
+        }
 
     - name: Build for CodeQL Analysis
       id: build
