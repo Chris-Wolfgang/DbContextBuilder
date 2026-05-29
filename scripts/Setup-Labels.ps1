@@ -8,10 +8,16 @@
     other workflows. Run this locally once after creating a new repo from the template.
     
     Labels created:
-    - dependabot - security  (red)
-    - dependabot-dependencies (orange)
-    - dependencies           (blue)
-    - dotnet                 (purple)
+    - dependencies             (blue)   — applied automatically by Dependabot to every update PR
+    - maintenance              (steel)  — kind label, applied to the per-repo parent Maintenance issue
+    - maintenance-task         (steel)  — kind label, applied to every Maintenance sub-issue
+    - maintenance - security   (red)    — category: scans, finding fixes, dependency vuln audit
+    - maintenance - performance (green) — category: profile, benchmark, optimize, validate
+    - maintenance - testing    (gold)   — category: coverage, integration/smoke/mutation tests
+    - maintenance - cleanup    (brown)  — category: refactor for reuse / quality / efficiency
+    - maintenance - docs       (blue)   — category: XML docs, README, CHANGELOG, samples
+    - maintenance - API        (orange) — category: public/internal surface audit
+    - maintenance - CI/CD      (pink)   — category: Docker, CI workflow, build/publish pipeline
 
 .PARAMETER Repository
     The repository in owner/repo format. If not provided, uses the current repository.
@@ -32,6 +38,11 @@
 [CmdletBinding()]
 param(
     [Parameter()]
+    # Accept empty (auto-detect from `gh repo view`), the template placeholder
+    # (replaced by setup.ps1), or a strict owner/repo format. Rejecting URLs
+    # and malformed inputs here surfaces the problem at parameter binding
+    # instead of as a confusing 404 from gh api downstream.
+    [ValidatePattern('^$|^\{\{GITHUB_USERNAME\}\}/\{\{REPO_NAME\}\}$|^[^/@\s]+/[^/@\s]+$')]
     [string]$Repository
 )
 
@@ -75,10 +86,21 @@ if (-not $Repository) {
 Write-Host "`n🏷️  Creating labels for: $Repository`n" -ForegroundColor Cyan
 
 $labels = @(
-    @{ name = "dependabot - security";    color = "b60205"; description = "Security update from Dependabot" },
-    @{ name = "dependabot-dependencies";  color = "d93f0b"; description = "Dependency update from Dependabot" },
+    # Dependabot — applies `dependencies` automatically per .github/dependabot.yml
     @{ name = "dependencies";             color = "0366d6"; description = "Pull requests that update a dependency file" },
-    @{ name = "dotnet";                   color = "512bd4"; description = ".NET related changes" }
+
+    # Maintenance framework — kind labels (neutral steel: the meta is colorless)
+    @{ name = "maintenance";              color = "9aa7b3"; description = "Per-repo parent Maintenance issue (living improvement menu)" },
+    @{ name = "maintenance-task";         color = "5a6c7d"; description = "A Maintenance sub-issue — actionable improvement work" },
+
+    # Maintenance framework — category labels (applied to sub-issues)
+    @{ name = "maintenance - security";    color = "c4161c"; description = "Maintenance: scans, finding fixes, dependency vulnerability audit" },
+    @{ name = "maintenance - performance"; color = "2cbe4e"; description = "Maintenance: profile, benchmark, optimize, validate gains" },
+    @{ name = "maintenance - testing";     color = "f9c513"; description = "Maintenance: coverage %, integration/smoke/mutation tests, fixtures" },
+    @{ name = "maintenance - cleanup";     color = "a2845e"; description = "Maintenance: refactor for reuse, quality, efficiency" },
+    @{ name = "maintenance - docs";        color = "0075ca"; description = "Maintenance: XML doc coverage, README, CHANGELOG, samples" },
+    @{ name = "maintenance - API";         color = "ed7d31"; description = "Maintenance: public/internal surface audit, breaking-change vigilance" },
+    @{ name = "maintenance - CI/CD";       color = "ec6cb9"; description = "Maintenance: Docker, CI workflow, build/publish pipeline" }
 )
 
 $created = 0

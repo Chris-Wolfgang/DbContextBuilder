@@ -1,5 +1,5 @@
-name: "Feature request"
-description: "Suggest an idea for this project"
+name: "🚀 Feature request"
+description: "💡 Suggest an idea for this project"
 title: "[Feature] <title>"
 labels: [enhancement, feature-request]
 assignees: []
@@ -8,9 +8,9 @@ body:
     attributes:
       value: |
         ## Thanks for suggesting a feature!
-
+        
         Please use this form to propose a new feature or enhancement for this project. Providing as much detail as possible helps us understand your idea and evaluate it effectively.
-
+        
         When completing this form, please:
         - Describe the problem this feature will address.
         - Explain the solution you'd like to see.
