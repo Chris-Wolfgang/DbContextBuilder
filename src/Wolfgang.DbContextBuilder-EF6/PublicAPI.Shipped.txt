@@ -1,0 +1,18 @@
+#nullable enable
+Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>
+Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>.Build() -> T
+Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>.BuildAsync() -> System.Threading.Tasks.Task<T>
+Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>.SeedWith<TEntity>(System.Collections.Generic.IEnumerable<TEntity> entities) -> Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>
+Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>.SeedWith<TEntity>(params TEntity[] entities) -> Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>
+Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>.SeedWithRandom<TEntity>(int count) -> Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>
+Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>.SeedWithRandom<TEntity>(int count, System.Func<TEntity, TEntity> func) -> Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>
+Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>.SeedWithRandom<TEntity>(int count, System.Func<TEntity, int, TEntity> func) -> Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>
+Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>.UseCustomRandomEntityCreator(Wolfgang.DbContextBuilderEF6.ICreateRandomEntities creator) -> Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>
+Wolfgang.DbContextBuilderEF6.DbContextBuilderAutoFixtureExtensions
+Wolfgang.DbContextBuilderEF6.DbContextBuilderEffortExtensions
+Wolfgang.DbContextBuilderEF6.ICreateDbContext
+Wolfgang.DbContextBuilderEF6.ICreateDbContext.CreateDbContext<TDbContext>() -> TDbContext
+Wolfgang.DbContextBuilderEF6.ICreateRandomEntities
+Wolfgang.DbContextBuilderEF6.ICreateRandomEntities.CreateRandomEntities<TEntity>(int count) -> System.Collections.Generic.IEnumerable<TEntity>
+static Wolfgang.DbContextBuilderEF6.DbContextBuilderAutoFixtureExtensions.UseAutoFixture<T>(this Wolfgang.DbContextBuilderEF6.DbContextBuilder<T> builder) -> Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>
+static Wolfgang.DbContextBuilderEF6.DbContextBuilderEffortExtensions.UseEffort<T>(this Wolfgang.DbContextBuilderEF6.DbContextBuilder<T> builder) -> Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>
