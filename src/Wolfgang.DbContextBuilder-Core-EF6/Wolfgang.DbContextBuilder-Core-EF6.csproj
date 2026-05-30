@@ -21,19 +21,16 @@
 		<PackageIcon>dbcontext-builder.png</PackageIcon>
 		<ApplicationIcon>dbcontext-builder.ico</ApplicationIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<NoWarn>$(NoWarn);1591</NoWarn>
+
 		<SignAssembly>False</SignAssembly>
 		<PackageTags></PackageTags>
-
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
 	</PropertyGroup>
-
 	 <PropertyGroup>
 		<DefineConstants>$(DefineConstants);EF_CORE_6;EF_CORE_6_OR_GREATER</DefineConstants>
 	</PropertyGroup>
-
 	 <ItemGroup>
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\AutoFixtureRandomEntityCreator.cs" Link="AutoFixtureRandomEntityCreator.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilder.cs" Link="DbContextBuilder.cs" />
@@ -47,23 +44,17 @@
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteForMsSqlServerModelCustomizer.cs" Link="SqliteForMsSqlServerModelCustomizer.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteModelCustomizer.cs" Link="SqliteModelCustomizer.cs" />
 	 </ItemGroup>
-
-
 	<ItemGroup>
 	  <PackageReference Include="AutoFixture" Version="4.18.1" />
 	  <PackageReference Include="coverlet.collector" Version="10.0.1">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
-
-
-
 	  <!-- Lock EF to version 6.x but not 7 or later -->
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="[6.0.36,7.0.0)" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="[6.0.36,7.0.0)" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[6.0.36,7.0.0)" />
 	</ItemGroup>
-
 	<ItemGroup>
 		<!-- Include the icon and README file directly in the package's root -->
 		<None Include="..\..\README.md" Pack="True" PackagePath="/" />
@@ -75,7 +66,5 @@
                 <Content Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder-inverted.png" Link="Content\dbcontext-builder-inverted.png" />
                 <Content Include="dbcontext-builder.ico" Link="Content\dbcontext-builder.ico" />
 	</ItemGroup>
-
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
-
 </Project>

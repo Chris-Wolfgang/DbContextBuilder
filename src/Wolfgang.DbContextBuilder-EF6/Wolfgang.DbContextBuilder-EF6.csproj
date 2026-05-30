@@ -20,17 +20,15 @@
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageIcon>dbcontext-builder.png</PackageIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<NoWarn>$(NoWarn);1591</NoWarn>
+
 		<SignAssembly>False</SignAssembly>
 		<PackageTags></PackageTags>
 		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
 	</PropertyGroup>
-
 	<PropertyGroup>
 		<DefineConstants>$(DefineConstants);EF_TRADITIONAL_6</DefineConstants>
 	</PropertyGroup>
-
 	<ItemGroup>
 		<PackageReference Include="AutoFixture" Version="4.18.1" />
 		<PackageReference Include="EntityFramework" Version="[6.5.2, 7.0.0)" />
@@ -40,7 +38,6 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
-
 	<ItemGroup>
 		<None Include="..\..\README.md" Pack="True" PackagePath="/" />
 		<None Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder.png">
@@ -50,7 +47,5 @@
 		<Content Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder.png" Link="Content\dbcontext-builder.png" />
 		<Content Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder-inverted.png" Link="Content\dbcontext-builder-inverted.png" />
 	</ItemGroup>
-
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
-
 </Project>
