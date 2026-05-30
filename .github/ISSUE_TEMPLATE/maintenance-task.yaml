@@ -73,4 +73,4 @@ body:
       value: |
         ---
 
-        💡 **Tip for agents (Copilot etc.):** When opening a maintenance-task sub-issue, use this template and pick the matching category. After creation, add the `maintenance - <category>` label manually. See `.github/copilot-instructions.md` for the full Maintenance framework convention.
+        💡 **Tip for agents (Copilot etc.):** When opening a maintenance-task sub-issue, use this template and pick the matching category. After creation, add the `maintenance - <category>` label manually and link the issue to the repo's parent Maintenance tracking issue (search the issue list for "Maintenance: <repo-name>") for the full framework context.
