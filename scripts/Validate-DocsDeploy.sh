@@ -66,7 +66,10 @@ trap cleanup EXIT
 # deployed, not a stale local copy. Use a detached worktree pointing at
 # `origin/gh-pages` directly so we don't depend on (and don't update) any
 # local `gh-pages` branch the caller might have around.
-if ! git fetch origin gh-pages; then
+# Use an explicit refspec so origin/gh-pages is populated as a remote-
+# tracking ref even in shallow / single-branch checkouts where a bare
+# `git fetch origin gh-pages` would only update FETCH_HEAD.
+if ! git fetch origin +refs/heads/gh-pages:refs/remotes/origin/gh-pages; then
   check_fail "Failed to fetch origin gh-pages"
   exit 1
 fi

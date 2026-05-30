@@ -405,7 +405,11 @@ jobs:
             }
             $useWorktree = [bool]$branchExists
             if ($useWorktree) {
-              git fetch origin gh-pages
+              # Explicit refspec so origin/gh-pages is populated as a
+              # remote-tracking ref even in the shallow / single-branch
+              # checkout Actions provides (bare `git fetch origin gh-pages`
+              # would only update FETCH_HEAD on those checkouts).
+              git fetch origin +refs/heads/gh-pages:refs/remotes/origin/gh-pages
               if ($LASTEXITCODE -ne 0) { throw "git fetch origin gh-pages failed with exit code $LASTEXITCODE" }
               git show-ref --verify --quiet refs/heads/gh-pages
               if ($LASTEXITCODE -ne 0) { git branch gh-pages origin/gh-pages }

@@ -18,7 +18,7 @@ DbContextBuilder ships as a family of packages — install the one that matches 
 
 | Package | EF flavor | Notes |
 |---|---|---|
-| [`Wolfgang.DbContextBuilder-Core`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core) | EF Core (any supported version) | The core builder; depends on EF Core abstractions only. |
+| [`Wolfgang.DbContextBuilder-Core`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core) | EF Core 6 | Currently pins EF Core 6 (`[6.0.36, 7.0.0)`). EF Core 7-10 consumers should install the matching `-Core-EF7/8/9/10` package below. |
 | [`Wolfgang.DbContextBuilder-Core-EF6`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF6) | EF Core 6 | Pins EF Core 6 for projects on the LTS 6.x line. |
 | [`Wolfgang.DbContextBuilder-Core-EF7`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF7) | EF Core 7 | Pins EF Core 7. |
 | [`Wolfgang.DbContextBuilder-Core-EF8`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF8) | EF Core 8 | Pins EF Core 8 (LTS). |

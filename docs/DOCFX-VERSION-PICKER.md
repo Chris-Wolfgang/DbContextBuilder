@@ -195,8 +195,10 @@ because we're not on github.io).
 
 For workflow-level issues (failed deploys, stale `versions.json`,
 missing version subtrees), the `docfx.yaml` run's per-step output is
-the canonical place to look. `scripts/Validate-DocsDeploy.sh` runs
-at the end of every deploy and catches structural drift.
+the canonical place to look. `scripts/Validate-DocsDeploy.sh` is a
+**manual** validator — run it locally against a checkout of the
+`gh-pages` branch to catch structural drift; it is not wired into
+`docfx.yaml` today.
 
 ---
 
