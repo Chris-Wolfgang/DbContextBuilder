@@ -6,6 +6,7 @@ namespace Wolfgang.DbContextBuilderCore;
 /// <summary>
 /// Uses the Builder pattern to create instances of DbContext types seeded with specified data.
 /// </summary>
+/// <typeparam name="T">The concrete <see cref="DbContext"/> type to construct.</typeparam>
 /// <remarks>
 /// When using the SQLite provider, the builder holds an open SQLite in-memory connection.
 /// Dispose the builder only after all <see cref="DbContext"/> instances returned by
@@ -89,8 +90,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             throw new ArgumentException("The type of TEntity cannot be string", nameof(entities));
         }
 
-        var enumerable = entities as TEntity[] ?? entities.ToArray();
-        return SeedWith(enumerable);
+        var entityArray = entities as TEntity[] ?? entities.ToArray();
+        return SeedWith(entityArray);
     }
 
 
@@ -98,8 +99,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
     /// <param name="entities">The entities to populate the database with</param>
+    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
@@ -210,9 +211,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
     /// <summary>
-    /// Creates a new instance of T seeded with specified data.
+    /// Creates a new instance of <typeparamref name="T"/> seeded with the specified data.
     /// </summary>
-    /// <returns>instance of {T}</returns>
+    /// <returns>A new instance of <typeparamref name="T"/>.</returns>
     /// <exception cref="NotSupportedException">The specified database provider is not supported</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public async Task<T> BuildAsync()
