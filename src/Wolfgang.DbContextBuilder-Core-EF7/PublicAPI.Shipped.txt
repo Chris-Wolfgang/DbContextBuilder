@@ -20,13 +20,13 @@ Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer
 Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.SqliteForMsSqlServerModelCustomizer(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies dependencies) -> void
 Wolfgang.DbContextBuilderCore.SqliteModelCustomizer
 Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.DefaultValueMap.get -> System.Collections.Generic.IDictionary<string, string>
-Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideComputedValueHandling.get -> System.Func<string?, string?>
+Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideComputedValueHandling.get -> System.Func<string?, string?>!
 Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideComputedValueHandling.set -> void
-Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling.get -> System.Func<string?, string?>
+Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling.get -> System.Func<string?, string?>!
 Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling.set -> void
 Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideManyToManyTableHandling.get -> System.Action<Microsoft.EntityFrameworkCore.Metadata.IMutableEntityType>
 Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideManyToManyTableHandling.set -> void
-Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenaming.get -> System.Func<(string? SchemaName, string TableName), string>
+Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenaming.get -> System.Func<(string? SchemaName, string! TableName), string!>!
 Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenaming.set -> void
 Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.SqliteModelCustomizer(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies dependencies) -> void
 override Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.Customize(Microsoft.EntityFrameworkCore.ModelBuilder modelBuilder, Microsoft.EntityFrameworkCore.DbContext context) -> void
