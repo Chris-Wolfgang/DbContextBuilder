@@ -276,26 +276,6 @@ public class SqliteForMsSqlServerModelCustomizerTests
 
 
 
-    ///// <summary>
-    ///// Verifies that the default implementation for OverrideComputedValueHandling does_nothing
-    ///// </summary>
-    //[Fact]
-    //public void OverrideComputedValueHandling_default_implementation_set_default_to_null()
-    //{
-    //    // Arrange
-    //    var finder = new Mock<IDbSetFinder>().Object;
-    //    var dependencies = new ModelCustomizerDependencies(finder);
-    //    var sut = new SqliteForMsSqlServerModelCustomizer(dependencies);
-
-    //    // Act & Assert
-    //    Assert.Equal("(isnull('AW'+[dbo].[ufnLeadingZeros]([CustomerID]),''))", sut.OverrideComputedValueHandling("(isnull('AW'+[dbo].[ufnLeadingZeros]([CustomerID]),''))"));
-    //    Assert.Equal("([OrganizationNode].[GetLevel]())", sut.OverrideComputedValueHandling("([OrganizationNode].[GetLevel]())"));
-    //    Assert.Equal("", sut.OverrideComputedValueHandling(""));
-    //    Assert.Equal(null, sut.OverrideComputedValueHandling(null));
-    //}
-
-
-
     /// <summary>
     /// Verifies OverrideComputedValueHandling honors custom implementation when specified.
     /// </summary>
