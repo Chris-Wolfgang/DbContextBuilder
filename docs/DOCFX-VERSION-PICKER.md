@@ -115,8 +115,8 @@ canonical version-selector UI.
 ## How it gets to gh-pages
 
 ```
-push to main / release tag
-  └─ docfx.yaml fires
+release.yaml (on: release published)
+  └─ workflow_call → docfx.yaml
        ├─ docfx build  → _site/  (includes public/version-picker.js,
        │                          inline bootstrap in every page's
        │                          footer via _appFooter)
@@ -124,6 +124,9 @@ push to main / release tag
        ├─ Deploy _site/ to gh-pages /versions/<v>/ + /versions/latest/
        └─ Generate root index.html from version-picker-template.html
                   → deploy to gh-pages /
+
+(docfx.yaml also exposes workflow_dispatch for ad-hoc / dry-run rebuilds.
+There is no push/tag trigger; docs deploy only happens via release.yaml.)
 ```
 
 Result on gh-pages:
