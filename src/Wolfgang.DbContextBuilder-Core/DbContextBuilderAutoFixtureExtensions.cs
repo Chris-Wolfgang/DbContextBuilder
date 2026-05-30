@@ -1,7 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 
 namespace Wolfgang.DbContextBuilderCore;
-public static class DbContextBuilderAutoFixtureExtensions 
+
+/// <summary>
+/// Extension methods that wire AutoFixture-backed random entity creation
+/// into <see cref="DbContextBuilder{T}"/>.
+/// </summary>
+public static class DbContextBuilderAutoFixtureExtensions
 {
     /// <summary>
     /// Tell DbContextBuilder to use AutoFixture to create random entities.

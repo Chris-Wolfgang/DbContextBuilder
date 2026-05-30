@@ -21,17 +21,14 @@
 		<PackageIcon>dbcontext-builder.png</PackageIcon>
 		<ApplicationIcon>Content/dbcontext-builder.ico</ApplicationIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<NoWarn>$(NoWarn);1591</NoWarn>
+
 		<SignAssembly>False</SignAssembly>
 		<PackageTags></PackageTags>
-
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
 		<DefineConstants>$(DefineConstants);EF_CORE_6;EF_CORE_6_OR_GREATER</DefineConstants>
-
 	</PropertyGroup>
-
 	<ItemGroup>
 	  <PackageReference Include="AutoFixture" Version="4.18.1" />
 	  <PackageReference Include="coverlet.collector" Version="10.0.1">
@@ -43,14 +40,11 @@
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="[6.0.36,7.0.0)" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[6.0.36,7.0.0)" />
 	</ItemGroup>
-
 	<ItemGroup>
 		<!-- Include the icon and README file directly in the package's root -->
 		<None Include="..\..\README.md" Pack="True" PackagePath="/" />
 		<None Include="Content\dbcontext-builder.png" Pack="true" PackagePath="/" />
 		<None Include="Content\dbcontext-builder.ico" Pack="true" PackagePath="/" />
 	</ItemGroup>
-
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
-
 </Project>
