@@ -1,5 +1,6 @@
 #nullable enable
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
+Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.DbContextBuilder() -> void
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.BuildAsync() -> System.Threading.Tasks.Task<T>
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.Dispose() -> void
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(System.Collections.Generic.IEnumerable<TEntity> entities) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
