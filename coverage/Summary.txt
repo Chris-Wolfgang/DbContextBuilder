@@ -1,0 +1,70 @@
+Summary
+  Generated on: 5/31/2026 - 10:53:03 PM
+  Coverage date: 5/31/2026 - 10:52:27 PM - 5/31/2026 - 10:53:00 PM
+  Parser: MultiReport (6x Cobertura)
+  Assemblies: 5
+  Classes: 40
+  Files: 8
+  Line coverage: 100%
+  Covered lines: 1160
+  Uncovered lines: 0
+  Coverable lines: 1160
+  Total lines: 896
+  Branch coverage: 96% (490 of 510)
+  Covered branches: 490
+  Total branches: 510
+  Method coverage: 100% (235 of 235)
+  Full method coverage: 100% (235 of 235)
+  Covered methods: 235
+  Fully covered methods: 235
+  Total methods: 235
+
+Wolfgang.DbContextBuilder-Core-EF10                                      100%
+  Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator           100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                      100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions    100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions         100%
+  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                 100%
+  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                   100%
+  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer      100%
+  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                    100%
+
+Wolfgang.DbContextBuilder-Core-EF6                                       100%
+  Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator           100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                      100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions    100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions         100%
+  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                 100%
+  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                   100%
+  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer      100%
+  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                    100%
+
+Wolfgang.DbContextBuilder-Core-EF7                                       100%
+  Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator           100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                      100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions    100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions         100%
+  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                 100%
+  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                   100%
+  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer      100%
+  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                    100%
+
+Wolfgang.DbContextBuilder-Core-EF8                                       100%
+  Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator           100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                      100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions    100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions         100%
+  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                 100%
+  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                   100%
+  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer      100%
+  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                    100%
+
+Wolfgang.DbContextBuilder-Core-EF9                                       100%
+  Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator           100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                      100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions    100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions         100%
+  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                 100%
+  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                   100%
+  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer      100%
+  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                    100%

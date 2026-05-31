@@ -36,7 +36,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions",
-      "Summary": null
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.yml\" sourcestartlinenumber=\"1\">Extension methods that wire AutoFixture-backed random entity creation\ninto <xref href=\"Wolfgang.DbContextBuilderCore.DbContextBuilder%601\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -50,7 +50,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions",
-      "Summary": null
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions.yml\" sourcestartlinenumber=\"1\">Extension methods that configure <xref href=\"Wolfgang.DbContextBuilderCore.DbContextBuilder%601\" data-throw-if-not-resolved=\"false\"></xref> to\nuse a SQLite in-memory database (plain SQLite, or SQLite with the\nSQL-Server-compatibility customizations).</p>\n"
     },
     {
       "type": "ManagedReference",
