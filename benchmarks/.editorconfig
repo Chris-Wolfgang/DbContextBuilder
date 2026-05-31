@@ -1,0 +1,47 @@
+# Curated analyzer suppressions for BenchmarkDotNet projects.
+#
+# Benchmark code deliberately violates a handful of analyzer rules that
+# would be bugs in production code. Suppressing them per-rule (rather
+# than disabling TreatWarningsAsErrors for the whole benchmarks/ tree)
+# keeps the rest of the analyzer suite live so genuine issues still
+# surface as build errors.
+#
+# Add new entries here when a new BDN-legitimate analyzer trips on
+# this repo's benchmark project. Do NOT widen the scope past benchmark-
+# specific patterns — production code should not benefit from these
+# carve-outs.
+
+root = false
+
+[*.cs]
+
+# CA1822: Mark members as static
+# BDN [Benchmark] methods MUST be instance methods so BenchmarkSwitcher
+# can instantiate the class per benchmark run and apply [GlobalSetup]/
+# [IterationSetup] state. Marking them static would break the harness.
+dotnet_diagnostic.CA1822.severity = none
+
+# S2325 (SonarAnalyzer) — same intent as CA1822 but Sonar's flavor.
+dotnet_diagnostic.S2325.severity = none
+
+# CA1707: Identifiers should not contain underscores
+# BDN convention uses `MethodName_VariantName` (e.g.
+# `InMemory_SeedWith`) so the published chart legend reads naturally.
+dotnet_diagnostic.CA1707.severity = none
+
+# S1144 (SonarAnalyzer): Unused private types or members should be removed
+# BDN classes / [GlobalSetup] / [Params] members are instantiated and
+# read by reflection — Sonar can't see those usage sites.
+dotnet_diagnostic.S1144.severity = none
+
+# CA1051: Do not declare visible instance fields
+# [Params] in BDN are conventionally public fields, not properties.
+# (Our scaffolded benchmark uses { get; set; } so this isn't tripped
+# today, but the carve-out is here for future scenarios that follow
+# the BDN documentation style.)
+dotnet_diagnostic.CA1051.severity = none
+
+# IDE0079: Remove unnecessary suppression
+# Stops cascading suppression-of-suppression noise when individual
+# benchmark files add narrowly-scoped pragmas.
+dotnet_diagnostic.IDE0079.severity = none

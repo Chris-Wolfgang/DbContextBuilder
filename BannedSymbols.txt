@@ -1,4 +1,4 @@
-# BannedSymbols.txt - Async-First Enforcement for DbContextBuilder
+# BannedSymbols.txt - Async-First Enforcement for Wolfgang.DbContextBuilder
 # Format: <API Documentation ID>; <Reason/Alternative>
 # T: = Type, M: = Method, P: = Property, F: = Field
 # Task.Wait() - All overloads - Absolutely NOT allowed in async code
