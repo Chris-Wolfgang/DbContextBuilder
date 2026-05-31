@@ -3,30 +3,32 @@
 		<RootNamespace>Wolfgang.DbContextBuilderEF6</RootNamespace>
 		<TargetFrameworks>net462;net47;net471;net472;net48;net481</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.6.1</Version>
+		<Version>0.6.2</Version>
+		<!-- Pin AssemblyVersion to a fixed binding-stability baseline so consumers
+		     do not need to recompile / add binding redirects on every minor/patch
+		     bump. Bump only on a deliberate breaking API change. FileVersion +
+		     InformationalVersion (the latter auto-derived from <Version>) carry
+		     the actual release version. -->
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<FileVersion>$([System.Text.RegularExpressions.Regex]::Replace("$(Version)", "[-+].*$", "")).0</FileVersion>
 		<Title>Wolfgang.DbContextBuilder for Entity Framework 6</Title>
-		<Authors>Chris Wolfgang</Authors>
 		<Description>A library for easily building DbContext for testing using in-memory database with Entity Framework 6</Description>
-		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
 		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
-		<AssemblyVersion>1.0.0</AssemblyVersion>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageIcon>dbcontext-builder.png</PackageIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+
 		<SignAssembly>False</SignAssembly>
 		<PackageTags></PackageTags>
-		<Nullable>enable</Nullable>
 		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
 	</PropertyGroup>
-
 	<PropertyGroup>
 		<DefineConstants>$(DefineConstants);EF_TRADITIONAL_6</DefineConstants>
 	</PropertyGroup>
-
 	<ItemGroup>
 		<PackageReference Include="AutoFixture" Version="4.18.1" />
 		<PackageReference Include="EntityFramework" Version="[6.5.2, 7.0.0)" />
@@ -36,7 +38,6 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
-
 	<ItemGroup>
 		<None Include="..\..\README.md" Pack="True" PackagePath="/" />
 		<None Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder.png">
@@ -46,12 +47,5 @@
 		<Content Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder.png" Link="Content\dbcontext-builder.png" />
 		<Content Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder-inverted.png" Link="Content\dbcontext-builder-inverted.png" />
 	</ItemGroup>
-
-	<PropertyGroup>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<NoWarn>$(NoWarn);1591</NoWarn>
-	</PropertyGroup>
-
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
-
 </Project>

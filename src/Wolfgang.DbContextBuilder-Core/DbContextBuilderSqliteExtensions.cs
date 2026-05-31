@@ -3,6 +3,12 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Wolfgang.DbContextBuilderCore;
+
+/// <summary>
+/// Extension methods that configure <see cref="DbContextBuilder{T}"/> to
+/// use a SQLite in-memory database (plain SQLite, or SQLite with the
+/// SQL-Server-compatibility customizations).
+/// </summary>
 public static class DbContextBuilderSqliteExtensions
 {
 

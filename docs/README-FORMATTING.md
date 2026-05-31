@@ -4,7 +4,7 @@ This repository uses `dotnet format` to enforce consistent C# code style.
 
 ## Prerequisites
 
-The `dotnet format` command is **built into the .NET SDK** starting with .NET 6 and later. Since this project requires .NET 8.0 SDK or later, you already have `dotnet format` available — no separate tool installation is needed.
+The `dotnet format` command is **built into the .NET SDK** starting with .NET 6 — no separate tool installation is needed. In practice `dotnet format` still has to load and evaluate the project, so you need an SDK new enough to handle this repo's target frameworks: use the SDK version(s) installed by `.github/workflows/pr.yaml` (and `global.json` if present). The latest stable .NET SDK is generally a safe choice.
 
 > **Note:** The standalone `dotnet-format` global tool was deprecated when `dotnet format` was integrated into the .NET 6 SDK in August 2021.
 
@@ -56,10 +56,10 @@ Most IDEs automatically read `.editorconfig`:
 
 ## Formatting Rules
 
-Authoritative rules live in `.editorconfig` (and `.gitattributes` for line endings, which may override the `.editorconfig` defaults for specific file types — e.g. forcing CRLF on `*.ps1`). The list below is a quick orientation; check those files for the binding values:
+Authoritative rules live in `.editorconfig` (and `.gitattributes` for line endings, which enforces LF across all text file types in this repo — including `*.ps1`, which historically used CRLF but is now LF for cross-platform shebang compatibility). The list below is a quick orientation; check those files for the binding values:
 
 - **Indentation**: 4 spaces for C#, 2 for XML/JSON (per `.editorconfig`)
 - **Braces**: Opening brace on its own line
-- **Line endings**: LF for source/docs, with file-type overrides in `.gitattributes` (e.g. CRLF for `*.ps1`)
+- **Line endings**: LF for all text files (per `.gitattributes`), including PowerShell scripts
 - **Trailing whitespace**: Removed
 - **Using directives**: System namespaces first, sorted alphabetically
