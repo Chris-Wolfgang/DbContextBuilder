@@ -1,5 +1,6 @@
 #nullable enable
 Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>
+Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>.DbContextBuilder() -> void
 Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>.Build() -> T
 Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>.BuildAsync() -> System.Threading.Tasks.Task<T>
 Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>.SeedWith<TEntity>(System.Collections.Generic.IEnumerable<TEntity> entities) -> Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>
