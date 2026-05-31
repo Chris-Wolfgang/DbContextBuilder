@@ -561,4 +561,139 @@ public class SqliteModelCustomizerTests
         // Assert
         Assert.Equal("Orders_Products", mutableJoinEntity.GetTableName());
     }
+
+
+
+    /// <summary>
+    /// Verifies that DefaultValueMap starts as an empty dictionary on a freshly-constructed
+    /// SqliteModelCustomizer (consumers add their own SQL Server → SQLite default-value
+    /// mappings).
+    /// </summary>
+    [Fact]
+    public void DefaultValueMap_is_empty_on_construction()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        // Act
+        var sut = new SqliteModelCustomizer(dependencies);
+
+        // Assert
+        Assert.Empty(sut.DefaultValueMap);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that DefaultValueMap is keyed case-insensitively (OrdinalIgnoreCase) so SQL
+    /// Server defaults like "(GETDATE())" and "(getdate())" both match the same entry.
+    /// </summary>
+    [Fact]
+    public void DefaultValueMap_key_lookup_is_case_insensitive()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+        sut.DefaultValueMap["(GETDATE())"] = "datetime('now')";
+
+        // Act & Assert — the same key in different casings should resolve to the same value
+        Assert.True(sut.DefaultValueMap.ContainsKey("(GETDATE())"));
+        Assert.True(sut.DefaultValueMap.ContainsKey("(getdate())"));
+        Assert.True(sut.DefaultValueMap.ContainsKey("(GetDate())"));
+        Assert.Equal("datetime('now')", sut.DefaultValueMap["(getdate())"]);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that the default <see cref="SqliteModelCustomizer.OverrideDefaultValueHandling"/>
+    /// implementation returns the mapped replacement when the input value is present in
+    /// DefaultValueMap.
+    /// </summary>
+    [Fact]
+    public void OverrideDefaultValueHandling_default_impl_uses_DefaultValueMap_when_value_is_mapped()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+        sut.DefaultValueMap["(my_custom_sproc())"] = "datetime('now', '+1 day')";
+
+        // Act
+        var result = sut.OverrideDefaultValueHandling("(my_custom_sproc())");
+
+        // Assert
+        Assert.Equal("datetime('now', '+1 day')", result);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that the default <see cref="SqliteModelCustomizer.OverrideDefaultValueHandling"/>
+    /// implementation honours case-insensitive lookups against DefaultValueMap (matching the
+    /// dictionary's StringComparer.OrdinalIgnoreCase comparer).
+    /// </summary>
+    [Fact]
+    public void OverrideDefaultValueHandling_default_impl_matches_DefaultValueMap_case_insensitively()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+        sut.DefaultValueMap["(GETDATE())"] = "datetime('now')";
+
+        // Act & Assert — same logical value, different casings
+        Assert.Equal("datetime('now')", sut.OverrideDefaultValueHandling("(GETDATE())"));
+        Assert.Equal("datetime('now')", sut.OverrideDefaultValueHandling("(getdate())"));
+        Assert.Equal("datetime('now')", sut.OverrideDefaultValueHandling("(GetDate())"));
+    }
+
+
+
+    /// <summary>
+    /// Verifies that DefaultValueMap is mutable in-place — adding an entry after
+    /// construction takes effect for subsequent OverrideDefaultValueHandling calls
+    /// (the property exposes the live dictionary, not a snapshot).
+    /// </summary>
+    [Fact]
+    public void DefaultValueMap_additions_take_effect_immediately()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+
+        // Act & Assert — not in map yet → falls through to the unknown-SQL-Server-function
+        // default branch (returns null for built-in unknowns; for genuinely-unknown strings
+        // the default impl returns null per the SqliteForMsSqlServerModelCustomizer tests).
+        // After adding a mapping, the same input now returns the mapped value.
+        sut.DefaultValueMap["(my_runtime_added())"] = "1";
+        Assert.Equal("1", sut.OverrideDefaultValueHandling("(my_runtime_added())"));
+    }
 }
