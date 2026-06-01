@@ -122,7 +122,8 @@ public class DbContextBuilder<T> where T : DbContext
     /// <param name="entity">The entity to populate the database with.</param>
     /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="entity"/> is null.</exception>
-    /// <exception cref="ArgumentException"><typeparamref name="TEntity"/> is <see cref="string"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="entity"/> is a <see cref="string"/> instance (matches the
+    /// <c>params</c> overload's rejection regardless of how <typeparamref name="TEntity"/> was inferred).</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(TEntity entity)
         where TEntity : class
     {
@@ -131,9 +132,11 @@ public class DbContextBuilder<T> where T : DbContext
             throw new ArgumentNullException(nameof(entity));
         }
 
-        if (typeof(TEntity) == typeof(string))
+        // Reject by runtime type, not just TEntity, so `SeedWith<object>("...")` is still
+        // caught (matches the params overload's `case string:` arm).
+        if (entity is string)
         {
-            throw new ArgumentException("The type of TEntity cannot be string", nameof(entity));
+            throw new ArgumentException("One of the entities passed in is of type string", nameof(entity));
         }
 
         if (entity is IEnumerable<object> sequence)

@@ -1256,4 +1256,20 @@ public abstract class DbContextBuilderTestsBase
 
         Assert.Throws<ArgumentException>(() => sut.SeedWith("not an entity"));
     }
+
+
+
+    /// <summary>
+    /// Regression: when the caller widens TEntity to <see cref="object"/> the static
+    /// `typeof(TEntity) == typeof(string)` check (the original guard) would pass through
+    /// and silently seed the string. The current guard uses a runtime `entity is string`
+    /// check and must still reject.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_TEntity_is_widened_to_object_still_rejects_string()
+    {
+        using var sut = CreateDbContextBuilder();
+
+        Assert.Throws<ArgumentException>(() => sut.SeedWith<object>("not an entity"));
+    }
 }
