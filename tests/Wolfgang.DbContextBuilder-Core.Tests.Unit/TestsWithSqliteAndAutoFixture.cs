@@ -544,7 +544,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     public async Task BuildAsync_via_SqliteForMsSqlServer_does_not_emit_schema_configured_warning()
     {
         // Arrange — capture all EF log output via .LogTo
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         var buffer = new StringBuilder(10_240);
         var sw = new StringWriter(buffer);
