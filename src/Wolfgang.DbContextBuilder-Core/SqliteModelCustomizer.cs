@@ -88,6 +88,11 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// <c>lower(hex(randomblob(16)))</c> respectively. Key lookups are case-insensitive
     /// (<see cref="StringComparer.OrdinalIgnoreCase"/>) so variant spellings produced by
     /// different EF versions match the same replacement entry.
+    ///
+    /// Configure this map during builder setup (before <c>BuildAsync</c>); mutating it
+    /// after the first <c>Customize</c> pass is unsupported because the customizer is
+    /// typically registered as a DI singleton and concurrent reads on the dictionary
+    /// during model build are not guarded.
     /// </remarks>
     public IDictionary<string, string> DefaultValueMap { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 

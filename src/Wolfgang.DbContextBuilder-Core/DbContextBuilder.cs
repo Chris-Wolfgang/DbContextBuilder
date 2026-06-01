@@ -37,6 +37,11 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Instructs the builder to use InMemory as the database provider.
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <remarks>
+    /// Provider selection is last-write-wins — calling <see cref="UseInMemory"/> after a
+    /// previous call to either <see cref="UseInMemory"/> or a SQLite extension overrides
+    /// the earlier choice. Choose one provider per builder.
+    /// </remarks>
     public DbContextBuilder<T> UseInMemory()
     {
         CreateDbContext = new InMemoryDbContextCreator();
@@ -85,6 +90,15 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
+    /// <remarks>
+    /// Insertion order across distinct entity types is not guaranteed — the builder
+    /// accumulates seeds in a single list and EF's <c>SaveChangesAsync</c> orders the
+    /// inserts by FK dependency, not by the order <c>SeedWith</c> calls were made. For
+    /// scenarios where the order of two same-type rows matters (e.g. identity-generated
+    /// keys), pass them in the desired order within a single <c>SeedWith</c> call.
+    /// Inheritance mapping (TPH / TPT / TPC) is supported via <c>entity.GetType()</c>;
+    /// the runtime type determines which DbSet receives the row.
+    /// </remarks>
     public DbContextBuilder<T> SeedWith<TEntity>(IEnumerable<TEntity> entities)
         where TEntity : class
     {
