@@ -7,9 +7,9 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 /// <summary>
 /// Tests for the fluent DbSet assertion extensions under
 /// <see cref="DbContextAssertionsExtensions"/> / <see cref="DbSetAssertions{TEntity}"/>.
-/// All assertions are exercised against a SQLite in-memory DbContext seeded with a few
+/// All assertions are exercised against the EF Core InMemory provider seeded with a few
 /// rows of TableWithDefaults to keep the test focused on the assertion logic, not on
-/// AdventureWorks seeding.
+/// AdventureWorks seeding or relational SQLite quirks.
 /// </summary>
 public class DbSetAssertionsTests
 {
@@ -274,5 +274,50 @@ public class DbSetAssertionsTests
         var wrappedEx = new DbContextAssertionException("outer", inner);
         Assert.Equal("outer", wrappedEx.Message);
         Assert.Same(inner, wrappedEx.InnerException);
+    }
+
+
+
+    /// <summary>
+    /// The DbSet variant of <c>Should()</c> must reject a null set argument.
+    /// </summary>
+    [Fact]
+    public void Should_on_DbSet_when_set_is_null_throws_ArgumentNullException()
+    {
+        DbSet<TableWithDefaults>? set = null;
+
+        var ex = Assert.Throws<ArgumentNullException>(() => set!.Should());
+        Assert.Equal("set", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// The IQueryable variant of <c>Should()</c> must reject a null query argument.
+    /// </summary>
+    [Fact]
+    public void Should_on_IQueryable_when_query_is_null_throws_ArgumentNullException()
+    {
+        IQueryable<TableWithDefaults>? query = null;
+
+        var ex = Assert.Throws<ArgumentNullException>(() => query!.Should());
+        Assert.Equal("query", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Contain/NotContain/AllSatisfy must reject a null predicate via
+    /// <see cref="ArgumentNullException.ThrowIfNull(object?, string?)"/>.
+    /// </summary>
+    [Fact]
+    public async Task Predicate_assertions_when_predicate_is_null_throw_ArgumentNullException()
+    {
+        await using var context = await CreateSeededContextAsync(1);
+        var assertions = context.Set<TableWithDefaults>().Should();
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => assertions.Contain(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => assertions.NotContain(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => assertions.AllSatisfy(null!));
     }
 }

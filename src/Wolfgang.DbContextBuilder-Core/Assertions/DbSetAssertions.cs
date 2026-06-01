@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Wolfgang.DbContextBuilderCore.Assertions;
 
 /// <summary>
-/// Fluent, chainable assertions over a single <see cref="DbSet{TEntity}"/> for use in
-/// DbContextBuilder-backed tests. Each method runs the corresponding query asynchronously
-/// against the underlying <see cref="IQueryable{TEntity}"/>, throws
-/// <see cref="DbContextAssertionException"/> with an EF-aware message on failure, and
-/// returns <c>this</c> so the next assertion can be chained.
+/// Fluent, chainable assertions over an <see cref="IQueryable{TEntity}"/> — either a
+/// <see cref="DbSet{TEntity}"/> directly or a filtered query derived from one — for use
+/// in DbContextBuilder-backed tests. Each method runs the corresponding query
+/// asynchronously, throws <see cref="DbContextAssertionException"/> with an EF-aware
+/// message on failure, and returns <c>this</c> so the next assertion can be chained.
 /// </summary>
 /// <typeparam name="TEntity">The entity type tracked by the wrapped DbSet.</typeparam>
 /// <remarks>
@@ -60,9 +60,12 @@ public sealed class DbSetAssertions<TEntity>
     /// </exception>
     public async Task<DbSetAssertions<TEntity>> BeEmpty()
     {
-        var actual = await _query.CountAsync().ConfigureAwait(false);
-        if (actual != 0)
+        // AnyAsync short-circuits on the first row; only run the full Count on the
+        // failing path so the success case stays O(1).
+        var any = await _query.AnyAsync().ConfigureAwait(false);
+        if (any)
         {
+            var actual = await _query.CountAsync().ConfigureAwait(false);
             throw new DbContextAssertionException(
                 $"Expected DbSet<{typeof(TEntity).Name}> to be empty, but found {actual} entities.");
         }
@@ -135,12 +138,15 @@ public sealed class DbSetAssertions<TEntity>
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
-        var matched = await _query.CountAsync(predicate).ConfigureAwait(false);
-        if (matched != 0)
+        // AnyAsync short-circuits on the first match; only run the full Count on the
+        // failing path so the success case stays O(1).
+        var matched = await _query.AnyAsync(predicate).ConfigureAwait(false);
+        if (matched)
         {
+            var count = await _query.CountAsync(predicate).ConfigureAwait(false);
             throw new DbContextAssertionException(
                 $"Expected DbSet<{typeof(TEntity).Name}> to contain NO entity matching ({predicate}), " +
-                $"but {matched} matching entities were found.");
+                $"but {count} matching entities were found.");
         }
 
         return this;

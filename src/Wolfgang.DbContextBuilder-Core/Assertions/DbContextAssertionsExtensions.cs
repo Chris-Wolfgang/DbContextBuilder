@@ -27,8 +27,10 @@ public static class DbContextAssertionsExtensions
 
 
     /// <summary>
-    /// Begins a fluent assertion chain against an arbitrary <see cref="IQueryable{TEntity}"/>.
-    /// Useful for asserting against a filtered/projected query rather than a whole DbSet.
+    /// Begins a fluent assertion chain against a filtered <see cref="IQueryable{TEntity}"/>
+    /// derived from a DbSet — typically the result of <c>dbSet.Where(...)</c>. The
+    /// <typeparamref name="TEntity"/> constraint is <c>: class</c> because this surface is
+    /// intended for entity queries (not scalar or anonymous projections).
     /// </summary>
     /// <typeparam name="TEntity">The element type of the queryable.</typeparam>
     /// <param name="query">The queryable to assert against.</param>
