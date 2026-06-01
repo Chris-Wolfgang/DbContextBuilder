@@ -253,4 +253,26 @@ public class DbSetAssertionsTests
 
         await context.Set<TableWithDefaults>().Where(t => t.Id <= 3).Should().HaveCount(3);
     }
+
+
+
+    /// <summary>
+    /// Verifies all three <see cref="DbContextAssertionException"/> constructors behave as
+    /// the standard <see cref="Exception"/> pattern requires (default message, supplied
+    /// message, message + inner exception).
+    /// </summary>
+    [Fact]
+    public void DbContextAssertionException_constructors_behave_as_expected()
+    {
+        var defaultEx = new DbContextAssertionException();
+        Assert.NotNull(defaultEx.Message);
+
+        var msgEx = new DbContextAssertionException("boom");
+        Assert.Equal("boom", msgEx.Message);
+
+        var inner = new InvalidOperationException("inner");
+        var wrappedEx = new DbContextAssertionException("outer", inner);
+        Assert.Equal("outer", wrappedEx.Message);
+        Assert.Same(inner, wrappedEx.InnerException);
+    }
 }
