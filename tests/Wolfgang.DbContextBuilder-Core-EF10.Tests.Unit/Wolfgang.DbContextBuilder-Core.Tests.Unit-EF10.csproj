@@ -120,6 +120,7 @@
 		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\WorkOrder.cs" Link="Models\Generated\WorkOrder.cs" />
 		<Compile Include="..\..\extra-projects\AdventureWorks-EF7\Models\Generated\WorkOrderRouting.cs" Link="Models\Generated\WorkOrderRouting.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\AutoFixtureRandomEntityCreatorTests.cs" Link="AutoFixtureRandomEntityCreatorTests.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\DbContextActivatorTests.cs" Link="DbContextActivatorTests.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\DbContextBuilderTestsBase.cs" Link="DbContextBuilderTestsBase.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\ICreateRandomEntitiesTestsBase.cs" Link="ICreateRandomEntitiesTestsBase.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\IgnoreVirtualMembersCustomizationTests.cs" Link="IgnoreVirtualMembersCustomizationTests.cs" />
