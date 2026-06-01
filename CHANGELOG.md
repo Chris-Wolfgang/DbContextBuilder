@@ -14,14 +14,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `HaveCount`, `BeEmpty`, `NotBeEmpty`, `Contain`, `NotContain`, `AllSatisfy`. Obtain
   the assertion chain via `dbSet.Should()` or `queryable.Should()`. Failures throw
   `DbContextAssertionException` with an entity-typed message. (#106)
+- New `DbContextBuilder<T>.SeedWith<TEntity>(TEntity entity)` singleton overload that
+  avoids the one-element array allocation of the existing `params` overload — useful
+  in tests that seed many single rows.
+- New `DocFX` content pages (`docs/introduction.md`, `docs/getting-started.md`) and
+  a Target Frameworks + API surface section in `README.md`.
 
 ### Changed
 
-### Deprecated
+- `SqliteModelCustomizer` default delegate fields are now ctor-initialized rather than
+  lazy-initialized in the property getter, eliminating a race that could allocate
+  duplicate delegates when EF's model customization runs concurrently.
+- `SqliteModelCustomizer.OverrideTableRenaming` default lambda no longer allocates
+  a `"{prefix}_"` interpolation per entity type — uses prefix-substring + separator
+  char comparison instead.
+- `DbContextBuilderSqliteExtensions`'s SQLite-already-registered check uses
+  `typeof(SqliteOptionsExtension)` instead of matching the type's `FullName` string.
+- New internal `DbContextActivator<TDbContext>` caches a compiled Expression-based
+  factory delegate per closed generic, so each `BuildAsync` no longer pays the
+  `Activator.CreateInstance` reflection cost. Used by both `InMemoryDbContextCreator`
+  and `SqliteDbContextCreator`.
+- XML doc sweep across Core + EF6: fixed stale `<exception cref>` claims, typos,
+  truncated comments, malformed `<see cref></see>` tags, and literal `{T}` in
+  `<returns>` (now `<typeparamref name="T"/>`).
+- `DbContextBuilder.SeedWith`, `UseInMemory`, `UseSqlite`, and
+  `SqliteModelCustomizer.DefaultValueMap` now document their contracts
+  (last-write-wins provider selection, insertion-order semantics, inheritance
+  support, DI-singleton mutation hazard).
+
+### Fixed
+
+- EF6 (classic) `DbContextBuilder<T>.Build()` and `BuildAsync()` no longer leak the
+  temporary seed-time `DbContext`. Both wrap it in `using` before returning the
+  caller's context.
+- `DbContextBuilder<T>.SeedWith<TEntity>(TEntity entity)` (singleton overload added
+  this release) now rejects string elements per-item when passed a `List<string>` or
+  other `IEnumerable<object>`-castable sequence, matching the params overload's
+  `case string` behaviour.
 
 ### Removed
 
-### Fixed
+- Stale `<AssemblyVersion>1.0.0</AssemblyVersion>` from all 7 test csprojs (tests
+  aren't shipped; let the SDK derive it).
+- Dead test constant `TestConstants.MaxTestRuntimeMs` (zero references) and its
+  associated stale `// TODO` comment.
+- Commented-out `//IModelCustomizer modelCustomizer` parameter from the private
+  `UseSqlite` extension.
+
+### Deprecated
 
 ### Security
 
