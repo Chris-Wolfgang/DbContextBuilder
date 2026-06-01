@@ -129,7 +129,6 @@
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\NoCircularReferencesCustomizationTests.cs" Link="NoCircularReferencesCustomizationTests.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\SqliteForMsSqlServerModelCustomizerTests.cs" Link="SqliteForMsSqlServerModelCustomizerTests.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\SqliteModelCustomizerTests.cs" Link="SqliteModelCustomizerTests.cs" />
-	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestConstants.cs" Link="TestConstants.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestsWithDefaults.cs" Link="TestsWithDefaults.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestsWithInMemoryDBAndAutoFixture.cs" Link="TestsWithInMemoryDBAndAutoFixture.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestsWithSqliteAndAutoFixture.cs" Link="TestsWithSqliteAndAutoFixture.cs" />
