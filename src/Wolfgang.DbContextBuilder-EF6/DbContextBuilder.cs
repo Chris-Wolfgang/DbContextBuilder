@@ -115,6 +115,42 @@ public class DbContextBuilder<T> where T : DbContext
 
 
     /// <summary>
+    /// Populates the specified DbSet with a single entity. Equivalent to calling the
+    /// <c>params</c>-array overload with one element, but avoids the per-call allocation
+    /// of a one-element array — useful in tests that seed many single rows.
+    /// </summary>
+    /// <param name="entity">The entity to populate the database with.</param>
+    /// <returns>The builder, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="entity"/> is null.</exception>
+    /// <exception cref="ArgumentException"><typeparamref name="TEntity"/> is <see cref="string"/>.</exception>
+    public DbContextBuilder<T> SeedWith<TEntity>(TEntity entity)
+        where TEntity : class
+    {
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
+
+        if (typeof(TEntity) == typeof(string))
+        {
+            throw new ArgumentException("The type of TEntity cannot be string", nameof(entity));
+        }
+
+        if (entity is IEnumerable<object> sequence)
+        {
+            _seedData.AddRange(sequence);
+        }
+        else
+        {
+            _seedData.Add(entity);
+        }
+
+        return this;
+    }
+
+
+
+    /// <summary>
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
     /// <param name="count">The number of items to create</param>
