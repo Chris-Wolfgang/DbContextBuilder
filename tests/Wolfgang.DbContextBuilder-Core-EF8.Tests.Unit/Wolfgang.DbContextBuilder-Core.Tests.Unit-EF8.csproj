@@ -66,10 +66,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Models\Generated\" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core-EF8\Wolfgang.DbContextBuilder-Core-EF8.csproj" />
 	  <ProjectReference Include="..\..\extra-projects\AdventureWorks-EF8\AdventureWorks-EF8.csproj" />
 	</ItemGroup>
