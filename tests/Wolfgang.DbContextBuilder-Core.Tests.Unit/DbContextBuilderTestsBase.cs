@@ -25,7 +25,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that the test project can create an instance of DbContextBuilder can be created.
     /// </summary>
     [Fact]
-    public void Can_create_instance_of_DbContextBuilder()
+    public void DbContextBuilder_ctor_when_called_returns_a_new_instance()
     {
         var builder = new DbContextBuilder<AdventureWorksDbContext>();
         Assert.NotNull(builder);
@@ -37,7 +37,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling Build on the DbContextBuilder returns an instance of the specified DbContext type.
     /// </summary>
     [Fact]
-    public async Task Calling_Build_returns_instance_of_specified_context()
+    public async Task BuildAsync_when_called_returns_an_instance_of_the_specified_context()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -56,7 +56,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling Build multiple times on the DbContextBuilder returns multiple distinct instances of the specified DbContext type.
     /// </summary>
     [Fact]
-    public async Task Can_create_multiple_instances_of_specified_context()
+    public async Task BuildAsync_when_called_multiple_times_returns_distinct_instances()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -79,7 +79,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling UseInMemory returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseInMemory_returns_DbContextBuilder()
+    public void UseInMemory_when_called_returns_the_builder()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -97,7 +97,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling UseSqlite returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseSqlite_returns_DbContextBuilder()
+    public void UseSqlite_when_called_returns_the_builder()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -115,7 +115,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling UseAutoFixture returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseAutoFixture_returns_DbContextBuilder()
+    public void UseAutoFixture_when_called_returns_the_builder()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -134,7 +134,7 @@ public abstract class DbContextBuilderTestsBase
     /// DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseCustomRandomEntityCreator_returns_DbContextBuilder()
+    public void UseCustomRandomEntityCreator_when_called_returns_the_builder()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -155,7 +155,7 @@ public abstract class DbContextBuilderTestsBase
     /// throws ArgumentNullException
     /// </summary>
     [Fact]
-    public void Calling_UseCustomEntityCreator_and_passing_in_null_throws_ArgumentNullException()
+    public void UseCustomRandomEntityCreator_when_creator_is_null_throws_ArgumentNullException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -172,7 +172,7 @@ public abstract class DbContextBuilderTestsBase
     /// property to the value passed in
     /// </summary>
     [Fact]
-    public void Calling_UseCustomRandomEntityCreator_sets_the_RandomEntityCreator_property()
+    public void UseCustomRandomEntityCreator_when_called_sets_the_RandomEntityCreator_property()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -194,7 +194,7 @@ public abstract class DbContextBuilderTestsBase
     /// as no data has been seeded.
     /// </summary>
     [Fact]
-    public async Task A_newly_created_DbContext_contains_the_mapped_entities_but_the_sets_are_empty()
+    public async Task BuildAsync_when_no_seeds_are_provided_returns_a_context_with_mapped_but_empty_DbSets()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -222,7 +222,7 @@ public abstract class DbContextBuilderTestsBase
     /// DbContext would not have anything being tracked.
     /// </remarks>
     [Fact]
-    public async Task A_newly_created_DbContext_does_not_have_any_tracked_changes()
+    public async Task BuildAsync_when_seeds_are_provided_does_not_leave_them_tracked()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -1086,7 +1086,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling UseDbContextOptionsBuilder and passing null throws ArgumentNullException
     /// </summary>
     [Fact]
-    public void Calling_UseDbContextOptionsBuilder_when_passed_null_throws_ArgumentNullException()
+    public void UseDbContextOptionsBuilder_when_passed_null_throws_ArgumentNullException()
     {
         // Arrange
 
@@ -1103,7 +1103,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that UseDbContextOptionsBuilder returns the DbContextBuilder{T} so it can be chained to other calls
     /// </summary>
     [Fact]
-    public void Calling_UseDbContextOptionsBuilder_returns_DbContextBuild()
+    public void UseDbContextOptionsBuilder_when_called_returns_the_builder()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -1178,7 +1178,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling UseInMemory multiple times doesn't cause issues
     /// </summary>
     [Fact]
-    public async Task Calling_UseInMemory_multiple_times_still_works()
+    public async Task UseInMemory_when_called_multiple_times_still_returns_a_valid_context()
     {
         // Arrange — use a fresh builder so this test is provider-agnostic
         // (the base builder may already be configured for a different provider).
