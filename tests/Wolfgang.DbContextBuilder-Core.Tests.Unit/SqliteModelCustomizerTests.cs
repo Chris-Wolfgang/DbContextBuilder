@@ -689,10 +689,12 @@ public class SqliteModelCustomizerTests
 
         var sut = new SqliteModelCustomizer(dependencies);
 
-        // Act & Assert — not in map yet → falls through to the unknown-SQL-Server-function
-        // default branch (returns null for built-in unknowns; for genuinely-unknown strings
-        // the default impl returns null per the SqliteForMsSqlServerModelCustomizer tests).
-        // After adding a mapping, the same input now returns the mapped value.
+        // Act & Assert — the base SqliteModelCustomizer's default OverrideDefaultValueHandling
+        // returns the input unchanged when no mapping exists (only null is special-cased to
+        // null). After adding a mapping, the same input now returns the mapped value. The
+        // null-on-miss behaviour mentioned in some commits applies to the derived
+        // SqliteForMsSqlServerModelCustomizer, not the base class tested here.
+        Assert.Equal("(my_runtime_added())", sut.OverrideDefaultValueHandling("(my_runtime_added())"));
         sut.DefaultValueMap["(my_runtime_added())"] = "1";
         Assert.Equal("1", sut.OverrideDefaultValueHandling("(my_runtime_added())"));
     }
