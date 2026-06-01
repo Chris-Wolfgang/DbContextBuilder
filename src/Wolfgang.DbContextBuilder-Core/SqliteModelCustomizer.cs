@@ -46,10 +46,17 @@ public class SqliteModelCustomizer : ModelCustomizer
             {
                 var schemaPrefix = t.SchemaName ?? "dbo";
 
-                // Avoid recursive renaming
-                return t.TableName.StartsWith($"{schemaPrefix}_", StringComparison.OrdinalIgnoreCase)
-                    ? t.TableName // Table has already been renamed so just return it
-                    : $"{schemaPrefix}_{t.TableName}"; // Rename table by prefixing schema name
+                // Avoid recursive renaming. Check without allocating an interpolated
+                // "{prefix}_" probe string per entity type — compare the prefix substring
+                // directly then verify the separator character.
+                if (t.TableName.Length > schemaPrefix.Length
+                    && t.TableName[schemaPrefix.Length] == '_'
+                    && t.TableName.StartsWith(schemaPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    return t.TableName; // already renamed
+                }
+
+                return $"{schemaPrefix}_{t.TableName}";
             };
         set => _overrideTableRenaming = value ?? throw new ArgumentNullException(nameof(value));
     }

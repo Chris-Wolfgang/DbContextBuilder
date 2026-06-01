@@ -33,6 +33,7 @@
 	</PropertyGroup>
 	 <ItemGroup>
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\AutoFixtureRandomEntityCreator.cs" Link="AutoFixtureRandomEntityCreator.cs" />
+	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextActivator.cs" Link="DbContextActivator.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilder.cs" Link="DbContextBuilder.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderAutoFixtureExtensions.cs" Link="DbContextBuilderAutoFixtureExtensions.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderSqliteExtensions.cs" Link="DbContextBuilderSqliteExtensions.cs" />
