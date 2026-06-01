@@ -212,16 +212,23 @@ public class DbContextBuilder<T> where T : DbContext
         var contextCreator = CreateDbContext ?? new EffortDbContextCreator();
         CreateDbContext = contextCreator;
 
-        var context = contextCreator.CreateDbContext<T>();
-        InitializeDatabase(context);
-
-        if (_seedData.Count > 0)
+        // Create a temporary context to initialize the database (via Effort's shared
+        // connection) and persist seed data. Dispose it before returning the caller's
+        // context — otherwise it leaks for the lifetime of the builder. The seed data
+        // remains because EffortDbContextCreator holds the underlying connection open
+        // independent of any one context.
+        using (var seedContext = contextCreator.CreateDbContext<T>())
         {
-            foreach (var entity in _seedData)
+            InitializeDatabase(seedContext);
+
+            if (_seedData.Count > 0)
             {
-                context.Set(entity.GetType()).Add(entity);
+                foreach (var entity in _seedData)
+                {
+                    seedContext.Set(entity.GetType()).Add(entity);
+                }
+                seedContext.SaveChanges();
             }
-            context.SaveChanges();
         }
 
         return contextCreator.CreateDbContext<T>();
@@ -239,16 +246,21 @@ public class DbContextBuilder<T> where T : DbContext
         var contextCreator = CreateDbContext ?? new EffortDbContextCreator();
         CreateDbContext = contextCreator;
 
-        var context = contextCreator.CreateDbContext<T>();
-        InitializeDatabase(context);
-
-        if (_seedData.Count > 0)
+        // Create a temporary context to initialize the database (via Effort's shared
+        // connection) and persist seed data. Dispose it before returning the caller's
+        // context — otherwise it leaks for the lifetime of the builder.
+        using (var seedContext = contextCreator.CreateDbContext<T>())
         {
-            foreach (var entity in _seedData)
+            InitializeDatabase(seedContext);
+
+            if (_seedData.Count > 0)
             {
-                context.Set(entity.GetType()).Add(entity);
+                foreach (var entity in _seedData)
+                {
+                    seedContext.Set(entity.GetType()).Add(entity);
+                }
+                await seedContext.SaveChangesAsync().ConfigureAwait(false);
             }
-            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         return contextCreator.CreateDbContext<T>();
