@@ -24,7 +24,7 @@ public class DbContextActivatorTests
             .UseInMemoryDatabase($"happy-{Guid.NewGuid()}")
             .Options;
 
-        var context = DbContextActivator<ContextWithGenericOptionsCtor>.Create(options);
+        using var context = DbContextActivator<ContextWithGenericOptionsCtor>.Create(options);
 
         Assert.NotNull(context);
         Assert.IsType<ContextWithGenericOptionsCtor>(context);
@@ -46,7 +46,7 @@ public class DbContextActivatorTests
             .UseInMemoryDatabase($"fallback-{Guid.NewGuid()}")
             .Options;
 
-        var context = DbContextActivator<ContextWithNonGenericOptionsCtor>.Create(options);
+        using var context = DbContextActivator<ContextWithNonGenericOptionsCtor>.Create(options);
 
         Assert.NotNull(context);
         Assert.IsType<ContextWithNonGenericOptionsCtor>(context);
