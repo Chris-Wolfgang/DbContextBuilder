@@ -90,8 +90,27 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             throw new ArgumentException("The type of TEntity cannot be string", nameof(entities));
         }
 
-        var entityArray = entities as TEntity[] ?? entities.ToArray();
-        return SeedWith(entityArray);
+        // Iterate directly rather than materializing to an array and delegating to the
+        // params overload. The params path's foreach was the only thing this used to do
+        // that the iteration doesn't; null and string checks run inline.
+        foreach (var entity in entities)
+        {
+            switch (entity)
+            {
+                case null:
+                    throw new ArgumentException("One of the entities is null", nameof(entities));
+                case string:
+                    throw new ArgumentException("One of the entities passed in is of type string", nameof(entities));
+                case IEnumerable<object> e:
+                    _seedData.AddRange(e);
+                    break;
+                default:
+                    _seedData.Add(entity);
+                    break;
+            }
+        }
+
+        return this;
     }
 
 
