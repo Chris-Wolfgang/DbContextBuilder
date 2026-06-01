@@ -154,7 +154,21 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
         if (entity is IEnumerable<object> sequence)
         {
-            _seedData.AddRange(sequence);
+            // Walk the sequence so a List<string> (or any IEnumerable that wraps strings)
+            // is rejected element-by-element, matching the per-item check the params
+            // overload performs in its foreach. Without this, the runtime
+            // IEnumerable<object> cast (which works because IEnumerable<T> is covariant
+            // in T for reference types) would let a List<string> through as silent
+            // seed data.
+            foreach (var item in sequence)
+            {
+                if (item is string)
+                {
+                    throw new ArgumentException("One of the entities passed in is of type string", nameof(entity));
+                }
+
+                _seedData.Add(item);
+            }
         }
         else
         {

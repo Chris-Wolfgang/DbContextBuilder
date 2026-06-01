@@ -141,7 +141,18 @@ public class DbContextBuilder<T> where T : DbContext
 
         if (entity is IEnumerable<object> sequence)
         {
-            _seedData.AddRange(sequence);
+            // Reject string elements per-item, matching the foreach in the params overload.
+            // IEnumerable<T> is covariant in T for reference types, so List<string> casts
+            // to IEnumerable<object> at runtime and would slip through without this check.
+            foreach (var item in sequence)
+            {
+                if (item is string)
+                {
+                    throw new ArgumentException("One of the entities passed in is of type string", nameof(entity));
+                }
+
+                _seedData.Add(item);
+            }
         }
         else
         {
