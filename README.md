@@ -37,7 +37,8 @@ Each package targets the .NET runtimes its EF version requires:
 
 | Package | Target Frameworks |
 |---|---|
-| `Wolfgang.DbContextBuilder-Core` / `-Core-EF6` | `net6.0` |
+| `Wolfgang.DbContextBuilder-Core` | `net10.0` |
+| `Wolfgang.DbContextBuilder-Core-EF6` | `net6.0` |
 | `Wolfgang.DbContextBuilder-Core-EF7` | `net7.0` |
 | `Wolfgang.DbContextBuilder-Core-EF8` | `net8.0` |
 | `Wolfgang.DbContextBuilder-Core-EF9` | `net9.0` |
