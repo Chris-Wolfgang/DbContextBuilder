@@ -71,11 +71,35 @@ runtime behavior change vs v0.6.1 across any of the seven packages.
   for the post-mortem on what happens when this regression reaches a
   release.)
 
-> Historical note: this CHANGELOG was not updated between v0.3.3 and
-> v0.6.1. The intermediate releases (0.4.0, 0.5.0, 0.6.0, 0.6.1) shipped
-> dependency-range updates and incremental EF Core targeting tweaks
-> only — no public API changes. A backfill of those entries is tracked
-> separately and is not blocking this release.
+## [0.6.1] - 2026-05-09
+
+### Changed
+- Dependency-range bumps to consume the latest EF Core 9.x / 10.x patches.
+
+No public API change vs `0.6.0`.
+
+## [0.6.0] - 2026-05-03
+
+### Changed
+- Incremental EF Core targeting tweaks (per-package version-range
+  alignment to the EF major being pinned).
+
+No public API change vs `0.5.0`.
+
+## [0.5.0] - 2026-05-03
+
+### Changed
+- Incremental EF Core targeting tweaks.
+
+No public API change vs `0.4.0`.
+
+## [0.4.0] - 2026-05-02
+
+### Changed
+- Dependency-range updates across all seven `Wolfgang.DbContextBuilder-*`
+  packages.
+
+No public API change vs `0.3.3`.
 
 ## [0.3.3]
 
