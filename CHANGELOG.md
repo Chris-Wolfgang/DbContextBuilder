@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   lazy-initialized in the property getter, eliminating a race that could allocate
   duplicate delegates when EF's model customization runs concurrently.
 - `SqliteModelCustomizer.OverrideTableRenaming` default lambda no longer allocates
-  a `"{prefix}_"` interpolation per entity type — uses prefix-substring + separator
+  a `$"{prefix}_"` interpolation per entity type — uses prefix-substring + separator
   char comparison instead.
 - `DbContextBuilderSqliteExtensions`'s SQLite-already-registered check uses
   `typeof(SqliteOptionsExtension)` instead of matching the type's `FullName` string.
@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - XML doc sweep across Core + EF6: fixed stale `<exception cref>` claims, typos,
   truncated comments, malformed `<see cref></see>` tags, and literal `{T}` in
   `<returns>` (now `<typeparamref name="T"/>`).
-- `DbContextBuilder.SeedWith`, `UseInMemory`, `UseSqlite`, and
+- `DbContextBuilder<T>.SeedWith`, `UseInMemory`, `UseSqlite`, and
   `SqliteModelCustomizer.DefaultValueMap` now document their contracts
   (last-write-wins provider selection, insertion-order semantics, inheritance
   support, DI-singleton mutation hazard).
