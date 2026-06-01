@@ -838,7 +838,9 @@ public class SqliteModelCustomizerTests
     /// Verifies the default <see cref="SqliteModelCustomizer.OverrideManyToManyTableHandling"/>
     /// behaviour on a self-referencing many-to-many join: an Employee.Subordinates collection
     /// produces a join entity whose two foreign keys both point back to Employee. The heuristic
-    /// matches (2 FKs, 0 navigations) and produces a deterministic name of <c>Employee_Employee</c>.
+    /// matches (2 FKs, 0 navigations) and produces a deterministic name. The heuristic uses
+    /// the configured principal table name (<c>"Employees"</c> via <c>ToTable</c>), so the
+    /// expected rename is <c>Employees_Employees</c>.
     /// This pins the behaviour so future refactors don't silently change the self-reference name.
     /// </summary>
     [Fact]
@@ -884,9 +886,11 @@ public class SqliteModelCustomizerTests
         // Act
         sut.OverrideManyToManyTableHandling(entity);
 
-        // Assert — both FK principals are Employee, so the rename produces Employee_Employee.
-        // Consumers who want a more descriptive name (Employee_Subordinate, EmployeeHierarchy,
-        // etc.) should assign a custom OverrideManyToManyTableHandling delegate.
+        // Assert — both FK principals resolve to the same configured table name
+        // ("Employees" via ToTable), so the heuristic's "{Left}_{Right}" join produces
+        // "Employees_Employees". Consumers who want a more descriptive name
+        // (Employee_Subordinate, EmployeeHierarchy, etc.) should assign a custom
+        // OverrideManyToManyTableHandling delegate.
         Assert.Equal("Employees_Employees", entity.GetTableName());
     }
 
