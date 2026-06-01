@@ -206,11 +206,18 @@ public class DbContextBuilder<T> where T : DbContext
     /// Creates a new instance of <typeparamref name="T"/> seeded with the configured data.
     /// </summary>
     /// <returns>A new instance of <typeparamref name="T"/>.</returns>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="MissingMethodException">
     /// <typeparamref name="T"/> does not have a constructor that accepts
-    /// (<see cref="System.Data.Common.DbConnection"/>, <see cref="bool"/>), so the in-memory backing database
-    /// could not be initialized. See the wrapped <see cref="Exception.InnerException"/> for
-    /// the underlying <see cref="MissingMethodException"/>.
+    /// (<see cref="System.Data.Common.DbConnection"/>, <see cref="bool"/>) — propagated from
+    /// <see cref="Activator.CreateInstance(Type, object[])"/> inside
+    /// <see cref="EffortDbContextCreator.CreateDbContext{TDbContext}"/>, which the builder
+    /// calls before <c>InitializeDatabase</c> can wrap it.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The underlying <see cref="System.Data.Entity.Database"/> could not create itself
+    /// (a different failure mode than the missing-ctor case above). Wrapped by
+    /// <c>InitializeDatabase</c> with a more actionable message; the original exception is
+    /// in <see cref="Exception.InnerException"/>.
     /// </exception>
     public T Build()
     {
@@ -239,11 +246,18 @@ public class DbContextBuilder<T> where T : DbContext
     /// asynchronously.
     /// </summary>
     /// <returns>A new instance of <typeparamref name="T"/>.</returns>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="MissingMethodException">
     /// <typeparamref name="T"/> does not have a constructor that accepts
-    /// (<see cref="System.Data.Common.DbConnection"/>, <see cref="bool"/>), so the in-memory backing database
-    /// could not be initialized. See the wrapped <see cref="Exception.InnerException"/> for
-    /// the underlying <see cref="MissingMethodException"/>.
+    /// (<see cref="System.Data.Common.DbConnection"/>, <see cref="bool"/>) — propagated from
+    /// <see cref="Activator.CreateInstance(Type, object[])"/> inside
+    /// <see cref="EffortDbContextCreator.CreateDbContext{TDbContext}"/>, which the builder
+    /// calls before <c>InitializeDatabase</c> can wrap it.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The underlying <see cref="System.Data.Entity.Database"/> could not create itself
+    /// (a different failure mode than the missing-ctor case above). Wrapped by
+    /// <c>InitializeDatabase</c> with a more actionable message; the original exception is
+    /// in <see cref="Exception.InnerException"/>.
     /// </exception>
     public async Task<T> BuildAsync()
     {

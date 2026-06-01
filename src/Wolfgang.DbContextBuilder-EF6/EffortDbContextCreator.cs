@@ -37,14 +37,12 @@ internal sealed class EffortDbContextCreator : ICreateDbContext
     /// <exception cref="MissingMethodException">
     /// The specified <typeparamref name="TDbContext"/> type does not have a constructor
     /// that accepts (<see cref="DbConnection"/>, <see cref="bool"/>). Thrown by
-    /// <see cref="Activator.CreateInstance(Type, object[])"/>.
+    /// <see cref="Activator.CreateInstance(Type, object[])"/> and propagated to the
+    /// caller — <see cref="DbContextBuilder{T}.Build"/> /
+    /// <see cref="DbContextBuilder{T}.BuildAsync"/> do not wrap this exception, because
+    /// the call to <c>CreateDbContext&lt;T&gt;()</c> happens before <c>InitializeDatabase</c>
+    /// (the method whose <c>try/catch</c> performs the only wrap in the builder).
     /// </exception>
-    /// <remarks>
-    /// <see cref="DbContextBuilder{T}.BuildAsync"/> wraps the underlying
-    /// <see cref="MissingMethodException"/> in an <see cref="InvalidOperationException"/>
-    /// with a more actionable message; callers using the builder should expect that wrapped
-    /// form, not the raw exception thrown here.
-    /// </remarks>
     public TDbContext CreateDbContext<TDbContext>() where TDbContext : DbContext
     {
         return (TDbContext)Activator.CreateInstance
