@@ -34,10 +34,17 @@ internal sealed class EffortDbContextCreator : ICreateDbContext
     /// </summary>
     /// <typeparam name="TDbContext">The type of DbContext to create.</typeparam>
     /// <returns>A new instance of <typeparamref name="TDbContext"/>.</returns>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="MissingMethodException">
     /// The specified <typeparamref name="TDbContext"/> type does not have a constructor
-    /// that accepts (<see cref="DbConnection"/>, <see cref="bool"/>).
+    /// that accepts (<see cref="DbConnection"/>, <see cref="bool"/>). Thrown by
+    /// <see cref="Activator.CreateInstance(Type, object[])"/>.
     /// </exception>
+    /// <remarks>
+    /// <see cref="DbContextBuilder{T}.BuildAsync"/> wraps the underlying
+    /// <see cref="MissingMethodException"/> in an <see cref="InvalidOperationException"/>
+    /// with a more actionable message; callers using the builder should expect that wrapped
+    /// form, not the raw exception thrown here.
+    /// </remarks>
     public TDbContext CreateDbContext<TDbContext>() where TDbContext : DbContext
     {
         return (TDbContext)Activator.CreateInstance

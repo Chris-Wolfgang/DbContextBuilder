@@ -31,7 +31,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Instructs the builder to use InMemory as the database provider.
     /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     public DbContextBuilder<T> UseInMemory()
     {
         CreateDbContext = new InMemoryDbContextCreator();
@@ -45,7 +45,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// for creating random entities.
     /// </summary>
     /// <param name="creator">The creator to use</param>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     public DbContextBuilder<T> UseCustomRandomEntityCreator(ICreateRandomEntities creator)
     {
         ArgumentNullException.ThrowIfNull(creator);
@@ -59,7 +59,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Specifies a specific <see cref="DbContextOptionsBuilder{TContext}"/> instance to use when creating the DbContext.
     /// </summary>
     /// <param name="dbContextOptionsBuilder">The options builder to use when creating the DbContext.</param>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentNullException"><paramref name="dbContextOptionsBuilder"/> is null.</exception>
     public DbContextBuilder<T> UseDbContextOptionsBuilder(DbContextOptionsBuilder<T> dbContextOptionsBuilder)
     {
@@ -76,7 +76,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
     /// <param name="entities">The entities to populate the database with</param>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
@@ -100,7 +100,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
     /// <param name="entities">The entities to populate the database with</param>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
@@ -135,7 +135,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// </summary>
     /// <param name="count">The number of items to create</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count) where TEntity : class
     {
@@ -160,7 +160,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, TEntity> func) where TEntity : class
     {
@@ -188,7 +188,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and the index number of the entity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, int, TEntity> func) where TEntity : class
     {
@@ -214,7 +214,6 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Creates a new instance of <typeparamref name="T"/> seeded with the specified data.
     /// </summary>
     /// <returns>A new instance of <typeparamref name="T"/>.</returns>
-    /// <exception cref="NotSupportedException">The specified database provider is not supported</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public async Task<T> BuildAsync()
     {
