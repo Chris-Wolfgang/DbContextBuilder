@@ -20,8 +20,13 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     private DbContextOptionsBuilder<T>? _dbContextOptionsBuilder;
 
 
+
     internal ServiceCollection ServiceCollection { get; } = [];
+
+
+
     internal ICreateDbContext? CreateDbContext { get; set; }
+
 
 
     internal ICreateRandomEntities RandomEntityCreator { get; private set; } = new AutoFixtureRandomEntityCreator();
