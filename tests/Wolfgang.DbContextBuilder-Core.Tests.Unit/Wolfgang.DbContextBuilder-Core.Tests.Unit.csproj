@@ -182,7 +182,7 @@
 
 
 	<PropertyGroup>
-		<!-- CA1707 (underscores) is intentional: test naming uses MethodUnderTest_when_condition_expected_result per CLAUDE.md. -->
+		<!-- CA1707 (underscores) is intentional: test method names follow the MethodUnderTest_when_condition_expected_result convention. -->
 		<NoWarn>$(NoWarn);CA1707</NoWarn>
 	</PropertyGroup>
 
