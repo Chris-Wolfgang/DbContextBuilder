@@ -1135,8 +1135,15 @@ public abstract class DbContextBuilderTestsBase
         await sut.BuildAsync();
 
 
-        // Assert
-        Assert.True(buffer.Length > 0, "Buffer length was expected to be greater than 0");
+        // Assert — the LogTo callback the test wired in must have received something
+        // (EF emits at least one log line when initializing the connection). Asserting
+        // NotEmpty on the materialized string gives a clearer failure message than the
+        // previous `buffer.Length > 0` numeric check, and asserting that the log
+        // contains a known EF marker pins the test to "EF actually logged via our
+        // callback" rather than "the buffer happens to be non-zero for any reason".
+        var log = buffer.ToString();
+        Assert.NotEmpty(log);
+        Assert.Contains("Microsoft.EntityFrameworkCore", log, StringComparison.Ordinal);
     }
 
 
