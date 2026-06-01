@@ -1,0 +1,36 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Benchmarks/">
+    <Project Path="benchmarks/DbContextBuilder.Benchmarks/DbContextBuilder.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/ExtraProjects/">
+    <File Path=".editorconfig" />
+    <Project Path="extra-projects/AdventureWorks-EF6/AdventureWorks-EF6.csproj" />
+    <Project Path="extra-projects/AdventureWorks-EF7/AdventureWorks-EF7.csproj" />
+    <Project Path="extra-projects/AdventureWorks-EF8/AdventureWorks-EF8.csproj" />
+    <Project Path="extra-projects/AdventureWorks-EF9/AdventureWorks-EF9.csproj" />
+    <Project Path="extra-projects/AdventureWorks-EF10/AdventureWorks-EF10.csproj" />
+  </Folder>
+  <Folder Name="/Source/">
+    <Project Path="src/Wolfgang.DbContextBuilder-Core-EF10/Wolfgang.DbContextBuilder-Core-EF10.csproj" />
+    <Project Path="src/Wolfgang.DbContextBuilder-Core-EF6/Wolfgang.DbContextBuilder-Core-EF6.csproj" />
+    <Project Path="src/Wolfgang.DbContextBuilder-Core-EF7/Wolfgang.DbContextBuilder-Core-EF7.csproj" />
+    <Project Path="src/Wolfgang.DbContextBuilder-Core-EF8/Wolfgang.DbContextBuilder-Core-EF8.csproj" />
+    <Project Path="src/Wolfgang.DbContextBuilder-Core-EF9/Wolfgang.DbContextBuilder-Core-EF9.csproj" />
+    <Project Path="src/Wolfgang.DbContextBuilder-Core/Wolfgang.DbContextBuilder-Core.csproj" />
+    <Project Path="src/Wolfgang.DbContextBuilder-EF6/Wolfgang.DbContextBuilder-EF6.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/Wolfgang.DbContextBuilder-Core-EF10.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF10.csproj" />
+    <Project Path="tests/Wolfgang.DbContextBuilder-Core-EF6.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF6.csproj" />
+    <Project Path="tests/Wolfgang.DbContextBuilder-Core-EF7.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF7.csproj" />
+    <Project Path="tests/Wolfgang.DbContextBuilder-Core-EF8.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF8.csproj" />
+    <Project Path="tests/Wolfgang.DbContextBuilder-Core-EF9.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF9.csproj" />
+    <Project Path="tests/Wolfgang.DbContextBuilder-Core.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit.csproj" />
+    <Project Path="tests/Wolfgang.DbContextBuilder-EF6.Tests.Unit/Wolfgang.DbContextBuilder-EF6.Tests.Unit.csproj" />
+  </Folder>
+</Solution>
