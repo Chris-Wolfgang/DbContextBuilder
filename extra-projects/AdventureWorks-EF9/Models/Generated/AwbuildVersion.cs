@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Current version number of the AdventureWorks 2016 sample database. 
 /// </summary>
-public partial class AwbuildVersion
-{
+public partial record AwbuildVersion{
     /// <summary>
     /// Primary key for AWBuildVersion records.
     /// </summary>

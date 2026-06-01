@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Current customer information. Also see the Person and Store tables.
 /// </summary>
-public partial class Customer
-{
+public partial record Customer{
     /// <summary>
     /// Primary key.
     /// </summary>

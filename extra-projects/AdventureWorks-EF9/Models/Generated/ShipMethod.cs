@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Shipping company lookup table.
 /// </summary>
-public partial class ShipMethod
-{
+public partial record ShipMethod{
     /// <summary>
     /// Primary key for ShipMethod records.
     /// </summary>

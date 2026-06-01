@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Lookup table containing the languages in which some AdventureWorks data is stored.
 /// </summary>
-public partial class Culture
-{
+public partial record Culture{
     /// <summary>
     /// Primary key for Culture records.
     /// </summary>

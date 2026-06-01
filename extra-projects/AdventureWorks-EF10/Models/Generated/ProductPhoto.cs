@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Product images.
 /// </summary>
-public partial class ProductPhoto
-{
+public partial record ProductPhoto{
     /// <summary>
     /// Primary key for ProductPhoto records.
     /// </summary>

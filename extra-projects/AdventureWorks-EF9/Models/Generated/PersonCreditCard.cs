@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Cross-reference table mapping people to their credit card information in the CreditCard table. 
 /// </summary>
-public partial class PersonCreditCard
-{
+public partial record PersonCreditCard{
     /// <summary>
     /// Business entity identification number. Foreign key to Person.BusinessEntityID.
     /// </summary>

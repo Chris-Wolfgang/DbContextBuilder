@@ -790,7 +790,6 @@ public partial class AdventureWorksDbContext : DbContext
             entity.ToTable("Employee", "HumanResources", tb =>
                 {
                     tb.HasComment("Employee information such as salary, department, and title.");
-                    tb.HasTrigger("dEmployee");
                 });
 
             entity.HasIndex(e => e.LoginId, "AK_Employee_LoginID").IsUnique();
@@ -1059,7 +1058,6 @@ public partial class AdventureWorksDbContext : DbContext
             entity.ToTable("Person", "Person", tb =>
                 {
                     tb.HasComment("Human beings involved with AdventureWorks: employees, customer contacts, and vendor contacts.");
-                    tb.HasTrigger("iuPerson");
                 });
 
             entity.HasIndex(e => e.Rowguid, "AK_Person_rowguid").IsUnique();
@@ -1727,8 +1725,6 @@ public partial class AdventureWorksDbContext : DbContext
             entity.ToTable("PurchaseOrderDetail", "Purchasing", tb =>
                 {
                     tb.HasComment("Individual products associated with a specific purchase order. See PurchaseOrderHeader.");
-                    tb.HasTrigger("iPurchaseOrderDetail");
-                    tb.HasTrigger("uPurchaseOrderDetail");
                 });
 
             entity.HasIndex(e => e.ProductId, "IX_PurchaseOrderDetail_ProductID");
@@ -1785,7 +1781,6 @@ public partial class AdventureWorksDbContext : DbContext
             entity.ToTable("PurchaseOrderHeader", "Purchasing", tb =>
                 {
                     tb.HasComment("General purchase order information. See PurchaseOrderDetail.");
-                    tb.HasTrigger("uPurchaseOrderHeader");
                 });
 
             entity.HasIndex(e => e.EmployeeId, "IX_PurchaseOrderHeader_EmployeeID");
@@ -1853,7 +1848,6 @@ public partial class AdventureWorksDbContext : DbContext
             entity.ToTable("SalesOrderDetail", "Sales", tb =>
                 {
                     tb.HasComment("Individual products associated with a specific sales order. See SalesOrderHeader.");
-                    tb.HasTrigger("iduSalesOrderDetail");
                 });
 
             entity.HasIndex(e => e.Rowguid, "AK_SalesOrderDetail_rowguid").IsUnique();
@@ -1911,7 +1905,6 @@ public partial class AdventureWorksDbContext : DbContext
             entity.ToTable("SalesOrderHeader", "Sales", tb =>
                 {
                     tb.HasComment("General sales order information.");
-                    tb.HasTrigger("uSalesOrderHeader");
                 });
 
             entity.HasIndex(e => e.SalesOrderNumber, "AK_SalesOrderHeader_SalesOrderNumber").IsUnique();
@@ -3305,7 +3298,6 @@ public partial class AdventureWorksDbContext : DbContext
             entity.ToTable("Vendor", "Purchasing", tb =>
                 {
                     tb.HasComment("Companies from whom Adventure Works Cycles purchases parts or other goods.");
-                    tb.HasTrigger("dVendor");
                 });
 
             entity.HasIndex(e => e.AccountNumber, "AK_Vendor_AccountNumber").IsUnique();
@@ -3350,8 +3342,6 @@ public partial class AdventureWorksDbContext : DbContext
             entity.ToTable("WorkOrder", "Production", tb =>
                 {
                     tb.HasComment("Manufacturing work orders.");
-                    tb.HasTrigger("iWorkOrder");
-                    tb.HasTrigger("uWorkOrder");
                 });
 
             entity.HasIndex(e => e.ProductId, "IX_WorkOrder_ProductID");

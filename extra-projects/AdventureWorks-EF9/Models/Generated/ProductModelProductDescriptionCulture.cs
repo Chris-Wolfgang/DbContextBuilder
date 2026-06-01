@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Cross-reference table mapping product descriptions and the language the description is written in.
 /// </summary>
-public partial class ProductModelProductDescriptionCulture
-{
+public partial record ProductModelProductDescriptionCulture{
     /// <summary>
     /// Primary key. Foreign key to ProductModel.ProductModelID.
     /// </summary>

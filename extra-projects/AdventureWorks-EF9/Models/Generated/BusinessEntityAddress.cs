@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Cross-reference table mapping customers, vendors, and employees to their addresses.
 /// </summary>
-public partial class BusinessEntityAddress
-{
+public partial record BusinessEntityAddress{
     /// <summary>
     /// Primary key. Foreign key to BusinessEntity.BusinessEntityID.
     /// </summary>

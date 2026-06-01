@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Street address information for customers, employees, and vendors.
 /// </summary>
-public partial class Address
-{
+public partial record Address{
     /// <summary>
     /// Primary key for Address records.
     /// </summary>

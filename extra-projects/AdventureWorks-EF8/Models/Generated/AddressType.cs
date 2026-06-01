@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Types of addresses stored in the Address table. 
 /// </summary>
-public partial class AddressType
-{
+public partial record AddressType{
     /// <summary>
     /// Primary key for AddressType records.
     /// </summary>

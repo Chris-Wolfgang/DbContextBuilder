@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace AdventureWorks.Models;
 
-public partial class VProductModelCatalogDescription
-{
+public partial record VProductModelCatalogDescription{
     public int ProductModelId { get; set; }
 
     public string Name { get; set; }

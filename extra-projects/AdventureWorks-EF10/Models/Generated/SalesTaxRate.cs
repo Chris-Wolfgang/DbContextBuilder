@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Tax rate lookup table.
 /// </summary>
-public partial class SalesTaxRate
-{
+public partial record SalesTaxRate{
     /// <summary>
     /// Primary key for SalesTaxRate records.
     /// </summary>

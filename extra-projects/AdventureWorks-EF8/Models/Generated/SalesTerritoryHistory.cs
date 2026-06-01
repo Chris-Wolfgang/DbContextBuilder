@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Sales representative transfers to other sales territories.
 /// </summary>
-public partial class SalesTerritoryHistory
-{
+public partial record SalesTerritoryHistory{
     /// <summary>
     /// Primary key. The sales rep.  Foreign key to SalesPerson.BusinessEntityID.
     /// </summary>

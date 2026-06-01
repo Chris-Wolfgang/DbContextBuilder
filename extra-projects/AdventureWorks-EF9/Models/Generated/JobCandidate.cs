@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Résumés submitted to Human Resources by job applicants.
 /// </summary>
-public partial class JobCandidate
-{
+public partial record JobCandidate{
     /// <summary>
     /// Primary key for JobCandidate records.
     /// </summary>

@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Work order details.
 /// </summary>
-public partial class WorkOrderRouting
-{
+public partial record WorkOrderRouting{
     /// <summary>
     /// Primary key. Foreign key to WorkOrder.WorkOrderID.
     /// </summary>

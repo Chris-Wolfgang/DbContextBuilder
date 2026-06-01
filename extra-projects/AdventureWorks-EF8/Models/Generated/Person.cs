@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Human beings involved with AdventureWorks: employees, customer contacts, and vendor contacts.
 /// </summary>
-public partial class Person
-{
+public partial record Person{
     /// <summary>
     /// Primary key for Person records.
     /// </summary>

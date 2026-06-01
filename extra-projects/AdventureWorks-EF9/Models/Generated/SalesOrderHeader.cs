@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// General sales order information.
 /// </summary>
-public partial class SalesOrderHeader
-{
+public partial record SalesOrderHeader{
     /// <summary>
     /// Primary key.
     /// </summary>

@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Sales representative current information.
 /// </summary>
-public partial class SalesPerson
-{
+public partial record SalesPerson{
     /// <summary>
     /// Primary key for SalesPerson records. Foreign key to Employee.BusinessEntityID
     /// </summary>

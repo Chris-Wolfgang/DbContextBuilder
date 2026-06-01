@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Companies from whom Adventure Works Cycles purchases parts or other goods.
 /// </summary>
-public partial class Vendor
-{
+public partial record Vendor{
     /// <summary>
     /// Primary key for Vendor records.  Foreign key to BusinessEntity.BusinessEntityID
     /// </summary>

@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Cross-reference table mapping sales orders to sales reason codes.
 /// </summary>
-public partial class SalesOrderHeaderSalesReason
-{
+public partial record SalesOrderHeaderSalesReason{
     /// <summary>
     /// Primary key. Foreign key to SalesOrderHeader.SalesOrderID.
     /// </summary>

@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace AdventureWorks.Models;
 
-public partial class VJobCandidateEducation
-{
+public partial record VJobCandidateEducation{
     public int JobCandidateId { get; set; }
 
     public string EduLevel { get; set; }

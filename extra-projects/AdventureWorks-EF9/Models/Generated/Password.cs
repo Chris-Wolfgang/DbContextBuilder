@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// One way hashed authentication information
 /// </summary>
-public partial class Password
-{
+public partial record Password{
     public int BusinessEntityId { get; set; }
 
     /// <summary>

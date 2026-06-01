@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Transactions for previous years.
 /// </summary>
-public partial class TransactionHistoryArchive
-{
+public partial record TransactionHistoryArchive{
     /// <summary>
     /// Primary key for TransactionHistoryArchive records.
     /// </summary>

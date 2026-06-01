@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// General purchase order information. See PurchaseOrderDetail.
 /// </summary>
-public partial class PurchaseOrderHeader
-{
+public partial record PurchaseOrderHeader{
     /// <summary>
     /// Primary key.
     /// </summary>

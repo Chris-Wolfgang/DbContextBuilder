@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Record of each purchase order, sales order, or work order transaction year to date.
 /// </summary>
-public partial class TransactionHistory
-{
+public partial record TransactionHistory{
     /// <summary>
     /// Primary key for TransactionHistory records.
     /// </summary>

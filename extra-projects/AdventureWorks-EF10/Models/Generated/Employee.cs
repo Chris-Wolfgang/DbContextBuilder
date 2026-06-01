@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Employee information such as salary, department, and title.
 /// </summary>
-public partial class Employee
-{
+public partial record Employee{
     /// <summary>
     /// Primary key for Employee records.  Foreign key to BusinessEntity.BusinessEntityID.
     /// </summary>

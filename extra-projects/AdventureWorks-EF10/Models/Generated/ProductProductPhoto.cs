@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Cross-reference table mapping products and product photos.
 /// </summary>
-public partial class ProductProductPhoto
-{
+public partial record ProductProductPhoto{
     /// <summary>
     /// Product identification number. Foreign key to Product.ProductID.
     /// </summary>

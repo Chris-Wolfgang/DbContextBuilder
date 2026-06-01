@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// High-level product categorization.
 /// </summary>
-public partial class ProductCategory
-{
+public partial record ProductCategory{
     /// <summary>
     /// Primary key for ProductCategory records.
     /// </summary>

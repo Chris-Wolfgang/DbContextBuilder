@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Cross-reference table mapping ISO currency codes to a country or region.
 /// </summary>
-public partial class CountryRegionCurrency
-{
+public partial record CountryRegionCurrency{
     /// <summary>
     /// ISO code for countries and regions. Foreign key to CountryRegion.CountryRegionCode.
     /// </summary>

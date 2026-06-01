@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Where to send a person email.
 /// </summary>
-public partial class EmailAddress
-{
+public partial record EmailAddress{
     /// <summary>
     /// Primary key. Person associated with this email address.  Foreign key to Person.BusinessEntityID
     /// </summary>

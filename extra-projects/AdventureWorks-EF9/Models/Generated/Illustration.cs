@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Bicycle assembly diagrams.
 /// </summary>
-public partial class Illustration
-{
+public partial record Illustration{
     /// <summary>
     /// Primary key for Illustration records.
     /// </summary>

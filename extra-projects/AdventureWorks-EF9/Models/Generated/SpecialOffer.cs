@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Sale discounts lookup table.
 /// </summary>
-public partial class SpecialOffer
-{
+public partial record SpecialOffer{
     /// <summary>
     /// Primary key for SpecialOffer records.
     /// </summary>

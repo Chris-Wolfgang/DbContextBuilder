@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Unit of measure lookup table.
 /// </summary>
-public partial class UnitMeasure
-{
+public partial record UnitMeasure{
     /// <summary>
     /// Primary key.
     /// </summary>

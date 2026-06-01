@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace AdventureWorks.Models;
 
-public partial class VPersonDemographic
-{
+public partial record VPersonDemographic{
     public int BusinessEntityId { get; set; }
 
     public decimal? TotalPurchaseYtd { get; set; }

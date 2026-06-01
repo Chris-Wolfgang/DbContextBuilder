@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Sales territory lookup table.
 /// </summary>
-public partial class SalesTerritory
-{
+public partial record SalesTerritory{
     /// <summary>
     /// Primary key for SalesTerritory records.
     /// </summary>
