@@ -39,6 +39,7 @@
     "globalMetadata": {
       "_appName": "",
       "_appTitle": "DbContextBuilder",
+      "_appLogoPath": "logo.svg",
       "_enableSearch": true,
       "pdf": true
     }
