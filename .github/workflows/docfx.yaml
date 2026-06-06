@@ -21,6 +21,11 @@ on:
         required: false
         type: boolean
         default: true
+      overlay_canonical_docs_assets:
+        description: 'Before docfx build, overlay docfx_project/{public,versions.json,logo.svg,docfx.json} from origin/main onto the checked-out ref. Lets you backfill the canonical version-picker UI onto older tags whose original docfx_project predated it. Leave on for old-tag rebuilds; harmless no-op when running from main.'
+        required: false
+        type: boolean
+        default: true
   # Manual trigger for ad-hoc builds or dry-runs.
   # Leave 'version' blank to use the selected branch or tag name as the destination.
   workflow_dispatch:
@@ -35,6 +40,10 @@ on:
         default: true
       deploy_as_latest:
         description: 'Also deploy to the site root (/) and versions/latest/ (uncheck when rebuilding older versions)'
+        type: boolean
+        default: true
+      overlay_canonical_docs_assets:
+        description: 'Before docfx build, overlay docfx_project/{public,versions.json,logo.svg,docfx.json} from origin/main onto the checked-out ref. Lets you backfill the canonical version-picker UI onto older tags whose original docfx_project predated it. Leave on for old-tag rebuilds; harmless no-op when running from main.'
         type: boolean
         default: true
 
@@ -55,6 +64,67 @@ jobs:
         with:
           fetch-depth: 0  # Full history needed to enumerate all v* tags
           persist-credentials: false
+
+      # When backfilling docs for a tag that predates the canonical
+      # version-picker assets, the checked-out tag has no
+      # docfx_project/public/version-picker.js and its docfx.json
+      # has no picker-bootstrap <script> in globalMetadata._appFooter
+      # — so the rebuilt docs would deploy without the dropdown.
+      #
+      # Overlay the canonical assets from origin/main onto whatever ref
+      # we just checked out. When triggered from main (release.yaml's
+      # workflow_call, or workflow_dispatch from main), this is a no-op
+      # because the files are already at main's content. When triggered
+      # from an older tag, this swaps just the docs-tooling files so
+      # the picker appears on the rebuilt versioned docs.
+      #
+      # Scope is deliberately narrow: only docs tooling files, never
+      # source/csproj/tests/scripts. Set
+      # overlay_canonical_docs_assets=false to skip (e.g. when
+      # intentionally rebuilding a tag's original docs config).
+      - name: Overlay canonical docs assets from origin/main
+        if: inputs.overlay_canonical_docs_assets != false
+        shell: pwsh
+        run: |
+          # The checkout above did fetch-depth: 0, so origin/main is
+          # already in the local refs — no fresh fetch needed.
+          $assets = @(
+            'docfx_project/public',
+            'docfx_project/versions.json',
+            'docfx_project/logo.svg',
+            'docfx_project/docfx.json'
+          )
+
+          # Detect whether the current HEAD already matches origin/main.
+          # When it does (push to main, workflow_dispatch from main),
+          # the overlay is a no-op and skipping it keeps the run log
+          # clean.
+          $headSha = (git rev-parse HEAD).Trim()
+          $mainSha = (git rev-parse origin/main).Trim()
+          if ($headSha -eq $mainSha) {
+            Write-Host "HEAD == origin/main — overlay is a no-op, skipping."
+            exit 0
+          }
+
+          Write-Host "Overlaying canonical docs assets from origin/main"
+          Write-Host "  HEAD = $headSha"
+          Write-Host "  main = $mainSha"
+          foreach ($path in $assets) {
+            # Use git ls-tree to check whether the path exists on main
+            # before trying to checkout — avoids spurious errors for
+            # repos that don't carry every asset yet.
+            $existsOnMain = (git ls-tree -r --name-only origin/main -- $path)
+            if (-not $existsOnMain) {
+              Write-Host "  skip: $path (not present on main)"
+              continue
+            }
+            git checkout origin/main -- $path
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Failed to overlay $path from origin/main"
+              exit $LASTEXITCODE
+            }
+            Write-Host "  overlaid: $path"
+          }
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -272,6 +342,11 @@ jobs:
         #   so there's nothing for the preservation guard to protect — a
         #   transient Pages-fetch failure would block a legitimate rebuild)
         if: inputs.deploy_to_pages != false && inputs.deploy_as_latest != false
+        env:
+          # github.event.repository is missing under workflow_call, so derive the
+          # repo name from github.repository ("owner/repo") instead — works under
+          # workflow_call, workflow_dispatch, and release triggers.
+          GITHUB_REPOSITORY: ${{ github.repository }}
         shell: pwsh
         run: |
           $newPath = 'docfx_project/_site/versions.json'
@@ -285,21 +360,29 @@ jobs:
             Write-Host "::error::Newly-generated docfx_project/_site/versions.json is missing — docfx generation is broken. Refusing to deploy without a verified version manifest."
             exit 1
           }
-          $existingUrl = "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/versions.json"
+          $repoName = ($env:GITHUB_REPOSITORY -split '/')[-1]
+          $existingUrl = "https://${{ github.repository_owner }}.github.io/$repoName/versions.json"
           try {
+            # -UseBasicParsing is a Windows-PowerShell-5.1 flag; pwsh (PowerShell 7+)
+            # treats it as unsupported and would error. Omit it.
             $existingRaw = (Invoke-WebRequest -Uri $existingUrl -ErrorAction Stop).Content
           } catch {
-            # Only treat a true 404 as "first deploy". Other errors (network,
-            # DNS, Pages outage, auth/redirect) must NOT silently bypass the
-            # preservation check — they could let a deploy that drops version
-            # entries from the picker slip through.
-            $status = $null
-            if ($_.Exception.Response) { $status = [int]$_.Exception.Response.StatusCode }
-            if ($status -eq 404) {
-              Write-Host "::notice::No existing versions.json at $existingUrl (404) - first deploy, skipping preservation check."
+            # Distinguish 404 (legitimate "first deploy" - the published site
+            # has no versions.json yet) from any other failure (transient
+            # network, DNS, 5xx, rate-limit, GitHub Pages outage). Silently
+            # treating those as "first deploy" would allow a degraded run to
+            # wipe the published version selector with whatever this deploy
+            # produced. Only 404 is a safe signal to skip the preservation
+            # check; everything else aborts the deploy.
+            $statusCode = 0
+            if ($_.Exception.PSObject.Properties.Match('Response').Count -gt 0 -and $_.Exception.Response) {
+              try { $statusCode = [int]$_.Exception.Response.StatusCode } catch { $statusCode = 0 }
+            }
+            if ($statusCode -eq 404) {
+              Write-Host "::notice::No existing versions.json at $existingUrl (HTTP 404) - first deploy, skipping preservation check."
               exit 0
             }
-            Write-Error "Failed to fetch existing versions.json from $existingUrl (status=$status): $($_.Exception.Message). Aborting deploy to avoid masking a transient error."
+            Write-Error "Failed to fetch existing versions.json at $existingUrl (status=$statusCode): $($_.Exception.Message). Refusing to deploy - a transient fetch failure must not be treated as a first deploy because that path can wipe previously-published version entries."
             exit 1
           }
           try {
@@ -405,11 +488,7 @@ jobs:
             }
             $useWorktree = [bool]$branchExists
             if ($useWorktree) {
-              # Explicit refspec so origin/gh-pages is populated as a
-              # remote-tracking ref even in the shallow / single-branch
-              # checkout Actions provides (bare `git fetch origin gh-pages`
-              # would only update FETCH_HEAD on those checkouts).
-              git fetch origin +refs/heads/gh-pages:refs/remotes/origin/gh-pages
+              git fetch origin gh-pages
               if ($LASTEXITCODE -ne 0) { throw "git fetch origin gh-pages failed with exit code $LASTEXITCODE" }
               git show-ref --verify --quiet refs/heads/gh-pages
               if ($LASTEXITCODE -ne 0) { git branch gh-pages origin/gh-pages }
@@ -473,34 +552,55 @@ jobs:
               Copy-Item -Path "$siteDir/*" -Destination $latestDir -Recurse -Force
               Write-Host "✅ Copied docs to versions/latest/"
 
-              # Generate version-picker index.html and overwrite _site/index.html.
-              # This happens AFTER the versioned copies above, so those directories
-              # retain the real DocFX landing page while the root gets the picker.
+              # Generate root index.html (meta-refresh → /versions/latest/) and
+              # overwrite _site/index.html. This happens AFTER the versioned
+              # copies above, so those directories retain the real DocFX landing
+              # page while the root just redirects.
+              #
+              # Why inline rather than reading a template file: the only dynamic
+              # piece is the page title (repo name). The in-page version picker
+              # (docfx_project/public/version-picker.js) handles version
+              # switching from any docs page, so the root no longer needs to
+              # display a list of versions to pick from — a static meta-refresh
+              # + JS fallback + <noscript> link is all that's needed.
               $repoName = ($env:GITHUB_REPOSITORY -split '/')[-1]
               $title    = if ($repoName) { "$repoName Documentation" } else { "Documentation" }
-              $versions = Get-Content "$siteDir/versions.json" -Raw | ConvertFrom-Json
 
-              $listItems = foreach ($v in $versions) {
-                $liClass = if ($v.version -eq 'latest') { ' class="latest"' } else { '' }
-                $label   = if ($v.version -eq 'latest') { 'latest (stable)' } else { $v.version }
-                "      <li${liClass}><a href=`"$($v.url)`">$label</a></li>"
-              }
-              $listHtml = $listItems -join "`n"
-
-              if (-not (Test-Path '.github/version-picker-template.html')) {
-                # `throw` (not `exit 1`) so the outer try/finally cleanup runs.
-                throw ".github/version-picker-template.html not found; cannot generate root index.html."
-              }
-
-              $template = Get-Content '.github/version-picker-template.html' -Raw
-              $html = $template -replace '\{\{TITLE\}\}', $title `
-                                -replace '\{\{VERSION_LIST\}\}', $listHtml
+              # Build the HTML as a string array joined with LF. Avoids a
+              # PowerShell here-string whose unindented inner lines would
+              # break the surrounding YAML literal-block scalar (they'd
+              # drop below the block's required indentation and terminate
+              # the scalar prematurely).
+              $htmlLines = @(
+                '<!DOCTYPE html>',
+                '<html lang="en">',
+                '<head>',
+                '  <meta charset="UTF-8">',
+                '  <meta name="viewport" content="width=device-width, initial-scale=1.0">',
+                "  <title>$title</title>",
+                '  <meta http-equiv="refresh" content="0; url=versions/latest/">',
+                '  <link rel="canonical" href="versions/latest/">',
+                '  <style>',
+                '    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;',
+                '           background: #1e1e2e; color: #cdd6f4; display: flex; flex-direction: column;',
+                '           align-items: center; justify-content: center; padding: 3rem 1rem; min-height: 100vh; margin: 0; }',
+                '    a { color: #89b4fa; }',
+                '  </style>',
+                "  <script>setTimeout(function(){ window.location.replace('versions/latest/'); }, 0);</script>",
+                '</head>',
+                '<body>',
+                '  <p>Redirecting to the latest documentation&hellip;</p>',
+                '  <noscript><p><a href="versions/latest/">Continue to the latest documentation</a></p></noscript>',
+                '</body>',
+                '</html>'
+              )
+              $html = $htmlLines -join "`n"
               $html | Set-Content -Path "$siteDir/index.html" -Encoding utf8NoBOM
-              Write-Host "Generated version-picker index.html with $($versions.Count) version link(s)."
+              Write-Host "Generated root index.html (meta-refresh → versions/latest/)."
 
-              # Deploy version picker + shared assets to site root
+              # Deploy site-root assets (root index.html + picker JS at /public/, etc.)
               Copy-Item -Path "$siteDir/*" -Destination $WORK_DIR -Recurse -Force
-              Write-Host "✅ Copied version picker to site root"
+              Write-Host "✅ Copied site-root assets"
             }
 
             # Single commit and push.
