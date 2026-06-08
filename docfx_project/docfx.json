@@ -27,6 +27,7 @@
     "resource": [
       {
         "files": [
+          "favicon.svg",
           "images/**"
         ]
       }
@@ -39,6 +40,7 @@
     "globalMetadata": {
       "_appName": "",
       "_appTitle": "DbContextBuilder",
+      "_appFaviconPath": "favicon.svg",
       "_enableSearch": true,
       "pdf": true
     }
