@@ -16,7 +16,6 @@ internal class InMemoryDbContextCreator : ICreateDbContext
     public Task<TDbContext> CreateDbContextAsync<TDbContext>(DbContextOptionsBuilder<TDbContext> optionsBuilder) where TDbContext : DbContext
     {
         optionsBuilder.UseInMemoryDatabase(_databaseName);
-        var options = optionsBuilder.Options;
-        return Task.FromResult((TDbContext)Activator.CreateInstance(typeof(TDbContext), options)!);
+        return Task.FromResult(DbContextActivator<TDbContext>.Create(optionsBuilder.Options));
     }
 }
