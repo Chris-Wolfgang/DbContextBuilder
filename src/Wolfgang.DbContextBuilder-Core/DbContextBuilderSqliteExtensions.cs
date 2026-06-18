@@ -15,7 +15,7 @@ public static class DbContextBuilderSqliteExtensions
     /// <summary>
     /// Instructs the builder to use SQLite as the database provider.
     /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     public static DbContextBuilder<TDbContext> UseSqlite<TDbContext>
     (
         this DbContextBuilder<TDbContext> builder
@@ -48,7 +48,7 @@ public static class DbContextBuilderSqliteExtensions
     /// <summary>
     /// Instructs the builder to use SQLite as the database provider.
     /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     private static DbContextBuilder<TDbContext> UseSqlite<TDbContext>
     (
         this DbContextBuilder<TDbContext> builder,

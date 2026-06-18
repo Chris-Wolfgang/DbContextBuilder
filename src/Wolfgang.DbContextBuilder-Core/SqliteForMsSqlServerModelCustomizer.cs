@@ -18,7 +18,8 @@ public class SqliteForMsSqlServerModelCustomizer : SqliteModelCustomizer
     /// <param name="dependencies">The dependencies for the model customizer.</param>
     /// <remarks>
     /// This class should not be created directly but rather added to the service collection by
-    /// calling the UseSqliteForMsSqlServerModelCustomizer method on the DbContextBuilder class
+    /// calling <see cref="DbContextBuilderSqliteExtensions.UseSqliteForMsSqlServer{TDbContext}"/>
+    /// on a <see cref="DbContextBuilder{T}"/>.
     /// </remarks>
     public SqliteForMsSqlServerModelCustomizer(ModelCustomizerDependencies dependencies) : base(dependencies)
     {

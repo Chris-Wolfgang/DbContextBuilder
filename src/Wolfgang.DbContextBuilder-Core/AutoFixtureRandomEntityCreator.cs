@@ -13,7 +13,8 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
 {
     public AutoFixtureRandomEntityCreator()
     {
-        // AutoFixture 4.x does not have built in support for DateOnly and TimeOnly. Version is supposed to 
+        // AutoFixture 4.x does not have built-in support for DateOnly and TimeOnly. Add factories
+        // that convert from a generated DateTime so AutoFixture can produce these types.
         Fixture.Customize<DateOnly>(o => o.FromFactory((DateTime dt) => DateOnly.FromDateTime(dt)));
         Fixture.Customize<TimeOnly>(o => o.FromFactory((DateTime dt) => TimeOnly.FromDateTime(dt)));
 
@@ -50,7 +51,7 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
     /// </summary>
     /// <param name="count">The number of entities to create</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns>An IEnumerable{TEntity}</returns>
+    /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TEntity"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> is less than 1.</exception>
     public IEnumerable<TEntity> CreateRandomEntities<TEntity>(int count)
         where TEntity : class

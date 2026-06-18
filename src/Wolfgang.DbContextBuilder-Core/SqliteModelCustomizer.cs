@@ -15,11 +15,11 @@ namespace Wolfgang.DbContextBuilderCore;
 ///   1. Renaming tables to avoid schema issues since SQLite does not support schemas.
 ///   2. Removing computed values for columns since SQLite may not support the same functions.
 /// 
-/// You can override the functionality provided in this class or if you will be frequently working
-/// in the same database engine, you can create your own ModelCustomizer, either from scratch or
-/// derived from this one, and override the desired functionality. Once you created you can reuse
-/// it over and over again. For example, you want to create a SqliteForOracleModelCustomizer that
-/// has overrides to make an DbContext created for Oracle work in SQLite.
+/// You can override the functionality provided in this class or, if you will frequently work
+/// against the same database engine, derive your own <see cref="ModelCustomizer"/> (from
+/// scratch or from this one) and override the desired functionality. Once created it can be
+/// reused across builds. For example, you could create a <c>SqliteForOracleModelCustomizer</c>
+/// with the overrides needed to make an Oracle <see cref="DbContext"/> work against SQLite.
 /// </remarks>
 public class SqliteModelCustomizer : ModelCustomizer
 {
@@ -31,7 +31,7 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// This method is called for each table in the database to rename the table since SQLite
     /// does not support schemas.  
     /// </summary>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentNullException">The setter received a <c>null</c> <c>value</c>.</exception>
     /// <remarks>
     ///The default implementation renames the table by prefixing
     /// the schema name to the table name. For example, a table named "Person" in schema
@@ -59,7 +59,7 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// <summary>
     /// This method is called for each column that has a computed value defined in the model.
     /// </summary>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentNullException">The setter received a <c>null</c> <c>value</c>.</exception>
     /// <remarks>
     /// The default handling for this is to leave the computed value as is. However,
     /// Sqlite has limited support for computed values and the functions used in the model may
@@ -99,7 +99,7 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// <summary>
     /// This method is called for each column that has a default value defined in the model.
     /// </summary>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentNullException">The setter received a <c>null</c> <c>value</c>.</exception>
     /// <remarks>
     /// The default implementation checks the DefaultValueMap dictionary to see if the existing default value
     /// is contained in the dictionary and if so, replaces it with the value in the dictionary. If the
@@ -224,7 +224,7 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// <summary>
     /// This action is called for each entity type to handle many-to-many join table renaming.
     /// </summary>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentNullException">The setter received a <c>null</c> <c>value</c>.</exception>
     /// <remarks>
     /// The default implementation uses a heuristic to detect many-to-many join tables:
     /// an entity type with exactly two foreign keys and no navigations is assumed to be a join table.
