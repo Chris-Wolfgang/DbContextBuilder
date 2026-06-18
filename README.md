@@ -31,6 +31,20 @@ DbContextBuilder ships as a family of packages — install the one that matches 
 dotnet add package Wolfgang.DbContextBuilder-Core-EF8
 ```
 
+### Target frameworks
+
+Each package targets the .NET runtimes its EF version requires:
+
+| Package | Target Frameworks |
+|---|---|
+| `Wolfgang.DbContextBuilder-Core` | `net10.0` |
+| `Wolfgang.DbContextBuilder-Core-EF6` | `net6.0` |
+| `Wolfgang.DbContextBuilder-Core-EF7` | `net7.0` |
+| `Wolfgang.DbContextBuilder-Core-EF8` | `net8.0` |
+| `Wolfgang.DbContextBuilder-Core-EF9` | `net9.0` |
+| `Wolfgang.DbContextBuilder-Core-EF10` | `net10.0` |
+| `Wolfgang.DbContextBuilder-EF6` (classic) | `net462; net47; net471; net472; net48; net481` |
+
 ---
 
 ## 📄 License
@@ -88,3 +102,24 @@ var context = await new DbContextBuilder<YourDbContext>()
 // Use the context in your tests
 var sut = new YourService(context);
 ```
+
+---
+
+## 📖 API surface
+
+The Core package exposes a small, focused surface. The full reference is on the [docs site](https://Chris-Wolfgang.github.io/DbContextBuilder/api/Wolfgang.DbContextBuilderCore.html); the most-used entry points are:
+
+| Type / Method | What it does |
+|---|---|
+| `DbContextBuilder<T>` | The builder itself. Construct one per test, chain configuration, then call `BuildAsync()`. |
+| `.UseInMemory()` | EF Core InMemory provider. Fastest, ignores relational constraints. |
+| `.UseSqlite()` | SQLite in-memory provider. Enforces relational constraints. |
+| `.UseSqliteForMsSqlServer()` | SQLite in-memory with a SQL-Server compatibility layer that flattens schema-qualified table names and rewrites SQL-Server-specific default-value SQL. |
+| `.UseAutoFixture()` | Plug AutoFixture in as the random-entity generator (used by `SeedWithRandom`). |
+| `.UseDbContextOptionsBuilder(opts)` | Bring your own `DbContextOptionsBuilder<T>` to override the provider entirely. |
+| `.UseCustomRandomEntityCreator(creator)` | Plug in any `ICreateRandomEntities` implementation. |
+| `.SeedWith<TEntity>(...)` | Seed specific rows. Accepts `IEnumerable<T>` or `params T[]`. |
+| `.SeedWithRandom<TEntity>(count, [func])` | Seed N random rows. Optional `func` mutates each generated entity. |
+| `.BuildAsync()` | Materialize the `DbContext`. The builder owns the underlying connection; dispose the context with `await using`. |
+| `SqliteModelCustomizer` | Customization hooks for the SQLite-for-SQL-Server mode: `OverrideTableRenaming`, `OverrideDefaultValueHandling`, `OverrideComputedValueHandling`, `OverrideManyToManyTableHandling`, `DefaultValueMap`. |
+| `ICreateDbContext` / `ICreateRandomEntities` | Extension points for plugging in your own provider or random-entity generator. |
