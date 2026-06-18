@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- New `Wolfgang.DbContextBuilderCore.Assertions` namespace providing a small fluent,
+  chainable assertion surface for verifying the state of a `DbSet<T>` in tests:
+  `HaveCount`, `BeEmpty`, `NotBeEmpty`, `Contain`, `NotContain`, `AllSatisfy`. Obtain
+  the assertion chain via `dbSet.Should()` or `queryable.Should()`. Failures throw
+  `DbContextAssertionException` with an entity-typed message. (#106)
+
 ### Changed
 
 ### Deprecated
