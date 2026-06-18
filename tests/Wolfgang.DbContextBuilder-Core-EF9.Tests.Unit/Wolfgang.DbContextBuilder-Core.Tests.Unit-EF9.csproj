@@ -13,7 +13,6 @@
 		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
-		<AssemblyVersion>1.0.0</AssemblyVersion>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageIcon></PackageIcon>
@@ -164,6 +163,7 @@
 
 
 	<PropertyGroup>
+		<!-- CA1707 (underscores) is intentional: test method names follow the MethodUnderTest_when_condition_expected_result convention. -->
 		<NoWarn>$(NoWarn);CA1707</NoWarn>
 	</PropertyGroup>
 

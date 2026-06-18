@@ -18,12 +18,8 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
         Fixture.Customize<DateOnly>(o => o.FromFactory((DateTime dt) => DateOnly.FromDateTime(dt)));
         Fixture.Customize<TimeOnly>(o => o.FromFactory((DateTime dt) => TimeOnly.FromDateTime(dt)));
 
-        // Prevents issues with circular references
-        Fixture.Behaviors
-            .OfType<ThrowingRecursionBehavior>()
-            .ToList()
-            .ForEach(b => Fixture.Behaviors.Remove(b));
-        Fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        // Prevents issues with circular references — the customization itself handles
+        // swapping ThrowingRecursionBehavior for OmitOnRecursionBehavior idempotently.
         Fixture.Customize(new NoCircularReferencesCustomization());
         Fixture.Customize(new IgnoreVirtualMembersCustomization());
     }
