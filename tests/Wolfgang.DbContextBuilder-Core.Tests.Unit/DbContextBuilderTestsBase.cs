@@ -666,15 +666,18 @@ public abstract class DbContextBuilderTestsBase
     /// with the restriction that the object must be classes and string is a class
     /// </remarks>
     [Fact]
-    public void SeedWith_params_when_passed_an_array_of_strings_throws_ArgumentException()
+    public void SeedWith_when_TEntity_is_string_throws_ArgumentException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
 
-
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value"));
-        Assert.Equal("entities", ex.ParamName);
+        // Act & Assert — the single-string call now resolves to the singleton overload
+        // (added in the SeedWith singleton PR) which raises ArgumentException with
+        // paramName "entity"; the params overload still raises it for string[] with
+        // paramName "entities". Assert at the Exception level so the test is resilient
+        // to overload-resolution choices.
+        Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value"));
+        Assert.Throws<ArgumentException>(() => sut.SeedWith(new[] { "Invalid value" }));
     }
 
 
@@ -1192,5 +1195,81 @@ public abstract class DbContextBuilderTestsBase
 
         // Assert
         Assert.NotNull(context);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that the new SeedWith(TEntity) singleton overload — which exists to skip the
+    /// one-element array allocation of the params overload — actually inserts the row. Uses
+    /// the InMemory provider explicitly to side-step relational FK constraints under SQLite.
+    /// </summary>
+    [Fact]
+    public async Task SeedWith_singleton_overload_seeds_the_entity()
+    {
+        // Arrange
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var address = new Address
+        {
+            AddressId = 999,
+            AddressLine1 = "1 Singleton Way",
+            City = "Singletontown",
+            StateProvinceId = 1,
+            PostalCode = "00001",
+            Rowguid = Guid.NewGuid(),
+            ModifiedDate = DateTime.UtcNow
+        };
+
+        // Act — note: no array literal, no params expansion
+        await using var context = await sut.UseInMemory().SeedWith(address).BuildAsync();
+
+        // Assert
+        var row = context.Addresses.SingleOrDefault(a => a.AddressId == 999);
+        Assert.NotNull(row);
+        Assert.Equal("1 Singleton Way", row!.AddressLine1);
+    }
+
+
+
+    /// <summary>
+    /// SeedWith(TEntity) must reject null with ArgumentNullException so callers do not
+    /// silently insert nothing.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_entity_is_null_throws()
+    {
+        using var sut = CreateDbContextBuilder();
+
+        Assert.Throws<ArgumentNullException>(() => sut.SeedWith((Address)null!));
+    }
+
+
+
+    /// <summary>
+    /// SeedWith(TEntity) must reject string at the type level just like the params overload,
+    /// so the two overloads behave consistently.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_TEntity_is_string_throws()
+    {
+        using var sut = CreateDbContextBuilder();
+
+        Assert.Throws<ArgumentException>(() => sut.SeedWith("not an entity"));
+    }
+
+
+
+    /// <summary>
+    /// Regression: when the caller widens TEntity to <see cref="object"/> the static
+    /// `typeof(TEntity) == typeof(string)` check (the original guard) would pass through
+    /// and silently seed the string. The current guard uses a runtime `entity is string`
+    /// check and must still reject.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_TEntity_is_widened_to_object_still_rejects_string()
+    {
+        using var sut = CreateDbContextBuilder();
+
+        Assert.Throws<ArgumentException>(() => sut.SeedWith<object>("not an entity"));
     }
 }

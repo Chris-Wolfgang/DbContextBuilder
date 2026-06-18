@@ -80,8 +80,11 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// value to replace it with.
     /// </summary>
     /// <remarks>
-    /// Examples of a default values that may need to be replaced it getdate() and newid() which would
-    /// be replaced with datetime('now') and lower(hex(randomblob(16))) respectively.
+    /// Examples of default values that may need to be replaced are <c>getdate()</c> and
+    /// <c>newid()</c>, which would be replaced with <c>datetime('now')</c> and
+    /// <c>lower(hex(randomblob(16)))</c> respectively. Key lookups are case-insensitive
+    /// (<see cref="StringComparer.OrdinalIgnoreCase"/>) so variant spellings produced by
+    /// different EF versions match the same replacement entry.
     /// </remarks>
     public IDictionary<string, string> DefaultValueMap { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
