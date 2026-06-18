@@ -52,7 +52,6 @@ public static class DbContextBuilderSqliteExtensions
     private static DbContextBuilder<TDbContext> UseSqlite<TDbContext>
     (
         this DbContextBuilder<TDbContext> builder,
-        //IModelCustomizer modelCustomizer
         Type modelCustomizerType
     ) where TDbContext : DbContext
     {
