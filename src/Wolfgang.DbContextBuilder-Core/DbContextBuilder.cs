@@ -245,10 +245,10 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
                 const string msg =
                     "DbContextBuilder failed to create the in-memory database for the " +
                     "configured DbContext. See InnerException for the EF Core failure details. " +
-                    "Common causes: the DbContext type has no parameterless constructor that " +
-                    "accepts DbContextOptions<T>; the configured provider (InMemory by default) " +
-                    "cannot model one of the DbContext's entities; or a required EF service has " +
-                    "not been registered. " +
+                    "Common causes: no database provider has been configured (InMemory is used " +
+                    "by default, so this usually indicates a custom ICreateDbContext returned a " +
+                    "context with no provider); the configured provider cannot model one of the " +
+                    "DbContext's entities; or a required EF service has not been registered. " +
                     "If you need to capture EF Core diagnostic logs to investigate, build a " +
                     "DbContextOptionsBuilder<T> with .LogTo(...) or .EnableSensitiveDataLogging() " +
                     "yourself and pass it to UseDbContextOptionsBuilder(...) before calling " +
