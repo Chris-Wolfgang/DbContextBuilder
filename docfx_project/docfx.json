@@ -27,10 +27,13 @@
     "resource": [
       {
         "files": [
+          "logo.svg",
           "apple-touch-icon.png",
-          "favicon.ico",
           "favicon.svg",
-          "images/**"
+          "favicon.ico",
+          "images/**",
+          "public/**",
+          "versions.json"
         ]
       }
     ],
