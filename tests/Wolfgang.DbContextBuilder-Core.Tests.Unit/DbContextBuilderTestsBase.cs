@@ -666,15 +666,18 @@ public abstract class DbContextBuilderTestsBase
     /// with the restriction that the object must be classes and string is a class
     /// </remarks>
     [Fact]
-    public void SeedWith_params_when_passed_an_array_of_strings_throws_ArgumentException()
+    public void SeedWith_when_TEntity_is_string_throws_ArgumentException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
 
-
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value"));
-        Assert.Equal("entities", ex.ParamName);
+        // Act & Assert — the single-string call now resolves to the singleton overload
+        // (added in the SeedWith singleton PR) which raises ArgumentException with
+        // paramName "entity"; the params overload still raises it for string[] with
+        // paramName "entities". Assert at the Exception level so the test is resilient
+        // to overload-resolution choices.
+        Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value"));
+        Assert.Throws<ArgumentException>(() => sut.SeedWith(new[] { "Invalid value" }));
     }
 
 
@@ -1135,8 +1138,15 @@ public abstract class DbContextBuilderTestsBase
         await sut.BuildAsync();
 
 
-        // Assert
-        Assert.True(buffer.Length > 0, "Buffer length was expected to be greater than 0");
+        // Assert — the LogTo callback the test wired in must have received something
+        // (EF emits at least one log line when initializing the connection). Asserting
+        // NotEmpty on the materialized string gives a clearer failure message than the
+        // previous `buffer.Length > 0` numeric check, and asserting that the log
+        // contains a known EF marker pins the test to "EF actually logged via our
+        // callback" rather than "the buffer happens to be non-zero for any reason".
+        var log = buffer.ToString();
+        Assert.NotEmpty(log);
+        Assert.Contains("Microsoft.EntityFrameworkCore", log, StringComparison.Ordinal);
     }
 
 
@@ -1156,7 +1166,7 @@ public abstract class DbContextBuilderTestsBase
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.BuildAsync());
-        Assert.Contains("Failed to create database", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("failed to create the in-memory database", ex.Message, StringComparison.Ordinal);
         Assert.NotNull(ex.InnerException);
     }
 
@@ -1192,5 +1202,81 @@ public abstract class DbContextBuilderTestsBase
 
         // Assert
         Assert.NotNull(context);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that the new SeedWith(TEntity) singleton overload — which exists to skip the
+    /// one-element array allocation of the params overload — actually inserts the row. Uses
+    /// the InMemory provider explicitly to side-step relational FK constraints under SQLite.
+    /// </summary>
+    [Fact]
+    public async Task SeedWith_singleton_overload_seeds_the_entity()
+    {
+        // Arrange
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var address = new Address
+        {
+            AddressId = 999,
+            AddressLine1 = "1 Singleton Way",
+            City = "Singletontown",
+            StateProvinceId = 1,
+            PostalCode = "00001",
+            Rowguid = Guid.NewGuid(),
+            ModifiedDate = DateTime.UtcNow
+        };
+
+        // Act — note: no array literal, no params expansion
+        await using var context = await sut.UseInMemory().SeedWith(address).BuildAsync();
+
+        // Assert
+        var row = context.Addresses.SingleOrDefault(a => a.AddressId == 999);
+        Assert.NotNull(row);
+        Assert.Equal("1 Singleton Way", row!.AddressLine1);
+    }
+
+
+
+    /// <summary>
+    /// SeedWith(TEntity) must reject null with ArgumentNullException so callers do not
+    /// silently insert nothing.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_entity_is_null_throws()
+    {
+        using var sut = CreateDbContextBuilder();
+
+        Assert.Throws<ArgumentNullException>(() => sut.SeedWith((Address)null!));
+    }
+
+
+
+    /// <summary>
+    /// SeedWith(TEntity) must reject string at the type level just like the params overload,
+    /// so the two overloads behave consistently.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_TEntity_is_string_throws()
+    {
+        using var sut = CreateDbContextBuilder();
+
+        Assert.Throws<ArgumentException>(() => sut.SeedWith("not an entity"));
+    }
+
+
+
+    /// Regression: the singleton overload accepts a single TEntity, but
+    /// `List&lt;string&gt;` casts to `IEnumerable&lt;object&gt;` at runtime (T-covariance for
+    /// reference types) — so without an element-level check, a list of strings would
+    /// slip through as seed data. This test pins the fix.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_passed_a_List_of_strings_throws()
+    {
+        using var sut = CreateDbContextBuilder();
+        var stringList = new List<string> { "a", "b", "c" };
+
+        Assert.Throws<ArgumentException>(() => sut.SeedWith(stringList));
     }
 }

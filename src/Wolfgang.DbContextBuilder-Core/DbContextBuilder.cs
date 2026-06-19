@@ -36,7 +36,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Instructs the builder to use InMemory as the database provider.
     /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     public DbContextBuilder<T> UseInMemory()
     {
         CreateDbContext = new InMemoryDbContextCreator();
@@ -50,7 +50,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// for creating random entities.
     /// </summary>
     /// <param name="creator">The creator to use</param>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     public DbContextBuilder<T> UseCustomRandomEntityCreator(ICreateRandomEntities creator)
     {
         ArgumentNullException.ThrowIfNull(creator);
@@ -64,7 +64,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Specifies a specific <see cref="DbContextOptionsBuilder{TContext}"/> instance to use when creating the DbContext.
     /// </summary>
     /// <param name="dbContextOptionsBuilder">The options builder to use when creating the DbContext.</param>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentNullException"><paramref name="dbContextOptionsBuilder"/> is null.</exception>
     public DbContextBuilder<T> UseDbContextOptionsBuilder(DbContextOptionsBuilder<T> dbContextOptionsBuilder)
     {
@@ -81,7 +81,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
     /// <param name="entities">The entities to populate the database with</param>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
@@ -105,7 +105,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
     /// <param name="entities">The entities to populate the database with</param>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
@@ -136,11 +136,62 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
     /// <summary>
+    /// Populates the specified DbSet with a single entity. Equivalent to calling the
+    /// <c>params</c>-array overload with one element, but avoids the per-call allocation
+    /// of a one-element array — useful in tests that seed many single rows.
+    /// </summary>
+    /// <param name="entity">The entity to populate the database with.</param>
+    /// <returns>The builder, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="entity"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="entity"/> is a <see cref="string"/> instance (matches the
+    /// <c>params</c> overload's rejection regardless of how <typeparamref name="TEntity"/> was inferred).</exception>
+    public DbContextBuilder<T> SeedWith<TEntity>(TEntity entity)
+        where TEntity : class
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+
+        // Reject by runtime type, not just TEntity, so `SeedWith<object>("...")` is still
+        // caught (matches the params overload's `case string:` arm).
+        if (entity is string)
+        {
+            throw new ArgumentException("One of the entities passed in is of type string", nameof(entity));
+        }
+
+        if (entity is IEnumerable<object> sequence)
+        {
+            // Walk the sequence so a List<string> (or any IEnumerable wrapping strings) is
+            // rejected element-by-element, matching the per-item check the params overload
+            // performs. Buffer first so the failing call leaves `_seedData` untouched
+            // (atomic w.r.t. seed state).
+            var buffer = new List<object>();
+            foreach (var item in sequence)
+            {
+                if (item is string)
+                {
+                    throw new ArgumentException("One of the entities passed in is of type string", nameof(entity));
+                }
+
+                buffer.Add(item);
+            }
+
+            _seedData.AddRange(buffer);
+        }
+        else
+        {
+            _seedData.Add(entity);
+        }
+
+        return this;
+    }
+
+
+
+    /// <summary>
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
     /// <param name="count">The number of items to create</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count) where TEntity : class
     {
@@ -165,7 +216,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, TEntity> func) where TEntity : class
     {
@@ -193,7 +244,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and the index number of the entity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, int, TEntity> func) where TEntity : class
     {
@@ -219,7 +270,6 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Creates a new instance of <typeparamref name="T"/> seeded with the specified data.
     /// </summary>
     /// <returns>A new instance of <typeparamref name="T"/>.</returns>
-    /// <exception cref="NotSupportedException">The specified database provider is not supported</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public async Task<T> BuildAsync()
     {
@@ -247,9 +297,17 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             }
             catch (InvalidOperationException e)
             {
-                const string msg = "Failed to create database. See InnerException for details. " +
-                                   "You can get additional information by creating a new instance of " +
-                                   "DbContextOptionsBuilder<T> and passing it into UseDbContextOptionsBuilder.";
+                const string msg =
+                    "DbContextBuilder failed to create the in-memory database for the " +
+                    "configured DbContext. See InnerException for the EF Core failure details. " +
+                    "Common causes: no database provider has been configured (InMemory is used " +
+                    "by default, so this usually indicates a custom ICreateDbContext returned a " +
+                    "context with no provider); the configured provider cannot model one of the " +
+                    "DbContext's entities; or a required EF service has not been registered. " +
+                    "If you need to capture EF Core diagnostic logs to investigate, build a " +
+                    "DbContextOptionsBuilder<T> with .LogTo(...) or .EnableSensitiveDataLogging() " +
+                    "yourself and pass it to UseDbContextOptionsBuilder(...) before calling " +
+                    "BuildAsync().";
                 throw new InvalidOperationException(msg, e);
             }
 

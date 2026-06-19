@@ -561,4 +561,397 @@ public class SqliteModelCustomizerTests
         // Assert
         Assert.Equal("Orders_Products", mutableJoinEntity.GetTableName());
     }
+
+
+
+    /// <summary>
+    /// Verifies that DefaultValueMap starts as an empty dictionary on a freshly-constructed
+    /// SqliteModelCustomizer (consumers add their own SQL Server → SQLite default-value
+    /// mappings).
+    /// </summary>
+    [Fact]
+    public void DefaultValueMap_is_empty_on_construction()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        // Act
+        var sut = new SqliteModelCustomizer(dependencies);
+
+        // Assert
+        Assert.Empty(sut.DefaultValueMap);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that DefaultValueMap is keyed case-insensitively (OrdinalIgnoreCase) so SQL
+    /// Server defaults like "(GETDATE())" and "(getdate())" both match the same entry.
+    /// </summary>
+    [Fact]
+    public void DefaultValueMap_key_lookup_is_case_insensitive()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+        sut.DefaultValueMap["(GETDATE())"] = "datetime('now')";
+
+        // Act & Assert — the same key in different casings should resolve to the same value
+        Assert.True(sut.DefaultValueMap.ContainsKey("(GETDATE())"));
+        Assert.True(sut.DefaultValueMap.ContainsKey("(getdate())"));
+        Assert.True(sut.DefaultValueMap.ContainsKey("(GetDate())"));
+        Assert.Equal("datetime('now')", sut.DefaultValueMap["(getdate())"]);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that the default <see cref="SqliteModelCustomizer.OverrideDefaultValueHandling"/>
+    /// implementation returns the mapped replacement when the input value is present in
+    /// DefaultValueMap.
+    /// </summary>
+    [Fact]
+    public void OverrideDefaultValueHandling_default_impl_uses_DefaultValueMap_when_value_is_mapped()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+        sut.DefaultValueMap["(my_custom_sproc())"] = "datetime('now', '+1 day')";
+
+        // Act
+        var result = sut.OverrideDefaultValueHandling("(my_custom_sproc())");
+
+        // Assert
+        Assert.Equal("datetime('now', '+1 day')", result);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that the default <see cref="SqliteModelCustomizer.OverrideDefaultValueHandling"/>
+    /// implementation honours case-insensitive lookups against DefaultValueMap (matching the
+    /// dictionary's StringComparer.OrdinalIgnoreCase comparer).
+    /// </summary>
+    [Fact]
+    public void OverrideDefaultValueHandling_default_impl_matches_DefaultValueMap_case_insensitively()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+        sut.DefaultValueMap["(GETDATE())"] = "datetime('now')";
+
+        // Act & Assert — same logical value, different casings
+        Assert.Equal("datetime('now')", sut.OverrideDefaultValueHandling("(GETDATE())"));
+        Assert.Equal("datetime('now')", sut.OverrideDefaultValueHandling("(getdate())"));
+        Assert.Equal("datetime('now')", sut.OverrideDefaultValueHandling("(GetDate())"));
+    }
+
+
+
+    /// <summary>
+    /// Verifies that DefaultValueMap is mutable in-place — adding an entry after
+    /// construction takes effect for subsequent OverrideDefaultValueHandling calls
+    /// (the property exposes the live dictionary, not a snapshot).
+    /// </summary>
+    [Fact]
+    public void DefaultValueMap_additions_take_effect_immediately()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+
+        // Act & Assert — the base SqliteModelCustomizer's default OverrideDefaultValueHandling
+        // returns the input unchanged when no mapping exists (only null is special-cased to
+        // null). After adding a mapping, the same input now returns the mapped value. The
+        // null-on-miss behaviour mentioned in some commits applies to the derived
+        // SqliteForMsSqlServerModelCustomizer, not the base class tested here.
+        Assert.Equal("(my_runtime_added())", sut.OverrideDefaultValueHandling("(my_runtime_added())"));
+        sut.DefaultValueMap["(my_runtime_added())"] = "1";
+        Assert.Equal("1", sut.OverrideDefaultValueHandling("(my_runtime_added())"));
+    }
+
+
+
+    /// <summary>
+    /// Verifies that the default <see cref="SqliteModelCustomizer.OverrideManyToManyTableHandling"/>
+    /// implementation does NOT rename an entity with 3 foreign keys. The heuristic targets pure
+    /// many-to-many join tables (exactly 2 FKs, 0 navigations); entities with additional FKs
+    /// represent richer relationships (e.g. an OrderItem that joins Order, Product, AND Warehouse)
+    /// and must keep their declared table name.
+    /// </summary>
+    [Fact]
+    public void OverrideManyToManyTableHandling_default_implementation_does_not_rename_entity_with_three_foreign_keys()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+
+        var modelBuilder = new ModelBuilder();
+
+        modelBuilder.Entity("Order", b =>
+        {
+            b.Property<int>("Id");
+            b.HasKey("Id");
+            b.ToTable("Orders");
+        });
+
+        modelBuilder.Entity("Product", b =>
+        {
+            b.Property<int>("Id");
+            b.HasKey("Id");
+            b.ToTable("Products");
+        });
+
+        modelBuilder.Entity("Warehouse", b =>
+        {
+            b.Property<int>("Id");
+            b.HasKey("Id");
+            b.ToTable("Warehouses");
+        });
+
+        modelBuilder.Entity("OrderItem", b =>
+        {
+            b.Property<int>("OrderId");
+            b.Property<int>("ProductId");
+            b.Property<int>("WarehouseId");
+            b.HasKey("OrderId", "ProductId", "WarehouseId");
+            b.ToTable("OrderItems");
+            b.HasOne("Order").WithMany().HasForeignKey("OrderId");
+            b.HasOne("Product").WithMany().HasForeignKey("ProductId");
+            b.HasOne("Warehouse").WithMany().HasForeignKey("WarehouseId");
+        });
+
+        var entity = modelBuilder.Model.FindEntityType("OrderItem")!;
+
+        // Precondition — 3 FKs
+        Assert.Equal(3, entity.GetForeignKeys().Count());
+
+        // Act
+        sut.OverrideManyToManyTableHandling(entity);
+
+        // Assert — table name unchanged
+        Assert.Equal("OrderItems", entity.GetTableName());
+    }
+
+
+
+    /// <summary>
+    /// Verifies that the default <see cref="SqliteModelCustomizer.OverrideManyToManyTableHandling"/>
+    /// implementation does NOT rename an entity that has exactly 2 foreign keys but also has at
+    /// least one navigation property. Navigations indicate EF treats the entity as first-class
+    /// (not a pure many-to-many join), so its declared table name must be preserved.
+    /// </summary>
+    [Fact]
+    public void OverrideManyToManyTableHandling_default_implementation_does_not_rename_entity_with_navigations()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+
+        var modelBuilder = new ModelBuilder();
+
+        modelBuilder.Entity("Author", b =>
+        {
+            b.Property<int>("Id");
+            b.HasKey("Id");
+            b.ToTable("Authors");
+        });
+
+        modelBuilder.Entity("Book", b =>
+        {
+            b.Property<int>("Id");
+            b.HasKey("Id");
+            b.ToTable("Books");
+        });
+
+        // Authorship is conceptually a join (2 FKs to Author + Book) but also models
+        // first-class data (e.g. a Role string). EF surfaces it with navigations on
+        // both sides; the heuristic must not flatten its table name.
+        modelBuilder.Entity("Authorship", b =>
+        {
+            b.Property<int>("AuthorId");
+            b.Property<int>("BookId");
+            b.Property<string>("Role");
+            b.HasKey("AuthorId", "BookId");
+            b.ToTable("Authorships");
+            b.HasOne("Author", "Author").WithMany().HasForeignKey("AuthorId");
+            b.HasOne("Book", "Book").WithMany().HasForeignKey("BookId");
+        });
+
+        var entity = modelBuilder.Model.FindEntityType("Authorship")!;
+
+        // Precondition — exactly 2 FKs but navigations present
+        Assert.Equal(2, entity.GetForeignKeys().Count());
+        Assert.NotEmpty(entity.GetNavigations());
+
+        // Act
+        sut.OverrideManyToManyTableHandling(entity);
+
+        // Assert — table name unchanged
+        Assert.Equal("Authorships", entity.GetTableName());
+    }
+
+
+
+    /// <summary>
+    /// Verifies the default <see cref="SqliteModelCustomizer.OverrideManyToManyTableHandling"/>
+    /// behaviour on a self-referencing many-to-many join: an Employee.Subordinates collection
+    /// produces a join entity whose two foreign keys both point back to Employee. The heuristic
+    /// matches (2 FKs, 0 navigations) and produces a deterministic name. The heuristic uses
+    /// the configured principal table name (<c>"Employees"</c> via <c>ToTable</c>), so the
+    /// expected rename is <c>Employees_Employees</c>.
+    /// This pins the behaviour so future refactors don't silently change the self-reference name.
+    /// </summary>
+    [Fact]
+    public void OverrideManyToManyTableHandling_default_implementation_handles_self_referencing_join()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+
+        var modelBuilder = new ModelBuilder();
+
+        modelBuilder.Entity("Employee", b =>
+        {
+            b.Property<int>("Id");
+            b.HasKey("Id");
+            b.ToTable("Employees");
+        });
+
+        // Self-referencing join: both FKs point to Employee. EF generates this for
+        // an Employee.Subordinates many-to-many relationship.
+        modelBuilder.Entity("EmployeeSubordinate", b =>
+        {
+            b.Property<int>("ManagerId");
+            b.Property<int>("SubordinateId");
+            b.HasKey("ManagerId", "SubordinateId");
+            b.ToTable("EmployeeSubordinates");
+            b.HasOne("Employee").WithMany().HasForeignKey("ManagerId");
+            b.HasOne("Employee").WithMany().HasForeignKey("SubordinateId");
+        });
+
+        var entity = modelBuilder.Model.FindEntityType("EmployeeSubordinate")!;
+
+        // Precondition — heuristic should match: 2 FKs, 0 navigations
+        Assert.Equal(2, entity.GetForeignKeys().Count());
+        Assert.Empty(entity.GetNavigations());
+
+        // Act
+        sut.OverrideManyToManyTableHandling(entity);
+
+        // Assert — both FK principals resolve to the same configured table name
+        // ("Employees" via ToTable), so the heuristic's "{Left}_{Right}" join produces
+        // "Employees_Employees". Consumers who want a more descriptive name
+        // (Employee_Subordinate, EmployeeHierarchy, etc.) should assign a custom
+        // OverrideManyToManyTableHandling delegate.
+        Assert.Equal("Employees_Employees", entity.GetTableName());
+    }
+
+
+
+    /// <summary>
+    /// Documents the happy path explicitly under the "exactly 2 FKs, 0 navigations" precondition
+    /// using the new XML doc convention (the original
+    /// <c>OverrideManyToManyTableHandling_default_implementation_renames_join_table</c> test
+    /// covers the same scenario; this duplication is intentional for documentation value and
+    /// will survive any rename of the original).
+    /// </summary>
+    [Fact]
+    public void OverrideManyToManyTableHandling_default_implementation_renames_pure_join_with_two_fks_and_no_navigations()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        var sut = new SqliteModelCustomizer(dependencies);
+
+        var modelBuilder = new ModelBuilder();
+
+        modelBuilder.Entity("Tag", b =>
+        {
+            b.Property<int>("Id");
+            b.HasKey("Id");
+            b.ToTable("Tags");
+        });
+
+        modelBuilder.Entity("Post", b =>
+        {
+            b.Property<int>("Id");
+            b.HasKey("Id");
+            b.ToTable("Posts");
+        });
+
+        modelBuilder.Entity("PostTag", b =>
+        {
+            b.Property<int>("PostId");
+            b.Property<int>("TagId");
+            b.HasKey("PostId", "TagId");
+            b.ToTable("PostTags");
+            b.HasOne("Post").WithMany().HasForeignKey("PostId");
+            b.HasOne("Tag").WithMany().HasForeignKey("TagId");
+        });
+
+        var entity = modelBuilder.Model.FindEntityType("PostTag")!;
+
+        // Precondition — heuristic match
+        Assert.Equal(2, entity.GetForeignKeys().Count());
+        Assert.Empty(entity.GetNavigations());
+
+        // Act
+        sut.OverrideManyToManyTableHandling(entity);
+
+        // Assert — renamed to {LeftPrincipalTable}_{RightPrincipalTable}
+        Assert.Equal("Posts_Tags", entity.GetTableName());
+    }
 }

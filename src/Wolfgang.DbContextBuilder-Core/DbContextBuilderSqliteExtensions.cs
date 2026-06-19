@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Sqlite.Infrastructure.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Wolfgang.DbContextBuilderCore;
@@ -15,7 +16,7 @@ public static class DbContextBuilderSqliteExtensions
     /// <summary>
     /// Instructs the builder to use SQLite as the database provider.
     /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     public static DbContextBuilder<TDbContext> UseSqlite<TDbContext>
     (
         this DbContextBuilder<TDbContext> builder
@@ -48,11 +49,10 @@ public static class DbContextBuilderSqliteExtensions
     /// <summary>
     /// Instructs the builder to use SQLite as the database provider.
     /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"></see></returns>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
     private static DbContextBuilder<TDbContext> UseSqlite<TDbContext>
     (
         this DbContextBuilder<TDbContext> builder,
-        //IModelCustomizer modelCustomizer
         Type modelCustomizerType
     ) where TDbContext : DbContext
     {
@@ -66,10 +66,10 @@ public static class DbContextBuilderSqliteExtensions
             builder.ServiceCollection.Remove(descriptor);
         }
 
-        // Avoid registering EF services multiple times
-        if (!builder.ServiceCollection.Any(sd =>
-                sd.ServiceType.FullName != null &&
-                sd.ServiceType.FullName.Contains("Microsoft.EntityFrameworkCore.Sqlite.SqliteOptionsExtension")))
+        // Avoid registering EF services multiple times. Use a typeof check on the
+        // SQLite options extension type rather than matching its FullName as a string
+        // (which silently breaks if EF renames or moves the type).
+        if (!builder.ServiceCollection.Any(sd => sd.ServiceType == typeof(SqliteOptionsExtension)))
         {
             builder.ServiceCollection.AddEntityFrameworkSqlite();
         }
