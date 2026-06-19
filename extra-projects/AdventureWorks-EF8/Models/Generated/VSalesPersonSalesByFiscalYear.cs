@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace AdventureWorks.Models;
 
-public partial class VSalesPersonSalesByFiscalYear
-{
+public partial record VSalesPersonSalesByFiscalYear{
     public int? SalesPersonId { get; set; }
 
     public string FullName { get; set; }

@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Work shift lookup table.
 /// </summary>
-public partial class Shift
-{
+public partial record Shift{
     /// <summary>
     /// Primary key for Shift records.
     /// </summary>

@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Lookup table containing the ISO standard codes for countries and regions.
 /// </summary>
-public partial class CountryRegion
-{
+public partial record CountryRegion{
     /// <summary>
     /// ISO standard code for countries and regions.
     /// </summary>

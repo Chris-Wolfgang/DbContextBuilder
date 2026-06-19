@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Customer reviews of products they have purchased.
 /// </summary>
-public partial class ProductReview
-{
+public partial record ProductReview{
     /// <summary>
     /// Primary key for ProductReview records.
     /// </summary>

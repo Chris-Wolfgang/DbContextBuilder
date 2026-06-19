@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Items required to make bicycles and bicycle subassemblies. It identifies the heirarchical relationship between a parent product and its components.
 /// </summary>
-public partial class BillOfMaterial
-{
+public partial record BillOfMaterial{
     /// <summary>
     /// Primary key for BillOfMaterials records.
     /// </summary>

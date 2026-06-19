@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Currency exchange rates.
 /// </summary>
-public partial class CurrencyRate
-{
+public partial record CurrencyRate{
     /// <summary>
     /// Primary key for CurrencyRate records.
     /// </summary>

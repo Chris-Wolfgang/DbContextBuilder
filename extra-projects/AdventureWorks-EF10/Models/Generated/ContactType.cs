@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Lookup table containing the types of business entity contacts.
 /// </summary>
-public partial class ContactType
-{
+public partial record ContactType{
     /// <summary>
     /// Primary key for ContactType records.
     /// </summary>

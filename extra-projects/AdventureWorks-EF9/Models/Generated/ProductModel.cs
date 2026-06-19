@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Product model classification.
 /// </summary>
-public partial class ProductModel
-{
+public partial record ProductModel{
     /// <summary>
     /// Primary key for ProductModel records.
     /// </summary>

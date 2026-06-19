@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Customer credit card information.
 /// </summary>
-public partial class CreditCard
-{
+public partial record CreditCard{
     /// <summary>
     /// Primary key for CreditCard records.
     /// </summary>

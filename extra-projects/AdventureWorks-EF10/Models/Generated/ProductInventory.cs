@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Product inventory information.
 /// </summary>
-public partial class ProductInventory
-{
+public partial record ProductInventory{
     /// <summary>
     /// Product identification number. Foreign key to Product.ProductID.
     /// </summary>

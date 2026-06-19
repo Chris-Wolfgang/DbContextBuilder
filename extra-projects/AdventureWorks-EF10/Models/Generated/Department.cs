@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Lookup table containing the departments within the Adventure Works Cycles company.
 /// </summary>
-public partial class Department
-{
+public partial record Department{
     /// <summary>
     /// Primary key for Department records.
     /// </summary>

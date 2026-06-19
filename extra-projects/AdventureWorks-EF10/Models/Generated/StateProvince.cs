@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// State and province lookup table.
 /// </summary>
-public partial class StateProvince
-{
+public partial record StateProvince{
     /// <summary>
     /// Primary key for StateProvince records.
     /// </summary>

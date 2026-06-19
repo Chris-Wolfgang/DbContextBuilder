@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Product descriptions in several languages.
 /// </summary>
-public partial class ProductDescription
-{
+public partial record ProductDescription{
     /// <summary>
     /// Primary key for ProductDescription records.
     /// </summary>

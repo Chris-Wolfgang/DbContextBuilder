@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Product subcategories. See ProductCategory table.
 /// </summary>
-public partial class ProductSubcategory
-{
+public partial record ProductSubcategory{
     /// <summary>
     /// Primary key for ProductSubcategory records.
     /// </summary>

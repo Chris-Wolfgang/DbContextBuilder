@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Customers (resellers) of Adventure Works products.
 /// </summary>
-public partial class Store
-{
+public partial record Store{
     /// <summary>
     /// Primary key. Foreign key to Customer.BusinessEntityID.
     /// </summary>

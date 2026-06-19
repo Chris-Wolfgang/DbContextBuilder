@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Cross-reference table mapping products to special offer discounts.
 /// </summary>
-public partial class SpecialOfferProduct
-{
+public partial record SpecialOfferProduct{
     /// <summary>
     /// Primary key for SpecialOfferProduct records.
     /// </summary>

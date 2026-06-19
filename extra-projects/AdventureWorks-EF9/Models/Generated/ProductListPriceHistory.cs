@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Changes in the list price of a product over time.
 /// </summary>
-public partial class ProductListPriceHistory
-{
+public partial record ProductListPriceHistory{
     /// <summary>
     /// Product identification number. Foreign key to Product.ProductID
     /// </summary>

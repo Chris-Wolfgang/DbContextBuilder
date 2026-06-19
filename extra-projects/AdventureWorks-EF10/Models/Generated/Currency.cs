@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Lookup table containing standard ISO currencies.
 /// </summary>
-public partial class Currency
-{
+public partial record Currency{
     /// <summary>
     /// The ISO code for the Currency.
     /// </summary>

@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Type of phone number of a person.
 /// </summary>
-public partial class PhoneNumberType
-{
+public partial record PhoneNumberType{
     /// <summary>
     /// Primary key for telephone number type records.
     /// </summary>

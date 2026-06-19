@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace AdventureWorks.Models;
 
-public partial class VStoreWithAddress
-{
+public partial record VStoreWithAddress{
     public int BusinessEntityId { get; set; }
 
     public string Name { get; set; }

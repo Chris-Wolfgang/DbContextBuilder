@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Sales performance tracking.
 /// </summary>
-public partial class SalesPersonQuotaHistory
-{
+public partial record SalesPersonQuotaHistory{
     /// <summary>
     /// Sales person identification number. Foreign key to SalesPerson.BusinessEntityID.
     /// </summary>

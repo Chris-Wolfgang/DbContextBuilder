@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Lookup table of customer purchase reasons.
 /// </summary>
-public partial class SalesReason
-{
+public partial record SalesReason{
     /// <summary>
     /// Primary key for SalesReason records.
     /// </summary>

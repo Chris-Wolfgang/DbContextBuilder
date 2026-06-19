@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Manufacturing work orders.
 /// </summary>
-public partial class WorkOrder
-{
+public partial record WorkOrder{
     /// <summary>
     /// Primary key for WorkOrder records.
     /// </summary>

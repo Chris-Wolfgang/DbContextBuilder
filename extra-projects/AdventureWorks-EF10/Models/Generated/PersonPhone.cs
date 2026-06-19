@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Telephone number and type of a person.
 /// </summary>
-public partial class PersonPhone
-{
+public partial record PersonPhone{
     /// <summary>
     /// Business entity identification number. Foreign key to Person.BusinessEntityID.
     /// </summary>

@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Employee pay history.
 /// </summary>
-public partial class EmployeePayHistory
-{
+public partial record EmployeePayHistory{
     /// <summary>
     /// Employee identification number. Foreign key to Employee.BusinessEntityID.
     /// </summary>

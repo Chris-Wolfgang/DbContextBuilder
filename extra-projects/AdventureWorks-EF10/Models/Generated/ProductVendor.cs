@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Cross-reference table mapping vendors with the products they supply.
 /// </summary>
-public partial class ProductVendor
-{
+public partial record ProductVendor{
     /// <summary>
     /// Primary key. Foreign key to Product.ProductID.
     /// </summary>

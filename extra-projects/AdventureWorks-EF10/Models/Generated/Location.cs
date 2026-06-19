@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Product inventory and manufacturing locations.
 /// </summary>
-public partial class Location
-{
+public partial record Location{
     /// <summary>
     /// Primary key for Location records.
     /// </summary>

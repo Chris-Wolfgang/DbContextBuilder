@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Individual products associated with a specific sales order. See SalesOrderHeader.
 /// </summary>
-public partial class SalesOrderDetail
-{
+public partial record SalesOrderDetail{
     /// <summary>
     /// Primary key. Foreign key to SalesOrderHeader.SalesOrderID.
     /// </summary>

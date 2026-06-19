@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Contains online customer orders until the order is submitted or cancelled.
 /// </summary>
-public partial class ShoppingCartItem
-{
+public partial record ShoppingCartItem{
     /// <summary>
     /// Primary key for ShoppingCartItem records.
     /// </summary>

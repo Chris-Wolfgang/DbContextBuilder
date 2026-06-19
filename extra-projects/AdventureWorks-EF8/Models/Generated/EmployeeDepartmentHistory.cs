@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Employee department transfers.
 /// </summary>
-public partial class EmployeeDepartmentHistory
-{
+public partial record EmployeeDepartmentHistory{
     /// <summary>
     /// Employee identification number. Foreign key to Employee.BusinessEntityID.
     /// </summary>

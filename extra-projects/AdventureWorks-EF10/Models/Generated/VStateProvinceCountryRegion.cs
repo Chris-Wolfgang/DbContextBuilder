@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace AdventureWorks.Models;
 
-public partial class VStateProvinceCountryRegion
-{
+public partial record VStateProvinceCountryRegion{
     public int StateProvinceId { get; set; }
 
     public string StateProvinceCode { get; set; }

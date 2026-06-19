@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace AdventureWorks.Models;
 
-public partial class VEmployeeDepartmentHistory
-{
+public partial record VEmployeeDepartmentHistory{
     public int BusinessEntityId { get; set; }
 
     public string Title { get; set; }

@@ -6,8 +6,7 @@ namespace AdventureWorks.Models;
 /// <summary>
 /// Manufacturing failure reasons lookup table.
 /// </summary>
-public partial class ScrapReason
-{
+public partial record ScrapReason{
     /// <summary>
     /// Primary key for ScrapReason records.
     /// </summary>
