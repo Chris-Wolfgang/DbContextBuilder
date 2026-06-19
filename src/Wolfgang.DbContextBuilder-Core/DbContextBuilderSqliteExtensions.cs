@@ -17,6 +17,12 @@ public static class DbContextBuilderSqliteExtensions
     /// Instructs the builder to use SQLite as the database provider.
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <remarks>
+    /// Provider selection is last-write-wins — calling <c>UseSqlite</c> after a previous
+    /// <c>UseInMemory</c>, <c>UseSqlite</c>, or <c>UseSqliteForMsSqlServer</c> call
+    /// overrides the earlier choice.
+    /// Choose one provider per builder.
+    /// </remarks>
     public static DbContextBuilder<TDbContext> UseSqlite<TDbContext>
     (
         this DbContextBuilder<TDbContext> builder
@@ -34,6 +40,11 @@ public static class DbContextBuilderSqliteExtensions
     /// such as default value mappings, to better mimic SQL Server behavior for testing or compatibility.
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <remarks>
+    /// Provider selection is last-write-wins — calling <c>UseSqliteForMsSqlServer</c> after a
+    /// previous <c>UseInMemory</c>, <c>UseSqlite</c>, or <c>UseSqliteForMsSqlServer</c> call
+    /// overrides the earlier choice.
+    /// </remarks>
     public static DbContextBuilder<TDbContext> UseSqliteForMsSqlServer<TDbContext>
     (
         this DbContextBuilder<TDbContext> builder
