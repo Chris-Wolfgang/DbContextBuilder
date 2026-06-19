@@ -26,7 +26,15 @@ public class SqliteForMsSqlServerModelCustomizer : SqliteModelCustomizer
         DefaultValueMap.Add("(newid())", "lower(hex(randomblob(16)))");
         DefaultValueMap.Add("(getdate())", "datetime('now')");
 
-
+        // OverrideDefaultValueHandling returns null on a dictionary miss — intentional and
+        // a deliberate divergence from the base SqliteModelCustomizer (which returns the
+        // original defaultValue on miss). Rationale: an un-mapped SQL Server SQL function
+        // (e.g. NEWSEQUENTIALID(), SYSUTCDATETIME(), or a user-defined function) would
+        // succeed at model compile time on SQLite but fail at runtime when EF emits the
+        // default-value SQL into the CREATE TABLE statement. Returning null drops the
+        // default, letting SQLite use its column-type default — safer than passing through
+        // a function SQLite doesn't recognize. Callers who need a specific mapping should
+        // add it to DefaultValueMap.
         OverrideDefaultValueHandling = s =>
         {
             if (s == null)
@@ -39,8 +47,11 @@ public class SqliteForMsSqlServerModelCustomizer : SqliteModelCustomizer
                 : null;
         };
 
+        // OverrideComputedValueHandling strips ALL computed values. SQLite supports
+        // computed columns but only with a constrained SQL grammar; SQL-Server computed
+        // expressions almost always reference functions SQLite doesn't have. Dropping
+        // them is safer than passing them through — the column becomes a normal column,
+        // and tests can seed an explicit value if they need one.
         OverrideComputedValueHandling = _ => null;
-
-        
     }
 }
