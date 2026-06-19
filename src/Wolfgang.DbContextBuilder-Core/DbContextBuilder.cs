@@ -109,8 +109,11 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             throw new ArgumentException("The type of TEntity cannot be string", nameof(entities));
         }
 
-        var entityArray = entities as TEntity[] ?? entities.ToArray();
-        return SeedWith(entityArray);
+        // Iterate directly rather than materializing to an array (saves one allocation
+        // vs delegating to the params overload via ToArray). nameof(entities) keeps
+        // the public parameter name on any thrown ArgumentException.
+        AddSeedItems(entities, nameof(entities));
+        return this;
     }
 
 
@@ -127,15 +130,31 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         where TEntity : class
     {
         ArgumentNullException.ThrowIfNull(entities);
+        AddSeedItems(entities, nameof(entities));
+        return this;
+    }
 
-        foreach (var entity in entities)
+
+
+    /// <summary>
+    /// Shared validation + add loop for both <see cref="SeedWith{TEntity}(IEnumerable{TEntity})"/>
+    /// and <see cref="SeedWith{TEntity}(TEntity[])"/>. Keeps the null/string/IEnumerable
+    /// arms in one place so the two overloads cannot drift. <paramref name="paramName"/>
+    /// is forwarded to <see cref="ArgumentException.ParamName"/> so the public overload's
+    /// argument name is preserved on failure.
+    /// </summary>
+    /// <exception cref="ArgumentException">An element of <paramref name="source"/> is null or a string.</exception>
+    private void AddSeedItems<TEntity>(IEnumerable<TEntity> source, string paramName)
+        where TEntity : class
+    {
+        foreach (var entity in source)
         {
             switch (entity)
             {
                 case null:
-                    throw new ArgumentException("One of the entities is null", nameof(entities));
+                    throw new ArgumentException("One of the entities is null", paramName);
                 case string:
-                    throw new ArgumentException("One of the entities passed in is of type string", nameof(entities));
+                    throw new ArgumentException("One of the entities passed in is of type string", paramName);
                 case IEnumerable<object> e:
                     _seedData.AddRange(e);
                     break;
@@ -144,7 +163,6 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
                     break;
             }
         }
-        return this;
     }
 
 
