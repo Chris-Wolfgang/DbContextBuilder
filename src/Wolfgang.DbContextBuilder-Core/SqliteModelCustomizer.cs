@@ -26,43 +26,40 @@ public class SqliteModelCustomizer : ModelCustomizer
 
 
 
-    private Func<(string? SchemaName, string TableName), string>? _overrideTableRenaming;
+    // Backing fields are initialized in the ctor (not lazily in the getter) so that
+    // concurrent EF model customization — which can happen when multiple threads race
+    // on the EF model-cache release path — sees the same delegate instance. The
+    // previous `??=` lazy-init pattern allowed two threads to both observe null and
+    // both construct a delegate; one wins, the other's lambda is silently discarded
+    // along with any captured state it referenced.
+    private Func<(string? SchemaName, string TableName), string> _overrideTableRenaming;
+
+
+
     /// <summary>
     /// This method is called for each table in the database to rename the table since SQLite
-    /// does not support schemas.  
+    /// does not support schemas.
     /// </summary>
     /// <exception cref="ArgumentNullException">The setter received a <c>null</c> <c>value</c>.</exception>
     /// <remarks>
-    ///The default implementation renames the table by prefixing
-    /// the schema name to the table name. For example, a table named "Person" in schema
-    /// Personnel would be renamed to "Personnel_Person". If the table doesn't have a schema
-    /// "dbo" is used as the schema name. You can override this behavior by assigning a
-    /// custom implementation to this property
+    /// The default implementation renames the table by prefixing the schema name to the
+    /// table name. For example, a table named "Person" in schema Personnel would be renamed
+    /// to "Personnel_Person". If the table doesn't have a schema "dbo" is used as the schema
+    /// name. You can override this behavior by assigning a custom implementation to this
+    /// property.
     /// </remarks>
     public Func<(string? SchemaName, string TableName), string> OverrideTableRenaming
     {
-        get =>
-            _overrideTableRenaming ??= t =>
-            {
-                var schemaPrefix = t.SchemaName ?? "dbo";
-
-                // Avoid recursive renaming. Check without allocating an interpolated
-                // "{prefix}_" probe string per entity type — compare the prefix substring
-                // directly then verify the separator character.
-                if (t.TableName.Length > schemaPrefix.Length
-                    && t.TableName[schemaPrefix.Length] == '_'
-                    && t.TableName.StartsWith(schemaPrefix, StringComparison.OrdinalIgnoreCase))
-                {
-                    return t.TableName; // already renamed
-                }
-
-                return $"{schemaPrefix}_{t.TableName}";
-            };
+        get => _overrideTableRenaming;
         set => _overrideTableRenaming = value ?? throw new ArgumentNullException(nameof(value));
     }
 
 
-    private Func<string?, string?>? _overrideComputedValueHandling;
+
+    private Func<string?, string?> _overrideComputedValueHandling;
+
+
+
     /// <summary>
     /// This method is called for each column that has a computed value defined in the model.
     /// </summary>
@@ -75,10 +72,9 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// </remarks>
     public Func<string?, string?> OverrideComputedValueHandling
     {
-        get => _overrideComputedValueHandling ??= defaultValue => defaultValue;
+        get => _overrideComputedValueHandling;
         set => _overrideComputedValueHandling = value ?? throw new ArgumentNullException(nameof(value));
     }
-
 
 
 
@@ -96,7 +92,10 @@ public class SqliteModelCustomizer : ModelCustomizer
     public IDictionary<string, string> DefaultValueMap { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
 
-    private Func<string?, string?>? _overrideDefaultValueHandling;
+
+    private Func<string?, string?> _overrideDefaultValueHandling;
+
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteModelCustomizer"/> class.
@@ -104,7 +103,42 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// <param name="dependencies">The dependencies for the model customizer.</param>
     /// <exception cref="ArgumentNullException"><paramref name="dependencies"/> is null.</exception>
     public SqliteModelCustomizer(ModelCustomizerDependencies dependencies)
-        : base(dependencies) => ArgumentNullException.ThrowIfNull(dependencies);
+        : base(dependencies)
+    {
+        ArgumentNullException.ThrowIfNull(dependencies);
+
+        _overrideTableRenaming = t =>
+        {
+            var schemaPrefix = t.SchemaName ?? "dbo";
+
+            // Avoid recursive renaming. Compare prefix + separator char directly so we
+            // do not allocate an interpolated probe string per entity type.
+            if (t.TableName.Length > schemaPrefix.Length
+                && t.TableName[schemaPrefix.Length] == '_'
+                && t.TableName.StartsWith(schemaPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return t.TableName;
+            }
+
+            return $"{schemaPrefix}_{t.TableName}";
+        };
+
+        _overrideComputedValueHandling = defaultValue => defaultValue;
+
+        _overrideDefaultValueHandling = defaultValue =>
+        {
+            if (defaultValue == null)
+            {
+                return defaultValue;
+            }
+
+            return DefaultValueMap.TryGetValue(defaultValue, out var newDefaultValue)
+                ? newDefaultValue
+                : defaultValue;
+        };
+    }
+
+
 
     /// <summary>
     /// This method is called for each column that has a default value defined in the model.
@@ -114,22 +148,11 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// The default implementation checks the DefaultValueMap dictionary to see if the existing default value
     /// is contained in the dictionary and if so, replaces it with the value in the dictionary. If the
     /// current default is not in the dictionary, it is left unchanged. You can override this behavior
-    /// by assigning a custom implementation to this property 
+    /// by assigning a custom implementation to this property.
     /// </remarks>
     public Func<string?, string?> OverrideDefaultValueHandling
     {
-        get =>
-            _overrideDefaultValueHandling ??= defaultValue =>
-            {
-                if (defaultValue == null)
-                {
-                    return defaultValue;
-                }
-
-                return DefaultValueMap.TryGetValue(defaultValue, out var newDefaultValue)
-                    ? newDefaultValue
-                    : defaultValue;
-            };
+        get => _overrideDefaultValueHandling;
         set => _overrideDefaultValueHandling = value ?? throw new ArgumentNullException(nameof(value));
     }
 
