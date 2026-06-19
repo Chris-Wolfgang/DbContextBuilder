@@ -20,7 +20,7 @@ public class AutoFixtureRandomEntityCreatorTests : ICreateRandomEntitiesTestsBas
 	/// Verifies that the Fixture property is not null
 	/// </summary>
 	[Fact]
-	public void Property_Fixture_is_not_null()
+	public void Fixture_when_default_ctor_is_used_is_not_null()
 	{
 		// Arrange
 		var sut = new AutoFixtureRandomEntityCreator();
@@ -48,7 +48,7 @@ public class AutoFixtureRandomEntityCreatorTests : ICreateRandomEntitiesTestsBas
 	/// Verifies that the value passed into the constructor is assigned to the Fixture property
 	/// </summary>
 	[Fact]
-	public void Sets_Fixture_property_to_the_value_passed_into_ctor()
+	public void Ctor_when_passed_a_fixture_assigns_it_to_the_Fixture_property()
 	{
 		// Arrange
 		var fixture = new Fixture();
