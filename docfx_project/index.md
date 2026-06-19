@@ -10,11 +10,9 @@ using an in-memory database for testing purposes. With DbContextBuilder, you can
 a DbContext with predefined data, making it ideal for unit tests and integration tests without
 having to rely on an actual database whose data can be changed or deleted over time.
 
-- [ReadMe](https://github.com/Chris-Wolfgang/DbContextBuilder)
-- [Introduction](docs/introduction.html)
-- [Getting started](docs/getting-started.html)
-- [API](api/Wolfgang.DbContextBuilderCore.html)
+## Where to next
 
-## Quick Start Notes:
-
-<!--1. Add images to the *images* folder if the file is referencing an image.-->
+- **[Documentation](docs/introduction.html)** — concepts and getting-started walkthrough
+- **[Getting started](docs/getting-started.html)** — quickest path to a working test
+- **[API Reference](api/Wolfgang.DbContextBuilderCore.html)** — full member listing
+- **[GitHub repository](https://github.com/Chris-Wolfgang/DbContextBuilder)** — source, issues, releases
