@@ -29,6 +29,7 @@
 
 	<ItemGroup>
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\AutoFixtureRandomEntityCreatorTests.cs" Link="AutoFixtureRandomEntityCreatorTests.cs" />
+	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\DbContextActivatorTests.cs" Link="DbContextActivatorTests.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\DbContextBuilderTestsBase.cs" Link="DbContextBuilderTestsBase.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\ICreateRandomEntitiesTestsBase.cs" Link="ICreateRandomEntitiesTestsBase.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\IgnoreVirtualMembersCustomizationTests.cs" Link="IgnoreVirtualMembersCustomizationTests.cs" />
