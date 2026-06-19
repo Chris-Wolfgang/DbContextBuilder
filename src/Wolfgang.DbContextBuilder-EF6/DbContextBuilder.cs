@@ -141,7 +141,22 @@ public class DbContextBuilder<T> where T : DbContext
 
         if (entity is IEnumerable<object> sequence)
         {
-            _seedData.AddRange(sequence);
+            // Buffer first so the failing call leaves `_seedData` untouched (atomic w.r.t.
+            // seed state). IEnumerable<T> is covariant in T for reference types, so
+            // List<string> casts to IEnumerable<object> at runtime and would slip through
+            // without the per-item check below.
+            var buffer = new List<object>();
+            foreach (var item in sequence)
+            {
+                if (item is string)
+                {
+                    throw new ArgumentException("One of the entities passed in is of type string", nameof(entity));
+                }
+
+                buffer.Add(item);
+            }
+
+            _seedData.AddRange(buffer);
         }
         else
         {

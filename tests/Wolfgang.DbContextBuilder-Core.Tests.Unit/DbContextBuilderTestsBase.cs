@@ -1266,17 +1266,17 @@ public abstract class DbContextBuilderTestsBase
 
 
 
-    /// <summary>
-    /// Regression: when the caller widens TEntity to <see cref="object"/> the static
-    /// `typeof(TEntity) == typeof(string)` check (the original guard) would pass through
-    /// and silently seed the string. The current guard uses a runtime `entity is string`
-    /// check and must still reject.
+    /// Regression: the singleton overload accepts a single TEntity, but
+    /// `List&lt;string&gt;` casts to `IEnumerable&lt;object&gt;` at runtime (T-covariance for
+    /// reference types) — so without an element-level check, a list of strings would
+    /// slip through as seed data. This test pins the fix.
     /// </summary>
     [Fact]
-    public void SeedWith_singleton_overload_when_TEntity_is_widened_to_object_still_rejects_string()
+    public void SeedWith_singleton_overload_when_passed_a_List_of_strings_throws()
     {
         using var sut = CreateDbContextBuilder();
+        var stringList = new List<string> { "a", "b", "c" };
 
-        Assert.Throws<ArgumentException>(() => sut.SeedWith<object>("not an entity"));
+        Assert.Throws<ArgumentException>(() => sut.SeedWith(stringList));
     }
 }

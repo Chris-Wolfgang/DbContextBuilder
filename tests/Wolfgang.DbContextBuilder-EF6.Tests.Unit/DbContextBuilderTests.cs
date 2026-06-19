@@ -871,4 +871,37 @@ public class DbContextBuilderTests
         Assert.Single(context.Products);
         Assert.Single(context.Categories);
     }
+
+
+
+    /// <summary>
+    /// Regression: the singleton overload accepts a single TEntity, but
+    /// <c>List&lt;string&gt;</c> casts to <c>IEnumerable&lt;object&gt;</c> at runtime
+    /// (T-covariance for reference types) — so without an element-level check, a list
+    /// of strings would slip through as silent seed data. Mirrors the Core builder's
+    /// regression test.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_passed_a_List_of_strings_throws()
+    {
+        var sut = new DbContextBuilder<TestDbContext>();
+        var stringList = new List<string> { "a", "b", "c" };
+
+        Assert.Throws<ArgumentException>(() => sut.SeedWith(stringList));
+    }
+
+
+
+    /// <summary>
+    /// Regression: when the caller widens TEntity to <see cref="object"/> the
+    /// static `typeof(TEntity) == typeof(string)` check (the original guard) would
+    /// pass through. The runtime <c>entity is string</c> check must still reject.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_TEntity_is_widened_to_object_still_rejects_string()
+    {
+        var sut = new DbContextBuilder<TestDbContext>();
+
+        Assert.Throws<ArgumentException>(() => sut.SeedWith<object>("not an entity"));
+    }
 }
