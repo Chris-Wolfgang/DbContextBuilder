@@ -277,9 +277,17 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             }
             catch (InvalidOperationException e)
             {
-                const string msg = "Failed to create database. See InnerException for details. " +
-                                   "You can get additional information by creating a new instance of " +
-                                   "DbContextOptionsBuilder<T> and passing it into UseDbContextOptionsBuilder.";
+                const string msg =
+                    "DbContextBuilder failed to create the in-memory database for the " +
+                    "configured DbContext. See InnerException for the EF Core failure details. " +
+                    "Common causes: no database provider has been configured (InMemory is used " +
+                    "by default, so this usually indicates a custom ICreateDbContext returned a " +
+                    "context with no provider); the configured provider cannot model one of the " +
+                    "DbContext's entities; or a required EF service has not been registered. " +
+                    "If you need to capture EF Core diagnostic logs to investigate, build a " +
+                    "DbContextOptionsBuilder<T> with .LogTo(...) or .EnableSensitiveDataLogging() " +
+                    "yourself and pass it to UseDbContextOptionsBuilder(...) before calling " +
+                    "BuildAsync().";
                 throw new InvalidOperationException(msg, e);
             }
 

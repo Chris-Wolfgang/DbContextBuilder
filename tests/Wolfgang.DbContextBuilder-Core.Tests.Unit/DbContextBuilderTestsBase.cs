@@ -1159,7 +1159,7 @@ public abstract class DbContextBuilderTestsBase
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.BuildAsync());
-        Assert.Contains("Failed to create database", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("failed to create the in-memory database", ex.Message, StringComparison.Ordinal);
         Assert.NotNull(ex.InnerException);
     }
 
