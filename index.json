@@ -52,6 +52,6 @@
   "index.html": {
     "href": "index.html",
     "title": "DbContextBuilder | DbContextBuilder",
-    "summary": "DbContextBuilder Uses the Builder pattern to create Entity Framework Core and classic DbContext instances using an in-memory database for testing purposes. With DbContextBuilder, you can easily set up a DbContext with predefined data, making it ideal for unit tests and integration tests without having to rely on an actual database whose data can be changed or deleted over time. ReadMe Introduction Getting started API Quick Start Notes:"
+    "summary": "DbContextBuilder Uses the Builder pattern to create Entity Framework Core and classic DbContext instances using an in-memory database for testing purposes. With DbContextBuilder, you can easily set up a DbContext with predefined data, making it ideal for unit tests and integration tests without having to rely on an actual database whose data can be changed or deleted over time. Where to next Documentation — concepts and getting-started walkthrough Getting started — quickest path to a working test API Reference — full member listing GitHub repository — source, issues, releases"
   }
 }
