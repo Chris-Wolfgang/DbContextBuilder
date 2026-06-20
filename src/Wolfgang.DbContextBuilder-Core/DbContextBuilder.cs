@@ -137,37 +137,6 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
     /// <summary>
-    /// Shared validation + add loop for both <see cref="SeedWith{TEntity}(IEnumerable{TEntity})"/>
-    /// and <see cref="SeedWith{TEntity}(TEntity[])"/>. Keeps the null/string/IEnumerable
-    /// arms in one place so the two overloads cannot drift. <paramref name="paramName"/>
-    /// is forwarded to <see cref="ArgumentException.ParamName"/> so the public overload's
-    /// argument name is preserved on failure.
-    /// </summary>
-    /// <exception cref="ArgumentException">An element of <paramref name="source"/> is null or a string.</exception>
-    private void AddSeedItems<TEntity>(IEnumerable<TEntity> source, string paramName)
-        where TEntity : class
-    {
-        foreach (var entity in source)
-        {
-            switch (entity)
-            {
-                case null:
-                    throw new ArgumentException("One of the entities is null", paramName);
-                case string:
-                    throw new ArgumentException("One of the entities passed in is of type string", paramName);
-                case IEnumerable<object> e:
-                    _seedData.AddRange(e);
-                    break;
-                default:
-                    _seedData.Add(entity);
-                    break;
-            }
-        }
-    }
-
-
-
-    /// <summary>
     /// Populates the specified DbSet with a single entity. Equivalent to calling the
     /// <c>params</c>-array overload with one element, but avoids the per-call allocation
     /// of a one-element array — useful in tests that seed many single rows.
@@ -214,6 +183,37 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         }
 
         return this;
+    }
+
+
+
+    /// <summary>
+    /// Shared validation + add loop for both <see cref="SeedWith{TEntity}(IEnumerable{TEntity})"/>
+    /// and <see cref="SeedWith{TEntity}(TEntity[])"/>. Keeps the null/string/IEnumerable
+    /// arms in one place so the two overloads cannot drift. <paramref name="paramName"/>
+    /// is forwarded to <see cref="ArgumentException.ParamName"/> so the public overload's
+    /// argument name is preserved on failure.
+    /// </summary>
+    /// <exception cref="ArgumentException">An element of <paramref name="source"/> is null or a string.</exception>
+    private void AddSeedItems<TEntity>(IEnumerable<TEntity> source, string paramName)
+        where TEntity : class
+    {
+        foreach (var entity in source)
+        {
+            switch (entity)
+            {
+                case null:
+                    throw new ArgumentException("One of the entities is null", paramName);
+                case string:
+                    throw new ArgumentException("One of the entities passed in is of type string", paramName);
+                case IEnumerable<object> e:
+                    _seedData.AddRange(e);
+                    break;
+                default:
+                    _seedData.Add(entity);
+                    break;
+            }
+        }
     }
 
 

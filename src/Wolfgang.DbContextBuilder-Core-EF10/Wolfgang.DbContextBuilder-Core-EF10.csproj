@@ -58,6 +58,8 @@
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="[10.0.5,11.0.0)" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="[10.0.5,11.0.0)" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[10.0.5,11.0.0)" />
+	  <!-- Pin SQLite native lib above SQLitePCLRaw.lib.e_sqlite3 2.1.2 (GHSA-2m69-gcr7-jv3q / NU1903). -->
+	  <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.50.3" />
 	</ItemGroup>
 	<ItemGroup>
 		<!-- Include the icon and README file directly in the package's root -->
