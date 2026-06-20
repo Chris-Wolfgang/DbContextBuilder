@@ -11,7 +11,6 @@
 		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
 		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
-		<AssemblyVersion>1.0.0</AssemblyVersion>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
 		<IsTestProject>true</IsTestProject>
@@ -37,7 +36,16 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<NoWarn>$(NoWarn);CA1707</NoWarn>
+		<!-- CA1707 (underscores) is intentional: test method names follow the MethodUnderTest_when_condition_expected_result convention. -->
+		<!--
+		  CS1591 (missing XML doc) suppressed: the classic EF6 test
+		  classes pre-date the XML-doc convention used by the EF Core
+		  test files. Adding XML docs to ~30 test classes / ~150 members
+		  is a separate follow-up; until then, suppress to keep
+		  TreatWarningsAsErrors=Release green now that
+		  tests/Directory.Build.props is gone.
+		-->
+		<NoWarn>$(NoWarn);CA1707;CS1591</NoWarn>
 	</PropertyGroup>
 
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
