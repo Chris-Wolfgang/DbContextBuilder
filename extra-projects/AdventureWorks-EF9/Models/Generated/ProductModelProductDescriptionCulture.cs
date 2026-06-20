@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// Cross-reference table mapping product descriptions and the language the description is written in.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial record ProductModelProductDescriptionCulture{
     /// <summary>
     /// Primary key. Foreign key to ProductModel.ProductModelID.

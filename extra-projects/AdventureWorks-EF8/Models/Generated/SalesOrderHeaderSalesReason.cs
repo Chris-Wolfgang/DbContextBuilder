@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// Cross-reference table mapping sales orders to sales reason codes.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial record SalesOrderHeaderSalesReason{
     /// <summary>
     /// Primary key. Foreign key to SalesOrderHeader.SalesOrderID.

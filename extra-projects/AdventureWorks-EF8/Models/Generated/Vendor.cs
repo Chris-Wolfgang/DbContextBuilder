@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// Companies from whom Adventure Works Cycles purchases parts or other goods.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial record Vendor{
     /// <summary>
     /// Primary key for Vendor records.  Foreign key to BusinessEntity.BusinessEntityID
