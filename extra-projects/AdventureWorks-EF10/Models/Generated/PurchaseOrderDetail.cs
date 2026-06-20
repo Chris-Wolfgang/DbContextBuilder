@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// Individual products associated with a specific purchase order. See PurchaseOrderHeader.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial record PurchaseOrderDetail{
     /// <summary>
     /// Primary key. Foreign key to PurchaseOrderHeader.PurchaseOrderID.

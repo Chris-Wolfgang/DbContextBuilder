@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial class AdventureWorksDbContext : DbContext
 {
     public AdventureWorksDbContext(DbContextOptions<AdventureWorksDbContext> options)

@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// Cross-reference table mapping stores, vendors, and employees to people
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial record BusinessEntityContact{
     /// <summary>
     /// Primary key. Foreign key to BusinessEntity.BusinessEntityID.
