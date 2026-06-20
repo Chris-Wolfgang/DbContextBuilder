@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial record VJobCandidateEducation{
     public int JobCandidateId { get; set; }
 

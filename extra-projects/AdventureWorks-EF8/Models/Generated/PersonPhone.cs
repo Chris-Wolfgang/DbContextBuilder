@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// Telephone number and type of a person.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial record PersonPhone{
     /// <summary>
     /// Business entity identification number. Foreign key to Person.BusinessEntityID.

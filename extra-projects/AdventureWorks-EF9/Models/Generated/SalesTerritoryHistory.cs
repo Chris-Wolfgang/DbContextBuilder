@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// Sales representative transfers to other sales territories.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial record SalesTerritoryHistory{
     /// <summary>
     /// Primary key. The sales rep.  Foreign key to SalesPerson.BusinessEntityID.

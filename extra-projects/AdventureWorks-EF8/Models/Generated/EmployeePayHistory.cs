@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// Employee pay history.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial record EmployeePayHistory{
     /// <summary>
     /// Employee identification number. Foreign key to Employee.BusinessEntityID.

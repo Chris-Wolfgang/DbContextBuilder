@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// Résumés submitted to Human Resources by job applicants.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial record JobCandidate{
     /// <summary>
     /// Primary key for JobCandidate records.

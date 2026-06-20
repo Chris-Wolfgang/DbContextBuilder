@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// Individual products associated with a specific sales order. See SalesOrderHeader.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial record SalesOrderDetail{
     /// <summary>
     /// Primary key. Foreign key to SalesOrderHeader.SalesOrderID.

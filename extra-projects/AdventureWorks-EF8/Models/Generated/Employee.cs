@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventureWorks.Models;
 
 /// <summary>
 /// Employee information such as salary, department, and title.
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "This is a test model and not part of the production code")]
 public partial record Employee{
     /// <summary>
     /// Primary key for Employee records.  Foreign key to BusinessEntity.BusinessEntityID.
