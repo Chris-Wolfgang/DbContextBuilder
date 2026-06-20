@@ -38,7 +38,7 @@ public class DbContextBuilderTests
         var sut = CreateDbContextBuilder();
 
         // Act
-        var context = sut.Build();
+        using var context = sut.Build();
 
         // Assert
         Assert.NotNull(context);
@@ -57,7 +57,7 @@ public class DbContextBuilderTests
         var sut = CreateDbContextBuilder();
 
         // Act
-        var context = await sut.BuildAsync();
+        using var context = await sut.BuildAsync();
 
         // Assert
         Assert.NotNull(context);
@@ -184,7 +184,7 @@ public class DbContextBuilderTests
         var sut = CreateDbContextBuilder();
 
         // Act
-        var context = sut.Build();
+        using var context = sut.Build();
 
         // Assert
         Assert.NotNull(context);
@@ -212,7 +212,7 @@ public class DbContextBuilderTests
         };
 
         // Act
-        var context = sut
+        using var context = sut
             .SeedWith(product)
             .Build();
 
@@ -319,7 +319,7 @@ public class DbContextBuilderTests
         };
 
         // Act
-        var context = sut
+        using var context = sut
             .SeedWith(new[] { expectedProduct }.AsEnumerable())
             .Build();
 
@@ -435,7 +435,7 @@ public class DbContextBuilderTests
         };
 
         // Act
-        var context = sut
+        using var context = sut
             .SeedWith(product1, product2)
             .Build();
 
@@ -496,7 +496,7 @@ public class DbContextBuilderTests
         // Arrange
         var sut = CreateDbContextBuilder();
 
-        var context = sut
+        using var context = sut
             .SeedWithRandom<Category>(count)
             .Build();
 
@@ -585,7 +585,7 @@ public class DbContextBuilderTests
             return p;
         });
 
-        var context = sut
+        using var context = sut
             .SeedWithRandom(count, func)
             .Build();
 
@@ -675,7 +675,7 @@ public class DbContextBuilderTests
             return p;
         });
 
-        var context = sut
+        using var context = sut
             .SeedWithRandom(count, func)
             .Build();
 
@@ -734,7 +734,7 @@ public class DbContextBuilderTests
             .UseAutoFixture();
 
         // Act
-        var context = sut.Build();
+        using var context = sut.Build();
 
         // Assert
         Assert.NotNull(context);
@@ -754,7 +754,7 @@ public class DbContextBuilderTests
             .UseAutoFixture();
 
         // Act
-        var context = await sut.BuildAsync();
+        using var context = await sut.BuildAsync();
 
         // Assert
         Assert.NotNull(context);
@@ -781,7 +781,7 @@ public class DbContextBuilderTests
         };
 
         // Act
-        var context = await sut
+        using var context = await sut
             .SeedWith(product)
             .BuildAsync();
 
@@ -828,7 +828,7 @@ public class DbContextBuilderTests
         var sut = CreateDbContextBuilder();
 
         // Act
-        var context = sut
+        using var context = sut
             .UseEffort()
             .UseEffort()
             .Build();
@@ -862,7 +862,7 @@ public class DbContextBuilderTests
         };
 
         // Act
-        var context = sut
+        using var context = sut
             .SeedWith(product)
             .SeedWith(category)
             .Build();
