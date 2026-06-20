@@ -1266,6 +1266,7 @@ public abstract class DbContextBuilderTestsBase
 
 
 
+    /// <summary>
     /// Regression: the singleton overload accepts a single TEntity, but
     /// `List&lt;string&gt;` casts to `IEnumerable&lt;object&gt;` at runtime (T-covariance for
     /// reference types) — so without an element-level check, a list of strings would
