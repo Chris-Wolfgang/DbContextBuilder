@@ -23,8 +23,8 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="System.Formats.Asn1" Version="10.0.8" />
-		<PackageReference Include="System.Text.Json" Version="10.0.8" />
+		<PackageReference Include="System.Formats.Asn1" Version="10.0.9" />
+		<PackageReference Include="System.Text.Json" Version="10.0.9" />
 	</ItemGroup>
 
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->

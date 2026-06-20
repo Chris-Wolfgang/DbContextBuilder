@@ -5,7 +5,7 @@
       "src": [
         {
           "files": [
-			"src/Wolfgang.DbContextBuilder-Core/Wolfgang.DbContextBuilder-Core.csproj"
+            "src/Wolfgang.DbContextBuilder-Core/Wolfgang.DbContextBuilder-Core.csproj"
           ],
           "src": "../"
         }
@@ -16,9 +16,9 @@
   "build": {
     "content": [
       {
-		"files": [
-			"**/*.{md,yml}"
-		],
+        "files": [
+          "**/*.{md,yml}"
+        ],
         "exclude": [
           "_site/**"
         ]
@@ -27,7 +27,13 @@
     "resource": [
       {
         "files": [
-          "images/**"
+          "logo.svg",
+          "apple-touch-icon.png",
+          "favicon.svg",
+          "favicon.ico",
+          "images/**",
+          "public/**",
+          "versions.json"
         ]
       }
     ],
@@ -39,6 +45,8 @@
     "globalMetadata": {
       "_appName": "",
       "_appTitle": "DbContextBuilder",
+      "_appLogoPath": "logo.svg",
+      "_appFaviconPath": "favicon.svg",
       "_enableSearch": true,
       "pdf": true
     }
