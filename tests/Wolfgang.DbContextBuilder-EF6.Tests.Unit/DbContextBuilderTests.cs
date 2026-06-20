@@ -402,8 +402,9 @@ public class DbContextBuilderTests
         // Arrange
         var sut = CreateDbContextBuilder();
 
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value"));
+        // Act & Assert — two string args bind unambiguously to the params overload
+        // (a single string arg now binds to the SeedWith(TEntity) singleton overload).
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value", "another value"));
         Assert.Equal("entities", ex.ParamName);
     }
 

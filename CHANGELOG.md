@@ -65,6 +65,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Pinned `SQLitePCLRaw.lib.e_sqlite3` to `3.50.3` across the SQLite-enabled
+  packages, above the `<= 2.1.11` range affected by GHSA-2m69-gcr7-jv3q
+  (a vulnerability in the bundled SQLite native library). Consumers of the
+  SQLite providers now restore the patched native library.
+
 ## [0.6.2] - 2026-05-29
 
 Canonical maintenance round + binding-stability fix. No public API or
