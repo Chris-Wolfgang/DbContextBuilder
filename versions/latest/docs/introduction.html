@@ -72,6 +72,35 @@
             <article class="content wrap" id="_content" data-uid="">
 <h1 id="introduction">Introduction</h1>
 
+<p>DbContextBuilder is a fluent builder for Entity Framework <code>DbContext</code> instances intended for use in tests. It wraps the boilerplate of configuring an in-memory provider, seeding data, and building a context into a single chainable API so test setup looks like the data the test cares about — not the plumbing.</p>
+<h2 id="why-a-builder">Why a builder?</h2>
+<p>Tests that need a <code>DbContext</code> usually need one with:</p>
+<ul>
+<li>A specific provider (InMemory, SQLite in-memory, etc.) so the test does not touch a real database</li>
+<li>Specific rows of specific entities so the assertions are predictable</li>
+<li>Sometimes additional random rows so the SUT sees realistic data volumes</li>
+<li>An options builder configured exactly the way the test scenario expects</li>
+</ul>
+<p>Wiring those up manually for every test costs a lot of repeated lines. <code>DbContextBuilder&lt;T&gt;</code> collapses them into:</p>
+<pre><code class="lang-csharp">var context = await new DbContextBuilder&lt;MyDbContext&gt;()
+    .UseInMemory()
+    .SeedWith(new User { Id = 1, Name = &quot;Alice&quot; })
+    .SeedWithRandom&lt;Order&gt;(20)
+    .BuildAsync();
+</code></pre>
+<p>The same builder works against the InMemory provider, SQLite in-memory, and a SQL-Server-compatibility SQLite mode that flattens schema-qualified table names so a typical production <code>DbContext</code> can be exercised without code changes.</p>
+<h2 id="package-family">Package family</h2>
+<p>DbContextBuilder ships one package per supported EF version so you can install only what you need:</p>
+<ul>
+<li><code>Wolfgang.DbContextBuilder-Core-EF6</code> through <code>-Core-EF10</code> — pinned to a single EF Core major</li>
+<li><code>Wolfgang.DbContextBuilder-EF6</code> — for projects still on classic Entity Framework 6 (<code>System.Data.Entity</code>)</li>
+</ul>
+<p>Pick the one that matches your project's EF flavor. See the <a href="https://github.com/Chris-Wolfgang/DbContextBuilder">README</a> for the full installation matrix.</p>
+<h2 id="where-to-go-next">Where to go next</h2>
+<ul>
+<li><a href="getting-started.html">Getting started</a> — install, build a first <code>DbContext</code>, run a first test</li>
+<li><a href="../api/Wolfgang.DbContextBuilderCore.html">API</a> — generated reference for every public type</li>
+</ul>
 
 </article>
           </div>
@@ -81,7 +110,7 @@
               <div class="contribution">
                 <ul class="nav">
                   <li>
-                    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/main/docfx_project/docs/introduction.md/#L1" class="contribution-link">Edit this page</a>
+                    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/v0.7.0/docfx_project/docs/introduction.md/#L1" class="contribution-link">Edit this page</a>
                   </li>
                 </ul>
               </div>

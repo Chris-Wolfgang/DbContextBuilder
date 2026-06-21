@@ -12,6 +12,62 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.yml\" sourcestartlinenumber=\"1\">Thrown when a <xref href=\"Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions%601\" data-throw-if-not-resolved=\"false\"></xref> assertion fails. Carries an\nEF-aware failure message that identifies the entity type and the specific check that\ndid not pass.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.yml\" sourcestartlinenumber=\"1\">Entry-point extensions that produce a <xref href=\"Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions%601\" data-throw-if-not-resolved=\"false\"></xref> from a\n<xref href=\"Microsoft.EntityFrameworkCore.DbSet%601\" data-throw-if-not-resolved=\"false\"></xref> or <xref href=\"System.Linq.IQueryable%601\" data-throw-if-not-resolved=\"false\"></xref>. Intended to be\nimported via <code>using Wolfgang.DbContextBuilderCore.Assertions;</code> in test files so\nthat <code>context.Set&lt;Product&gt;().Should()</code> resolves.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.yml\" sourcestartlinenumber=\"1\">Fluent, chainable assertions over an <xref href=\"System.Linq.IQueryable%601\" data-throw-if-not-resolved=\"false\"></xref> — either a\n<xref href=\"Microsoft.EntityFrameworkCore.DbSet%601\" data-throw-if-not-resolved=\"false\"></xref> directly or a filtered query derived from one — for use\nin DbContextBuilder-backed tests. Each method runs the corresponding query\nasynchronously, throws <xref href=\"Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException\" data-throw-if-not-resolved=\"false\"></xref> with an EF-aware\nmessage on failure, and returns <code>this</code> so the next assertion can be chained.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.Assertions",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.yml",
       "output": {
         ".html": {

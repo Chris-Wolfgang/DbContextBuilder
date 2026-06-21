@@ -130,20 +130,20 @@ basic capabilities like,</p>
 <li>Renaming tables to avoid schema issues since SQLite does not support schemas.</li>
 <li>Removing computed values for columns since SQLite may not support the same functions.</li>
 </ol>
-<p>You can override the functionality provided in this class or if you will be frequently working
-in the same database engine, you can create your own ModelCustomizer, either from scratch or
-derived from this one, and override the desired functionality. Once you created you can reuse
-it over and over again. For example, you want to create a SqliteForOracleModelCustomizer that
-has overrides to make an DbContext created for Oracle work in SQLite.</p>
+<p>You can override the functionality provided in this class or, if you will frequently work
+against the same database engine, derive your own <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.entityframeworkcore.infrastructure.modelcustomizer">ModelCustomizer</a> (from
+scratch or from this one) and override the desired functionality. Once created it can be
+reused across builds. For example, you could create a <code>SqliteForOracleModelCustomizer</code>
+with the overrides needed to make an Oracle <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.entityframeworkcore.dbcontext">DbContext</a> work against SQLite.</p>
 </div>
   <h3 id="constructors">Constructors
 </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/main/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer__ctor_Microsoft_EntityFrameworkCore_Infrastructure_ModelCustomizerDependencies_.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.%23ctor(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Edit this page</a>
+    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/v0.7.0/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer__ctor_Microsoft_EntityFrameworkCore_Infrastructure_ModelCustomizerDependencies_.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.%23ctor(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Edit this page</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/main/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L96">View Source</a>
+    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/v0.7.0/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L110">View Source</a>
   </span>
   <a id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer__ctor_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.#ctor*"></a>
   <h4 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer__ctor_Microsoft_EntityFrameworkCore_Infrastructure_ModelCustomizerDependencies_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.#ctor(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies)">SqliteModelCustomizer(ModelCustomizerDependencies)</h4>
@@ -192,10 +192,10 @@ has overrides to make an DbContext created for Oracle work in SQLite.</p>
 </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/main/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_DefaultValueMap.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.DefaultValueMap%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Edit this page</a>
+    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/v0.7.0/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_DefaultValueMap.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.DefaultValueMap%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Edit this page</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/main/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L86">View Source</a>
+    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/v0.7.0/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L97">View Source</a>
   </span>
   <a id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_DefaultValueMap_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.DefaultValueMap*"></a>
   <h4 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_DefaultValueMap" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.DefaultValueMap">DefaultValueMap</h4>
@@ -223,15 +223,22 @@ value to replace it with.</p>
     </tbody>
   </table>
   <h5 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_DefaultValueMap_remarks">Remarks</h5>
-  <div class="markdown level1 remarks"><p>Examples of a default values that may need to be replaced it getdate() and newid() which would
-be replaced with datetime('now') and lower(hex(randomblob(16))) respectively.</p>
+  <div class="markdown level1 remarks"><p>Examples of default values that may need to be replaced are <code>getdate()</code> and
+<code>newid()</code>, which would be replaced with <code>datetime('now')</code> and
+<code>lower(hex(randomblob(16)))</code> respectively. Key lookups are case-insensitive
+(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.stringcomparer.ordinalignorecase">OrdinalIgnoreCase</a>) so variant spellings produced by
+different EF versions match the same replacement entry.</p>
+<p>Configure this map during builder setup (before <code>BuildAsync</code>); mutating it
+after the first <code>Customize</code> pass is unsupported because the customizer is
+typically registered as a DI singleton and concurrent reads on the dictionary
+during model build are not guarded.</p>
 </div>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/main/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideComputedValueHandling.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideComputedValueHandling%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Edit this page</a>
+    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/v0.7.0/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideComputedValueHandling.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideComputedValueHandling%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Edit this page</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/main/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L69">View Source</a>
+    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/v0.7.0/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L73">View Source</a>
   </span>
   <a id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideComputedValueHandling_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideComputedValueHandling*"></a>
   <h4 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideComputedValueHandling" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideComputedValueHandling">OverrideComputedValueHandling</h4>
@@ -274,16 +281,17 @@ implementation to this property.</p>
     <tbody>
       <tr>
         <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></td>
-        <td></td>
+        <td><p>The setter received a <code>null</code> <code>value</code>.</p>
+</td>
       </tr>
     </tbody>
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/main/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideDefaultValueHandling.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Edit this page</a>
+    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/v0.7.0/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideDefaultValueHandling.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Edit this page</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/main/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L109">View Source</a>
+    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/v0.7.0/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L158">View Source</a>
   </span>
   <a id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideDefaultValueHandling_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling*"></a>
   <h4 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideDefaultValueHandling" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideDefaultValueHandling">OverrideDefaultValueHandling</h4>
@@ -313,7 +321,7 @@ implementation to this property.</p>
   <div class="markdown level1 remarks"><p>The default implementation checks the DefaultValueMap dictionary to see if the existing default value
 is contained in the dictionary and if so, replaces it with the value in the dictionary. If the
 current default is not in the dictionary, it is left unchanged. You can override this behavior
-by assigning a custom implementation to this property</p>
+by assigning a custom implementation to this property.</p>
 </div>
   <h5 class="exceptions">Exceptions</h5>
   <table class="table table-bordered table-condensed">
@@ -326,16 +334,17 @@ by assigning a custom implementation to this property</p>
     <tbody>
       <tr>
         <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></td>
-        <td></td>
+        <td><p>The setter received a <code>null</code> <code>value</code>.</p>
+</td>
       </tr>
     </tbody>
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/main/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideManyToManyTableHandling.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideManyToManyTableHandling%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Edit this page</a>
+    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/v0.7.0/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideManyToManyTableHandling.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideManyToManyTableHandling%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Edit this page</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/main/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L234">View Source</a>
+    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/v0.7.0/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L272">View Source</a>
   </span>
   <a id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideManyToManyTableHandling_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideManyToManyTableHandling*"></a>
   <h4 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideManyToManyTableHandling" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideManyToManyTableHandling">OverrideManyToManyTableHandling</h4>
@@ -378,16 +387,17 @@ behavior by assigning a custom implementation to this property.</p>
     <tbody>
       <tr>
         <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></td>
-        <td></td>
+        <td><p>The setter received a <code>null</code> <code>value</code>.</p>
+</td>
       </tr>
     </tbody>
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/main/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideTableRenaming.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenaming%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Edit this page</a>
+    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/v0.7.0/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideTableRenaming.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenaming%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Edit this page</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/main/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L42">View Source</a>
+    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/v0.7.0/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L51">View Source</a>
   </span>
   <a id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideTableRenaming_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenaming*"></a>
   <h4 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideTableRenaming" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenaming">OverrideTableRenaming</h4>
@@ -415,11 +425,11 @@ does not support schemas.</p>
     </tbody>
   </table>
   <h5 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_OverrideTableRenaming_remarks">Remarks</h5>
-  <div class="markdown level1 remarks"><p>The default implementation renames the table by prefixing
-the schema name to the table name. For example, a table named &quot;Person&quot; in schema
-Personnel would be renamed to &quot;Personnel_Person&quot;. If the table doesn't have a schema
-&quot;dbo&quot; is used as the schema name. You can override this behavior by assigning a
-custom implementation to this property</p>
+  <div class="markdown level1 remarks"><p>The default implementation renames the table by prefixing the schema name to the
+table name. For example, a table named &quot;Person&quot; in schema Personnel would be renamed
+to &quot;Personnel_Person&quot;. If the table doesn't have a schema &quot;dbo&quot; is used as the schema
+name. You can override this behavior by assigning a custom implementation to this
+property.</p>
 </div>
   <h5 class="exceptions">Exceptions</h5>
   <table class="table table-bordered table-condensed">
@@ -432,7 +442,8 @@ custom implementation to this property</p>
     <tbody>
       <tr>
         <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></td>
-        <td></td>
+        <td><p>The setter received a <code>null</code> <code>value</code>.</p>
+</td>
       </tr>
     </tbody>
   </table>
@@ -440,10 +451,10 @@ custom implementation to this property</p>
 </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/main/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_Customize_Microsoft_EntityFrameworkCore_ModelBuilder_Microsoft_EntityFrameworkCore_DbContext_.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.Customize(Microsoft.EntityFrameworkCore.ModelBuilder%2CMicrosoft.EntityFrameworkCore.DbContext)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Edit this page</a>
+    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/v0.7.0/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_Customize_Microsoft_EntityFrameworkCore_ModelBuilder_Microsoft_EntityFrameworkCore_DbContext_.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.Customize(Microsoft.EntityFrameworkCore.ModelBuilder%2CMicrosoft.EntityFrameworkCore.DbContext)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Edit this page</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/main/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L133">View Source</a>
+    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/v0.7.0/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L171">View Source</a>
   </span>
   <a id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_Customize_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.Customize*"></a>
   <h4 id="Wolfgang_DbContextBuilderCore_SqliteModelCustomizer_Customize_Microsoft_EntityFrameworkCore_ModelBuilder_Microsoft_EntityFrameworkCore_DbContext_" data-uid="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.Customize(Microsoft.EntityFrameworkCore.ModelBuilder,Microsoft.EntityFrameworkCore.DbContext)">Customize(ModelBuilder, DbContext)</h4>
@@ -493,10 +504,10 @@ custom implementation to this property</p>
               <div class="contribution">
                 <ul class="nav">
                   <li>
-                    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/main/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Edit this page</a>
+                    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/new/v0.7.0/apiSpec/new?filename=Wolfgang_DbContextBuilderCore_SqliteModelCustomizer.md&amp;value=---%0Auid%3A%20Wolfgang.DbContextBuilderCore.SqliteModelCustomizer%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Edit this page</a>
                   </li>
                   <li>
-                    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/main/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L24" class="contribution-link">View Source</a>
+                    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/v0.7.0/src/Wolfgang.DbContextBuilder-Core/SqliteModelCustomizer.cs/#L24" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

@@ -7,6 +7,201 @@ references:
   commentId: N:Wolfgang.DbContextBuilderCore
   fullName: Wolfgang.DbContextBuilderCore
   nameWithType: Wolfgang.DbContextBuilderCore
+- uid: Wolfgang.DbContextBuilderCore.Assertions
+  name: Wolfgang.DbContextBuilderCore.Assertions
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.html
+  commentId: N:Wolfgang.DbContextBuilderCore.Assertions
+  fullName: Wolfgang.DbContextBuilderCore.Assertions
+  nameWithType: Wolfgang.DbContextBuilderCore.Assertions
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException
+  name: DbContextAssertionException
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.html
+  commentId: T:Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException
+  nameWithType: DbContextAssertionException
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.#ctor
+  name: DbContextAssertionException()
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.html#Wolfgang_DbContextBuilderCore_Assertions_DbContextAssertionException__ctor
+  commentId: M:Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.#ctor
+  name.vb: New()
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.DbContextAssertionException()
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.New()
+  nameWithType: DbContextAssertionException.DbContextAssertionException()
+  nameWithType.vb: DbContextAssertionException.New()
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.#ctor(System.String)
+  name: DbContextAssertionException(string)
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.html#Wolfgang_DbContextBuilderCore_Assertions_DbContextAssertionException__ctor_System_String_
+  commentId: M:Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.#ctor(System.String)
+  name.vb: New(String)
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.DbContextAssertionException(string)
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.New(String)
+  nameWithType: DbContextAssertionException.DbContextAssertionException(string)
+  nameWithType.vb: DbContextAssertionException.New(String)
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.#ctor(System.String,System.Exception)
+  name: DbContextAssertionException(string, Exception)
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.html#Wolfgang_DbContextBuilderCore_Assertions_DbContextAssertionException__ctor_System_String_System_Exception_
+  commentId: M:Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.#ctor(System.String,System.Exception)
+  name.vb: New(String, Exception)
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.DbContextAssertionException(string, System.Exception)
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.New(String, System.Exception)
+  nameWithType: DbContextAssertionException.DbContextAssertionException(string, Exception)
+  nameWithType.vb: DbContextAssertionException.New(String, Exception)
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.#ctor*
+  name: DbContextAssertionException
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.html#Wolfgang_DbContextBuilderCore_Assertions_DbContextAssertionException__ctor_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.DbContextAssertionException
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.New
+  nameWithType: DbContextAssertionException.DbContextAssertionException
+  nameWithType.vb: DbContextAssertionException.New
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions
+  name: DbContextAssertionsExtensions
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.html
+  commentId: T:Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions
+  nameWithType: DbContextAssertionsExtensions
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should*
+  name: Should
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.html#Wolfgang_DbContextBuilderCore_Assertions_DbContextAssertionsExtensions_Should_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should
+  nameWithType: DbContextAssertionsExtensions.Should
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should``1(Microsoft.EntityFrameworkCore.DbSet{``0})
+  name: Should<TEntity>(DbSet<TEntity>)
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.html#Wolfgang_DbContextBuilderCore_Assertions_DbContextAssertionsExtensions_Should__1_Microsoft_EntityFrameworkCore_DbSet___0__
+  commentId: M:Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should``1(Microsoft.EntityFrameworkCore.DbSet{``0})
+  name.vb: Should(Of TEntity)(DbSet(Of TEntity))
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should<TEntity>(Microsoft.EntityFrameworkCore.DbSet<TEntity>)
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should(Of TEntity)(Microsoft.EntityFrameworkCore.DbSet(Of TEntity))
+  nameWithType: DbContextAssertionsExtensions.Should<TEntity>(DbSet<TEntity>)
+  nameWithType.vb: DbContextAssertionsExtensions.Should(Of TEntity)(DbSet(Of TEntity))
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should``1(System.Linq.IQueryable{``0})
+  name: Should<TEntity>(IQueryable<TEntity>)
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.html#Wolfgang_DbContextBuilderCore_Assertions_DbContextAssertionsExtensions_Should__1_System_Linq_IQueryable___0__
+  commentId: M:Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should``1(System.Linq.IQueryable{``0})
+  name.vb: Should(Of TEntity)(IQueryable(Of TEntity))
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should<TEntity>(System.Linq.IQueryable<TEntity>)
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should(Of TEntity)(System.Linq.IQueryable(Of TEntity))
+  nameWithType: DbContextAssertionsExtensions.Should<TEntity>(IQueryable<TEntity>)
+  nameWithType.vb: DbContextAssertionsExtensions.Should(Of TEntity)(IQueryable(Of TEntity))
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1
+  name: DbSetAssertions<TEntity>
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html
+  commentId: T:Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1
+  name.vb: DbSetAssertions(Of TEntity)
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions(Of TEntity)
+  nameWithType: DbSetAssertions<TEntity>
+  nameWithType.vb: DbSetAssertions(Of TEntity)
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.AllSatisfy(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})
+  name: AllSatisfy(Expression<Func<TEntity, bool>>)
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html#Wolfgang_DbContextBuilderCore_Assertions_DbSetAssertions_1_AllSatisfy_System_Linq_Expressions_Expression_System_Func__0_System_Boolean___
+  commentId: M:Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.AllSatisfy(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})
+  name.vb: AllSatisfy(Expression(Of Func(Of TEntity, Boolean)))
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.AllSatisfy(System.Linq.Expressions.Expression<System.Func<TEntity, bool>>)
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions(Of TEntity).AllSatisfy(System.Linq.Expressions.Expression(Of System.Func(Of TEntity, Boolean)))
+  nameWithType: DbSetAssertions<TEntity>.AllSatisfy(Expression<Func<TEntity, bool>>)
+  nameWithType.vb: DbSetAssertions(Of TEntity).AllSatisfy(Expression(Of Func(Of TEntity, Boolean)))
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.AllSatisfy*
+  name: AllSatisfy
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html#Wolfgang_DbContextBuilderCore_Assertions_DbSetAssertions_1_AllSatisfy_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.AllSatisfy
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.AllSatisfy
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions(Of TEntity).AllSatisfy
+  nameWithType: DbSetAssertions<TEntity>.AllSatisfy
+  nameWithType.vb: DbSetAssertions(Of TEntity).AllSatisfy
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.BeEmpty
+  name: BeEmpty()
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html#Wolfgang_DbContextBuilderCore_Assertions_DbSetAssertions_1_BeEmpty
+  commentId: M:Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.BeEmpty
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.BeEmpty()
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions(Of TEntity).BeEmpty()
+  nameWithType: DbSetAssertions<TEntity>.BeEmpty()
+  nameWithType.vb: DbSetAssertions(Of TEntity).BeEmpty()
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.BeEmpty*
+  name: BeEmpty
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html#Wolfgang_DbContextBuilderCore_Assertions_DbSetAssertions_1_BeEmpty_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.BeEmpty
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.BeEmpty
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions(Of TEntity).BeEmpty
+  nameWithType: DbSetAssertions<TEntity>.BeEmpty
+  nameWithType.vb: DbSetAssertions(Of TEntity).BeEmpty
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.Contain(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})
+  name: Contain(Expression<Func<TEntity, bool>>)
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html#Wolfgang_DbContextBuilderCore_Assertions_DbSetAssertions_1_Contain_System_Linq_Expressions_Expression_System_Func__0_System_Boolean___
+  commentId: M:Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.Contain(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})
+  name.vb: Contain(Expression(Of Func(Of TEntity, Boolean)))
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.Contain(System.Linq.Expressions.Expression<System.Func<TEntity, bool>>)
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions(Of TEntity).Contain(System.Linq.Expressions.Expression(Of System.Func(Of TEntity, Boolean)))
+  nameWithType: DbSetAssertions<TEntity>.Contain(Expression<Func<TEntity, bool>>)
+  nameWithType.vb: DbSetAssertions(Of TEntity).Contain(Expression(Of Func(Of TEntity, Boolean)))
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.Contain*
+  name: Contain
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html#Wolfgang_DbContextBuilderCore_Assertions_DbSetAssertions_1_Contain_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.Contain
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.Contain
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions(Of TEntity).Contain
+  nameWithType: DbSetAssertions<TEntity>.Contain
+  nameWithType.vb: DbSetAssertions(Of TEntity).Contain
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.HaveCount(System.Int32)
+  name: HaveCount(int)
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html#Wolfgang_DbContextBuilderCore_Assertions_DbSetAssertions_1_HaveCount_System_Int32_
+  commentId: M:Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.HaveCount(System.Int32)
+  name.vb: HaveCount(Integer)
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.HaveCount(int)
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions(Of TEntity).HaveCount(Integer)
+  nameWithType: DbSetAssertions<TEntity>.HaveCount(int)
+  nameWithType.vb: DbSetAssertions(Of TEntity).HaveCount(Integer)
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.HaveCount*
+  name: HaveCount
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html#Wolfgang_DbContextBuilderCore_Assertions_DbSetAssertions_1_HaveCount_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.HaveCount
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.HaveCount
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions(Of TEntity).HaveCount
+  nameWithType: DbSetAssertions<TEntity>.HaveCount
+  nameWithType.vb: DbSetAssertions(Of TEntity).HaveCount
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.NotBeEmpty
+  name: NotBeEmpty()
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html#Wolfgang_DbContextBuilderCore_Assertions_DbSetAssertions_1_NotBeEmpty
+  commentId: M:Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.NotBeEmpty
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.NotBeEmpty()
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions(Of TEntity).NotBeEmpty()
+  nameWithType: DbSetAssertions<TEntity>.NotBeEmpty()
+  nameWithType.vb: DbSetAssertions(Of TEntity).NotBeEmpty()
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.NotBeEmpty*
+  name: NotBeEmpty
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html#Wolfgang_DbContextBuilderCore_Assertions_DbSetAssertions_1_NotBeEmpty_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.NotBeEmpty
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.NotBeEmpty
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions(Of TEntity).NotBeEmpty
+  nameWithType: DbSetAssertions<TEntity>.NotBeEmpty
+  nameWithType.vb: DbSetAssertions(Of TEntity).NotBeEmpty
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.NotContain(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})
+  name: NotContain(Expression<Func<TEntity, bool>>)
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html#Wolfgang_DbContextBuilderCore_Assertions_DbSetAssertions_1_NotContain_System_Linq_Expressions_Expression_System_Func__0_System_Boolean___
+  commentId: M:Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.NotContain(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})
+  name.vb: NotContain(Expression(Of Func(Of TEntity, Boolean)))
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.NotContain(System.Linq.Expressions.Expression<System.Func<TEntity, bool>>)
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions(Of TEntity).NotContain(System.Linq.Expressions.Expression(Of System.Func(Of TEntity, Boolean)))
+  nameWithType: DbSetAssertions<TEntity>.NotContain(Expression<Func<TEntity, bool>>)
+  nameWithType.vb: DbSetAssertions(Of TEntity).NotContain(Expression(Of Func(Of TEntity, Boolean)))
+- uid: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.NotContain*
+  name: NotContain
+  href: api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html#Wolfgang_DbContextBuilderCore_Assertions_DbSetAssertions_1_NotContain_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1.NotContain
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.NotContain
+  fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions(Of TEntity).NotContain
+  nameWithType: DbSetAssertions<TEntity>.NotContain
+  nameWithType.vb: DbSetAssertions(Of TEntity).NotContain
 - uid: Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions
   name: DbContextBuilderAutoFixtureExtensions
   href: api/Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.html
@@ -173,6 +368,15 @@ references:
   fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).SeedWith(Of TEntity)(System.Collections.Generic.IEnumerable(Of TEntity))
   nameWithType: DbContextBuilder<T>.SeedWith<TEntity>(IEnumerable<TEntity>)
   nameWithType.vb: DbContextBuilder(Of T).SeedWith(Of TEntity)(IEnumerable(Of TEntity))
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWith``1(``0)
+  name: SeedWith<TEntity>(TEntity)
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWith__1___0_
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWith``1(``0)
+  name.vb: SeedWith(Of TEntity)(TEntity)
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(TEntity)
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).SeedWith(Of TEntity)(TEntity)
+  nameWithType: DbContextBuilder<T>.SeedWith<TEntity>(TEntity)
+  nameWithType.vb: DbContextBuilder(Of T).SeedWith(Of TEntity)(TEntity)
 - uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.SeedWith``1(``0[])
   name: SeedWith<TEntity>(params TEntity[])
   href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_SeedWith__1___0___

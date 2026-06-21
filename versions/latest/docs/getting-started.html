@@ -72,6 +72,50 @@
             <article class="content wrap" id="_content" data-uid="">
 <h1 id="getting-started">Getting Started</h1>
 
+<h2 id="1-install-the-package-that-matches-your-ef-version">1. Install the package that matches your EF version</h2>
+<pre><code class="lang-bash"># Pick whichever matches your project's EF version
+dotnet add package Wolfgang.DbContextBuilder-Core-EF8
+</code></pre>
+<p>For the full version-to-package mapping, see the <a href="https://github.com/Chris-Wolfgang/DbContextBuilder#-installation">Installation table in the README</a>.</p>
+<h2 id="2-build-your-first-dbcontext">2. Build your first DbContext</h2>
+<pre><code class="lang-csharp">using Wolfgang.DbContextBuilderCore;
+
+await using var context = await new DbContextBuilder&lt;MyDbContext&gt;()
+    .UseInMemory()
+    .SeedWith(new User { Id = 1, Name = &quot;Alice&quot; })
+    .BuildAsync();
+
+var sut = new UserService(context);
+var user = await sut.GetByIdAsync(1);
+
+Assert.Equal(&quot;Alice&quot;, user.Name);
+</code></pre>
+<p><code>BuildAsync()</code> returns a real <code>MyDbContext</code> instance whose state matches the seeds you provided. The builder owns the underlying connection; <code>await using</code> disposes both.</p>
+<h2 id="3-pick-a-provider">3. Pick a provider</h2>
+<p>The builder ships three providers out of the box:</p>
+<ul>
+<li><code>.UseInMemory()</code> — EF Core's InMemory provider. Fastest, but ignores relational constraints (foreign keys, indexes, default values). Good for unit tests of code that doesn't depend on SQL semantics.</li>
+<li><code>.UseSqlite()</code> — SQLite in-memory. Enforces relational constraints. Each builder uses a unique in-memory database; contexts built from the same builder share state.</li>
+<li><code>.UseSqliteForMsSqlServer()</code> — SQLite in-memory with a compatibility layer that flattens <code>[Schema].[Table]</code> to <code>Schema_Table</code> and rewrites SQL-Server-specific default-value SQL (<code>getdate()</code>, <code>newid()</code>, etc.) into SQLite equivalents. Lets you exercise a production SQL-Server <code>DbContext</code> without modification.</li>
+</ul>
+<h2 id="4-seed-with-data">4. Seed with data</h2>
+<p>Two ways to seed:</p>
+<pre><code class="lang-csharp">// Specific data — for predictable assertions
+.SeedWith(new User { Id = 1, Name = &quot;Alice&quot; })
+.SeedWith(new[] { user1, user2, user3 })
+
+// Random data — for realistic row counts. Uses AutoFixture under the hood;
+// plug in a custom ICreateRandomEntities to control generation.
+.SeedWithRandom&lt;Order&gt;(count: 20)
+</code></pre>
+<p><code>SeedWith</code> and <code>SeedWithRandom</code> are chainable in any order. The builder accumulates all seeds and inserts them when <code>BuildAsync()</code> runs.</p>
+<h2 id="5-customize-the-model-sqlite-for-sql-server-only">5. Customize the model (SQLite for SQL Server only)</h2>
+<p><code>SqliteModelCustomizer</code> exposes hooks to override the schema-renaming heuristic, the default-value SQL translation, the computed-column handling, and the many-to-many join-table renaming. See the <a href="../api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html">API reference</a> for the exact signatures.</p>
+<h2 id="where-to-go-next">Where to go next</h2>
+<ul>
+<li><a href="../api/Wolfgang.DbContextBuilderCore.html">API reference</a> — every public type and method</li>
+<li><a href="https://github.com/Chris-Wolfgang/DbContextBuilder">GitHub repository</a> — source, issues, releases</li>
+</ul>
 
 </article>
           </div>
@@ -81,7 +125,7 @@
               <div class="contribution">
                 <ul class="nav">
                   <li>
-                    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/main/docfx_project/docs/getting-started.md/#L1" class="contribution-link">Edit this page</a>
+                    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/v0.7.0/docfx_project/docs/getting-started.md/#L1" class="contribution-link">Edit this page</a>
                   </li>
                 </ul>
               </div>
