@@ -464,7 +464,27 @@ jobs:
               $zip.Dispose()
             }
           }
-          
+
+          # Pick the highest .NET (Core) TFM a package ships (netX.0); $null if Framework-only.
+          function Get-PackageCoreTfm {
+            param (
+              [Parameter(Mandatory = $true)]
+              [string] $NupkgPath
+            )
+
+            $zip = [System.IO.Compression.ZipFile]::OpenRead($NupkgPath)
+            try {
+              $core = $zip.Entries |
+                ForEach-Object { if ($_.FullName -match '^lib/(net\d+\.0)/') { $Matches[1] } } |
+                Sort-Object -Unique |
+                Sort-Object { [int]([regex]::Match($_, '^net(\d+)\.0$').Groups[1].Value) }
+              return ($core | Select-Object -Last 1)
+            }
+            finally {
+              $zip.Dispose()
+            }
+          }
+
           # Create temporary test project
           $testDir = Join-Path $PWD 'package-smoke-test'
           New-Item -ItemType Directory -Force -Path $testDir | Out-Null
@@ -490,37 +510,55 @@ jobs:
           
           Push-Location $testDir
           try {
-            dotnet new console -n SmokeTest -f net8.0
-            
-            # Try to install the newly created package(s)
+            $skipped = @()
             foreach ($package in $packages) {
-              Write-Host "🧪 Smoke testing package: $($package.Name)" -ForegroundColor Yellow
-              
               $metadata = Get-PackageMetadata -NupkgPath $package.FullName
               $packageId = $metadata.Id
               $packageVersion = $metadata.Version
-              
-              dotnet add SmokeTest/SmokeTest.csproj package $packageId --version $packageVersion --source '../nuget-packages'
-              
+              $coreTfm = Get-PackageCoreTfm -NupkgPath $package.FullName
+
+              # Framework-only packages (e.g. the classic EF6 package targets net4x) cannot be
+              # consumed by a .NET (Core) project on this runner — skip them with a notice.
+              if (-not $coreTfm) {
+                Write-Host "⏭️  Skipping $packageId $packageVersion - Framework-only package, not installable on this runner" -ForegroundColor DarkYellow
+                $skipped += $packageId
+                continue
+              }
+
+              # Isolated consumer per package, on the package's own TFM. Each EF wrapper is
+              # single-TFM (EF6→net6.0 ... EF10→net10.0); a shared consumer would either fail
+              # uplevel (net8.0 cannot restore a net10.0 package → NU1202) or unify the EF Core
+              # versions across packages. One project per package avoids both.
+              $projName = 'Smoke_' + ($packageId -replace '[^A-Za-z0-9]', '_')
+              Write-Host "🧪 Smoke testing package: $packageId $packageVersion ($coreTfm)" -ForegroundColor Yellow
+
+              dotnet new console -n $projName -f $coreTfm
               if ($LASTEXITCODE -ne 0) {
-                Write-Error "❌ Failed to install package $($package.Name)"
+                Write-Error "❌ Failed to create $coreTfm smoke project for $packageId"
                 exit $LASTEXITCODE
               }
-              
-              Write-Host "✅ Package $($package.Name) installed successfully" -ForegroundColor Green
+
+              dotnet add "$projName/$projName.csproj" package $packageId --version $packageVersion --source '../nuget-packages'
+              if ($LASTEXITCODE -ne 0) {
+                Write-Error "❌ Failed to install package $packageId"
+                exit $LASTEXITCODE
+              }
+
+              dotnet build "$projName/$projName.csproj"
+              if ($LASTEXITCODE -ne 0) {
+                Write-Error "❌ Smoke test project failed to build with $packageId"
+                exit $LASTEXITCODE
+              }
+
+              Write-Host "✅ $packageId installs and builds on $coreTfm" -ForegroundColor Green
             }
-            
-            # Try to build the test project with the package
-            Write-Host "Building smoke test project..." -ForegroundColor Yellow
-            dotnet build SmokeTest/SmokeTest.csproj
-            
-            if ($LASTEXITCODE -ne 0) {
-              Write-Error "❌ Smoke test project failed to build with installed packages"
-              exit $LASTEXITCODE
+
+            if ($skipped.Count -gt 0) {
+              Write-Host "ℹ️  Skipped Framework-only packages (no .NET Core TFM): $($skipped -join ', ')" -ForegroundColor Cyan
             }
-            
+
             Write-Host "✅ Smoke test passed - packages are installable and buildable" -ForegroundColor Green
-            
+
           } finally {
             Pop-Location
           }
