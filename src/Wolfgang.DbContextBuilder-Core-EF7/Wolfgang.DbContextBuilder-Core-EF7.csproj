@@ -2,6 +2,7 @@
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
 		<TargetFramework>net7.0</TargetFramework>
+		<CheckEolTargetFramework>false</CheckEolTargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Version>0.6.2</Version>
 		<!-- Pin AssemblyVersion to a fixed binding-stability baseline so consumers
