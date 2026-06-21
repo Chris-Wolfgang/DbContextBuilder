@@ -38,7 +38,7 @@ public class DbContextBuilderTests
         var sut = CreateDbContextBuilder();
 
         // Act
-        var context = sut.Build();
+        using var context = sut.Build();
 
         // Assert
         Assert.NotNull(context);
@@ -57,7 +57,7 @@ public class DbContextBuilderTests
         var sut = CreateDbContextBuilder();
 
         // Act
-        var context = await sut.BuildAsync();
+        using var context = await sut.BuildAsync();
 
         // Assert
         Assert.NotNull(context);
@@ -184,7 +184,7 @@ public class DbContextBuilderTests
         var sut = CreateDbContextBuilder();
 
         // Act
-        var context = sut.Build();
+        using var context = sut.Build();
 
         // Assert
         Assert.NotNull(context);
@@ -212,7 +212,7 @@ public class DbContextBuilderTests
         };
 
         // Act
-        var context = sut
+        using var context = sut
             .SeedWith(product)
             .Build();
 
@@ -319,7 +319,7 @@ public class DbContextBuilderTests
         };
 
         // Act
-        var context = sut
+        using var context = sut
             .SeedWith(new[] { expectedProduct }.AsEnumerable())
             .Build();
 
@@ -402,8 +402,9 @@ public class DbContextBuilderTests
         // Arrange
         var sut = CreateDbContextBuilder();
 
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value"));
+        // Act & Assert — two string args bind unambiguously to the params overload
+        // (a single string arg now binds to the SeedWith(TEntity) singleton overload).
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value", "another value"));
         Assert.Equal("entities", ex.ParamName);
     }
 
@@ -435,7 +436,7 @@ public class DbContextBuilderTests
         };
 
         // Act
-        var context = sut
+        using var context = sut
             .SeedWith(product1, product2)
             .Build();
 
@@ -496,7 +497,7 @@ public class DbContextBuilderTests
         // Arrange
         var sut = CreateDbContextBuilder();
 
-        var context = sut
+        using var context = sut
             .SeedWithRandom<Category>(count)
             .Build();
 
@@ -585,7 +586,7 @@ public class DbContextBuilderTests
             return p;
         });
 
-        var context = sut
+        using var context = sut
             .SeedWithRandom(count, func)
             .Build();
 
@@ -675,7 +676,7 @@ public class DbContextBuilderTests
             return p;
         });
 
-        var context = sut
+        using var context = sut
             .SeedWithRandom(count, func)
             .Build();
 
@@ -734,7 +735,7 @@ public class DbContextBuilderTests
             .UseAutoFixture();
 
         // Act
-        var context = sut.Build();
+        using var context = sut.Build();
 
         // Assert
         Assert.NotNull(context);
@@ -754,7 +755,7 @@ public class DbContextBuilderTests
             .UseAutoFixture();
 
         // Act
-        var context = await sut.BuildAsync();
+        using var context = await sut.BuildAsync();
 
         // Assert
         Assert.NotNull(context);
@@ -781,7 +782,7 @@ public class DbContextBuilderTests
         };
 
         // Act
-        var context = await sut
+        using var context = await sut
             .SeedWith(product)
             .BuildAsync();
 
@@ -828,7 +829,7 @@ public class DbContextBuilderTests
         var sut = CreateDbContextBuilder();
 
         // Act
-        var context = sut
+        using var context = sut
             .UseEffort()
             .UseEffort()
             .Build();
@@ -862,7 +863,7 @@ public class DbContextBuilderTests
         };
 
         // Act
-        var context = sut
+        using var context = sut
             .SeedWith(product)
             .SeedWith(category)
             .Build();
@@ -870,5 +871,38 @@ public class DbContextBuilderTests
         // Assert
         Assert.Single(context.Products);
         Assert.Single(context.Categories);
+    }
+
+
+
+    /// <summary>
+    /// Regression: the singleton overload accepts a single TEntity, but
+    /// <c>List&lt;string&gt;</c> casts to <c>IEnumerable&lt;object&gt;</c> at runtime
+    /// (T-covariance for reference types) — so without an element-level check, a list
+    /// of strings would slip through as silent seed data. Mirrors the Core builder's
+    /// regression test.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_passed_a_List_of_strings_throws()
+    {
+        var sut = new DbContextBuilder<TestDbContext>();
+        var stringList = new List<string> { "a", "b", "c" };
+
+        Assert.Throws<ArgumentException>(() => sut.SeedWith(stringList));
+    }
+
+
+
+    /// <summary>
+    /// Regression: when the caller widens TEntity to <see cref="object"/> the
+    /// static `typeof(TEntity) == typeof(string)` check (the original guard) would
+    /// pass through. The runtime <c>entity is string</c> check must still reject.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_TEntity_is_widened_to_object_still_rejects_string()
+    {
+        var sut = new DbContextBuilder<TestDbContext>();
+
+        Assert.Throws<ArgumentException>(() => sut.SeedWith<object>("not an entity"));
     }
 }

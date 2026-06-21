@@ -90,7 +90,7 @@ public class IgnoreVirtualMembersCustomizationTests
     /// Verifies IgnoreVirtualMembersCustomization ignores virtual properties
     /// </summary>
     [Fact]
-    public void IgnoreVirtualMembersCustomization_ShouldIgnoreVirtualProperties()
+    public void Customize_when_entity_has_virtual_properties_ignores_them()
     {
         // Arrange
         var fixture = new Fixture();
@@ -110,7 +110,7 @@ public class IgnoreVirtualMembersCustomizationTests
     /// Verifies IgnoreVirtualMembersCustomization ignores virtual methods
     /// </summary>
     [Fact]
-    public void IgnoreVirtualMembersCustomization_ShouldIgnoreVirtualMethods()
+    public void Customize_when_entity_has_virtual_methods_ignores_them()
     {
         // Arrange
         var fixture = new Fixture();

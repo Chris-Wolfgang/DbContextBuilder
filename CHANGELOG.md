@@ -11,13 +11,78 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-### Deprecated
+### Fixed
 
 ### Removed
 
-### Fixed
+### Deprecated
 
 ### Security
+
+## [0.7.0] - 2026-06-20
+
+### Added
+
+- New `Wolfgang.DbContextBuilderCore.Assertions` namespace providing a small fluent,
+  chainable assertion surface for verifying the state of a `DbSet<T>` in tests:
+  `HaveCount`, `BeEmpty`, `NotBeEmpty`, `Contain`, `NotContain`, `AllSatisfy`. Obtain
+  the assertion chain via `dbSet.Should()` or `queryable.Should()`. Failures throw
+  `DbContextAssertionException` with an entity-typed message. (#106)
+- New `DbContextBuilder<T>.SeedWith<TEntity>(TEntity entity)` singleton overload that
+  avoids the one-element array allocation of the existing `params` overload — useful
+  in tests that seed many single rows.
+- New `DocFX` content pages (`docs/introduction.md`, `docs/getting-started.md`) and
+  a Target Frameworks + API surface section in `README.md`.
+
+### Changed
+
+- `SqliteModelCustomizer` default delegate fields are now ctor-initialized rather than
+  lazy-initialized in the property getter, eliminating a race that could allocate
+  duplicate delegates when EF's model customization runs concurrently.
+- `SqliteModelCustomizer.OverrideTableRenaming` default lambda no longer allocates
+  a `$"{prefix}_"` interpolation per entity type — uses prefix-substring + separator
+  char comparison instead.
+- `DbContextBuilderSqliteExtensions`'s SQLite-already-registered check uses
+  `typeof(SqliteOptionsExtension)` instead of matching the type's `FullName` string.
+- New internal `DbContextActivator<TDbContext>` caches a compiled Expression-based
+  factory delegate per closed generic, so each `BuildAsync` no longer pays the
+  `Activator.CreateInstance` reflection cost. Used by both `InMemoryDbContextCreator`
+  and `SqliteDbContextCreator`.
+- XML doc sweep across Core + EF6: fixed stale `<exception cref>` claims, typos,
+  truncated comments, malformed `<see cref></see>` tags, and literal `{T}` in
+  `<returns>` (now `<typeparamref name="T"/>`).
+- `DbContextBuilder<T>.SeedWith`, `UseInMemory`, `UseSqlite`, and
+  `SqliteModelCustomizer.DefaultValueMap` now document their contracts
+  (last-write-wins provider selection, insertion-order semantics, inheritance
+  support, DI-singleton mutation hazard).
+
+### Fixed
+
+- EF6 (classic) `DbContextBuilder<T>.Build()` and `BuildAsync()` no longer leak the
+  temporary seed-time `DbContext`. Both wrap it in `using` before returning the
+  caller's context.
+- `DbContextBuilder<T>.SeedWith<TEntity>(TEntity entity)` (singleton overload added
+  this release) now rejects string elements per-item when passed a `List<string>` or
+  other `IEnumerable<object>`-castable sequence, matching the params overload's
+  `case string` behaviour.
+
+### Removed
+
+- Stale `<AssemblyVersion>1.0.0</AssemblyVersion>` from all 7 test csprojs (tests
+  aren't shipped; let the SDK derive it).
+- Dead test constant `TestConstants.MaxTestRuntimeMs` (zero references) and its
+  associated stale `// TODO` comment.
+- Commented-out `//IModelCustomizer modelCustomizer` parameter from the private
+  `UseSqlite` extension.
+
+### Deprecated
+
+### Security
+
+- Pinned `SQLitePCLRaw.lib.e_sqlite3` to `3.50.3` across the SQLite-enabled
+  packages, above the `<= 2.1.11` range affected by GHSA-2m69-gcr7-jv3q
+  (a vulnerability in the bundled SQLite native library). Consumers of the
+  SQLite providers now restore the patched native library.
 
 ## [0.6.2] - 2026-05-29
 
@@ -71,11 +136,35 @@ runtime behavior change vs v0.6.1 across any of the seven packages.
   for the post-mortem on what happens when this regression reaches a
   release.)
 
-> Historical note: this CHANGELOG was not updated between v0.3.3 and
-> v0.6.1. The intermediate releases (0.4.0, 0.5.0, 0.6.0, 0.6.1) shipped
-> dependency-range updates and incremental EF Core targeting tweaks
-> only — no public API changes. A backfill of those entries is tracked
-> separately and is not blocking this release.
+## [0.6.1] - 2026-05-09
+
+### Changed
+- Dependency-range bumps to consume the latest EF Core 9.x / 10.x patches.
+
+No public API change vs `0.6.0`.
+
+## [0.6.0] - 2026-05-03
+
+### Changed
+- Incremental EF Core targeting tweaks (per-package version-range
+  alignment to the EF major being pinned).
+
+No public API change vs `0.5.0`.
+
+## [0.5.0] - 2026-05-03
+
+### Changed
+- Incremental EF Core targeting tweaks.
+
+No public API change vs `0.4.0`.
+
+## [0.4.0] - 2026-05-02
+
+### Changed
+- Dependency-range updates across all seven `Wolfgang.DbContextBuilder-*`
+  packages.
+
+No public API change vs `0.3.3`.
 
 ## [0.3.3]
 
@@ -115,7 +204,8 @@ runtime behavior change vs v0.6.1 across any of the seven packages.
 - Support for Entity Framework 6 (classic) on .NET Framework 4.6.2--4.8.1
 - `Wolfgang.DbContextBuilder-EF6` package for Entity Framework 6
 
-[Unreleased]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.5.0...v0.6.0

@@ -13,8 +13,11 @@ public class IgnoreVirtualMembersTests
     [Fact]
     public void Can_create_instance_of_IgnoreVirtualMembers()
     {
-        // Act & Assert
+        // Act
         var sut = new AutoFixtureRandomEntityCreator.IgnoreVirtualMembers();
+
+        // Assert
+        Assert.NotNull(sut);
     }
 
 

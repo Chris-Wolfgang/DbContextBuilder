@@ -434,4 +434,135 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
         // Assert
         Assert.NotNull(context);
     }
+
+
+
+    /// <summary>
+    /// Round-trips a single entity from a non-default SQL Server schema (Person.BusinessEntity)
+    /// through the SQLite provider. Confirms that the OverrideTableRenaming flattening
+    /// (Person.BusinessEntity → Person_BusinessEntity) does not break the EF entity surface
+    /// for either write (SeedWith → SaveChanges via BuildAsync) or read (subsequent query
+    /// against the returned context).
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_via_SqliteForMsSqlServer_round_trips_entity_from_non_default_schema()
+    {
+        // Arrange — BusinessEntity is mapped to Person.BusinessEntity in AdventureWorksDbContext
+        // (see entity.ToTable("BusinessEntity", "Person") in OnModelCreating). It has a simple
+        // shape (int Id, Guid Rowguid, DateTime ModifiedDate) with no required FKs, so seeding
+        // it standalone doesn't need a dependency tree.
+        var seedRowguid = Guid.NewGuid();
+        var seedModifiedDate = new DateTime(2026, 5, 31, 12, 0, 0, DateTimeKind.Utc);
+        var seed = new BusinessEntity
+        {
+            BusinessEntityId = 42,
+            Rowguid = seedRowguid,
+            ModifiedDate = seedModifiedDate,
+        };
+
+        using var sut = CreateDbContextBuilder().SeedWith(seed);
+
+        // Act
+        await using var context = await sut.BuildAsync();
+        var roundTripped = await context.BusinessEntities.FindAsync(42);
+
+        // Assert
+        Assert.NotNull(roundTripped);
+        Assert.Equal(42, roundTripped!.BusinessEntityId);
+        Assert.Equal(seedRowguid, roundTripped.Rowguid);
+        Assert.Equal(seedModifiedDate, roundTripped.ModifiedDate);
+    }
+
+
+
+    /// <summary>
+    /// Seeds one entity from each of three distinct SQL Server schemas
+    /// (Person.BusinessEntity, Sales.Currency, Production.Culture) in a single BuildAsync
+    /// call and verifies all three round-trip cleanly. Pins that the schema-name flattening
+    /// collapses across multiple source schemas without producing SQLite table-name
+    /// collisions.
+    ///
+    /// Each entity is deliberately chosen as a FK-free root in the AdventureWorks model
+    /// so the seed plan doesn't need a dependency tree (CountryRegionCurrency, also in
+    /// the Sales schema, has FK constraints to CountryRegion and Currency and would not
+    /// satisfy SQLite's foreign-key checks without those parents).
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_via_SqliteForMsSqlServer_round_trips_entities_from_multiple_schemas()
+    {
+        // Arrange — one entity per schema, all FK-free roots
+        var businessEntity = new BusinessEntity
+        {
+            BusinessEntityId = 1,
+            Rowguid = Guid.NewGuid(),
+            ModifiedDate = new DateTime(2026, 5, 31, 12, 0, 0, DateTimeKind.Utc),
+        };
+
+        var currency = new Currency
+        {
+            CurrencyCode = "USD",
+            Name = "US Dollar",
+            ModifiedDate = new DateTime(2026, 5, 31, 12, 0, 0, DateTimeKind.Utc),
+        };
+
+        var culture = new Culture
+        {
+            CultureId = "en",
+            Name = "English",
+            ModifiedDate = new DateTime(2026, 5, 31, 12, 0, 0, DateTimeKind.Utc),
+        };
+
+        using var sut = CreateDbContextBuilder()
+            .SeedWith<BusinessEntity>(businessEntity)
+            .SeedWith<Currency>(currency)
+            .SeedWith<Culture>(culture);
+
+        // Act
+        await using var context = await sut.BuildAsync();
+
+        var persons = await context.BusinessEntities.CountAsync();
+        var sales = await context.Currencies.CountAsync();
+        var production = await context.Cultures.CountAsync();
+
+        // Assert — each schema's table holds exactly the row we seeded into it
+        Assert.Equal(1, persons);
+        Assert.Equal(1, sales);
+        Assert.Equal(1, production);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that BuildAsync with the SqliteForMsSqlServer customizer does NOT emit the
+    /// EF Core "schema configured but provider does not support schemas" warning. The
+    /// OverrideTableRenaming default flattens schemas to single underscore-prefixed names
+    /// (Person.Address → Person_Address) before EF's model-builder sees them, which should
+    /// prevent the warning from firing. If a future change re-introduces the warning, this
+    /// test surfaces it via the captured log buffer.
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_via_SqliteForMsSqlServer_does_not_emit_schema_configured_warning()
+    {
+        // Arrange — capture all EF log output via .LogTo
+        using var sut = CreateDbContextBuilder();
+
+        var buffer = new StringBuilder(10_240);
+        var sw = new StringWriter(buffer);
+
+        var optionsBuilder = new DbContextOptionsBuilder<AdventureWorksDbContext>()
+            .LogTo(s => sw.WriteLine(s));
+
+        sut.UseDbContextOptionsBuilder(optionsBuilder);
+
+        // Act
+        await using var context = await sut.BuildAsync();
+        var log = buffer.ToString();
+
+        // Assert — no schema-warning text in the log. Two complementary text checks
+        // because EF Core has surfaced the warning under slightly different message
+        // shapes across versions ("schema 'X' but provider does not support" vs
+        // "SchemaConfiguredWarning"). Either substring would indicate the warning fired.
+        Assert.DoesNotContain("SchemaConfigured", log, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("does not support schemas", log, StringComparison.OrdinalIgnoreCase);
+    }
 }

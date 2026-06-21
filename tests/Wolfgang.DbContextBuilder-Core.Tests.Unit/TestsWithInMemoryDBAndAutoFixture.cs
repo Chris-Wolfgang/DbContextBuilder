@@ -72,7 +72,7 @@ public class TestsWithInMemoryDbAndAutoFixture : DbContextBuilderTestsBase
     public async Task Database_is_InMemory()
     {
         // Arrange
-        var sut = await new DbContextBuilder<AdventureWorksDbContext>().BuildAsync();
+        await using var sut = await new DbContextBuilder<AdventureWorksDbContext>().BuildAsync();
 
         // Act & Assert
         Assert.True(sut.Database.IsInMemory());

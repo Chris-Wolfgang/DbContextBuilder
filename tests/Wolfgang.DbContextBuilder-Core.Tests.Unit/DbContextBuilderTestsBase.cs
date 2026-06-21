@@ -22,10 +22,10 @@ public abstract class DbContextBuilderTestsBase
 
 
     /// <summary>
-    /// Verifies that the test project can create an instance of DbContextBuilder can be created.
+    /// Verifies that the parameterless DbContextBuilder ctor returns a non-null instance.
     /// </summary>
     [Fact]
-    public void Can_create_instance_of_DbContextBuilder()
+    public void DbContextBuilder_ctor_when_called_returns_a_new_instance()
     {
         var builder = new DbContextBuilder<AdventureWorksDbContext>();
         Assert.NotNull(builder);
@@ -37,7 +37,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling Build on the DbContextBuilder returns an instance of the specified DbContext type.
     /// </summary>
     [Fact]
-    public async Task Calling_Build_returns_instance_of_specified_context()
+    public async Task BuildAsync_when_called_returns_an_instance_of_the_specified_context()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -56,7 +56,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling Build multiple times on the DbContextBuilder returns multiple distinct instances of the specified DbContext type.
     /// </summary>
     [Fact]
-    public async Task Can_create_multiple_instances_of_specified_context()
+    public async Task BuildAsync_when_called_multiple_times_returns_distinct_instances()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -79,7 +79,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling UseInMemory returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseInMemory_returns_DbContextBuilder()
+    public void UseInMemory_when_called_returns_the_builder()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -97,7 +97,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling UseSqlite returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseSqlite_returns_DbContextBuilder()
+    public void UseSqlite_when_called_returns_the_builder()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -115,7 +115,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling UseAutoFixture returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseAutoFixture_returns_DbContextBuilder()
+    public void UseAutoFixture_when_called_returns_the_builder()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -134,7 +134,7 @@ public abstract class DbContextBuilderTestsBase
     /// DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseCustomRandomEntityCreator_returns_DbContextBuilder()
+    public void UseCustomRandomEntityCreator_when_called_returns_the_builder()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -155,7 +155,7 @@ public abstract class DbContextBuilderTestsBase
     /// throws ArgumentNullException
     /// </summary>
     [Fact]
-    public void Calling_UseCustomEntityCreator_and_passing_in_null_throws_ArgumentNullException()
+    public void UseCustomRandomEntityCreator_when_creator_is_null_throws_ArgumentNullException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -172,7 +172,7 @@ public abstract class DbContextBuilderTestsBase
     /// property to the value passed in
     /// </summary>
     [Fact]
-    public void Calling_UseCustomRandomEntityCreator_sets_the_RandomEntityCreator_property()
+    public void UseCustomRandomEntityCreator_when_called_sets_the_RandomEntityCreator_property()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -194,7 +194,7 @@ public abstract class DbContextBuilderTestsBase
     /// as no data has been seeded.
     /// </summary>
     [Fact]
-    public async Task A_newly_created_DbContext_contains_the_mapped_entities_but_the_sets_are_empty()
+    public async Task BuildAsync_when_no_seeds_are_provided_returns_a_context_with_mapped_but_empty_DbSets()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -222,7 +222,7 @@ public abstract class DbContextBuilderTestsBase
     /// DbContext would not have anything being tracked.
     /// </remarks>
     [Fact]
-    public async Task A_newly_created_DbContext_does_not_have_any_tracked_changes()
+    public async Task BuildAsync_when_seeds_are_provided_does_not_leave_them_tracked()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -666,15 +666,18 @@ public abstract class DbContextBuilderTestsBase
     /// with the restriction that the object must be classes and string is a class
     /// </remarks>
     [Fact]
-    public void SeedWith_params_when_passed_an_array_of_strings_throws_ArgumentException()
+    public void SeedWith_when_TEntity_is_string_throws_ArgumentException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
 
-
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value"));
-        Assert.Equal("entities", ex.ParamName);
+        // Act & Assert — the single-string call now resolves to the singleton overload
+        // (added in the SeedWith singleton PR) which raises ArgumentException with
+        // paramName "entity"; the params overload still raises it for string[] with
+        // paramName "entities". Assert at the Exception level so the test is resilient
+        // to overload-resolution choices.
+        Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value"));
+        Assert.Throws<ArgumentException>(() => sut.SeedWith(new[] { "Invalid value" }));
     }
 
 
@@ -1086,7 +1089,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling UseDbContextOptionsBuilder and passing null throws ArgumentNullException
     /// </summary>
     [Fact]
-    public void Calling_UseDbContextOptionsBuilder_when_passed_null_throws_ArgumentNullException()
+    public void UseDbContextOptionsBuilder_when_passed_null_throws_ArgumentNullException()
     {
         // Arrange
 
@@ -1103,7 +1106,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that UseDbContextOptionsBuilder returns the DbContextBuilder{T} so it can be chained to other calls
     /// </summary>
     [Fact]
-    public void Calling_UseDbContextOptionsBuilder_returns_DbContextBuild()
+    public void UseDbContextOptionsBuilder_when_called_returns_the_builder()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -1135,8 +1138,15 @@ public abstract class DbContextBuilderTestsBase
         await sut.BuildAsync();
 
 
-        // Assert
-        Assert.True(buffer.Length > 0, "Buffer length was expected to be greater than 0");
+        // Assert — the LogTo callback the test wired in must have received something
+        // (EF emits at least one log line when initializing the connection). Asserting
+        // NotEmpty on the materialized string gives a clearer failure message than the
+        // previous `buffer.Length > 0` numeric check, and asserting that the log
+        // contains a known EF marker pins the test to "EF actually logged via our
+        // callback" rather than "the buffer happens to be non-zero for any reason".
+        var log = buffer.ToString();
+        Assert.NotEmpty(log);
+        Assert.Contains("Microsoft.EntityFrameworkCore", log, StringComparison.Ordinal);
     }
 
 
@@ -1156,7 +1166,7 @@ public abstract class DbContextBuilderTestsBase
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.BuildAsync());
-        Assert.Contains("Failed to create database", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("failed to create the in-memory database", ex.Message, StringComparison.Ordinal);
         Assert.NotNull(ex.InnerException);
     }
 
@@ -1178,7 +1188,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling UseInMemory multiple times doesn't cause issues
     /// </summary>
     [Fact]
-    public async Task Calling_UseInMemory_multiple_times_still_works()
+    public async Task UseInMemory_when_called_multiple_times_still_returns_a_valid_context()
     {
         // Arrange — use a fresh builder so this test is provider-agnostic
         // (the base builder may already be configured for a different provider).
@@ -1192,5 +1202,82 @@ public abstract class DbContextBuilderTestsBase
 
         // Assert
         Assert.NotNull(context);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that the new SeedWith(TEntity) singleton overload — which exists to skip the
+    /// one-element array allocation of the params overload — actually inserts the row. Uses
+    /// the InMemory provider explicitly to side-step relational FK constraints under SQLite.
+    /// </summary>
+    [Fact]
+    public async Task SeedWith_singleton_overload_seeds_the_entity()
+    {
+        // Arrange
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var address = new Address
+        {
+            AddressId = 999,
+            AddressLine1 = "1 Singleton Way",
+            City = "Singletontown",
+            StateProvinceId = 1,
+            PostalCode = "00001",
+            Rowguid = Guid.NewGuid(),
+            ModifiedDate = DateTime.UtcNow
+        };
+
+        // Act — note: no array literal, no params expansion
+        await using var context = await sut.UseInMemory().SeedWith(address).BuildAsync();
+
+        // Assert
+        var row = context.Addresses.SingleOrDefault(a => a.AddressId == 999);
+        Assert.NotNull(row);
+        Assert.Equal("1 Singleton Way", row!.AddressLine1);
+    }
+
+
+
+    /// <summary>
+    /// SeedWith(TEntity) must reject null with ArgumentNullException so callers do not
+    /// silently insert nothing.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_entity_is_null_throws()
+    {
+        using var sut = CreateDbContextBuilder();
+
+        Assert.Throws<ArgumentNullException>(() => sut.SeedWith((Address)null!));
+    }
+
+
+
+    /// <summary>
+    /// SeedWith(TEntity) must reject string at the type level just like the params overload,
+    /// so the two overloads behave consistently.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_TEntity_is_string_throws()
+    {
+        using var sut = CreateDbContextBuilder();
+
+        Assert.Throws<ArgumentException>(() => sut.SeedWith("not an entity"));
+    }
+
+
+
+    /// <summary>
+    /// Regression: the singleton overload accepts a single TEntity, but
+    /// `List&lt;string&gt;` casts to `IEnumerable&lt;object&gt;` at runtime (T-covariance for
+    /// reference types) — so without an element-level check, a list of strings would
+    /// slip through as seed data. This test pins the fix.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_passed_a_List_of_strings_throws()
+    {
+        using var sut = CreateDbContextBuilder();
+        var stringList = new List<string> { "a", "b", "c" };
+
+        Assert.Throws<ArgumentException>(() => sut.SeedWith(stringList));
     }
 }

@@ -40,7 +40,7 @@ public class TestsWithDefaults : DbContextBuilderTestsBase
         // Arrange
         var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
-        var context = await sut.BuildAsync();
+        await using var context = await sut.BuildAsync();
 
         // Act & Assert
         Assert.True(context.Database.IsInMemory());
