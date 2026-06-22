@@ -19,7 +19,7 @@ jobs:
     if: github.repository != 'Chris-Wolfgang/repo-template'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -347,7 +347,7 @@ jobs:
       has-packages: ${{ steps.check-packages.outputs.has-packages }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -529,7 +529,8 @@ jobs:
               # single-TFM (EF6→net6.0 ... EF10→net10.0); a shared consumer would either fail
               # uplevel (net8.0 cannot restore a net10.0 package → NU1202) or unify the EF Core
               # versions across packages. One project per package avoids both.
-              $projName = 'Smoke_' + ($packageId -replace '[^A-Za-z0-9]', '_')
+              # No underscores in the assembly name (would trip CA1707 on net10.0).
+              $projName = 'Smoke' + ($packageId -replace '[^A-Za-z0-9]', '')
               Write-Host "🧪 Smoke testing package: $packageId $packageVersion ($coreTfm)" -ForegroundColor Yellow
 
               dotnet new console -n $projName -f $coreTfm
@@ -544,7 +545,10 @@ jobs:
                 exit $LASTEXITCODE
               }
 
-              dotnet build "$projName/$projName.csproj"
+              # Throwaway consumer: turn off the repo's inherited analyzers and
+              # Release warnings-as-errors (from Directory.Build.props). A real package
+              # consumer would not have them; the smoke test only verifies restore + compile.
+              dotnet build "$projName/$projName.csproj" -p:TreatWarningsAsErrors=false -p:RunAnalyzers=false -p:EnableNETAnalyzers=false
               if ($LASTEXITCODE -ne 0) {
                 Write-Error "❌ Smoke test project failed to build with $packageId"
                 exit $LASTEXITCODE
@@ -612,7 +616,7 @@ jobs:
     if: github.repository != 'Chris-Wolfgang/repo-template'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -804,7 +808,7 @@ jobs:
         run: zip -r release-coverage.zip ./release-coverage
 
       - name: Attach artifacts to release
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3.0.0
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b  # v3.0.1
         with:
           tag_name: ${{ github.event.release.tag_name }}
           files: |
