@@ -529,7 +529,8 @@ jobs:
               # single-TFM (EF6→net6.0 ... EF10→net10.0); a shared consumer would either fail
               # uplevel (net8.0 cannot restore a net10.0 package → NU1202) or unify the EF Core
               # versions across packages. One project per package avoids both.
-              $projName = 'Smoke_' + ($packageId -replace '[^A-Za-z0-9]', '_')
+              # No underscores in the assembly name (would trip CA1707 on net10.0).
+              $projName = 'Smoke' + ($packageId -replace '[^A-Za-z0-9]', '')
               Write-Host "🧪 Smoke testing package: $packageId $packageVersion ($coreTfm)" -ForegroundColor Yellow
 
               dotnet new console -n $projName -f $coreTfm
@@ -544,7 +545,10 @@ jobs:
                 exit $LASTEXITCODE
               }
 
-              dotnet build "$projName/$projName.csproj"
+              # Throwaway consumer: turn off the repo's inherited analyzers and
+              # Release warnings-as-errors (from Directory.Build.props). A real package
+              # consumer would not have them; the smoke test only verifies restore + compile.
+              dotnet build "$projName/$projName.csproj" -p:TreatWarningsAsErrors=false -p:RunAnalyzers=false -p:EnableNETAnalyzers=false
               if ($LASTEXITCODE -ne 0) {
                 Write-Error "❌ Smoke test project failed to build with $packageId"
                 exit $LASTEXITCODE
