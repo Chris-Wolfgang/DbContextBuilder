@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782156090814,
+  "lastUpdate": 1782158037539,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -234,6 +234,84 @@ window.BENCHMARK_DATA = {
             "value": 3124693.2395833335,
             "unit": "ns",
             "range": "± 926921.2396771321"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5a6e9d63ef056180e1ebd200df19f191f7c62035",
+          "message": "Bump the dotnet-dependencies group with 2 updates (#341)\n\nUpdated [Effort.EF6](http://entityframework-effort.net/) from 2.2.17 to\n2.2.18.\n\nUpdated\n[Meziantou.Analyzer](https://github.com/meziantou/Meziantou.Analyzer)\nfrom 3.0.104 to 3.0.108.\n\n<details>\n<summary>Release notes</summary>\n\n_Sourced from [Meziantou.Analyzer's\nreleases](https://github.com/meziantou/Meziantou.Analyzer/releases)._\n\n## 3.0.108\n\nNuGet package:\n<https://www.nuget.org/packages/Meziantou.Analyzer/3.0.108>\n\n## What's Changed\n* Add MA0206 for unnecessary braces in type declarations by @​meziantou\nin https://github.com/meziantou/Meziantou.Analyzer/pull/1191\n\n\n**Full Changelog**:\nhttps://github.com/meziantou/Meziantou.Analyzer/compare/3.0.107...3.0.108\n\n## 3.0.107\n\nNuGet package:\n<https://www.nuget.org/packages/Meziantou.Analyzer/3.0.107>\n\n## What's Changed\n* Add MA0205 rule to suggest using the XOR operator by @​meziantou in\nhttps://github.com/meziantou/Meziantou.Analyzer/pull/1192\n\n\n**Full Changelog**:\nhttps://github.com/meziantou/Meziantou.Analyzer/compare/3.0.106...3.0.107\n\n## 3.0.106\n\nNuGet package:\n<https://www.nuget.org/packages/Meziantou.Analyzer/3.0.106>\n\n## What's Changed\n* Add MA0204 to remove unnecessary partial modifiers by @​meziantou in\nhttps://github.com/meziantou/Meziantou.Analyzer/pull/1190\n\n\n**Full Changelog**:\nhttps://github.com/meziantou/Meziantou.Analyzer/compare/3.0.105...3.0.106\n\n## 3.0.105\n\nNuGet package:\n<https://www.nuget.org/packages/Meziantou.Analyzer/3.0.105>\n\n## What's Changed\n* Add MA0203 to flag `<returns>` tags on `void` methods by @​meziantou\nin https://github.com/meziantou/Meziantou.Analyzer/pull/1189\n\n\n**Full Changelog**:\nhttps://github.com/meziantou/Meziantou.Analyzer/compare/3.0.104...3.0.105\n\nCommits viewable in [compare\nview](https://github.com/meziantou/Meziantou.Analyzer/compare/3.0.104...3.0.108).\n</details>\n\nDependabot will resolve any conflicts with this PR as long as you don't\nalter it yourself. You can also trigger a rebase manually by commenting\n`@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits\nthat have been made to it\n- `@dependabot show <dependency name> ignore conditions` will show all\nof the ignore conditions of the specified dependency\n- `@dependabot ignore <dependency name> major version` will close this\ngroup update PR and stop Dependabot creating any more for the specific\ndependency's major version (unless you unignore this specific\ndependency's major version or upgrade to it yourself)\n- `@dependabot ignore <dependency name> minor version` will close this\ngroup update PR and stop Dependabot creating any more for the specific\ndependency's minor version (unless you unignore this specific\ndependency's minor version or upgrade to it yourself)\n- `@dependabot ignore <dependency name>` will close this group update PR\nand stop Dependabot creating any more for the specific dependency\n(unless you unignore this specific dependency or upgrade to it yourself)\n- `@dependabot unignore <dependency name>` will remove all of the ignore\nconditions of the specified dependency\n- `@dependabot unignore <dependency name> <ignore condition>` will\nremove the ignore condition of the specified dependency and ignore\nconditions\n\n\n</details>",
+          "timestamp": "2026-06-22T15:52:36-04:00",
+          "tree_id": "80ed7ff579c2e65ec0404014376dae7e0f5a57ff",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/5a6e9d63ef056180e1ebd200df19f191f7c62035"
+        },
+        "date": 1782158036190,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 59804.08044433594,
+            "unit": "ns",
+            "range": "± 1677.2563072808655"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 75902.18570963542,
+            "unit": "ns",
+            "range": "± 49.43544290782432"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 127159.22705078125,
+            "unit": "ns",
+            "range": "± 14749.938086837754"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 61070.25439453125,
+            "unit": "ns",
+            "range": "± 1356.7250516762208"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 125047.6474609375,
+            "unit": "ns",
+            "range": "± 14057.376639719263"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 420913.591796875,
+            "unit": "ns",
+            "range": "± 54527.83415807784"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 60074.24654134115,
+            "unit": "ns",
+            "range": "± 1260.3678308676776"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 334978.21875,
+            "unit": "ns",
+            "range": "± 8114.926249967043"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 1606794.1536458333,
+            "unit": "ns",
+            "range": "± 35960.302559366115"
           }
         ]
       }
