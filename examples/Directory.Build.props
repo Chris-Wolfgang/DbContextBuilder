@@ -1,0 +1,8 @@
+<Project>
+  <!--
+    Intentionally empty. This stops MSBuild from walking up to the repository's
+    own Directory.Build.props. The examples are meant to compile exactly like a
+    downstream consumer's project would — with default SDK settings, not this
+    repository's strict analyzer / warnings-as-errors policy.
+  -->
+</Project>
