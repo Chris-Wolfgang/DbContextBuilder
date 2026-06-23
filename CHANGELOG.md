@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Deprecated
+
+### Security
+
+## [0.7.0] - 2026-06-20
+
+### Added
+
 - New `Wolfgang.DbContextBuilderCore.Assertions` namespace providing a small fluent,
   chainable assertion surface for verifying the state of a `DbSet<T>` in tests:
   `HaveCount`, `BeEmpty`, `NotBeEmpty`, `Contain`, `NotContain`, `AllSatisfy`. Obtain
@@ -190,7 +204,8 @@ No public API change vs `0.3.3`.
 - Support for Entity Framework 6 (classic) on .NET Framework 4.6.2--4.8.1
 - `Wolfgang.DbContextBuilder-EF6` package for Entity Framework 6
 
-[Unreleased]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.5.0...v0.6.0
