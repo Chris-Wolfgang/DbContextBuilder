@@ -29,6 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `SeedWithRandom` now reconciles foreign keys on the random entities against the EF model
+  at build time, so random FK values no longer violate referential constraints (which
+  matters for SQLite). A required FK is wired to a seeded principal of its type when one is
+  present; an optional FK with no seeded principal is set to `null`. Entities added with
+  `SeedWith` are never modified. (#103)
+
 ### Fixed
 
 ### Removed

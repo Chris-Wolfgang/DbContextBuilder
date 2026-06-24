@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Wolfgang.DbContextBuilderCore;
@@ -17,6 +18,10 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 {
     private bool _disposed;
     private readonly List<object> _seedData = [];
+    // Entities added via SeedWithRandom (reference identity). Their foreign keys are
+    // reconciled against the model at build time so random FK values don't violate
+    // constraints; explicitly-SeedWith'd entities are never touched.
+    private readonly HashSet<object> _randomlySeeded = new(ReferenceEqualityComparer.Instance);
     private DbContextOptionsBuilder<T>? _dbContextOptionsBuilder;
     private Action<string>? _diagnosticOutput;
 
@@ -276,7 +281,14 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         var entities = RandomEntityCreator
             .CreateRandomEntities<TEntity>(count);
 
-        _seedData.AddRange(entities);
+        // Materialise once (the func overloads use a lazy Select) and record the entities
+        // as randomly seeded so their foreign keys are reconciled at build time.
+        var materialized = entities as IReadOnlyList<TEntity> ?? entities.ToList();
+        _seedData.AddRange(materialized);
+        foreach (var entity in materialized)
+        {
+            _randomlySeeded.Add(entity);
+        }
 
         return this;
     }
@@ -304,7 +316,14 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             .CreateRandomEntities<TEntity>(count)
             .Select(func);
 
-        _seedData.AddRange(entities);
+        // Materialise once (the func overloads use a lazy Select) and record the entities
+        // as randomly seeded so their foreign keys are reconciled at build time.
+        var materialized = entities as IReadOnlyList<TEntity> ?? entities.ToList();
+        _seedData.AddRange(materialized);
+        foreach (var entity in materialized)
+        {
+            _randomlySeeded.Add(entity);
+        }
 
         return this;
     }
@@ -332,9 +351,121 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             .CreateRandomEntities<TEntity>(count)
             .Select(func);
 
-        _seedData.AddRange(entities);
+        // Materialise once (the func overloads use a lazy Select) and record the entities
+        // as randomly seeded so their foreign keys are reconciled at build time.
+        var materialized = entities as IReadOnlyList<TEntity> ?? entities.ToList();
+        _seedData.AddRange(materialized);
+        foreach (var entity in materialized)
+        {
+            _randomlySeeded.Add(entity);
+        }
 
         return this;
+    }
+
+
+
+    /// <summary>
+    /// Reconciles foreign keys on randomly-seeded entities against the model so that the
+    /// random FK values produced by the random-entity creator do not violate referential
+    /// constraints (which matters for providers that enforce them, e.g. SQLite). For each
+    /// foreign key on a randomly-seeded dependent: if a different seeded entity of the
+    /// principal type is present, the dependent's FK is set to that principal's key; otherwise
+    /// an optional FK is set to <c>null</c>. Required FKs with no available principal are left
+    /// untouched (best effort). Entities added via <c>SeedWith</c> are never modified.
+    /// </summary>
+    /// <param name="context">A context whose model is used to resolve the relationships.</param>
+    private void ReconcileRandomForeignKeys(DbContext context)
+    {
+        if (_randomlySeeded.Count == 0)
+        {
+            return;
+        }
+
+        var seededByType = new Dictionary<Type, List<object>>();
+        foreach (var entity in _seedData)
+        {
+            var type = entity.GetType();
+            if (!seededByType.TryGetValue(type, out var list))
+            {
+                list = [];
+                seededByType[type] = list;
+            }
+
+            list.Add(entity);
+        }
+
+        foreach (var dependent in _randomlySeeded)
+        {
+            var entityType = context.Model.FindEntityType(dependent.GetType());
+            if (entityType is null)
+            {
+                continue;
+            }
+
+            foreach (var foreignKey in entityType.GetForeignKeys())
+            {
+                ReconcileForeignKey(dependent, foreignKey, seededByType);
+            }
+        }
+    }
+
+
+
+    private static void ReconcileForeignKey
+    (
+        object dependent,
+        IForeignKey foreignKey,
+        IReadOnlyDictionary<Type, List<object>> seededByType
+    )
+    {
+        var principal = FindPrincipal(dependent, foreignKey, seededByType);
+
+        if (principal is not null)
+        {
+            // Point the dependent's FK properties at the chosen principal's key values.
+            var fkProperties = foreignKey.Properties;
+            var principalKeyProperties = foreignKey.PrincipalKey.Properties;
+            for (var i = 0; i < fkProperties.Count; i++)
+            {
+                var keyValue = principalKeyProperties[i].PropertyInfo?.GetValue(principal);
+                fkProperties[i].PropertyInfo?.SetValue(dependent, keyValue);
+            }
+        }
+        else if (!foreignKey.IsRequired)
+        {
+            // Optional relationship with no principal to point at — clear the random value.
+            foreach (var property in foreignKey.Properties)
+            {
+                property.PropertyInfo?.SetValue(dependent, value: null);
+            }
+        }
+    }
+
+
+
+    private static object? FindPrincipal
+    (
+        object dependent,
+        IForeignKey foreignKey,
+        IReadOnlyDictionary<Type, List<object>> seededByType
+    )
+    {
+        if (!seededByType.TryGetValue(foreignKey.PrincipalEntityType.ClrType, out var candidates))
+        {
+            return null;
+        }
+
+        // Prefer a principal that is not the dependent itself (handles self-referencing FKs).
+        foreach (var candidate in candidates)
+        {
+            if (!ReferenceEquals(candidate, dependent))
+            {
+                return candidate;
+            }
+        }
+
+        return null;
     }
 
 
@@ -391,6 +522,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
             if (_seedData.Count > 0)
             {
+                ReconcileRandomForeignKeys(seedContext);
                 seedContext.AddRange(_seedData.AsEnumerable());
                 await seedContext.SaveChangesAsync().ConfigureAwait(false);
             }
