@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<RootNamespace>Wolfgang.DbContextBuilderCore.Tests.Unit</RootNamespace>
+		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+		<!-- CA1707 (underscores) is intentional: test names follow MethodUnderTest_when_condition_expected_result. -->
+		<NoWarn>$(NoWarn);CA1707</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+		<PackageReference Include="xunit" Version="2.9.3" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="[2.8.2]">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="coverlet.collector" Version="10.0.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Xunit" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder.Bogus\Wolfgang.DbContextBuilder.Bogus.csproj" />
+	</ItemGroup>
+
+  <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
+
+</Project>

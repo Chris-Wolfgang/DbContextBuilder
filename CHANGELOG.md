@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- New **`Wolfgang.DbContextBuilder.Bogus`** package — a Bogus-backed `ICreateRandomEntities`
+  (`BogusRandomEntityCreator`) that auto-populates common scalar property types with
+  realistic-looking fake values. Plug in with
+  `builder.UseCustomRandomEntityCreator(new BogusRandomEntityCreator())`. (#118)
+
 - New **`Wolfgang.DbContextBuilder.Abstractions`** package containing `ICreateRandomEntities`,
   so add-on packages (e.g. an upcoming Bogus random-data provider) can target the family
   without taking a dependency on a specific EF Core version.
