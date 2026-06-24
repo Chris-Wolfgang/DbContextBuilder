@@ -18,6 +18,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     private bool _disposed;
     private readonly List<object> _seedData = [];
     private DbContextOptionsBuilder<T>? _dbContextOptionsBuilder;
+    private Action<string>? _diagnosticOutput;
 
 
 
@@ -95,6 +96,27 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         ArgumentNullException.ThrowIfNull(profile);
 
         profile.Apply(this);
+
+        return this;
+    }
+
+
+
+    /// <summary>
+    /// Routes diagnostic output to <paramref name="writeLine"/>: EF Core logs (including the
+    /// generated SQL) produced while creating and seeding the database, plus a one-line summary
+    /// of how many entity rows were seeded. Pass your test framework's output sink — for example
+    /// <c>UseDiagnosticOutput(testOutputHelper.WriteLine)</c> in xUnit — so the seeded context is
+    /// visible in the test log when an assertion fails.
+    /// </summary>
+    /// <param name="writeLine">Receives each diagnostic line.</param>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <exception cref="ArgumentNullException"><paramref name="writeLine"/> is null.</exception>
+    public DbContextBuilder<T> UseDiagnosticOutput(Action<string> writeLine)
+    {
+        ArgumentNullException.ThrowIfNull(writeLine);
+
+        _diagnosticOutput = writeLine;
 
         return this;
     }
@@ -336,6 +358,11 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             optionBuilder.UseInternalServiceProvider(provider);
         }
 
+        if (_diagnosticOutput is not null)
+        {
+            optionBuilder.LogTo(_diagnosticOutput);
+        }
+
         var contextCreator = CreateDbContext ??= new InMemoryDbContextCreator();
 
         // Create a temporary context to initialize and seed the database, then dispose it
@@ -368,6 +395,11 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
                 await seedContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
+
+        _diagnosticOutput?.Invoke
+        (
+            $"DbContextBuilder<{typeof(T).Name}> built; seeded {_seedData.Count} entity row(s)."
+        );
 
         return await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
     }
