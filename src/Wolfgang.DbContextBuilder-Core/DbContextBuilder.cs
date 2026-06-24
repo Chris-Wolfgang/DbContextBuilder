@@ -267,6 +267,13 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
+    /// <remarks>
+    /// Foreign keys on the generated entities are reconciled against the model when the
+    /// context is built: a required FK is wired to a seeded principal of its type (so seed the
+    /// principals too), and an optional FK with no seeded principal is set to <c>null</c>. The
+    /// FK values on a randomly-seeded entity are therefore not the raw random values produced
+    /// by the creator. Entities added via <c>SeedWith</c> are never reconciled.
+    /// </remarks>
     /// <param name="count">The number of items to create</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
     /// <returns><see cref="DbContextBuilder{T}"/></returns>
@@ -298,6 +305,13 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
+    /// <remarks>
+    /// Foreign keys on the generated entities are reconciled against the model when the
+    /// context is built: a required FK is wired to a seeded principal of its type (so seed the
+    /// principals too), and an optional FK with no seeded principal is set to <c>null</c>. The
+    /// FK values on a randomly-seeded entity are therefore not the raw random values produced
+    /// by the creator. Entities added via <c>SeedWith</c> are never reconciled.
+    /// </remarks>
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
@@ -333,6 +347,13 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
+    /// <remarks>
+    /// Foreign keys on the generated entities are reconciled against the model when the
+    /// context is built: a required FK is wired to a seeded principal of its type (so seed the
+    /// principals too), and an optional FK with no seeded principal is set to <c>null</c>. The
+    /// FK values on a randomly-seeded entity are therefore not the raw random values produced
+    /// by the creator. Entities added via <c>SeedWith</c> are never reconciled.
+    /// </remarks>
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and the index number of the entity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>

@@ -51,6 +51,31 @@ Two ways to seed:
 
 `SeedWith` and `SeedWithRandom` are chainable in any order. The builder accumulates all seeds and inserts them when `BuildAsync()` runs.
 
+### Random data and foreign keys
+
+`SeedWithRandom` fills scalar properties with random values, which means a raw foreign-key
+column points at nothing. To keep that from violating referential constraints (SQLite
+enforces them), the builder **reconciles foreign keys on randomly-seeded entities** at build
+time:
+
+- a **required** FK is wired to a seeded principal of its type — so seed the principals too:
+
+  ```csharp
+  await using var context = await new DbContextBuilder<ShopDbContext>()
+      .UseSqlite()
+      .SeedWithRandom<Customer>(5)   // seed the principals...
+      .SeedWithRandom<Order>(20)     // ...and each Order's CustomerId is wired to one of them
+      .BuildAsync();
+  ```
+
+- an **optional** FK with no seeded principal is set to `null`;
+- a **required** FK with no seeded principal of its type is left as the random value (so it
+  would still fail on a constraint-enforcing provider — the fix is to seed the principal).
+
+> **This may be a little unexpected, even though it's correct:** the foreign-key values on a
+> randomly-seeded entity are **not** the raw random values the generator produced. Entities you
+> add with `SeedWith` are never touched — their explicit FK values are preserved exactly.
+
 ## 5. Customize the model (SQLite for SQL Server only)
 
 `SqliteModelCustomizer` exposes hooks to override the schema-renaming heuristic, the default-value SQL translation, the computed-column handling, and the many-to-many join-table renaming. See the [API reference](../api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html) for the exact signatures.

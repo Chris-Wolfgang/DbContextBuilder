@@ -29,11 +29,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `SeedWithRandom` now reconciles foreign keys on the random entities against the EF model
-  at build time, so random FK values no longer violate referential constraints (which
-  matters for SQLite). A required FK is wired to a seeded principal of its type when one is
-  present; an optional FK with no seeded principal is set to `null`. Entities added with
-  `SeedWith` are never modified. (#103)
+- **`SeedWithRandom` now reconciles foreign keys on the random entities** against the EF
+  model at build time, so the random FK values no longer violate referential constraints
+  (which matters for SQLite, which enforces them). For each foreign key on a randomly-seeded
+  entity:
+  - a **required** FK is wired to a seeded principal of its type when one is present (so seed
+    the principals too, e.g. `.SeedWithRandom<Customer>(5).SeedWithRandom<Order>(20)`);
+  - an **optional** FK with no seeded principal is set to `null`;
+  - a **required** FK with no seeded principal is left as the random value (still fails on a
+    constraint-enforcing provider — seed the principal).
+
+  **Behavior change to be aware of:** the foreign-key values on a randomly-seeded entity are
+  no longer the raw random values the generator produced — a previously-random `SupplierId`
+  may now be `null`, and a `CustomerId` may now match a seeded customer. Tests that asserted
+  on those raw random FK values will see different values. Entities added with `SeedWith`
+  (explicit) are never modified, so their FK values are preserved exactly. (#103)
 
 ### Fixed
 
