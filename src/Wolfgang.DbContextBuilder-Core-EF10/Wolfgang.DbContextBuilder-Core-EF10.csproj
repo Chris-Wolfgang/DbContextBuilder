@@ -39,7 +39,6 @@
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderSqliteExtensions.cs" Link="DbContextBuilderSqliteExtensions.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\Assembly.cs" Link="Assembly.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\ICreateDbContext.cs" Link="ICreateDbContext.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\ICreateRandomEntities.cs" Link="ICreateRandomEntities.cs" />
 	   <Compile Include="../Wolfgang.DbContextBuilder-Core/ISeedProfile.cs" Link="ISeedProfile.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\InMemoryDbContextCreator.cs" Link="InMemoryDbContextCreator.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteDbContextCreator.cs" Link="SqliteDbContextCreator.cs" />
@@ -74,4 +73,7 @@
 		<Content Include="dbcontext-builder.ico" Link="Content\dbcontext-builder.ico" />
 	</ItemGroup>
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
+	<ItemGroup>
+		<ProjectReference Include="../Wolfgang.DbContextBuilder.Abstractions/Wolfgang.DbContextBuilder.Abstractions.csproj" />
+	</ItemGroup>
 </Project>

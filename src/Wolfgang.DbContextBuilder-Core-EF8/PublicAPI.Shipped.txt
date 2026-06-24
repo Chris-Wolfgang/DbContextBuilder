@@ -8,15 +8,12 @@ Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(params TEnti
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int count) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int count, System.Func<TEntity, TEntity> func) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int count, System.Func<TEntity, int, TEntity> func) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
-Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseCustomRandomEntityCreator(Wolfgang.DbContextBuilderCore.ICreateRandomEntities creator) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseDbContextOptionsBuilder(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<T> dbContextOptionsBuilder) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseInMemory() -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
 Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions
 Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions
 Wolfgang.DbContextBuilderCore.ICreateDbContext
 Wolfgang.DbContextBuilderCore.ICreateDbContext.CreateDbContextAsync<TDbContext>(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<TDbContext> optionsBuilder) -> System.Threading.Tasks.Task<TDbContext>
-Wolfgang.DbContextBuilderCore.ICreateRandomEntities
-Wolfgang.DbContextBuilderCore.ICreateRandomEntities.CreateRandomEntities<TEntity>(int count) -> System.Collections.Generic.IEnumerable<TEntity>
 Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer
 Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.SqliteForMsSqlServerModelCustomizer(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies dependencies) -> void
 Wolfgang.DbContextBuilderCore.SqliteModelCustomizer
