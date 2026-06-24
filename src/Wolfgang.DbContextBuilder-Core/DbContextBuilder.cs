@@ -83,6 +83,25 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
     /// <summary>
+    /// Applies a reusable <see cref="ISeedProfile{T}"/> to this builder. Profiles bundle
+    /// a complete set of seed data so the same setup can be shared across many tests with
+    /// a single call. Multiple profiles can be applied; their seed data accumulates.
+    /// </summary>
+    /// <param name="profile">The seed profile to apply.</param>
+    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <exception cref="ArgumentNullException"><paramref name="profile"/> is null.</exception>
+    public DbContextBuilder<T> UseSeedProfile(ISeedProfile<T> profile)
+    {
+        ArgumentNullException.ThrowIfNull(profile);
+
+        profile.Apply(this);
+
+        return this;
+    }
+
+
+
+    /// <summary>
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
     /// <param name="entities">The entities to populate the database with</param>
