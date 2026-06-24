@@ -40,6 +40,7 @@
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\SqliteForMsSqlServerModelCustomizerTests.cs" Link="SqliteForMsSqlServerModelCustomizerTests.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\SqliteModelCustomizerTests.cs" Link="SqliteModelCustomizerTests.cs" />
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/SeedProfileTests.cs" Link="SeedProfileTests.cs" />
+	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/DiagnosticOutputTests.cs" Link="DiagnosticOutputTests.cs" />
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/DbSetAssertionsTests.cs" Link="DbSetAssertionsTests.cs" />
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/SqliteDbContextCreatorTests.cs" Link="SqliteDbContextCreatorTests.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestsWithDefaults.cs" Link="TestsWithDefaults.cs" />

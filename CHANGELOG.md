@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reusable, named bundles of seed data that can be applied to any builder in one call.
   Multiple profiles accumulate, so common setups can be shared across many test classes
   instead of being re-built in each. (#104)
+- New `DbContextBuilder<T>.UseDiagnosticOutput(Action<string>)` — routes EF Core logs
+  (including generated SQL) produced while building/seeding, plus a one-line seed summary,
+  to a caller-supplied sink. Framework-agnostic: pass `testOutputHelper.WriteLine` in xUnit
+  so the seeded context is visible in the log when a test fails. (#117)
 
 ### Changed
 
