@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- New **`Wolfgang.DbContextBuilder.Abstractions`** package containing `ICreateRandomEntities`,
+  so add-on packages (e.g. an upcoming Bogus random-data provider) can target the family
+  without taking a dependency on a specific EF Core version.
+
 - New `ISeedProfile<T>` and `DbContextBuilder<T>.UseSeedProfile(ISeedProfile<T>)` —
   reusable, named bundles of seed data that can be applied to any builder in one call.
   Multiple profiles accumulate, so common setups can be shared across many test classes

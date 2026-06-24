@@ -16,6 +16,7 @@
     <Project Path="extra-projects/AdventureWorks-EF10/AdventureWorks-EF10.csproj" />
   </Folder>
   <Folder Name="/Source/">
+    <Project Path="src/Wolfgang.DbContextBuilder.Abstractions/Wolfgang.DbContextBuilder.Abstractions.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder-Core-EF10/Wolfgang.DbContextBuilder-Core-EF10.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder-Core-EF6/Wolfgang.DbContextBuilder-Core-EF6.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder-Core-EF7/Wolfgang.DbContextBuilder-Core-EF7.csproj" />

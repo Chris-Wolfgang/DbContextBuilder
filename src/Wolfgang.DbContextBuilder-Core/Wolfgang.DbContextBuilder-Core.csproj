@@ -49,4 +49,7 @@
 		<None Include="Content\dbcontext-builder.ico" Pack="true" PackagePath="/" />
 	</ItemGroup>
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
+	<ItemGroup>
+		<ProjectReference Include="../Wolfgang.DbContextBuilder.Abstractions/Wolfgang.DbContextBuilder.Abstractions.csproj" />
+	</ItemGroup>
 </Project>
