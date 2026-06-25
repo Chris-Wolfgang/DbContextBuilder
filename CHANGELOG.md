@@ -66,6 +66,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Re-selecting a database provider on a builder (e.g. `UseSqlite()` then `UseInMemory()`, or
+  calling a SQLite extension twice) now disposes the previously-configured creator instead of
+  abandoning it — the prior `SqliteDbContextCreator`'s open in-memory connection is no longer
+  leaked.
+- `SqliteModelCustomizer.OverrideManyToManyTableHandling` is now initialized in the constructor
+  rather than lazily in the getter, removing a `??=` race that could allocate duplicate default
+  delegates during concurrent model customization (matching the other override delegates fixed
+  in 0.7.0).
+
 ### Removed
 
 - **BREAKING — `UseAutoFixture()` and `AutoFixtureRandomEntityCreator` moved out of the EF Core

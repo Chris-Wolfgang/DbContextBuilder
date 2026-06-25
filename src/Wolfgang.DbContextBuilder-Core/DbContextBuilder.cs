@@ -66,8 +66,24 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// </remarks>
     public DbContextBuilder<T> UseInMemory()
     {
-        CreateDbContext = new InMemoryDbContextCreator();
+        SetCreateDbContext(new InMemoryDbContextCreator());
         return this;
+    }
+
+
+
+    // Replaces the active DbContext creator, disposing the previous one if it owns resources
+    // (e.g. the SQLite creator holds an open in-memory connection). Provider selection is
+    // last-write-wins, so without this, re-selecting a provider on one builder would leak the
+    // abandoned creator's connection.
+    internal void SetCreateDbContext(ICreateDbContext creator)
+    {
+        if (!ReferenceEquals(CreateDbContext, creator) && CreateDbContext is IDisposable previous)
+        {
+            previous.Dispose();
+        }
+
+        CreateDbContext = creator;
     }
 
 

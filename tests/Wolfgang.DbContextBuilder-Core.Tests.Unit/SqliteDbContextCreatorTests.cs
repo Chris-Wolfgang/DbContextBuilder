@@ -59,4 +59,48 @@ public class SqliteDbContextCreatorTests
         sut.Dispose();
         sut.Dispose();
     }
+
+
+
+    /// <summary>
+    /// Verifies that <see cref="SqliteDbContextCreator.IsDisposed"/> tracks disposal state and
+    /// that Dispose is idempotent.
+    /// </summary>
+    [Fact]
+    public void IsDisposed_is_false_until_disposed_then_true()
+    {
+        // Arrange
+        var sut = new SqliteDbContextCreator();
+        Assert.False(sut.IsDisposed);
+
+        // Act
+        sut.Dispose();
+
+        // Assert
+        Assert.True(sut.IsDisposed);
+
+        // Idempotent — a second Dispose stays disposed without throwing.
+        sut.Dispose();
+        Assert.True(sut.IsDisposed);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that re-selecting a provider on a builder disposes the previous SQLite creator
+    /// (which holds an open in-memory connection) rather than leaking it.
+    /// </summary>
+    [Fact]
+    public void Reselecting_a_provider_disposes_the_previous_Sqlite_creator()
+    {
+        // Arrange — first provider is SQLite, which owns an open connection
+        using var builder = new DbContextBuilder<BasicContext>().UseSqlite();
+        var firstCreator = Assert.IsType<SqliteDbContextCreator>(builder.CreateDbContext);
+
+        // Act — last-write-wins provider selection abandons the SQLite creator
+        builder.UseInMemory();
+
+        // Assert — the abandoned creator was disposed, not leaked
+        Assert.True(firstCreator.IsDisposed);
+    }
 }

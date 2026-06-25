@@ -86,7 +86,7 @@ public static class DbContextBuilderSqliteExtensions
         }
 
         builder.ServiceCollection.AddSingleton(typeof(IModelCustomizer), modelCustomizerType);
-        builder.CreateDbContext = new SqliteDbContextCreator();
+        builder.SetCreateDbContext(new SqliteDbContextCreator());
 
         return builder;
     }
