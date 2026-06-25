@@ -8,8 +8,8 @@
 		<!-- Pin AssemblyVersion to a fixed binding-stability baseline (see the Core csproj). -->
 		<AssemblyVersion>1.0.0.0</AssemblyVersion>
 		<FileVersion>$([System.Text.RegularExpressions.Regex]::Replace("$(Version)", "[-+].*$", "")).0</FileVersion>
-		<Title>Wolfgang.DbContextBuilder Bogus random-data provider</Title>
-		<Description>Bogus-backed random test-data generation for Wolfgang.DbContextBuilder. Adds UseBogus() so SeedWithRandom&lt;T&gt;() fills entities with realistic-looking fake values. Pick the package whose .NET target matches your EF Core version.</Description>
+		<Title>Wolfgang.DbContextBuilder AutoFixture random-data provider</Title>
+		<Description>AutoFixture-backed random test-data generation for Wolfgang.DbContextBuilder. Adds UseAutoFixture() so SeedWithRandom&lt;T&gt;() fills entities with random values. Pick the package whose .NET target matches your EF Core version.</Description>
 		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
@@ -18,17 +18,17 @@
 		<PackageIcon>dbcontext-builder.png</PackageIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
-		<PackageTags>dbcontext;efcore;entity-framework;testing;bogus;random-data;test-data</PackageTags>
+		<PackageTags>dbcontext;efcore;entity-framework;testing;autofixture;random-data;test-data</PackageTags>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Bogus" Version="35.6.5" />
+		<PackageReference Include="AutoFixture" Version="4.18.1" />
 		<ProjectReference Include="..\Wolfgang.DbContextBuilder.Abstractions\Wolfgang.DbContextBuilder.Abstractions.csproj" />
 	</ItemGroup>
 	<!-- Reference the Core package whose single TFM matches this provider's TFM, so the
-	     UseBogus() extension binds against the same DbContextBuilder<T> the consumer uses. -->
+	     UseAutoFixture() extension binds against the same DbContextBuilder<T> the consumer uses. -->
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
 		<ProjectReference Include="..\Wolfgang.DbContextBuilder-Core-EF6\Wolfgang.DbContextBuilder-Core-EF6.csproj" />
 	</ItemGroup>

@@ -29,25 +29,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\AutoFixtureRandomEntityCreatorTests.cs" Link="AutoFixtureRandomEntityCreatorTests.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\DbContextActivatorTests.cs" Link="DbContextActivatorTests.cs" />
-	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\DbContextBuilderTestsBase.cs" Link="DbContextBuilderTestsBase.cs" />
-	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\ICreateRandomEntitiesTestsBase.cs" Link="ICreateRandomEntitiesTestsBase.cs" />
-	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\IgnoreVirtualMembersCustomizationTests.cs" Link="IgnoreVirtualMembersCustomizationTests.cs" />
-	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\IgnoreVirtualMembersTests.cs" Link="IgnoreVirtualMembersTests.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\Models\BasicContext.cs" Link="Models\BasicContext.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\Models\TableWithDefaults.cs" Link="Models\TableWithDefaults.cs" />
-	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\NoCircularReferencesCustomizationTests.cs" Link="NoCircularReferencesCustomizationTests.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\SqliteForMsSqlServerModelCustomizerTests.cs" Link="SqliteForMsSqlServerModelCustomizerTests.cs" />
 	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\SqliteModelCustomizerTests.cs" Link="SqliteModelCustomizerTests.cs" />
-	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/ForeignKeyAutoWireTests.cs" Link="ForeignKeyAutoWireTests.cs" />
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/SeedProfileTests.cs" Link="SeedProfileTests.cs" />
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/DiagnosticOutputTests.cs" Link="DiagnosticOutputTests.cs" />
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/DbSetAssertionsTests.cs" Link="DbSetAssertionsTests.cs" />
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/SqliteDbContextCreatorTests.cs" Link="SqliteDbContextCreatorTests.cs" />
-	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestsWithDefaults.cs" Link="TestsWithDefaults.cs" />
-	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestsWithInMemoryDBAndAutoFixture.cs" Link="TestsWithInMemoryDBAndAutoFixture.cs" />
-	  <Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestsWithSqliteAndAutoFixture.cs" Link="TestsWithSqliteAndAutoFixture.cs" />
 	</ItemGroup>
 
 

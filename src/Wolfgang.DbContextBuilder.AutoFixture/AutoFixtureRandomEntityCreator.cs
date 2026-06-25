@@ -7,10 +7,22 @@ namespace Wolfgang.DbContextBuilderCore;
 
 
 /// <summary>
-/// Provides an API to create random entities for seeding databases.
+/// An <see cref="ICreateRandomEntities"/> implementation backed by
+/// <see href="https://github.com/AutoFixture/AutoFixture">AutoFixture</see>. It populates the
+/// scalar properties of an entity with random values while omitting virtual (navigation)
+/// members and breaking circular references, so seeding does not pull in object graphs.
 /// </summary>
-internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
+/// <remarks>
+/// Configure the builder to use it with <c>UseAutoFixture()</c> (the convenience extension) or
+/// <c>UseCustomRandomEntityCreator(new AutoFixtureRandomEntityCreator())</c>.
+/// </remarks>
+public class AutoFixtureRandomEntityCreator : ICreateRandomEntities
 {
+    /// <summary>
+    /// Creates an instance backed by a new <see cref="AutoFixture.Fixture"/> configured with the
+    /// customizations this creator relies on (DateOnly/TimeOnly support, recursion omission, and
+    /// virtual-member exclusion).
+    /// </summary>
     public AutoFixtureRandomEntityCreator()
     {
         // AutoFixture 4.x does not have built-in support for DateOnly and TimeOnly. Add factories
@@ -31,6 +43,7 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
     /// for creating random entities.
     /// </summary>
     /// <param name="fixture">The fixture to use when creating random entities</param>
+    /// <exception cref="ArgumentNullException"><paramref name="fixture"/> is null.</exception>
     public AutoFixtureRandomEntityCreator(Fixture fixture) =>
         Fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
 
@@ -60,8 +73,19 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
 
 
 
-    internal class NoCircularReferencesCustomization : ICustomization
+    /// <summary>
+    /// An AutoFixture <see cref="ICustomization"/> that swaps the default
+    /// <see cref="ThrowingRecursionBehavior"/> for <see cref="OmitOnRecursionBehavior"/> so that
+    /// circular object graphs are truncated rather than throwing. Applying it more than once is a
+    /// no-op.
+    /// </summary>
+    public class NoCircularReferencesCustomization : ICustomization
     {
+        /// <summary>
+        /// Applies the recursion-omitting behavior to <paramref name="fixture"/>.
+        /// </summary>
+        /// <param name="fixture">The fixture to customize.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="fixture"/> is null.</exception>
         public void Customize(IFixture fixture)
         {
             ArgumentNullException.ThrowIfNull(fixture);
@@ -80,8 +104,18 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
 
 
 
-    internal class IgnoreVirtualMembersCustomization : ICustomization
+    /// <summary>
+    /// An AutoFixture <see cref="ICustomization"/> that registers <see cref="IgnoreVirtualMembers"/>
+    /// so that virtual (navigation) properties are left unset. Applying it more than once is a
+    /// no-op.
+    /// </summary>
+    public class IgnoreVirtualMembersCustomization : ICustomization
     {
+        /// <summary>
+        /// Registers the <see cref="IgnoreVirtualMembers"/> specimen builder on <paramref name="fixture"/>.
+        /// </summary>
+        /// <param name="fixture">The fixture to customize.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="fixture"/> is null.</exception>
         public void Customize(IFixture fixture)
         {
             ArgumentNullException.ThrowIfNull(fixture);
@@ -93,10 +127,22 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
         }
     }
 
-    
 
-    internal class IgnoreVirtualMembers : ISpecimenBuilder
+
+    /// <summary>
+    /// An AutoFixture <see cref="ISpecimenBuilder"/> that returns <c>null</c> for virtual
+    /// properties (so navigation members are not populated) and defers all other requests.
+    /// </summary>
+    public class IgnoreVirtualMembers : ISpecimenBuilder
     {
+        /// <summary>
+        /// Returns <c>null</c> when <paramref name="request"/> is a virtual property, otherwise a
+        /// <see cref="NoSpecimen"/> so other builders handle the request.
+        /// </summary>
+        /// <param name="request">The specimen request.</param>
+        /// <param name="context">The specimen context.</param>
+        /// <returns><c>null</c> for a virtual property; otherwise a <see cref="NoSpecimen"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="request"/> or <paramref name="context"/> is null.</exception>
         public object? Create(object request, ISpecimenContext context)
         {
             ArgumentNullException.ThrowIfNull(request);

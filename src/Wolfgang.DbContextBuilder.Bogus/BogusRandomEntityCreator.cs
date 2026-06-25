@@ -9,12 +9,13 @@ namespace Wolfgang.DbContextBuilderCore;
 /// and other reference-type properties unset (so seeding does not pull in object graphs).
 /// </summary>
 /// <remarks>
-/// Plug it in via the existing creator hook:
+/// Enable it with <c>UseBogus()</c> (or, equivalently,
+/// <c>UseCustomRandomEntityCreator(new BogusRandomEntityCreator())</c>):
 /// <example>
 /// <code>
 /// await using var context = await new DbContextBuilder&lt;ShopDbContext&gt;()
 ///     .UseInMemory()
-///     .UseCustomRandomEntityCreator(new BogusRandomEntityCreator())
+///     .UseBogus()
 ///     .SeedWithRandom&lt;Product&gt;(50)
 ///     .BuildAsync();
 /// </code>

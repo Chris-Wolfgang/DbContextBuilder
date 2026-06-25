@@ -35,7 +35,23 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
 
-    internal ICreateRandomEntities RandomEntityCreator { get; private set; } = new AutoFixtureRandomEntityCreator();
+    // No default provider: random-entity generation lives in add-on packages
+    // (Wolfgang.DbContextBuilder.AutoFixture / .Bogus). SeedWithRandom throws a clear
+    // exception until a provider is configured. See GetRandomEntityCreator.
+    internal ICreateRandomEntities? RandomEntityCreator { get; private set; }
+
+
+
+    // Resolves the configured random-entity provider or throws a clear, actionable error.
+    // Called by every SeedWithRandom overload before generating entities.
+    private ICreateRandomEntities GetRandomEntityCreator() =>
+        RandomEntityCreator ?? throw new InvalidOperationException
+        (
+            "SeedWithRandom requires a random-entity provider, but none is configured. " +
+            "Call UseAutoFixture() (add the Wolfgang.DbContextBuilder.AutoFixture package), " +
+            "UseBogus() (add the Wolfgang.DbContextBuilder.Bogus package), or " +
+            "UseCustomRandomEntityCreator(...) before SeedWithRandom."
+        );
 
 
 
@@ -285,7 +301,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
         }
 
-        var entities = RandomEntityCreator
+        var entities = GetRandomEntityCreator()
             .CreateRandomEntities<TEntity>(count);
 
         // Materialise once (the func overloads use a lazy Select) and record the entities
@@ -326,7 +342,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
         ArgumentNullException.ThrowIfNull(func);
 
-        var entities = RandomEntityCreator
+        var entities = GetRandomEntityCreator()
             .CreateRandomEntities<TEntity>(count)
             .Select(func);
 
@@ -368,7 +384,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
         ArgumentNullException.ThrowIfNull(func);
 
-        var entities = RandomEntityCreator
+        var entities = GetRandomEntityCreator()
             .CreateRandomEntities<TEntity>(count)
             .Select(func);
 
