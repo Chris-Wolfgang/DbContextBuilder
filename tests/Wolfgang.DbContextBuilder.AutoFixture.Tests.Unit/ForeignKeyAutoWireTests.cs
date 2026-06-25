@@ -17,7 +17,7 @@ public class ForeignKeyAutoWireTests
     [Fact]
     public async Task SeedWithRandom_wires_required_fk_to_seeded_principal_and_nulls_optional_fk()
     {
-        using var sut = new DbContextBuilder<FactoryContext>().UseSqlite();
+        using var sut = new DbContextBuilder<FactoryContext>().UseSqlite().UseAutoFixture();
 
         await using var context = await sut
             .SeedWithRandom<Manufacturer>(2)

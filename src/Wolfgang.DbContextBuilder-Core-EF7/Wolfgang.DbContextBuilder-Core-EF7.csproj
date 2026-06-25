@@ -33,10 +33,8 @@
 		<DefineConstants>$(DefineConstants);EF_CORE_7;EF_CORE_7_OR_GREATER</DefineConstants>
 	</PropertyGroup>
 	 <ItemGroup>
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\AutoFixtureRandomEntityCreator.cs" Link="AutoFixtureRandomEntityCreator.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextActivator.cs" Link="DbContextActivator.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilder.cs" Link="DbContextBuilder.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderAutoFixtureExtensions.cs" Link="DbContextBuilderAutoFixtureExtensions.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderSqliteExtensions.cs" Link="DbContextBuilderSqliteExtensions.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\Assembly.cs" Link="Assembly.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\ICreateDbContext.cs" Link="ICreateDbContext.cs" />
@@ -50,7 +48,6 @@
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\Assertions\DbSetAssertions.cs" Link="Assertions\DbSetAssertions.cs" />
 	 </ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="AutoFixture" Version="4.18.1" />
 	  <PackageReference Include="coverlet.collector" Version="10.0.1">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

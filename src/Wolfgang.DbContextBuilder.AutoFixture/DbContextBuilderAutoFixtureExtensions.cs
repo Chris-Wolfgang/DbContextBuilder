@@ -9,9 +9,13 @@ namespace Wolfgang.DbContextBuilderCore;
 public static class DbContextBuilderAutoFixtureExtensions
 {
     /// <summary>
-    /// Tell DbContextBuilder to use AutoFixture to create random entities.
+    /// Configures the builder to generate <c>SeedWithRandom</c> entities with AutoFixture.
+    /// Equivalent to <c>UseCustomRandomEntityCreator(new AutoFixtureRandomEntityCreator())</c>.
     /// </summary>
+    /// <param name="builder">The builder to configure.</param>
+    /// <typeparam name="T">The <see cref="DbContext"/> type being built.</typeparam>
     /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
     public static DbContextBuilder<T> UseAutoFixture<T>(this DbContextBuilder<T> builder) where T : DbContext
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -19,5 +23,4 @@ public static class DbContextBuilderAutoFixtureExtensions
 
         return builder;
     }
-
 }

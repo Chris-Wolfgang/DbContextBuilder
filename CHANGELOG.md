@@ -9,13 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- New **`Wolfgang.DbContextBuilder.AutoFixture`** package — the AutoFixture-backed
+  `ICreateRandomEntities` (now public `AutoFixtureRandomEntityCreator`) extracted from the EF
+  Core packages, plus a `UseBogus()`-style `UseAutoFixture()` extension. Multi-targets
+  net6.0–net10.0, each TFM referencing the matching `Wolfgang.DbContextBuilder-Core-EFx`, so the
+  right EF Core version is pulled in automatically. (#349)
 - New **`Wolfgang.DbContextBuilder.Bogus`** package — a Bogus-backed `ICreateRandomEntities`
   (`BogusRandomEntityCreator`) that auto-populates common scalar property types with
-  realistic-looking fake values. Plug in with
-  `builder.UseCustomRandomEntityCreator(new BogusRandomEntityCreator())`. (#118)
+  realistic-looking fake values. Enable it with `builder.UseBogus()` (or
+  `UseCustomRandomEntityCreator(new BogusRandomEntityCreator())`). Multi-targets net6.0–net10.0
+  like the AutoFixture provider. (#118, #349)
 
 - New **`Wolfgang.DbContextBuilder.Abstractions`** package containing `ICreateRandomEntities`,
-  so add-on packages (e.g. an upcoming Bogus random-data provider) can target the family
+  so add-on packages (the AutoFixture and Bogus random-data providers) can target the family
   without taking a dependency on a specific EF Core version.
 
 - New `ISeedProfile<T>` and `DbContextBuilder<T>.UseSeedProfile(ISeedProfile<T>)` —
@@ -45,9 +51,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   on those raw random FK values will see different values. Entities added with `SeedWith`
   (explicit) are never modified, so their FK values are preserved exactly. (#103)
 
+- **BREAKING — the EF Core packages no longer bundle AutoFixture.** `SeedWithRandom<T>()` no
+  longer falls back to a built-in AutoFixture provider; a random-entity provider must be
+  configured first with `UseAutoFixture()` (new `Wolfgang.DbContextBuilder.AutoFixture`
+  package), `UseBogus()` (`Wolfgang.DbContextBuilder.Bogus`), or
+  `UseCustomRandomEntityCreator(...)`. Calling `SeedWithRandom` with no provider configured now
+  throws `InvalidOperationException` with a message naming the provider packages. **Upgrading
+  from 0.7.x:** add the `Wolfgang.DbContextBuilder.AutoFixture` package and call
+  `.UseAutoFixture()` (or switch to `.UseBogus()`) on any builder that uses `SeedWithRandom`;
+  code that never calls `SeedWithRandom` is unaffected. The namespace is unchanged
+  (`Wolfgang.DbContextBuilderCore`), so only a new package reference is required. The classic
+  `Wolfgang.DbContextBuilder-EF6` (Entity Framework 6) package is **not** affected and keeps its
+  built-in AutoFixture provider. (#349)
+
 ### Fixed
 
 ### Removed
+
+- **BREAKING — `UseAutoFixture()` and `AutoFixtureRandomEntityCreator` moved out of the EF Core
+  packages** into the new `Wolfgang.DbContextBuilder.AutoFixture` package. The
+  `AutoFixtureRandomEntityCreator` type (and its customizations) are now public there. Code
+  calling `UseAutoFixture()` only needs to add the new package reference. (#349)
 
 ### Deprecated
 

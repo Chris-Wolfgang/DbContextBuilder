@@ -44,12 +44,30 @@ Two ways to seed:
 .SeedWith(new User { Id = 1, Name = "Alice" })
 .SeedWith(new[] { user1, user2, user3 })
 
-// Random data — for realistic row counts. Uses AutoFixture under the hood;
-// plug in a custom ICreateRandomEntities to control generation.
+// Random data — for realistic row counts. Pick a random-data provider first
+// (.UseAutoFixture() or .UseBogus()).
+.UseAutoFixture()
 .SeedWithRandom<Order>(count: 20)
 ```
 
 `SeedWith` and `SeedWithRandom` are chainable in any order. The builder accumulates all seeds and inserts them when `BuildAsync()` runs.
+
+### Choosing a random-data provider
+
+`SeedWithRandom<T>()` needs a random-entity provider. The EF Core packages don't bundle one, so
+install whichever you prefer and enable it on the builder:
+
+- **AutoFixture** — `dotnet add package Wolfgang.DbContextBuilder.AutoFixture`, then
+  `.UseAutoFixture()`.
+- **Bogus** (realistic-looking fake values) — `dotnet add package Wolfgang.DbContextBuilder.Bogus`,
+  then `.UseBogus()`.
+- A custom generator — implement `ICreateRandomEntities` and pass it to
+  `.UseCustomRandomEntityCreator(...)`.
+
+Pick the provider package whose `.NET` target matches your EF Core version (e.g. the `net8.0`
+build references the EF Core 8 package). Calling `SeedWithRandom` with no provider configured
+throws `InvalidOperationException`. The classic Entity Framework 6 package
+(`Wolfgang.DbContextBuilder-EF6`) keeps its built-in AutoFixture and needs no extra package.
 
 ### Random data and foreign keys
 
@@ -63,6 +81,7 @@ time:
   ```csharp
   await using var context = await new DbContextBuilder<ShopDbContext>()
       .UseSqlite()
+      .UseAutoFixture()              // pick a random-data provider (or .UseBogus())
       .SeedWithRandom<Customer>(5)   // seed the principals...
       .SeedWithRandom<Order>(20)     // ...and each Order's CustomerId is wired to one of them
       .BuildAsync();

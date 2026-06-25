@@ -6,6 +6,7 @@ using Wolfgang.DbContextBuilderCore;
 [assembly: TypeForwardedTo(typeof(ICreateRandomEntities))]
 
 [assembly: InternalsVisibleTo("Wolfgang.DbContextBuilder-Core.Tests.Unit")]
+[assembly: InternalsVisibleTo("Wolfgang.DbContextBuilder.AutoFixture.Tests.Unit")]
 [assembly: InternalsVisibleTo("Wolfgang.DbContextBuilder-Core.Tests.Unit-EF6")]
 [assembly: InternalsVisibleTo("Wolfgang.DbContextBuilder-Core.Tests.Unit-EF7")]
 [assembly: InternalsVisibleTo("Wolfgang.DbContextBuilder-Core.Tests.Unit-EF8")]
