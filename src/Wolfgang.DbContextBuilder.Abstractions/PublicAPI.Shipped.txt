@@ -1,1 +1,3 @@
 #nullable enable
+Wolfgang.DbContextBuilderCore.ICreateRandomEntities
+Wolfgang.DbContextBuilderCore.ICreateRandomEntities.CreateRandomEntities<TEntity>(int count) -> System.Collections.Generic.IEnumerable<TEntity>

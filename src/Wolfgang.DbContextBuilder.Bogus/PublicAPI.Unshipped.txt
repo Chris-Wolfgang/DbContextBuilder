@@ -1,6 +1,1 @@
 #nullable enable
-Wolfgang.DbContextBuilderCore.BogusRandomEntityCreator
-Wolfgang.DbContextBuilderCore.BogusRandomEntityCreator.BogusRandomEntityCreator() -> void
-Wolfgang.DbContextBuilderCore.BogusRandomEntityCreator.CreateRandomEntities<TEntity>(int count) -> System.Collections.Generic.IEnumerable<TEntity>
-Wolfgang.DbContextBuilderCore.DbContextBuilderBogusExtensions
-static Wolfgang.DbContextBuilderCore.DbContextBuilderBogusExtensions.UseBogus<T>(this Wolfgang.DbContextBuilderCore.DbContextBuilder<T> builder) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
