@@ -104,11 +104,57 @@ Assert.Equal(&quot;Alice&quot;, user.Name);
 .SeedWith(new User { Id = 1, Name = &quot;Alice&quot; })
 .SeedWith(new[] { user1, user2, user3 })
 
-// Random data — for realistic row counts. Uses AutoFixture under the hood;
-// plug in a custom ICreateRandomEntities to control generation.
+// Random data — for realistic row counts. Pick a random-data provider first
+// (.UseAutoFixture() or .UseBogus()).
+.UseAutoFixture()
 .SeedWithRandom&lt;Order&gt;(count: 20)
 </code></pre>
 <p><code>SeedWith</code> and <code>SeedWithRandom</code> are chainable in any order. The builder accumulates all seeds and inserts them when <code>BuildAsync()</code> runs.</p>
+<h3 id="choosing-a-random-data-provider">Choosing a random-data provider</h3>
+<p><code>SeedWithRandom&lt;T&gt;()</code> needs a random-entity provider. The EF Core packages don't bundle one, so
+install whichever you prefer and enable it on the builder:</p>
+<ul>
+<li><strong>AutoFixture</strong> — <code>dotnet add package Wolfgang.DbContextBuilder.AutoFixture</code>, then
+<code>.UseAutoFixture()</code>.</li>
+<li><strong>Bogus</strong> (realistic-looking fake values) — <code>dotnet add package Wolfgang.DbContextBuilder.Bogus</code>,
+then <code>.UseBogus()</code>.</li>
+<li>A custom generator — implement <code>ICreateRandomEntities</code> and pass it to
+<code>.UseCustomRandomEntityCreator(...)</code>.</li>
+</ul>
+<p>Pick the provider package whose <code>.NET</code> target matches your EF Core version (e.g. the <code>net8.0</code>
+build references the EF Core 8 package). Calling <code>SeedWithRandom</code> with no provider configured
+throws <code>InvalidOperationException</code>. The classic Entity Framework 6 package
+(<code>Wolfgang.DbContextBuilder-EF6</code>) keeps its built-in AutoFixture and needs no extra package.</p>
+<h3 id="random-data-and-foreign-keys">Random data and foreign keys</h3>
+<p><code>SeedWithRandom</code> fills scalar properties with random values, which means a raw foreign-key
+column points at nothing. To keep that from violating referential constraints (SQLite
+enforces them), the builder <strong>reconciles foreign keys on randomly-seeded entities</strong> at build
+time:</p>
+<ul>
+<li><p>a <strong>required</strong> FK is wired to a seeded principal of its type — so seed the principals too:</p>
+<pre><code class="lang-csharp">await using var context = await new DbContextBuilder&lt;ShopDbContext&gt;()
+    .UseSqlite()
+    .UseAutoFixture()              // pick a random-data provider (or .UseBogus())
+    .SeedWithRandom&lt;Customer&gt;(5)   // seed the principals...
+    .SeedWithRandom&lt;Order&gt;(20)     // ...and each Order's CustomerId is wired to one of them
+    .BuildAsync();
+</code></pre>
+</li>
+<li><p>an <strong>optional</strong> FK with no seeded principal is set to <code>null</code>;</p>
+</li>
+<li><p>a <strong>required</strong> FK with no seeded principal of its type is left as the random value (so it
+would still fail on a constraint-enforcing provider — the fix is to seed the principal).</p>
+</li>
+</ul>
+<p>Reconciliation only applies to foreign keys exposed as <strong>CLR properties</strong> on the entity. A
+<em>shadow</em> foreign key — one EF Core tracks without a corresponding property on your class — is
+left untouched, so if you rely on shadow FKs, give the entity an explicit FK property (or seed
+those rows with <code>SeedWith</code>) to keep constraint-enforcing providers happy.</p>
+<blockquote>
+<p><strong>This may be a little unexpected, even though it's correct:</strong> the foreign-key values on a
+randomly-seeded entity are <strong>not</strong> the raw random values the generator produced. Entities you
+add with <code>SeedWith</code> are never touched — their explicit FK values are preserved exactly.</p>
+</blockquote>
 <h2 id="5-customize-the-model-sqlite-for-sql-server-only">5. Customize the model (SQLite for SQL Server only)</h2>
 <p><code>SqliteModelCustomizer</code> exposes hooks to override the schema-renaming heuristic, the default-value SQL translation, the computed-column handling, and the many-to-many join-table renaming. See the <a href="../api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html">API reference</a> for the exact signatures.</p>
 <h2 id="where-to-go-next">Where to go next</h2>
@@ -125,7 +171,7 @@ Assert.Equal(&quot;Alice&quot;, user.Name);
               <div class="contribution">
                 <ul class="nav">
                   <li>
-                    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/v0.7.0/docfx_project/docs/getting-started.md/#L1" class="contribution-link">Edit this page</a>
+                    <a href="https://github.com/Chris-Wolfgang/DbContextBuilder/blob/v0.8.0/docfx_project/docs/getting-started.md/#L1" class="contribution-link">Edit this page</a>
                   </li>
                 </ul>
               </div>

@@ -1,90 +1,88 @@
 Summary
-  Generated on: 6/22/2026 - 7:58:24 PM
-  Coverage date: 6/22/2026 - 7:57:39 PM - 6/22/2026 - 7:58:20 PM
-  Parser: MultiReport (6x Cobertura)
-  Assemblies: 5
-  Classes: 60
-  Files: 12
-  Line coverage: 99%
-  Covered lines: 1595
-  Uncovered lines: 15
-  Coverable lines: 1610
-  Total lines: 1359
-  Branch coverage: 95.9% (595 of 620)
-  Covered branches: 595
-  Total branches: 620
-  Method coverage: 100% (320 of 320)
-  Full method coverage: 96.8% (310 of 320)
-  Covered methods: 320
-  Fully covered methods: 310
-  Total methods: 320
+  Generated on: 6/26/2026 - 9:32:57 PM
+  Coverage date: 6/26/2026 - 9:32:36 PM - 6/26/2026 - 9:32:54 PM
+  Parser: MultiReport (8x Cobertura)
+  Assemblies: 7
+  Classes: 54
+  Files: 14
+  Line coverage: 96.2%
+  Covered lines: 1765
+  Uncovered lines: 68
+  Coverable lines: 1833
+  Total lines: 1742
+  Branch coverage: 88.2% (759 of 860)
+  Covered branches: 759
+  Total branches: 860
+  Method coverage: 100% (330 of 330)
+  Full method coverage: 89.3% (295 of 330)
+  Covered methods: 330
+  Fully covered methods: 295
+  Total methods: 330
 
-Wolfgang.DbContextBuilder-Core-EF10                                          99%
+Wolfgang.DbContextBuilder-Core-EF10                                        98.8%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
   Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
-  Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator              100%
   Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        97.7%
-  Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions       100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                          98%
   Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
   Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
   Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%
   Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer         100%
   Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                       100%
 
-Wolfgang.DbContextBuilder-Core-EF6                                           99%
+Wolfgang.DbContextBuilder-Core-EF6                                         95.4%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
   Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
-  Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator              100%
   Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        97.7%
-  Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions       100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.2%
   Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
   Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
   Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%
   Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer         100%
-  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                       100%
+  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                      96.2%
 
-Wolfgang.DbContextBuilder-Core-EF7                                           99%
+Wolfgang.DbContextBuilder-Core-EF7                                         95.4%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
   Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
-  Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator              100%
   Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        97.7%
-  Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions       100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.2%
   Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
   Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
   Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%
   Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer         100%
-  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                       100%
+  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                      96.2%
 
-Wolfgang.DbContextBuilder-Core-EF8                                           99%
+Wolfgang.DbContextBuilder-Core-EF8                                         95.4%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
   Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
-  Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator              100%
   Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        97.7%
-  Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions       100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.2%
   Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
   Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
   Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%
   Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer         100%
-  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                       100%
+  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                      96.2%
 
-Wolfgang.DbContextBuilder-Core-EF9                                           99%
+Wolfgang.DbContextBuilder-Core-EF9                                         95.4%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
   Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
-  Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator              100%
   Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        97.7%
-  Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions       100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.2%
   Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
   Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
   Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%
   Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer         100%
-  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                       100%
+  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                      96.2%
+
+Wolfgang.DbContextBuilder.AutoFixture                                       100%
+  Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator              100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions       100%
+
+Wolfgang.DbContextBuilder.Bogus                                             100%
+  Wolfgang.DbContextBuilderCore.BogusRandomEntityCreator                    100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderBogusExtensions             100%

@@ -82,20 +82,6 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions",
-      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.yml\" sourcestartlinenumber=\"1\">Extension methods that wire AutoFixture-backed random entity creation\ninto <xref href=\"Wolfgang.DbContextBuilderCore.DbContextBuilder%601\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
       "source_relative_path": "api/Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions.yml",
       "output": {
         ".html": {
@@ -124,17 +110,17 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.ICreateRandomEntities.yml",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.ISeedProfile-1.yml",
       "output": {
         ".html": {
-          "relative_path": "api/Wolfgang.DbContextBuilderCore.ICreateRandomEntities.html"
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.ISeedProfile-1.html"
         }
       },
       "version": "",
       "Uid": null,
       "IsMRef": true,
-      "Title": "Wolfgang.DbContextBuilderCore.ICreateRandomEntities",
-      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.ICreateRandomEntities.yml\" sourcestartlinenumber=\"1\">Provides an API to create random entities for seeding databases.</p>\n"
+      "Title": "Wolfgang.DbContextBuilderCore.ISeedProfile<T>",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.ISeedProfile-1.yml\" sourcestartlinenumber=\"1\">A reusable, named bundle of seed data that can be applied to any\n<xref href=\"Wolfgang.DbContextBuilderCore.DbContextBuilder%601\" data-throw-if-not-resolved=\"false\"></xref> in a single call via\n<xref href=\"Wolfgang.DbContextBuilderCore.DbContextBuilder%601.UseSeedProfile(Wolfgang.DbContextBuilderCore.ISeedProfile%7b%600%7d)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",

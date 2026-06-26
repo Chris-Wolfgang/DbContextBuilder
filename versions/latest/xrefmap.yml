@@ -202,28 +202,6 @@ references:
   fullName.vb: Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions(Of TEntity).NotContain
   nameWithType: DbSetAssertions<TEntity>.NotContain
   nameWithType.vb: DbSetAssertions(Of TEntity).NotContain
-- uid: Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions
-  name: DbContextBuilderAutoFixtureExtensions
-  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.html
-  commentId: T:Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions
-  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions
-  nameWithType: DbContextBuilderAutoFixtureExtensions
-- uid: Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.UseAutoFixture*
-  name: UseAutoFixture
-  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.html#Wolfgang_DbContextBuilderCore_DbContextBuilderAutoFixtureExtensions_UseAutoFixture_
-  commentId: Overload:Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.UseAutoFixture
-  isSpec: "True"
-  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.UseAutoFixture
-  nameWithType: DbContextBuilderAutoFixtureExtensions.UseAutoFixture
-- uid: Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.UseAutoFixture``1(Wolfgang.DbContextBuilderCore.DbContextBuilder{``0})
-  name: UseAutoFixture<T>(DbContextBuilder<T>)
-  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.html#Wolfgang_DbContextBuilderCore_DbContextBuilderAutoFixtureExtensions_UseAutoFixture__1_Wolfgang_DbContextBuilderCore_DbContextBuilder___0__
-  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.UseAutoFixture``1(Wolfgang.DbContextBuilderCore.DbContextBuilder{``0})
-  name.vb: UseAutoFixture(Of T)(DbContextBuilder(Of T))
-  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.UseAutoFixture<T>(Wolfgang.DbContextBuilderCore.DbContextBuilder<T>)
-  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.UseAutoFixture(Of T)(Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T))
-  nameWithType: DbContextBuilderAutoFixtureExtensions.UseAutoFixture<T>(DbContextBuilder<T>)
-  nameWithType.vb: DbContextBuilderAutoFixtureExtensions.UseAutoFixture(Of T)(DbContextBuilder(Of T))
 - uid: Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions
   name: DbContextBuilderSqliteExtensions
   href: api/Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions.html
@@ -421,6 +399,24 @@ references:
   fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseDbContextOptionsBuilder
   nameWithType: DbContextBuilder<T>.UseDbContextOptionsBuilder
   nameWithType.vb: DbContextBuilder(Of T).UseDbContextOptionsBuilder
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseDiagnosticOutput(System.Action{System.String})
+  name: UseDiagnosticOutput(Action<string>)
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseDiagnosticOutput_System_Action_System_String__
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseDiagnosticOutput(System.Action{System.String})
+  name.vb: UseDiagnosticOutput(Action(Of String))
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseDiagnosticOutput(System.Action<string>)
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseDiagnosticOutput(System.Action(Of String))
+  nameWithType: DbContextBuilder<T>.UseDiagnosticOutput(Action<string>)
+  nameWithType.vb: DbContextBuilder(Of T).UseDiagnosticOutput(Action(Of String))
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseDiagnosticOutput*
+  name: UseDiagnosticOutput
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseDiagnosticOutput_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseDiagnosticOutput
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseDiagnosticOutput
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseDiagnosticOutput
+  nameWithType: DbContextBuilder<T>.UseDiagnosticOutput
+  nameWithType.vb: DbContextBuilder(Of T).UseDiagnosticOutput
 - uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseInMemory
   name: UseInMemory()
   href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseInMemory
@@ -438,6 +434,24 @@ references:
   fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseInMemory
   nameWithType: DbContextBuilder<T>.UseInMemory
   nameWithType.vb: DbContextBuilder(Of T).UseInMemory
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSeedProfile(Wolfgang.DbContextBuilderCore.ISeedProfile{`0})
+  name: UseSeedProfile(ISeedProfile<T>)
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseSeedProfile_Wolfgang_DbContextBuilderCore_ISeedProfile__0__
+  commentId: M:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSeedProfile(Wolfgang.DbContextBuilderCore.ISeedProfile{`0})
+  name.vb: UseSeedProfile(ISeedProfile(Of T))
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseSeedProfile(Wolfgang.DbContextBuilderCore.ISeedProfile<T>)
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseSeedProfile(Wolfgang.DbContextBuilderCore.ISeedProfile(Of T))
+  nameWithType: DbContextBuilder<T>.UseSeedProfile(ISeedProfile<T>)
+  nameWithType.vb: DbContextBuilder(Of T).UseSeedProfile(ISeedProfile(Of T))
+- uid: Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSeedProfile*
+  name: UseSeedProfile
+  href: api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseSeedProfile_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.DbContextBuilder`1.UseSeedProfile
+  isSpec: "True"
+  fullName: Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseSeedProfile
+  fullName.vb: Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T).UseSeedProfile
+  nameWithType: DbContextBuilder<T>.UseSeedProfile
+  nameWithType.vb: DbContextBuilder(Of T).UseSeedProfile
 - uid: Wolfgang.DbContextBuilderCore.ICreateDbContext
   name: ICreateDbContext
   href: api/Wolfgang.DbContextBuilderCore.ICreateDbContext.html
@@ -460,28 +474,33 @@ references:
   fullName.vb: Wolfgang.DbContextBuilderCore.ICreateDbContext.CreateDbContextAsync(Of TDbContext)(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder(Of TDbContext))
   nameWithType: ICreateDbContext.CreateDbContextAsync<TDbContext>(DbContextOptionsBuilder<TDbContext>)
   nameWithType.vb: ICreateDbContext.CreateDbContextAsync(Of TDbContext)(DbContextOptionsBuilder(Of TDbContext))
-- uid: Wolfgang.DbContextBuilderCore.ICreateRandomEntities
-  name: ICreateRandomEntities
-  href: api/Wolfgang.DbContextBuilderCore.ICreateRandomEntities.html
-  commentId: T:Wolfgang.DbContextBuilderCore.ICreateRandomEntities
-  fullName: Wolfgang.DbContextBuilderCore.ICreateRandomEntities
-  nameWithType: ICreateRandomEntities
-- uid: Wolfgang.DbContextBuilderCore.ICreateRandomEntities.CreateRandomEntities*
-  name: CreateRandomEntities
-  href: api/Wolfgang.DbContextBuilderCore.ICreateRandomEntities.html#Wolfgang_DbContextBuilderCore_ICreateRandomEntities_CreateRandomEntities_
-  commentId: Overload:Wolfgang.DbContextBuilderCore.ICreateRandomEntities.CreateRandomEntities
+- uid: Wolfgang.DbContextBuilderCore.ISeedProfile`1
+  name: ISeedProfile<T>
+  href: api/Wolfgang.DbContextBuilderCore.ISeedProfile-1.html
+  commentId: T:Wolfgang.DbContextBuilderCore.ISeedProfile`1
+  name.vb: ISeedProfile(Of T)
+  fullName: Wolfgang.DbContextBuilderCore.ISeedProfile<T>
+  fullName.vb: Wolfgang.DbContextBuilderCore.ISeedProfile(Of T)
+  nameWithType: ISeedProfile<T>
+  nameWithType.vb: ISeedProfile(Of T)
+- uid: Wolfgang.DbContextBuilderCore.ISeedProfile`1.Apply(Wolfgang.DbContextBuilderCore.DbContextBuilder{`0})
+  name: Apply(DbContextBuilder<T>)
+  href: api/Wolfgang.DbContextBuilderCore.ISeedProfile-1.html#Wolfgang_DbContextBuilderCore_ISeedProfile_1_Apply_Wolfgang_DbContextBuilderCore_DbContextBuilder__0__
+  commentId: M:Wolfgang.DbContextBuilderCore.ISeedProfile`1.Apply(Wolfgang.DbContextBuilderCore.DbContextBuilder{`0})
+  name.vb: Apply(DbContextBuilder(Of T))
+  fullName: Wolfgang.DbContextBuilderCore.ISeedProfile<T>.Apply(Wolfgang.DbContextBuilderCore.DbContextBuilder<T>)
+  fullName.vb: Wolfgang.DbContextBuilderCore.ISeedProfile(Of T).Apply(Wolfgang.DbContextBuilderCore.DbContextBuilder(Of T))
+  nameWithType: ISeedProfile<T>.Apply(DbContextBuilder<T>)
+  nameWithType.vb: ISeedProfile(Of T).Apply(DbContextBuilder(Of T))
+- uid: Wolfgang.DbContextBuilderCore.ISeedProfile`1.Apply*
+  name: Apply
+  href: api/Wolfgang.DbContextBuilderCore.ISeedProfile-1.html#Wolfgang_DbContextBuilderCore_ISeedProfile_1_Apply_
+  commentId: Overload:Wolfgang.DbContextBuilderCore.ISeedProfile`1.Apply
   isSpec: "True"
-  fullName: Wolfgang.DbContextBuilderCore.ICreateRandomEntities.CreateRandomEntities
-  nameWithType: ICreateRandomEntities.CreateRandomEntities
-- uid: Wolfgang.DbContextBuilderCore.ICreateRandomEntities.CreateRandomEntities``1(System.Int32)
-  name: CreateRandomEntities<TEntity>(int)
-  href: api/Wolfgang.DbContextBuilderCore.ICreateRandomEntities.html#Wolfgang_DbContextBuilderCore_ICreateRandomEntities_CreateRandomEntities__1_System_Int32_
-  commentId: M:Wolfgang.DbContextBuilderCore.ICreateRandomEntities.CreateRandomEntities``1(System.Int32)
-  name.vb: CreateRandomEntities(Of TEntity)(Integer)
-  fullName: Wolfgang.DbContextBuilderCore.ICreateRandomEntities.CreateRandomEntities<TEntity>(int)
-  fullName.vb: Wolfgang.DbContextBuilderCore.ICreateRandomEntities.CreateRandomEntities(Of TEntity)(Integer)
-  nameWithType: ICreateRandomEntities.CreateRandomEntities<TEntity>(int)
-  nameWithType.vb: ICreateRandomEntities.CreateRandomEntities(Of TEntity)(Integer)
+  fullName: Wolfgang.DbContextBuilderCore.ISeedProfile<T>.Apply
+  fullName.vb: Wolfgang.DbContextBuilderCore.ISeedProfile(Of T).Apply
+  nameWithType: ISeedProfile<T>.Apply
+  nameWithType.vb: ISeedProfile(Of T).Apply
 - uid: Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer
   name: SqliteForMsSqlServerModelCustomizer
   href: api/Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.html

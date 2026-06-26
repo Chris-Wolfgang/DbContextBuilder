@@ -78,10 +78,6 @@
     <h3 id="classes">
 Classes
 </h3>
-      <h4><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions.html">DbContextBuilderAutoFixtureExtensions</a></h4>
-      <section><p>Extension methods that wire AutoFixture-backed random entity creation
-into <a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder&lt;T&gt;</a>.</p>
-</section>
       <h4><a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions.html">DbContextBuilderSqliteExtensions</a></h4>
       <section><p>Extension methods that configure <a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder&lt;T&gt;</a> to
 use a SQLite in-memory database (plain SQLite, or SQLite with the
@@ -103,8 +99,10 @@ Interfaces
       <h4><a class="xref" href="Wolfgang.DbContextBuilderCore.ICreateDbContext.html">ICreateDbContext</a></h4>
       <section><p>Defines the contract for creating instances of <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.entityframeworkcore.dbcontext">DbContext</a>.</p>
 </section>
-      <h4><a class="xref" href="Wolfgang.DbContextBuilderCore.ICreateRandomEntities.html">ICreateRandomEntities</a></h4>
-      <section><p>Provides an API to create random entities for seeding databases.</p>
+      <h4><a class="xref" href="Wolfgang.DbContextBuilderCore.ISeedProfile-1.html">ISeedProfile&lt;T&gt;</a></h4>
+      <section><p>A reusable, named bundle of seed data that can be applied to any
+<a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html">DbContextBuilder&lt;T&gt;</a> in a single call via
+<a class="xref" href="Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html#Wolfgang_DbContextBuilderCore_DbContextBuilder_1_UseSeedProfile_Wolfgang_DbContextBuilderCore_ISeedProfile__0__">UseSeedProfile(ISeedProfile&lt;T&gt;)</a>.</p>
 </section>
 
 
