@@ -89,6 +89,7 @@ public class BuildAsyncBenchmarks
     public async Task InMemory_SeedWithRandom()
     {
         using var builder = new DbContextBuilder<BenchmarkContext>()
+            .UseAutoFixture()
             .SeedWithRandom<BenchmarkEntity>(SeedCount);
         await using var context = await builder.BuildAsync().ConfigureAwait(false);
     }

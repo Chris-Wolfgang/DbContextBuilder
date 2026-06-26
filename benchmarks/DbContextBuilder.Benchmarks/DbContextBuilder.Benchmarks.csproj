@@ -13,7 +13,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core\Wolfgang.DbContextBuilder-Core.csproj" />
+    <!-- The AutoFixture provider (net10.0 build) brings in Core-EF10 transitively, giving the
+         benchmark DbContextBuilder<T>, UseInMemory(), and UseAutoFixture() from a single matched
+         Core assembly. SeedWithRandom needs a configured provider since the EF Core packages no
+         longer bundle one. -->
+    <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder.AutoFixture\Wolfgang.DbContextBuilder.AutoFixture.csproj" />
   </ItemGroup>
 
   <ItemGroup>
