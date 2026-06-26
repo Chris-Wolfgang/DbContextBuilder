@@ -22,7 +22,7 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 
 		<SignAssembly>False</SignAssembly>
-		<PackageTags></PackageTags>
+		<PackageTags>dbcontext;entity-framework;ef6;testing;unit-testing;in-memory</PackageTags>
 		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
 	</PropertyGroup>

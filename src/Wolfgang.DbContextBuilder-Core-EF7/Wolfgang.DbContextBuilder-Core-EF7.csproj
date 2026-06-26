@@ -24,7 +24,7 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 
 		<SignAssembly>False</SignAssembly>
-		<PackageTags></PackageTags>
+		<PackageTags>dbcontext;efcore;entity-framework;testing;unit-testing;in-memory;sqlite</PackageTags>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
