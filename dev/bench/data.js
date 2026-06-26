@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782158037539,
+  "lastUpdate": 1782508651021,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -312,6 +312,84 @@ window.BENCHMARK_DATA = {
             "value": 1606794.1536458333,
             "unit": "ns",
             "range": "± 35960.302559366115"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3a946b2add2314dc9343833d451276d6c00f018b",
+          "message": "release: 0.8.0 — faker-agnostic Core + AutoFixture/Bogus provider packages (#360)\n\n# Release 0.8.0\n\nPromotes the accumulated `vNext` work to `main` for the **0.8.0**\nrelease. Full details in [CHANGELOG.md](CHANGELOG.md).\n\n## Highlights\n- **BREAKING (acceptable in 0.x): the EF Core packages are now\nfaker-agnostic.** `SeedWithRandom<T>()` no longer bundles AutoFixture —\nconfigure a provider first via `.UseAutoFixture()`, `.UseBogus()`, or\n`.UseCustomRandomEntityCreator(...)`; calling it with no provider throws\n`InvalidOperationException`. (#349)\n- **New packages:** `Wolfgang.DbContextBuilder.AutoFixture`\n(`.UseAutoFixture()`), `Wolfgang.DbContextBuilder.Bogus`\n(`.UseBogus()`), and `Wolfgang.DbContextBuilder.Abstractions` (shared\n`ICreateRandomEntities`). Both providers multi-target net6.0–net10.0.\n(#118, #349)\n- **`SeedWithRandom` reconciles foreign keys** on randomly-seeded\nentities against the model so random FKs don't violate referential\nconstraints. (#103)\n- **New builder APIs:** `UseSeedProfile(ISeedProfile<T>)` (#104) and\n`UseDiagnosticOutput(Action<string>)` (#117).\n- **Fixes:** SQLite creator leak on provider re-selection +\n`OverrideManyToManyTableHandling` init race (#353); a broken benchmark;\ndocs/metadata refresh.\n- The classic `Wolfgang.DbContextBuilder-EF6` (net462–481) package is\nunchanged and keeps its built-in AutoFixture.\n\n## Release mechanics\n- This is the release PR. Its gated CI runs the full **per-module\ncoverage gate across all TFMs** — the definitive check for\n`Core-EF6`/`Core-EF7`, which can't be measured on the dev machine (local\ncoverlet doesn't collect net6/net7).\n- After merge: tag + `gh release create v0.8.0 --target main` triggers\n`release.yaml` to pack/smoke-test/publish the 10 packages to NuGet.\n- `AssemblyVersion` stays pinned at `1.0.0.0` (net462 binding\nstability).\n\n## Post-publish follow-ups (separate PRs)\n- Bump `examples/` to 0.8.0 + a provider package (can't reference\npackages not yet on NuGet).\n- Clean up the EFx wrapper `PublicAPI.Shipped.txt` drift (pre-existing;\nRS0016 not enforced).\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+          "timestamp": "2026-06-26T17:15:42-04:00",
+          "tree_id": "ce1b83f6a34c78c72053b4008c69423305f3aa26",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/3a946b2add2314dc9343833d451276d6c00f018b"
+        },
+        "date": 1782508650319,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 39572.50477091471,
+            "unit": "ns",
+            "range": "± 1508.3301235883343"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 60004.768880208336,
+            "unit": "ns",
+            "range": "± 1514.2859651583003"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 255247.083984375,
+            "unit": "ns",
+            "range": "± 16223.843409977882"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 38347.824198404945,
+            "unit": "ns",
+            "range": "± 1779.2781722109019"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 130106.29134114583,
+            "unit": "ns",
+            "range": "± 4119.4557720047505"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 448750.087890625,
+            "unit": "ns",
+            "range": "± 46022.83175443801"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 37470.16621907552,
+            "unit": "ns",
+            "range": "± 1499.1709191553618"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 446238.6783854167,
+            "unit": "ns",
+            "range": "± 10666.990868126759"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 3311628.6875,
+            "unit": "ns",
+            "range": "± 1340757.93781916"
           }
         ]
       }
