@@ -101,4 +101,7 @@
 
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
 
+	<ItemGroup>
+	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/SeedWithRandomCoverageTests.cs" Link="SeedWithRandomCoverageTests.cs" />
+	</ItemGroup>
 </Project>
