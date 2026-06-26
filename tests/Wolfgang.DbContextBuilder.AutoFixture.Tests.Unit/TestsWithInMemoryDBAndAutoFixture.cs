@@ -56,7 +56,7 @@ public class TestsWithInMemoryDbAndAutoFixture : DbContextBuilderTestsBase
     public void RandomEntityCreator_is_AutoFixture()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = new DbContextBuilder<AdventureWorksDbContext>().UseAutoFixture();
 
         // Act & Assert
         Assert.IsType<AutoFixtureRandomEntityCreator>(sut.RandomEntityCreator);

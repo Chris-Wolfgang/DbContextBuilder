@@ -1,5 +1,3 @@
-using AdventureWorks.Models;
-
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit
 {
     /// <summary>
@@ -45,7 +43,7 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit
             var sut = CreateRandomEntityCreator();
 
             // Act
-            var entities = sut.CreateRandomEntities<Person>(count).ToList();
+            var entities = sut.CreateRandomEntities<SampleEntity>(count).ToList();
 
             // Assert
             Assert.Equal(count, entities.Count);
@@ -66,7 +64,7 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit
             const int count = 0;
 
             // Act
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => sut.CreateRandomEntities<Address>(count));
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => sut.CreateRandomEntities<SampleEntity>(count));
 
             // Assert
             Assert.NotNull(exception);

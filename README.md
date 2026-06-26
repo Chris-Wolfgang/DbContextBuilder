@@ -26,9 +26,18 @@ DbContextBuilder ships as a family of packages — install the one that matches 
 | [`Wolfgang.DbContextBuilder-Core-EF10`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF10) | EF Core 10 | Pins EF Core 10. |
 | [`Wolfgang.DbContextBuilder-EF6`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-EF6) | Classic EF 6 (non-Core) | For applications still on `System.Data.Entity` / EF 6.x. |
 
+Random-data and shared add-on packages (install alongside your EF Core package):
+
+| Package | Role |
+|---|---|
+| [`Wolfgang.DbContextBuilder.AutoFixture`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder.AutoFixture) | AutoFixture-backed random data. Adds `.UseAutoFixture()` for `SeedWithRandom`. |
+| [`Wolfgang.DbContextBuilder.Bogus`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder.Bogus) | Bogus-backed random data (realistic fake values). Adds `.UseBogus()`. |
+| [`Wolfgang.DbContextBuilder.Abstractions`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder.Abstractions) | Shared `ICreateRandomEntities` abstraction, EF-Core-version-independent. Referenced transitively by the provider packages. |
+
 ```bash
-# Pick whichever matches your project's EF version
+# Pick whichever matches your project's EF version, plus a random-data provider
 dotnet add package Wolfgang.DbContextBuilder-Core-EF8
+dotnet add package Wolfgang.DbContextBuilder.AutoFixture   # or .Bogus
 ```
 
 ### Target frameworks
@@ -44,6 +53,9 @@ Each package targets the .NET runtimes its EF version requires:
 | `Wolfgang.DbContextBuilder-Core-EF9` | `net9.0` |
 | `Wolfgang.DbContextBuilder-Core-EF10` | `net10.0` |
 | `Wolfgang.DbContextBuilder-EF6` (classic) | `net462; net47; net471; net472; net48; net481` |
+| `Wolfgang.DbContextBuilder.Abstractions` | `netstandard2.0; net10.0` |
+| `Wolfgang.DbContextBuilder.AutoFixture` | `net6.0; net7.0; net8.0; net9.0; net10.0` |
+| `Wolfgang.DbContextBuilder.Bogus` | `net6.0; net7.0; net8.0; net9.0; net10.0` |
 
 ---
 
@@ -69,7 +81,7 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 - **Seed with your own data** using `.SeedWith<T>(...)` — accepts an `IEnumerable<T>` or a `params T[]`.
 
-- **Seed with random data** using `.SeedWithRandom<T>(count)` to simulate real-world databases where additional rows beyond your test fixtures exist. Plug in a custom `ICreateRandomEntities` to control how the random rows are generated.
+- **Seed with random data** using `.SeedWithRandom<T>(count)` to simulate real-world databases where additional rows beyond your test fixtures exist. Choose a random-data provider — `.UseAutoFixture()` (the `Wolfgang.DbContextBuilder.AutoFixture` package) or `.UseBogus()` (`Wolfgang.DbContextBuilder.Bogus`) — or plug in your own `ICreateRandomEntities` via `.UseCustomRandomEntityCreator(...)`.
 
 - **Composable.** Chain `SeedWith`, `SeedWithRandom`, and provider options in any order, then call `.BuildAsync()` to materialize the `DbContext`.
 
@@ -80,6 +92,9 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 ```csharp
 // Create a DbContext with seeded random data and your test data
 var context = await new DbContextBuilder<YourDbContext>()
+    // Pick a random-data provider (or .UseBogus()) so SeedWithRandom has a generator
+    .UseAutoFixture()
+
     // Seed with 10 random entities
     .SeedWithRandom<YourEntity>(10)
 
@@ -115,11 +130,14 @@ The Core package exposes a small, focused surface. The full reference is on the 
 | `.UseInMemory()` | EF Core InMemory provider. Fastest, ignores relational constraints. |
 | `.UseSqlite()` | SQLite in-memory provider. Enforces relational constraints. |
 | `.UseSqliteForMsSqlServer()` | SQLite in-memory with a SQL-Server compatibility layer that flattens schema-qualified table names and rewrites SQL-Server-specific default-value SQL. |
-| `.UseAutoFixture()` | Plug AutoFixture in as the random-entity generator (used by `SeedWithRandom`). |
-| `.UseDbContextOptionsBuilder(opts)` | Bring your own `DbContextOptionsBuilder<T>` to override the provider entirely. |
+| `.UseAutoFixture()` | Plug AutoFixture in as the random-entity generator (used by `SeedWithRandom`). Requires the `Wolfgang.DbContextBuilder.AutoFixture` package. |
+| `.UseBogus()` | Plug Bogus in as the random-entity generator (realistic fake values). Requires the `Wolfgang.DbContextBuilder.Bogus` package. |
 | `.UseCustomRandomEntityCreator(creator)` | Plug in any `ICreateRandomEntities` implementation. |
+| `.UseDbContextOptionsBuilder(opts)` | Bring your own `DbContextOptionsBuilder<T>` to override the provider entirely. |
+| `.UseSeedProfile(profile)` | Apply a reusable `ISeedProfile<T>` — a named bundle of seed data shareable across tests. Multiple profiles accumulate. |
+| `.UseDiagnosticOutput(writeLine)` | Route EF Core logs (and a one-line seed summary) to a sink such as `testOutputHelper.WriteLine`. |
 | `.SeedWith<TEntity>(...)` | Seed specific rows. Accepts `IEnumerable<T>` or `params T[]`. |
-| `.SeedWithRandom<TEntity>(count, [func])` | Seed N random rows. Optional `func` mutates each generated entity. |
+| `.SeedWithRandom<TEntity>(count, [func])` | Seed N random rows (requires a random-data provider). Optional `func` mutates each generated entity. |
 | `.BuildAsync()` | Materialize the `DbContext`. The builder owns the underlying connection; dispose the context with `await using`. |
 | `SqliteModelCustomizer` | Customization hooks for the SQLite-for-SQL-Server mode: `OverrideTableRenaming`, `OverrideDefaultValueHandling`, `OverrideComputedValueHandling`, `OverrideManyToManyTableHandling`, `DefaultValueMap`. |
 | `ICreateDbContext` / `ICreateRandomEntities` | Extension points for plugging in your own provider or random-entity generator. |

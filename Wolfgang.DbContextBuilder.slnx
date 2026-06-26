@@ -16,12 +16,15 @@
     <Project Path="extra-projects/AdventureWorks-EF10/AdventureWorks-EF10.csproj" />
   </Folder>
   <Folder Name="/Source/">
+    <Project Path="src/Wolfgang.DbContextBuilder.Abstractions/Wolfgang.DbContextBuilder.Abstractions.csproj" />
+    <Project Path="src/Wolfgang.DbContextBuilder.AutoFixture/Wolfgang.DbContextBuilder.AutoFixture.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder-Core-EF10/Wolfgang.DbContextBuilder-Core-EF10.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder-Core-EF6/Wolfgang.DbContextBuilder-Core-EF6.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder-Core-EF7/Wolfgang.DbContextBuilder-Core-EF7.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder-Core-EF8/Wolfgang.DbContextBuilder-Core-EF8.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder-Core-EF9/Wolfgang.DbContextBuilder-Core-EF9.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder-Core/Wolfgang.DbContextBuilder-Core.csproj" />
+    <Project Path="src/Wolfgang.DbContextBuilder.Bogus/Wolfgang.DbContextBuilder.Bogus.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder-EF6/Wolfgang.DbContextBuilder-EF6.csproj" />
   </Folder>
   <Folder Name="/Tests/">
@@ -31,6 +34,8 @@
     <Project Path="tests/Wolfgang.DbContextBuilder-Core-EF8.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF8.csproj" />
     <Project Path="tests/Wolfgang.DbContextBuilder-Core-EF9.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF9.csproj" />
     <Project Path="tests/Wolfgang.DbContextBuilder-Core.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit.csproj" />
+    <Project Path="tests/Wolfgang.DbContextBuilder.AutoFixture.Tests.Unit/Wolfgang.DbContextBuilder.AutoFixture.Tests.Unit.csproj" />
+    <Project Path="tests/Wolfgang.DbContextBuilder.Bogus.Tests.Unit/Wolfgang.DbContextBuilder.Bogus.Tests.Unit.csproj" />
     <Project Path="tests/Wolfgang.DbContextBuilder-EF6.Tests.Unit/Wolfgang.DbContextBuilder-EF6.Tests.Unit.csproj" />
   </Folder>
 </Solution>

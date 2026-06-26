@@ -44,12 +44,61 @@ Two ways to seed:
 .SeedWith(new User { Id = 1, Name = "Alice" })
 .SeedWith(new[] { user1, user2, user3 })
 
-// Random data — for realistic row counts. Uses AutoFixture under the hood;
-// plug in a custom ICreateRandomEntities to control generation.
+// Random data — for realistic row counts. Pick a random-data provider first
+// (.UseAutoFixture() or .UseBogus()).
+.UseAutoFixture()
 .SeedWithRandom<Order>(count: 20)
 ```
 
 `SeedWith` and `SeedWithRandom` are chainable in any order. The builder accumulates all seeds and inserts them when `BuildAsync()` runs.
+
+### Choosing a random-data provider
+
+`SeedWithRandom<T>()` needs a random-entity provider. The EF Core packages don't bundle one, so
+install whichever you prefer and enable it on the builder:
+
+- **AutoFixture** — `dotnet add package Wolfgang.DbContextBuilder.AutoFixture`, then
+  `.UseAutoFixture()`.
+- **Bogus** (realistic-looking fake values) — `dotnet add package Wolfgang.DbContextBuilder.Bogus`,
+  then `.UseBogus()`.
+- A custom generator — implement `ICreateRandomEntities` and pass it to
+  `.UseCustomRandomEntityCreator(...)`.
+
+Pick the provider package whose `.NET` target matches your EF Core version (e.g. the `net8.0`
+build references the EF Core 8 package). Calling `SeedWithRandom` with no provider configured
+throws `InvalidOperationException`. The classic Entity Framework 6 package
+(`Wolfgang.DbContextBuilder-EF6`) keeps its built-in AutoFixture and needs no extra package.
+
+### Random data and foreign keys
+
+`SeedWithRandom` fills scalar properties with random values, which means a raw foreign-key
+column points at nothing. To keep that from violating referential constraints (SQLite
+enforces them), the builder **reconciles foreign keys on randomly-seeded entities** at build
+time:
+
+- a **required** FK is wired to a seeded principal of its type — so seed the principals too:
+
+  ```csharp
+  await using var context = await new DbContextBuilder<ShopDbContext>()
+      .UseSqlite()
+      .UseAutoFixture()              // pick a random-data provider (or .UseBogus())
+      .SeedWithRandom<Customer>(5)   // seed the principals...
+      .SeedWithRandom<Order>(20)     // ...and each Order's CustomerId is wired to one of them
+      .BuildAsync();
+  ```
+
+- an **optional** FK with no seeded principal is set to `null`;
+- a **required** FK with no seeded principal of its type is left as the random value (so it
+  would still fail on a constraint-enforcing provider — the fix is to seed the principal).
+
+Reconciliation only applies to foreign keys exposed as **CLR properties** on the entity. A
+*shadow* foreign key — one EF Core tracks without a corresponding property on your class — is
+left untouched, so if you rely on shadow FKs, give the entity an explicit FK property (or seed
+those rows with `SeedWith`) to keep constraint-enforcing providers happy.
+
+> **This may be a little unexpected, even though it's correct:** the foreign-key values on a
+> randomly-seeded entity are **not** the raw random values the generator produced. Entities you
+> add with `SeedWith` are never touched — their explicit FK values are preserved exactly.
 
 ## 5. Customize the model (SQLite for SQL Server only)
 

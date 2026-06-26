@@ -19,6 +19,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.8.0] - 2026-06-25
+
+### Added
+
+- New **`Wolfgang.DbContextBuilder.AutoFixture`** package — the AutoFixture-backed
+  `ICreateRandomEntities` (now public `AutoFixtureRandomEntityCreator`) extracted from the EF
+  Core packages, plus a `UseBogus()`-style `UseAutoFixture()` extension. Multi-targets
+  net6.0–net10.0, each TFM referencing the matching `Wolfgang.DbContextBuilder-Core-EFx`, so the
+  right EF Core version is pulled in automatically. (#349)
+- New **`Wolfgang.DbContextBuilder.Bogus`** package — a Bogus-backed `ICreateRandomEntities`
+  (`BogusRandomEntityCreator`) that auto-populates common scalar property types with
+  realistic-looking fake values. Enable it with `builder.UseBogus()` (or
+  `UseCustomRandomEntityCreator(new BogusRandomEntityCreator())`). Multi-targets net6.0–net10.0
+  like the AutoFixture provider. (#118, #349)
+
+- New **`Wolfgang.DbContextBuilder.Abstractions`** package containing `ICreateRandomEntities`,
+  so add-on packages (the AutoFixture and Bogus random-data providers) can target the family
+  without taking a dependency on a specific EF Core version.
+
+- New `ISeedProfile<T>` and `DbContextBuilder<T>.UseSeedProfile(ISeedProfile<T>)` —
+  reusable, named bundles of seed data that can be applied to any builder in one call.
+  Multiple profiles accumulate, so common setups can be shared across many test classes
+  instead of being re-built in each. (#104)
+- New `DbContextBuilder<T>.UseDiagnosticOutput(Action<string>)` — routes EF Core logs
+  (including generated SQL) produced while building/seeding, plus a one-line seed summary,
+  to a caller-supplied sink. Framework-agnostic: pass `testOutputHelper.WriteLine` in xUnit
+  so the seeded context is visible in the log when a test fails. (#117)
+
+### Changed
+
+- **`SeedWithRandom` now reconciles foreign keys on the random entities** against the EF
+  model at build time, so the random FK values no longer violate referential constraints
+  (which matters for SQLite, which enforces them). For each foreign key on a randomly-seeded
+  entity:
+  - a **required** FK is wired to a seeded principal of its type when one is present (so seed
+    the principals too, e.g. `.SeedWithRandom<Customer>(5).SeedWithRandom<Order>(20)`);
+  - an **optional** FK with no seeded principal is set to `null`;
+  - a **required** FK with no seeded principal is left as the random value (still fails on a
+    constraint-enforcing provider — seed the principal).
+
+  Reconciliation applies only to foreign keys exposed as CLR properties; shadow foreign keys
+  (tracked by EF without a CLR property) are left untouched.
+
+  **Behavior change to be aware of:** the foreign-key values on a randomly-seeded entity are
+  no longer the raw random values the generator produced — a previously-random `SupplierId`
+  may now be `null`, and a `CustomerId` may now match a seeded customer. Tests that asserted
+  on those raw random FK values will see different values. Entities added with `SeedWith`
+  (explicit) are never modified, so their FK values are preserved exactly. (#103)
+
+- **BREAKING — the EF Core packages no longer bundle AutoFixture.** `SeedWithRandom<T>()` no
+  longer falls back to a built-in AutoFixture provider; a random-entity provider must be
+  configured first with `UseAutoFixture()` (new `Wolfgang.DbContextBuilder.AutoFixture`
+  package), `UseBogus()` (`Wolfgang.DbContextBuilder.Bogus`), or
+  `UseCustomRandomEntityCreator(...)`. Calling `SeedWithRandom` with no provider configured now
+  throws `InvalidOperationException` with a message naming the provider packages. **Upgrading
+  from 0.7.x:** add the `Wolfgang.DbContextBuilder.AutoFixture` package and call
+  `.UseAutoFixture()` (or switch to `.UseBogus()`) on any builder that uses `SeedWithRandom`;
+  code that never calls `SeedWithRandom` is unaffected. The namespace is unchanged
+  (`Wolfgang.DbContextBuilderCore`), so only a new package reference is required. The classic
+  `Wolfgang.DbContextBuilder-EF6` (Entity Framework 6) package is **not** affected and keeps its
+  built-in AutoFixture provider. (#349)
+
+### Fixed
+
+- Re-selecting a database provider on a builder (e.g. `UseSqlite()` then `UseInMemory()`, or
+  calling a SQLite extension twice) now disposes the previously-configured creator instead of
+  abandoning it — the prior `SqliteDbContextCreator`'s open in-memory connection is no longer
+  leaked.
+- `SqliteModelCustomizer.OverrideManyToManyTableHandling` is now initialized in the constructor
+  rather than lazily in the getter, removing a `??=` race that could allocate duplicate default
+  delegates during concurrent model customization (matching the other override delegates fixed
+  in 0.7.0).
+
+### Removed
+
+- **BREAKING — `UseAutoFixture()` and `AutoFixtureRandomEntityCreator` moved out of the EF Core
+  packages** into the new `Wolfgang.DbContextBuilder.AutoFixture` package. The
+  `AutoFixtureRandomEntityCreator` type (and its customizations) are now public there. Code
+  calling `UseAutoFixture()` only needs to add the new package reference. (#349)
+
+### Deprecated
+
+### Security
+
 ## [0.7.0] - 2026-06-20
 
 ### Added
@@ -204,7 +288,8 @@ No public API change vs `0.3.3`.
 - Support for Entity Framework 6 (classic) on .NET Framework 4.6.2--4.8.1
 - `Wolfgang.DbContextBuilder-EF6` package for Entity Framework 6
 
-[Unreleased]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.0...v0.6.1

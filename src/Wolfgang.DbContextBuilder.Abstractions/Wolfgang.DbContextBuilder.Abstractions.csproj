@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
+		<TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<Version>0.8.0</Version>
+		<!-- Pin AssemblyVersion to a fixed binding-stability baseline (see the Core csproj). -->
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<FileVersion>$([System.Text.RegularExpressions.Regex]::Replace("$(Version)", "[-+].*$", "")).0</FileVersion>
+		<Title>Wolfgang.DbContextBuilder Abstractions</Title>
+		<Description>Shared abstractions for the Wolfgang.DbContextBuilder family (e.g. ICreateRandomEntities), so add-on packages can target the family without depending on a specific EF Core version.</Description>
+		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageIcon>dbcontext-builder.png</PackageIcon>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<SignAssembly>False</SignAssembly>
+		<PackageTags>dbcontext;efcore;entity-framework;testing;abstractions</PackageTags>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<IsPackable>true</IsPackable>
+		<IsTestProject>false</IsTestProject>
+	</PropertyGroup>
+	<ItemGroup>
+		<!-- Include the icon and README in the package root (same assets as the Core package). -->
+		<None Include="..\..\README.md" Pack="True" PackagePath="/" />
+		<None Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder.png" Pack="true" PackagePath="/" />
+	</ItemGroup>
+</Project>

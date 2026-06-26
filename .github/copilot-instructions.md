@@ -4,18 +4,18 @@ Always reference these instructions first and only fallback to search or additio
 
 ## Repository Summary
 
-**DbContextBuilder** is a .NET 8.0 library that uses the Builder pattern to create Entity Framework Core DbContext instances with an in-memory database for testing purposes. The library allows developers to easily set up DbContext instances with predefined and random data, making it ideal for unit tests and integration tests without relying on actual databases.
+**DbContextBuilder** is a .NET library family that uses the Builder pattern to create Entity Framework Core (and classic EF 6) DbContext instances with an in-memory database for testing purposes. The library allows developers to easily set up DbContext instances with predefined and random data, making it ideal for unit tests and integration tests without relying on actual databases.
 
-**Repository Type**: .NET Library  
-**Target Platform**: .NET 8.0  
+**Repository Type**: .NET Library (multi-package family)  
+**Target Platform**: net10.0 for the canonical Core package; per-EF-version wrappers target net6.0–net10.0; classic EF 6 targets net462–net481  
 **Primary Language**: C#  
-**NuGet Package**: Wolfgang.DbContextBuilder  
-**Main Features**: Builder pattern, in-memory database seeding, random data generation
+**NuGet Packages**: a family of 10 — `Wolfgang.DbContextBuilder-Core`, the per-EF-version wrappers `-Core-EF6/7/8/9/10`, classic `-EF6`, the shared `.Abstractions`, and the random-data providers `.AutoFixture` and `.Bogus` (each adds a `UseAutoFixture()`/`UseBogus()` extension; the EF Core packages no longer bundle a random-data provider).  
+**Main Features**: Builder pattern, in-memory/SQLite database seeding, pluggable random data generation, seed profiles, diagnostic output
 
 ## Build and Validation Instructions
 
 ### Prerequisites
-- .NET 8.0.x SDK (always verify: `dotnet --version`)
+- .NET 10.0.x SDK (required for the net10.0 targets; always verify: `dotnet --version`)
 - ReportGenerator tool: `dotnet tool install -g dotnet-reportgenerator-globaltool`
 - DevSkim CLI: `dotnet tool install --global Microsoft.CST.DevSkim.CLI`
 
@@ -49,8 +49,8 @@ Run these commands in the repository root in this exact order:
    ```bash
    cat CoverageReport/Summary.txt
    ```
-   - **REQUIREMENT**: Line coverage must be ≥ 80% for CI to pass
-   - Current baseline: ~76% (needs improvement for CI)
+   - **REQUIREMENT**: the coverage gate is **per-module (assembly), ≥ 90%** — every shippable
+     package's coverage is checked individually, aggregated across all test projects
 
 6. **Security Scanning** (< 1 second):
    ```bash

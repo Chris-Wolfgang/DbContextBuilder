@@ -16,6 +16,13 @@ internal sealed class SqliteDbContextCreator : ICreateDbContext, IDisposable
 
 
     /// <summary>
+    /// Whether <see cref="Dispose"/> has been called (and the underlying connection closed).
+    /// </summary>
+    internal bool IsDisposed { get; private set; }
+
+
+
+    /// <summary>
     /// Initializes a new instance and opens an in-memory SQLite connection.
     /// </summary>
     public SqliteDbContextCreator()
@@ -40,6 +47,12 @@ internal sealed class SqliteDbContextCreator : ICreateDbContext, IDisposable
     /// </summary>
     public void Dispose()
     {
+        if (IsDisposed)
+        {
+            return;
+        }
+
         _connection.Dispose();
+        IsDisposed = true;
     }
 }

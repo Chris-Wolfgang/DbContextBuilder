@@ -3,7 +3,7 @@
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
 		<TargetFramework>net10.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Version>0.7.0</Version>
+		<Version>0.8.0</Version>
 		<!-- Pin AssemblyVersion to a fixed binding-stability baseline so consumers
 		     do not need to recompile / add binding redirects on every minor/patch
 		     bump. Bump only on a deliberate breaking API change. FileVersion +
@@ -23,14 +23,13 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 
 		<SignAssembly>False</SignAssembly>
-		<PackageTags></PackageTags>
+		<PackageTags>dbcontext;efcore;entity-framework;testing;unit-testing;in-memory;sqlite</PackageTags>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
 		<DefineConstants>$(DefineConstants);EF_CORE_6;EF_CORE_6_OR_GREATER</DefineConstants>
 	</PropertyGroup>
 	<ItemGroup>
-	  <PackageReference Include="AutoFixture" Version="4.18.1" />
 	  <PackageReference Include="coverlet.collector" Version="10.0.1">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -49,4 +48,7 @@
 		<None Include="Content\dbcontext-builder.ico" Pack="true" PackagePath="/" />
 	</ItemGroup>
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
+	<ItemGroup>
+		<ProjectReference Include="../Wolfgang.DbContextBuilder.Abstractions/Wolfgang.DbContextBuilder.Abstractions.csproj" />
+	</ItemGroup>
 </Project>

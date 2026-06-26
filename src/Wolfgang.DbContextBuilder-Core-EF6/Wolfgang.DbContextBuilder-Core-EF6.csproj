@@ -3,7 +3,7 @@
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
 		<TargetFramework>net6.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Version>0.7.0</Version>
+		<Version>0.8.0</Version>
 		<!-- Pin AssemblyVersion to a fixed binding-stability baseline so consumers
 		     do not need to recompile / add binding redirects on every minor/patch
 		     bump. Bump only on a deliberate breaking API change. FileVersion +
@@ -23,7 +23,7 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 
 		<SignAssembly>False</SignAssembly>
-		<PackageTags></PackageTags>
+		<PackageTags>dbcontext;efcore;entity-framework;testing;unit-testing;in-memory;sqlite</PackageTags>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
@@ -32,14 +32,12 @@
 		<DefineConstants>$(DefineConstants);EF_CORE_6;EF_CORE_6_OR_GREATER</DefineConstants>
 	</PropertyGroup>
 	 <ItemGroup>
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\AutoFixtureRandomEntityCreator.cs" Link="AutoFixtureRandomEntityCreator.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextActivator.cs" Link="DbContextActivator.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilder.cs" Link="DbContextBuilder.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderAutoFixtureExtensions.cs" Link="DbContextBuilderAutoFixtureExtensions.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderSqliteExtensions.cs" Link="DbContextBuilderSqliteExtensions.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\Assembly.cs" Link="Assembly.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\ICreateDbContext.cs" Link="ICreateDbContext.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\ICreateRandomEntities.cs" Link="ICreateRandomEntities.cs" />
+	   <Compile Include="../Wolfgang.DbContextBuilder-Core/ISeedProfile.cs" Link="ISeedProfile.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\InMemoryDbContextCreator.cs" Link="InMemoryDbContextCreator.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteDbContextCreator.cs" Link="SqliteDbContextCreator.cs" />
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteForMsSqlServerModelCustomizer.cs" Link="SqliteForMsSqlServerModelCustomizer.cs" />
@@ -49,7 +47,6 @@
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\Assertions\DbSetAssertions.cs" Link="Assertions\DbSetAssertions.cs" />
 	 </ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="AutoFixture" Version="4.18.1" />
 	  <PackageReference Include="coverlet.collector" Version="10.0.1">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -73,4 +70,7 @@
 		<Content Include="dbcontext-builder.ico" Link="Content\dbcontext-builder.ico" />
 	</ItemGroup>
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
+	<ItemGroup>
+		<ProjectReference Include="../Wolfgang.DbContextBuilder.Abstractions/Wolfgang.DbContextBuilder.Abstractions.csproj" />
+	</ItemGroup>
 </Project>

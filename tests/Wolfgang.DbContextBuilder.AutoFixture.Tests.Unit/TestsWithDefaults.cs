@@ -13,20 +13,28 @@ public class TestsWithDefaults : DbContextBuilderTestsBase
     /// Creates a new instance of DbContextBuilder for AdventureWorksDbContext using default settings.
     /// </summary>
     /// <returns>A new DbContextBuilder for AdventureWorksDbContext.</returns>
-    protected override DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder() => new();
+    /// <remarks>
+    /// The builder no longer defaults to a random-entity provider, so the shared
+    /// <c>SeedWithRandom</c> tests opt in to AutoFixture here. The database is left at its
+    /// default (InMemory).
+    /// </remarks>
+    protected override DbContextBuilder<AdventureWorksDbContext> CreateDbContextBuilder() =>
+        new DbContextBuilder<AdventureWorksDbContext>().UseAutoFixture();
 
 
     /// <summary>
-    /// Verifies that the default RandomEntityCreator is an instance of AutoFixtureRandomEntityCreate
+    /// Verifies that SeedWithRandom throws when no random-entity provider has been configured
+    /// (the builder no longer defaults to AutoFixture).
     /// </summary>
     [Fact]
-    public void Default_RandomEntityCreate_is_AutoFixture()
+    public void SeedWithRandom_when_no_random_provider_configured_throws_InvalidOperationException()
     {
-        // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        // Arrange — a builder with no UseAutoFixture/UseBogus/UseCustomRandomEntityCreator call
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
-        _ = Assert.IsType<AutoFixtureRandomEntityCreator>(sut.RandomEntityCreator);
+        var ex = Assert.Throws<InvalidOperationException>(() => sut.SeedWithRandom<Address>(1));
+        Assert.Contains("UseAutoFixture", ex.Message, StringComparison.Ordinal);
     }
 
 

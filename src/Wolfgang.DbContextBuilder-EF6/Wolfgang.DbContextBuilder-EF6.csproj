@@ -3,7 +3,7 @@
 		<RootNamespace>Wolfgang.DbContextBuilderEF6</RootNamespace>
 		<TargetFrameworks>net462;net47;net471;net472;net48;net481</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.7.0</Version>
+		<Version>0.8.0</Version>
 		<!-- Pin AssemblyVersion to a fixed binding-stability baseline so consumers
 		     do not need to recompile / add binding redirects on every minor/patch
 		     bump. Bump only on a deliberate breaking API change. FileVersion +
@@ -22,7 +22,7 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 
 		<SignAssembly>False</SignAssembly>
-		<PackageTags></PackageTags>
+		<PackageTags>dbcontext;entity-framework;ef6;testing;unit-testing;in-memory</PackageTags>
 		<IsPackable>true</IsPackable>
 		<IsTestProject>false</IsTestProject>
 	</PropertyGroup>
