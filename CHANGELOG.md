@@ -45,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - a **required** FK with no seeded principal is left as the random value (still fails on a
     constraint-enforcing provider — seed the principal).
 
+  Reconciliation applies only to foreign keys exposed as CLR properties; shadow foreign keys
+  (tracked by EF without a CLR property) are left untouched.
+
   **Behavior change to be aware of:** the foreign-key values on a randomly-seeded entity are
   no longer the raw random values the generator produced — a previously-random `SupplierId`
   may now be `null`, and a `CustomerId` may now match a seeded customer. Tests that asserted

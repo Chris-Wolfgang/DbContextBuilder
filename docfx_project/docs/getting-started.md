@@ -91,6 +91,11 @@ time:
 - a **required** FK with no seeded principal of its type is left as the random value (so it
   would still fail on a constraint-enforcing provider — the fix is to seed the principal).
 
+Reconciliation only applies to foreign keys exposed as **CLR properties** on the entity. A
+*shadow* foreign key — one EF Core tracks without a corresponding property on your class — is
+left untouched, so if you rely on shadow FKs, give the entity an explicit FK property (or seed
+those rows with `SeedWith`) to keep constraint-enforcing providers happy.
+
 > **This may be a little unexpected, even though it's correct:** the foreign-key values on a
 > randomly-seeded entity are **not** the raw random values the generator produced. Entities you
 > add with `SeedWith` are never touched — their explicit FK values are preserved exactly.
