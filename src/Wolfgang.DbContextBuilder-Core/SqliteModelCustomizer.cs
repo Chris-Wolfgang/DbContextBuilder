@@ -141,6 +141,11 @@ public class SqliteModelCustomizer : ModelCustomizer
                 ? newDefaultValue
                 : defaultValue;
         };
+
+        // Initialize in the ctor (not lazily in the getter) so concurrent model
+        // customization can't race on a `??=` and allocate duplicate delegates —
+        // matching the other override delegates above.
+        _overrideManyToManyTableHandling = DefaultOverrideManyToManyTableHandling;
     }
 
 
@@ -257,7 +262,7 @@ public class SqliteModelCustomizer : ModelCustomizer
 
 
 
-    private Action<IMutableEntityType>? _overrideManyToManyTableHandling;
+    private Action<IMutableEntityType> _overrideManyToManyTableHandling;
 
     /// <summary>
     /// This action is called for each entity type to handle many-to-many join table renaming.
@@ -271,8 +276,7 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// </remarks>
     public Action<IMutableEntityType> OverrideManyToManyTableHandling
     {
-        get =>
-            _overrideManyToManyTableHandling ??= DefaultOverrideManyToManyTableHandling;
+        get => _overrideManyToManyTableHandling;
         set => _overrideManyToManyTableHandling = value ?? throw new ArgumentNullException(nameof(value));
     }
 
