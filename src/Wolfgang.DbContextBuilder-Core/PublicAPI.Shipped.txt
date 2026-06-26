@@ -1,7 +1,7 @@
 #nullable enable
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
-Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.DbContextBuilder() -> void
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.BuildAsync() -> System.Threading.Tasks.Task<T>
+Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.DbContextBuilder() -> void
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.Dispose() -> void
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(System.Collections.Generic.IEnumerable<TEntity> entities) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(params TEntity[] entities) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
@@ -9,10 +9,14 @@ Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int co
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int count, System.Func<TEntity, TEntity> func) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int count, System.Func<TEntity, int, TEntity> func) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseDbContextOptionsBuilder(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<T> dbContextOptionsBuilder) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
+Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseDiagnosticOutput(System.Action<string> writeLine) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseInMemory() -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
+Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseSeedProfile(Wolfgang.DbContextBuilderCore.ISeedProfile<T> profile) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
 Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions
 Wolfgang.DbContextBuilderCore.ICreateDbContext
 Wolfgang.DbContextBuilderCore.ICreateDbContext.CreateDbContextAsync<TDbContext>(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<TDbContext> optionsBuilder) -> System.Threading.Tasks.Task<TDbContext>
+Wolfgang.DbContextBuilderCore.ISeedProfile<T>
+Wolfgang.DbContextBuilderCore.ISeedProfile<T>.Apply(Wolfgang.DbContextBuilderCore.DbContextBuilder<T> builder) -> void
 Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer
 Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.SqliteForMsSqlServerModelCustomizer(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies dependencies) -> void
 Wolfgang.DbContextBuilderCore.SqliteModelCustomizer

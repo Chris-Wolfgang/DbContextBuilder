@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+### Deprecated
+
+### Security
+
+## [0.8.0] - 2026-06-25
+
+### Added
+
 - New **`Wolfgang.DbContextBuilder.AutoFixture`** package — the AutoFixture-backed
   `ICreateRandomEntities` (now public `AutoFixtureRandomEntityCreator`) extracted from the EF
   Core packages, plus a `UseBogus()`-style `UseAutoFixture()` extension. Multi-targets
@@ -274,7 +288,8 @@ No public API change vs `0.3.3`.
 - Support for Entity Framework 6 (classic) on .NET Framework 4.6.2--4.8.1
 - `Wolfgang.DbContextBuilder-EF6` package for Entity Framework 6
 
-[Unreleased]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.0...v0.6.1

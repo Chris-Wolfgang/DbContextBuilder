@@ -4,7 +4,7 @@
 		<TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
 		<CheckEolTargetFramework>false</CheckEolTargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Version>0.7.0</Version>
+		<Version>0.8.0</Version>
 		<!-- Pin AssemblyVersion to a fixed binding-stability baseline (see the Core csproj). -->
 		<AssemblyVersion>1.0.0.0</AssemblyVersion>
 		<FileVersion>$([System.Text.RegularExpressions.Regex]::Replace("$(Version)", "[-+].*$", "")).0</FileVersion>

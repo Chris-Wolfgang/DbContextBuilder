@@ -1,5 +1,1 @@
 #nullable enable
-Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseSeedProfile(Wolfgang.DbContextBuilderCore.ISeedProfile<T> profile) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
-Wolfgang.DbContextBuilderCore.ISeedProfile<T>
-Wolfgang.DbContextBuilderCore.ISeedProfile<T>.Apply(Wolfgang.DbContextBuilderCore.DbContextBuilder<T> builder) -> void
-Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseDiagnosticOutput(System.Action<string> writeLine) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
