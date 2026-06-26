@@ -426,6 +426,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// principal type is present, the dependent's FK is set to that principal's key; otherwise
     /// an optional FK is set to <c>null</c>. Required FKs with no available principal are left
     /// untouched (best effort). Entities added via <c>SeedWith</c> are never modified.
+    /// Only foreign keys exposed as CLR properties are reconciled; shadow foreign keys (tracked
+    /// by EF without a CLR property) are left as-is, since there is no property to set.
     /// </summary>
     /// <param name="context">A context whose model is used to resolve the relationships.</param>
     private void ReconcileRandomForeignKeys(DbContext context)
