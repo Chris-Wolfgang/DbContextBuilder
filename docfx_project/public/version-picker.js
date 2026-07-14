@@ -49,38 +49,14 @@
     }
 
     function renderPicker(versions) {
-        // Detect the currently-viewed version from the URL.
+        // Detect the currently-viewed version from the URL. Defaults to
+        // 'latest' — the user landed on the site root or a page that
+        // isn't under /versions/<v>/, so the picker treats them as being
+        // on the latest-alias page.
         var currentVersion = 'latest';
         var m = window.location.pathname.match(/\/versions\/([^\/]+)(?:\/|$)/);
         if (m) {
             currentVersion = m[1];
-        }
-
-        // If we're on /versions/latest/, resolve 'latest' to the concrete
-        // version it points to (matching the `latest` entry's url against
-        // the versioned entries). Without this resolution, the browser
-        // auto-selects the first option in the dropdown — which is usually
-        // the same concrete version 'latest' aliases — and picking that
-        // option doesn't fire `change`, leaving the user unable to navigate
-        // away from /versions/latest/ to the equivalent concrete-version
-        // URL via the picker.
-        if (currentVersion === 'latest') {
-            var latestEntry = null;
-            for (var i = 0; i < versions.length; i++) {
-                if (versions[i] && versions[i].version === 'latest') {
-                    latestEntry = versions[i];
-                    break;
-                }
-            }
-            if (latestEntry && latestEntry.url) {
-                for (var j = 0; j < versions.length; j++) {
-                    var v = versions[j];
-                    if (v && v.version !== 'latest' && v.url === latestEntry.url) {
-                        currentVersion = v.version;
-                        break;
-                    }
-                }
-            }
         }
 
         // Build the <select>.
@@ -113,12 +89,14 @@
         var optionCount = 0;
         versions.forEach(function (v) {
             if (!v || !v.version || !v.url) return;
-            // Skip the "latest" alias — the highest-numbered v* entry
-            // already represents the latest release; surfacing both is
-            // redundant in the picker. versions.json keeps the "latest"
-            // entry so other consumers (links, scripts) can still
-            // resolve it.
-            if (v.version === 'latest') return;
+            // Skip the "latest" alias EXCEPT when the reader is actually
+            // on /versions/latest/. On every other page the highest-
+            // numbered v* entry already represents the latest release
+            // and surfacing both is redundant; on /versions/latest/ we
+            // NEED `latest` in the list because otherwise the picker
+            // would show no selected option and the reader would have
+            // no way to know which version they are viewing.
+            if (v.version === 'latest' && currentVersion !== 'latest') return;
             var opt = document.createElement('option');
             opt.value = v.url;
             opt.textContent = v.version;
