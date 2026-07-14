@@ -250,7 +250,22 @@ jobs:
   # ============================================================================
   inspectcode:
     name: "ReSharper InspectCode"
-    runs-on: ubuntu-latest
+    # Runs on Windows so .NET Framework reference assemblies (System,
+    # System.Xml.Linq, etc.) resolve natively for any net462 / net472 / net48
+    # projects the solution includes. On ubuntu-latest InspectCode fails
+    # with 60+ MSB3245 assembly-resolution errors on Framework-target
+    # projects unless we install mono — Windows has them out of the box.
+    # The build + test stages parallel this on Linux/Windows/macOS, so the
+    # Windows load here is not additive to the wall-clock the way an extra
+    # test stage would be.
+    runs-on: windows-latest
+    # All step scripts below use bash syntax (process substitution, [[ ]],
+    # etc.) — pin the default shell so it works uniformly on windows-latest
+    # (which defaults to pwsh) and not accidentally on any future runner
+    # swap.
+    defaults:
+      run:
+        shell: bash
     needs: detect-projects
     if: github.repository != 'Chris-Wolfgang/repo-template' && needs.detect-projects.outputs.has-projects == 'true'
     timeout-minutes: 20
@@ -265,12 +280,74 @@ jobs:
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           persist-credentials: false
 
+      # Same defense-in-depth pattern as detect-projects and the test stages:
+      # jobs don't share workspaces under pull_request_target, so each build/
+      # analyzer job re-fetches protected config from main after checkout.
+      # Without this, a malicious PR could ship a permissive .editorconfig /
+      # BannedSymbols.txt / .DotSettings that would silence InspectCode
+      # findings on the PR's own code.
+      - name: Fetch trusted configuration files from main branch
+        # Skip for Dependabot — its package-version bumps to protected files are
+        # legitimate and should not be overwritten by main's older versions.
+        if: github.event.pull_request.user.login != 'dependabot[bot]'
+        run: |
+          echo "Fetching configuration files from main branch to prevent malicious overrides..."
+
+          git fetch origin main:main-branch
+
+          config_files=(
+            ".editorconfig"
+            "Directory.Build.props"
+            "Directory.Build.targets"
+            "BannedSymbols.txt"
+            "*.globalconfig"
+            "*.ruleset"
+            ".github/workflows/*.yml"
+            ".github/workflows/*.yaml"
+          )
+
+          for config_file in "${config_files[@]}"; do
+            if [[ "$config_file" == *"*"* ]]; then
+              # See Stage 1 for the process-substitution rationale (avoids a
+              # subshell that would swallow `exit 1` on failed copies).
+              while read -r file; do
+                if [ -n "$file" ]; then
+                  echo "  ✓ Copying $file from main branch"
+                  mkdir -p "$(dirname "$file")"
+                  if ! git show "main-branch:$file" > "$file"; then
+                    echo "::error::Failed to copy $file from main-branch — aborting to prevent silent fall-back to PR-supplied protected config."
+                    exit 1
+                  fi
+                fi
+              done < <(git ls-tree -r --name-only main-branch | { grep -E "${config_file//\*/.*}" || true; })
+            else
+              if git cat-file -e "main-branch:$config_file" 2>/dev/null; then
+                echo "  ✓ Copying $config_file from main branch"
+                if ! git show "main-branch:$config_file" > "$config_file"; then
+                  echo "::error::Failed to copy $config_file from main-branch — aborting to prevent silent fall-back to PR-supplied protected config."
+                  exit 1
+                fi
+              else
+                echo "  ℹ️  $config_file not found in main branch, skipping"
+              fi
+            fi
+          done
+
+          echo ""
+          echo "✅ Configuration files secured - using versions from main branch"
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
 
-      - name: Restore + Build (Release)
+      # Restore + build everything the solution knows about. On
+      # windows-latest .NET Framework 4.x reference assemblies are bundled,
+      # so net462 / net472 / net48 projects (e.g. examples/CSharp.DotNet462.Example)
+      # build natively alongside net5+ / netstandard / netcoreapp projects
+      # — no filter loop needed. InspectCode then reads the built outputs
+      # (with `--no-build`) for the whole solution.
+      - name: Restore and build
         run: |
           dotnet restore
           dotnet build -c Release --no-restore
@@ -303,18 +380,26 @@ jobs:
           sarif_file: inspect.sarif
 
       - name: Gate on error-severity findings
+        # PowerShell (native on windows-latest) so we don't depend on jq
+        # being preinstalled. Parses the SARIF via ConvertFrom-Json and
+        # counts results at level=error. Warnings still upload (visible in
+        # Security → Code scanning) but don't gate merge — raise to `error`
+        # later when the noise floor is acceptable.
+        shell: pwsh
         run: |
-          # SARIF level=error fails the job; warnings still upload (visible in
-          # Security → Code scanning) but don't gate merge — raise to `error`
-          # later when the noise floor is acceptable.
-          count=$(jq '[.runs[].results[] | select(.level=="error")] | length' inspect.sarif)
-          if [ "$count" -gt 0 ]; then
-            echo "::error::$count InspectCode error-severity finding(s) — see Security → Code scanning"
+          $sarif = Get-Content inspect.sarif -Raw | ConvertFrom-Json
+          $count = @(
+            foreach ($run in $sarif.runs) {
+              foreach ($result in $run.results) {
+                if ($result.level -eq 'error') { $result }
+              }
+            }
+          ).Count
+          if ($count -gt 0) {
+            Write-Host "::error::$count InspectCode error-severity finding(s) — see Security → Code scanning"
             exit 1
-          fi
-          echo "✅ No error-severity InspectCode findings."
-
-
+          }
+          Write-Host "✅ No error-severity InspectCode findings."
   # ============================================================================
   # STAGE 1: Linux - .NET Core/5+ Tests with Coverage Gate
   # ============================================================================
