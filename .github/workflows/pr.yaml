@@ -358,11 +358,23 @@ jobs:
       - name: Run InspectCode
         run: |
           # Find a solution to inspect. Prefer .slnx (new format) then .sln.
-          # InspectCode requires SOMETHING solution-shaped — fail loudly if neither exists.
-          SLN=$(ls *.slnx 2>/dev/null | head -n1)
-          if [ -z "$SLN" ]; then
-            SLN=$(ls *.sln 2>/dev/null | head -n1)
-          fi
+          # InspectCode requires SOMETHING solution-shaped — fail loudly if
+          # neither exists.
+          #
+          # Uses direct glob iteration (not `ls | head`). Under the workflow's
+          # `-e -o pipefail` shell, on Git Bash for Windows, an
+          # `ls *.slnx 2>/dev/null | head -n1` where no `*.slnx` exists exits
+          # the whole step with code 2 (pipefail propagates ls's non-zero
+          # exit through the pipe) BEFORE the `if [ -z ]` fallback even runs.
+          # Direct globbing with `for f in *.slnx *.sln` sidesteps the pipe
+          # entirely — no ls, no pipefail interaction.
+          SLN=""
+          for candidate in *.slnx *.sln; do
+            if [ -f "$candidate" ]; then
+              SLN="$candidate"
+              break
+            fi
+          done
           if [ -z "$SLN" ]; then
             echo "::error::No .slnx or .sln found at repo root — InspectCode needs one to run."
             exit 1
