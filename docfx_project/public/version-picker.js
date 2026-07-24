@@ -49,11 +49,13 @@
     }
 
     function renderPicker(versions) {
-        // Detect the currently-viewed version from the URL. Defaults to
-        // 'latest' — the user landed on the site root or a page that
-        // isn't under /versions/<v>/, so the picker treats them as being
-        // on the latest-alias page.
-        var currentVersion = 'latest';
+        // Detect the currently-viewed version from the URL. Left null when
+        // the page is NOT under /versions/<v>/ (site root, top-level
+        // landing pages) so the picker doesn't misrepresent those pages
+        // as /versions/latest/ — otherwise it would include+select the
+        // `latest` alias entry off-URL and mislead the reader about which
+        // version they are actually viewing.
+        var currentVersion = null;
         var m = window.location.pathname.match(/\/versions\/([^\/]+)(?:\/|$)/);
         if (m) {
             currentVersion = m[1];
@@ -93,9 +95,11 @@
             // on /versions/latest/. On every other page the highest-
             // numbered v* entry already represents the latest release
             // and surfacing both is redundant; on /versions/latest/ we
-            // NEED `latest` in the list because otherwise the picker
-            // would show no selected option and the reader would have
-            // no way to know which version they are viewing.
+            // NEED `latest` in the list because without it the browser
+            // auto-selects the first concrete version (whichever v* is
+            // top of the list), and choosing that same value doesn't
+            // fire `change`, so the reader can't navigate away to the
+            // concrete-version URL.
             if (v.version === 'latest' && currentVersion !== 'latest') return;
             var opt = document.createElement('option');
             opt.value = v.url;
