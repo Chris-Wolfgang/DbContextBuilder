@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1782508651021,
+  "lastUpdate": 1784861078644,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -390,6 +390,84 @@ window.BENCHMARK_DATA = {
             "value": 3311628.6875,
             "unit": "ns",
             "range": "± 1340757.93781916"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "58cccd9b482bf168a4d2a72ca42a979d913e5f6a",
+          "message": "build(deps): bump the github-actions group with 2 updates (#371)\n\nBumps the github-actions group with 2 updates:\n[actions/setup-dotnet](https://github.com/actions/setup-dotnet) and\n[softprops/action-gh-release](https://github.com/softprops/action-gh-release).\n\nUpdates `actions/setup-dotnet` from 5 to 6\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a\nhref=\"https://github.com/actions/setup-dotnet/commit/a98b56852c35b8e3190ac28c8c2271da59106c68\"><code>a98b568</code></a>\nchore(deps): bump <code>@​actions/cache</code> to 6.2.0 (<a\nhref=\"https://redirect.github.com/actions/setup-dotnet/issues/756\">#756</a>)</li>\n<li><a\nhref=\"https://github.com/actions/setup-dotnet/commit/afb2931642fd907238eb71bce2da0dcc910b3553\"><code>afb2931</code></a>\nBump actions/checkout from 6.0.3 to 7.0.0 (<a\nhref=\"https://redirect.github.com/actions/setup-dotnet/issues/751\">#751</a>)</li>\n<li><a\nhref=\"https://github.com/actions/setup-dotnet/commit/6df8cefd1440cf9313e76b8fdb8aaf90cfa745a3\"><code>6df8cef</code></a>\nMigrate to ESM and upgrade dependencies (<a\nhref=\"https://redirect.github.com/actions/setup-dotnet/issues/752\">#752</a>)</li>\n<li>See full diff in <a\nhref=\"https://github.com/actions/setup-dotnet/compare/v5...v6\">compare\nview</a></li>\n</ul>\n</details>\n<br />\n\nUpdates `softprops/action-gh-release` from 3.0.1 to 3.0.2\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a\nhref=\"https://github.com/softprops/action-gh-release/releases\">softprops/action-gh-release's\nreleases</a>.</em></p>\n<blockquote>\n<h2>v3.0.2</h2>\n<p><code>3.0.2</code> is a patch release focused on release reliability\nand compatibility. It\nreuses existing draft releases when publishing prereleases, supports\nreplacing\nrelease assets on Gitea, hardens streamed asset uploads, and provides\nclearer\nrelease-creation diagnostics. It also includes TypeScript, coverage, and\ntooling\nmaintenance merged since <code>3.0.1</code>.</p>\n<p>This release fixes <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/795\">#795</a>,\n<a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/438\">#438</a>,\nand <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/803\">#803</a>.\nThe upload transport hardening covers the\nhistorical failure reported in <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/790\">#790</a>,\nalthough current hosted Node 24 runners did\nnot reproduce it naturally. The diagnostics work is related to <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/786\">#786</a>\nand does not\nclaim a reproducible release-creation fix.</p>\n<h2>What's Changed</h2>\n<h3>Exciting New Features 🎉</h3>\n<ul>\n<li>feat: improve release error reporting and test coverage by <a\nhref=\"https://github.com/chenrui333\"><code>@​chenrui333</code></a> in <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/pull/813\">softprops/action-gh-release#813</a></li>\n</ul>\n<h3>Bug fixes 🐛</h3>\n<ul>\n<li>fix: publish existing draft releases as prereleases by <a\nhref=\"https://github.com/godfengliang\"><code>@​godfengliang</code></a>\nin <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/pull/801\">softprops/action-gh-release#801</a></li>\n<li>fix: upload small checksum assets reliably by <a\nhref=\"https://github.com/chenrui333\"><code>@​chenrui333</code></a> in <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/pull/815\">softprops/action-gh-release#815</a></li>\n<li>fix: replace existing release assets on Gitea by <a\nhref=\"https://github.com/chenrui333\"><code>@​chenrui333</code></a> in <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/pull/816\">softprops/action-gh-release#816</a></li>\n<li>fix: clarify release creation 404 errors by <a\nhref=\"https://github.com/chenrui333\"><code>@​chenrui333</code></a> in <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/pull/817\">softprops/action-gh-release#817</a></li>\n</ul>\n<h3>Other Changes 🔄</h3>\n<ul>\n<li>chore(deps): upgrade TypeScript to 7 by <a\nhref=\"https://github.com/chenrui333\"><code>@​chenrui333</code></a> in <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/pull/812\">softprops/action-gh-release#812</a></li>\n<li>chore(deps): remove unused TypeScript tooling by <a\nhref=\"https://github.com/chenrui333\"><code>@​chenrui333</code></a> in <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/pull/814\">softprops/action-gh-release#814</a></li>\n<li>dependency, Node 24 pin, and CI maintenance merged since\n<code>3.0.1</code></li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Changelog</summary>\n<p><em>Sourced from <a\nhref=\"https://github.com/softprops/action-gh-release/blob/master/CHANGELOG.md\">softprops/action-gh-release's\nchangelog</a>.</em></p>\n<blockquote>\n<h2>3.0.2</h2>\n<p><code>3.0.2</code> is a patch release focused on release reliability\nand compatibility. It\nreuses existing draft releases when publishing prereleases, supports\nreplacing\nrelease assets on Gitea, hardens streamed asset uploads, and provides\nclearer\nrelease-creation diagnostics. It also includes TypeScript, coverage, and\ntooling\nmaintenance merged since <code>3.0.1</code>.</p>\n<p>This release fixes <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/795\">#795</a>,\n<a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/438\">#438</a>,\nand <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/803\">#803</a>.\nThe upload transport hardening covers the\nhistorical failure reported in <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/790\">#790</a>,\nalthough current hosted Node 24 runners did\nnot reproduce it naturally. The diagnostics work is related to <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/786\">#786</a>\nand does not\nclaim a reproducible release-creation fix.</p>\n<h2>What's Changed</h2>\n<h3>Exciting New Features 🎉</h3>\n<ul>\n<li>feat: improve release error reporting and test coverage by <a\nhref=\"https://github.com/chenrui333\"><code>@​chenrui333</code></a> in <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/pull/813\">softprops/action-gh-release#813</a></li>\n</ul>\n<h3>Bug fixes 🐛</h3>\n<ul>\n<li>fix: publish existing draft releases as prereleases by <a\nhref=\"https://github.com/godfengliang\"><code>@​godfengliang</code></a>\nin <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/pull/801\">softprops/action-gh-release#801</a></li>\n<li>fix: upload small checksum assets reliably by <a\nhref=\"https://github.com/chenrui333\"><code>@​chenrui333</code></a> in <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/pull/815\">softprops/action-gh-release#815</a></li>\n<li>fix: replace existing release assets on Gitea by <a\nhref=\"https://github.com/chenrui333\"><code>@​chenrui333</code></a> in <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/pull/816\">softprops/action-gh-release#816</a></li>\n<li>fix: clarify release creation 404 errors by <a\nhref=\"https://github.com/chenrui333\"><code>@​chenrui333</code></a> in <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/pull/817\">softprops/action-gh-release#817</a></li>\n</ul>\n<h3>Other Changes 🔄</h3>\n<ul>\n<li>chore(deps): upgrade TypeScript to 7 by <a\nhref=\"https://github.com/chenrui333\"><code>@​chenrui333</code></a> in <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/pull/812\">softprops/action-gh-release#812</a></li>\n<li>chore(deps): remove unused TypeScript tooling by <a\nhref=\"https://github.com/chenrui333\"><code>@​chenrui333</code></a> in <a\nhref=\"https://redirect.github.com/softprops/action-gh-release/pull/814\">softprops/action-gh-release#814</a></li>\n<li>dependency, Node 24 pin, and CI maintenance merged since\n<code>3.0.1</code></li>\n</ul>\n<h2>3.0.1</h2>\n<ul>\n<li>maintenance release with updated dependencies</li>\n</ul>\n<h2>3.0.0</h2>\n<p><code>3.0.0</code> is a major release that moves the action runtime\nfrom Node 20 to Node 24.\nUse <code>v3</code> on GitHub-hosted runners and self-hosted fleets that\nalready support the\nNode 24 Actions runtime. <code>v2.6.2</code> was the final Node\n20-compatible release and is\nno longer maintained or supported.</p>\n<h2>What's Changed</h2>\n<h3>Other Changes 🔄</h3>\n<ul>\n<li>Move the action runtime and bundle target to Node 24</li>\n<li>Update <code>@types/node</code> to the Node 24 line and allow future\nDependabot updates</li>\n<li>Keep the floating major tag on <code>v3</code>; freeze\n<code>v2</code> at the final <code>v2.6.2</code> release</li>\n</ul>\n<!-- raw HTML omitted -->\n</blockquote>\n<p>... (truncated)</p>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a\nhref=\"https://github.com/softprops/action-gh-release/commit/3d0d9888cb7fd7b750713d6e236d1fcb99157228\"><code>3d0d988</code></a>\nrelease 3.0.2 (<a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/818\">#818</a>)</li>\n<li><a\nhref=\"https://github.com/softprops/action-gh-release/commit/7e13ed4ac596a4adf801d3812be5a089356949aa\"><code>7e13ed4</code></a>\nfix: clarify release creation 404 errors (<a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/817\">#817</a>)</li>\n<li><a\nhref=\"https://github.com/softprops/action-gh-release/commit/e6c70a53cf67373fbff7eeebca7782b4fe8f106c\"><code>e6c70a5</code></a>\nfix: replace existing release assets on Gitea (<a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/816\">#816</a>)</li>\n<li><a\nhref=\"https://github.com/softprops/action-gh-release/commit/f3453378888d5ef6208e2788af1c5ba50d8a898d\"><code>f345337</code></a>\nfix: publish existing draft releases as prereleases (<a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/801\">#801</a>)</li>\n<li><a\nhref=\"https://github.com/softprops/action-gh-release/commit/d8a89a206684ded8435bf16d6f698bf04ab05164\"><code>d8a89a2</code></a>\nfix: upload small checksum assets reliably (<a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/815\">#815</a>)</li>\n<li><a\nhref=\"https://github.com/softprops/action-gh-release/commit/45ece40c3178522904ac6c51c21d8a4e3565f3c8\"><code>45ece40</code></a>\nchore(deps): remove unused TypeScript tooling (<a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/814\">#814</a>)</li>\n<li><a\nhref=\"https://github.com/softprops/action-gh-release/commit/f6b913c3f95302d88e8ef7cb2859c2e7656aa01e\"><code>f6b913c</code></a>\nfeat: improve release error reporting and test coverage (<a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/813\">#813</a>)</li>\n<li><a\nhref=\"https://github.com/softprops/action-gh-release/commit/15f193d7d8aa9623b5181913a31fafceb4e8cef9\"><code>15f193d</code></a>\nchore(deps): upgrade TypeScript to 7 (<a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/812\">#812</a>)</li>\n<li><a\nhref=\"https://github.com/softprops/action-gh-release/commit/cc8268d46a81d57ec9b061f27b0dd68ebd7fb17f\"><code>cc8268d</code></a>\nchore(deps): bump actions/checkout in the github-actions group (<a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/810\">#810</a>)</li>\n<li><a\nhref=\"https://github.com/softprops/action-gh-release/commit/fd0ed1e85b6730f87f5c67d7355751c46ad513d6\"><code>fd0ed1e</code></a>\nchore(deps): bump the npm group with 3 updates (<a\nhref=\"https://redirect.github.com/softprops/action-gh-release/issues/811\">#811</a>)</li>\n<li>Additional commits viewable in <a\nhref=\"https://github.com/softprops/action-gh-release/compare/718ea10b132b3b2eba29c1007bb80653f286566b...3d0d9888cb7fd7b750713d6e236d1fcb99157228\">compare\nview</a></li>\n</ul>\n</details>\n<br />\n\n\nDependabot will resolve any conflicts with this PR as long as you don't\nalter it yourself. You can also trigger a rebase manually by commenting\n`@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits\nthat have been made to it\n- `@dependabot show <dependency name> ignore conditions` will show all\nof the ignore conditions of the specified dependency\n- `@dependabot ignore <dependency name> major version` will close this\ngroup update PR and stop Dependabot creating any more for the specific\ndependency's major version (unless you unignore this specific\ndependency's major version or upgrade to it yourself)\n- `@dependabot ignore <dependency name> minor version` will close this\ngroup update PR and stop Dependabot creating any more for the specific\ndependency's minor version (unless you unignore this specific\ndependency's minor version or upgrade to it yourself)\n- `@dependabot ignore <dependency name>` will close this group update PR\nand stop Dependabot creating any more for the specific dependency\n(unless you unignore this specific dependency or upgrade to it yourself)\n- `@dependabot unignore <dependency name>` will remove all of the ignore\nconditions of the specified dependency\n- `@dependabot unignore <dependency name> <ignore condition>` will\nremove the ignore condition of the specified dependency and ignore\nconditions\n\n\n</details>",
+          "timestamp": "2026-07-23T22:42:48-04:00",
+          "tree_id": "e528df696114506251939d464256e0bea8408659",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/58cccd9b482bf168a4d2a72ca42a979d913e5f6a"
+        },
+        "date": 1784861077523,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 35397.05407714844,
+            "unit": "ns",
+            "range": "± 2083.7013626866174"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 49800.64607747396,
+            "unit": "ns",
+            "range": "± 1425.6524181916886"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 225623.3359375,
+            "unit": "ns",
+            "range": "± 21532.228512809714"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 34617.22111002604,
+            "unit": "ns",
+            "range": "± 1813.7758123373808"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 127753.76432291667,
+            "unit": "ns",
+            "range": "± 25332.917961351977"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 459564.1373697917,
+            "unit": "ns",
+            "range": "± 70039.36006769638"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 35628.39784749349,
+            "unit": "ns",
+            "range": "± 2026.2669472463454"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 395485.4388020833,
+            "unit": "ns",
+            "range": "± 4039.507677043487"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 2861955.4661458335,
+            "unit": "ns",
+            "range": "± 759438.3559097871"
           }
         ]
       }
