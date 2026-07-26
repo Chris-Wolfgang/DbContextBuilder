@@ -40,7 +40,7 @@ dotnet add package Wolfgang.DbContextBuilder-Core-EF8
 dotnet add package Wolfgang.DbContextBuilder.AutoFixture   # or .Bogus
 ```
 
-### Target frameworks
+## 🎯 Supported Frameworks
 
 Each package targets the .NET runtimes its EF version requires:
 
