@@ -244,9 +244,13 @@ jobs:
   # Runs concurrently with Stage 1 / 2 / 3 (no `needs:` on a test job) so it
   # doesn't extend wall-clock — typically 3–5 min vs the slowest stage.
   # SARIF uploads to GitHub Code Scanning (Security tab + inline PR
-  # annotations). `error`-severity findings fail the job; `warning`-severity
-  # surfaces in Code Scanning but doesn't fail (gated by --severity=WARNING
-  # filter). Tune the noise floor via .DotSettings at the repo root.
+  # annotations). Fail-gating is done later by counting SARIF `level=="error"`
+  # entries — `error`-severity findings fail the job, `warning`-severity ones
+  # surface in Code Scanning but are not treated as fatal. `--severity=WARNING`
+  # is a separate lever: it controls what InspectCode EMITS (excluding
+  # SUGGESTION / HINT), i.e. the noise floor for the SARIF payload. Tune the
+  # emit floor via `.DotSettings` at the repo root; tune the fail behavior via
+  # the SARIF `level=="error"` count check below.
   # ============================================================================
   inspectcode:
     name: "ReSharper InspectCode"
@@ -380,11 +384,26 @@ jobs:
             exit 1
           fi
           echo "Inspecting: $SLN"
+          # The workflow's design is to gate merge on SARIF `level=="error"`
+          # findings only — warnings should upload to Code Scanning but not
+          # fail the build. `jb inspectcode`'s exit code behavior is version-
+          # dependent (some releases exit non-zero when any finding is
+          # emitted, regardless of severity), so guard against that: swallow
+          # its exit code and defer gating to the `pwsh` step below that
+          # counts SARIF entries. Explicit SARIF-presence check preserves the
+          # loud-fail behavior on a real tool crash (bad args, can't parse
+          # solution, etc.) that would leave inspect.sarif un-produced.
           jb inspectcode "$SLN" \
             --output=inspect.sarif \
             --format=sarif \
             --severity=WARNING \
-            --no-build
+            --no-build \
+            || true
+
+          if [ ! -s inspect.sarif ]; then
+            echo "::error::inspect.sarif was not produced (or is empty) — InspectCode likely crashed before writing output. Failing loudly instead of silently passing an unrun analyzer."
+            exit 1
+          fi
 
       - name: Upload SARIF to Code Scanning
         uses: github/codeql-action/upload-sarif@v4
