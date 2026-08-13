@@ -1,10 +1,13 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit
 {
     /// <summary>
     /// Provides a base class for tests related to the ICreateRandomEntities interface.
     /// </summary>
     // ReSharper disable once InconsistentNaming
-    public abstract class ICreateRandomEntitiesTestsBase 
+    [SuppressMessage("Naming", "S101:Types should be named in PascalCase", Justification = "Deliberate: name mirrors the interface under test (ICreateRandomEntities).")]
+    public abstract class ICreateRandomEntitiesTestsBase
     {
 
         /// <summary>

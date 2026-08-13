@@ -468,7 +468,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
 
         // Assert
         Assert.NotNull(roundTripped);
-        Assert.Equal(42, roundTripped!.BusinessEntityId);
+        Assert.Equal(42, roundTripped.BusinessEntityId);
         Assert.Equal(seedRowguid, roundTripped.Rowguid);
         Assert.Equal(seedModifiedDate, roundTripped.ModifiedDate);
     }
@@ -513,9 +513,9 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
         };
 
         using var sut = CreateDbContextBuilder()
-            .SeedWith<BusinessEntity>(businessEntity)
-            .SeedWith<Currency>(currency)
-            .SeedWith<Culture>(culture);
+            .SeedWith(businessEntity)
+            .SeedWith(currency)
+            .SeedWith(culture);
 
         // Act
         await using var context = await sut.BuildAsync();

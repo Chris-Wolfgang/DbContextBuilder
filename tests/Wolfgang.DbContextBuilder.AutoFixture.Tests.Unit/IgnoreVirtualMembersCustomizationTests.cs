@@ -15,9 +15,8 @@ public class IgnoreVirtualMembersCustomizationTests
     {
         // Arrange
 
-        // Act
-        // ReSharper disable once UseDiscardAssignment
-        var unused = new IgnoreVirtualMembersCustomization();
+        // Act — construction alone is the assertion (must not throw).
+        _ = new IgnoreVirtualMembersCustomization();
     }
 
 
@@ -125,12 +124,20 @@ public class IgnoreVirtualMembersCustomizationTests
     }
 
 
+    // Test fixture — the customization under test populates VirtualProperty
+    // via reflection, and NonVirtualMethod exists to contrast against
+    // VirtualMethod (Sonar S2325's "make static" suggestion would defeat
+    // the contrast). All members are exercised by the test's inspection
+    // rather than direct call.
     // ReSharper disable once ClassNeverInstantiated.Local
+    // ReSharper disable UnusedAutoPropertyAccessor.Global
     private class TestClass
     {
         public virtual string? VirtualProperty { get; set; }
         public string NonVirtualProperty { get; set; } = "NonVirtual";
         public virtual int VirtualMethod() => 0;
+#pragma warning disable S2325 // Deliberately non-static: contrasts against VirtualMethod for the customization test
         public int NonVirtualMethod() => 42;
+#pragma warning restore S2325
     }
 }

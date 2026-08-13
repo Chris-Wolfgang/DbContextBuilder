@@ -142,10 +142,17 @@ public class IgnoreVirtualMembersTests
 
 /// <summary>
 /// Test class with a write-only property (no getter) for testing IgnoreVirtualMembers.
+/// The write-only shape and the backing-field-never-read are the WHOLE POINT of the
+/// test: we're verifying the customization's behaviour on this exact declaration
+/// pattern. Sonar S2376 / S4487 and R# NotAccessedField.Local would eliminate the
+/// pattern under test.
 /// </summary>
 [ExcludeFromCodeCoverage]
+[SuppressMessage("Minor Code Smell", "S2376:Write-only properties should not be used", Justification = "The write-only shape is the test fixture.")]
+[SuppressMessage("Minor Code Smell", "S4487:Unread \"private\" fields should be removed", Justification = "Backing field is deliberately unread; the write-only property is under test.")]
 internal class WriteOnlyPropertyClass
 {
+    // ReSharper disable once NotAccessedField.Local
     private string _writeOnly = string.Empty;
 
     public string WriteOnly

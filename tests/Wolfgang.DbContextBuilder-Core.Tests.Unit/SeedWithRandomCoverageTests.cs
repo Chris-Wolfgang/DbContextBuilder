@@ -364,6 +364,10 @@ internal sealed class CoverageSupplier
 
 
 
+// Test-only EF entity POCO — properties are populated by the random-entity
+// creator via reflection. R# cannot see reflection consumers and reports the
+// scalar FK setters as unused.
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 [ExcludeFromCodeCoverage(Justification = "Test model")]
 internal class CoverageWidget
 {

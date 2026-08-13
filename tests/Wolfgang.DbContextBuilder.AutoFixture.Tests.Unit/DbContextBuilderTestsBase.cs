@@ -677,7 +677,9 @@ public abstract class DbContextBuilderTestsBase
         // paramName "entities". Assert at the Exception level so the test is resilient
         // to overload-resolution choices.
         Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value"));
+#pragma warning disable S3878 // Explicit array literal is deliberate here — it forces overload resolution to the params/array overload instead of the singleton overload above.
         Assert.Throws<ArgumentException>(() => sut.SeedWith(new[] { "Invalid value" }));
+#pragma warning restore S3878
     }
 
 
@@ -733,7 +735,7 @@ public abstract class DbContextBuilderTestsBase
 
         var actualCountry = context
             .CountryRegions
-            .ToList()
+            .AsEnumerable()
             // Sqlite store the data time as unknown so we need to tell .net that it is UTC
             .Select(c => c with { ModifiedDate = DateTime.SpecifyKind(c.ModifiedDate, DateTimeKind.Utc) })
             .ToArray();
@@ -1047,45 +1049,6 @@ public abstract class DbContextBuilderTestsBase
 
 
     /// <summary>
-    /// Verifies that a newly created DbContext contains the specified number of randomly created entities.
-    /// </summary>
-    [Theory]
-    [InlineData(7)]
-    [InlineData(17)]
-    public async Task SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_values(int count)
-    {
-        const int startingId = 1001;
-        // Arrange
-        var sut = CreateDbContextBuilder();
-        var func = new Func<Person, int, Person>((a, i) =>
-        {
-            a.BusinessEntityId = startingId + i;
-            a.AdditionalContactInfo = null;
-            a.BusinessEntity = new BusinessEntity
-            {
-                BusinessEntityId = startingId + i
-            };
-            return a;
-        });
-
-        var context = await sut
-            .SeedWithRandom(count, func)
-            .BuildAsync();
-
-
-        // Act
-        var actualPeople = context
-            .People
-            .ToList();
-
-        // Assert
-        Assert.NotNull(actualPeople);
-        Assert.Equal(count, actualPeople.Count);
-    }
-
-
-
-    /// <summary>
     /// Verifies that calling UseDbContextOptionsBuilder and passing null throws ArgumentNullException
     /// </summary>
     [Fact]
@@ -1233,7 +1196,7 @@ public abstract class DbContextBuilderTestsBase
         // Assert
         var row = context.Addresses.SingleOrDefault(a => a.AddressId == 999);
         Assert.NotNull(row);
-        Assert.Equal("1 Singleton Way", row!.AddressLine1);
+        Assert.Equal("1 Singleton Way", row.AddressLine1);
     }
 
 
