@@ -1,0 +1,46 @@
+<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <!--
+    Team-shared InspectCode / ReSharper settings.
+
+    The pr.yaml `inspectcode` job runs `jb inspectcode Wolfgang.DbContextBuilder.slnx`
+    with no `--profile`, so it auto-loads the solution-shared settings file
+    named `<SolutionFileName>.DotSettings` — the extension IS part of the name.
+    Solution-wide overrides only; anything narrower belongs in a
+    `<ProjectName>.csproj.DotSettings`, a folder `.editorconfig`, or an
+    inline `#pragma` / `[SuppressMessage]` with justification.
+  -->
+
+  <!-- User dictionary carried over from the (now-renamed) .sln.DotSettings. -->
+  <s:Boolean x:Key="/Default/UserDictionary/Words/=xinfo/@EntryIndexedValue">True</s:Boolean>
+
+  <!--
+    PublicApiAnalyzers false positives — RS0016 / RS0036 / RS0037.
+
+    Solution-wide is the correct scope here because the false positive is a
+    TOOL-WIDE bug in `jb inspectcode`, not a per-project issue: InspectCode
+    invokes Roslyn analyzers but does NOT pass the `PublicAPI.Shipped.txt` /
+    `PublicAPI.Unshipped.txt` files as `AdditionalFiles`. Without those,
+    PublicApiAnalyzer thinks NOTHING is declared and emits RS0016 ("add to
+    declared API"), RS0036 ("annotate nullability"), and RS0037 ("enable
+    nullability tracking") for every public member in every project that
+    has a PublicAPI.txt.
+
+    Verified 2026-08-13 against Chris-Wolfgang/DbContextBuilder main:
+
+      * `dotnet build src/Wolfgang.DbContextBuilder-Core/*.csproj -c Release
+         -p:TreatWarningsAsErrors=true` → Build succeeded (zero RS0016/37/36).
+      * `gh api .../code-scanning/alerts?tool_name=InspectCode` → 498 open
+         RS0016/RS0037/RS0036 alerts (366 + 92 + 40).
+
+    The in-build analyzer stack still enforces these correctly — this
+    suppression only silences the InspectCode duplicate SARIF upload.
+
+    Same root cause and same fix as Chris-Wolfgang/ETL-Xml (2026-08-12,
+    ~424 identical FPs cleared). Fleet reference:
+    `reference_inspectcode_publicapi_false_positives`.
+  -->
+  <s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=RS0016/@EntryIndexedValue">DO_NOT_SHOW</s:String>
+  <s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=RS0036/@EntryIndexedValue">DO_NOT_SHOW</s:String>
+  <s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=RS0037/@EntryIndexedValue">DO_NOT_SHOW</s:String>
+
+</wpf:ResourceDictionary>
