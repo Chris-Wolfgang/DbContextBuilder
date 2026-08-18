@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787021418533,
+  "lastUpdate": 1787021540930,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -546,6 +546,84 @@ window.BENCHMARK_DATA = {
             "value": 4223073.125,
             "unit": "ns",
             "range": "± 1322484.407452973"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "adb12bcb3086214c96a20928b06287acebfde805",
+          "message": "chore(inspectcode): triage residual 41 alerts — real fixes + narrow suppressions (PR-4 of #377) (#382)\n\n## Summary\n\nFinal PR of the per-bucket #377 rework. **Stacked on #381 (PR-3)** —\nmerge PR-1 → PR-2 → PR-3 → this in order.\n\nAfter PR-1/2/3 land, ~45 alerts remain. This PR takes them down toward\nzero by **fixing real issues in code** first, and applying\n**narrow-scope suppressions** only where the code is correct and the\nwarning is genuinely wrong. Every suppression carries a justification.\n\n## Real code fixes (removed noise via correct changes)\n\n| Rule | Where | Change |\n|---|---|---|\n| \\`S3267\\` | \\`src/.../DbContextBuilder.cs:515\\` | \\`foreach { if...\nreturn }\\` → \\`FirstOrDefault(...)\\`; same behaviour, idiomatic LINQ |\n| \\`S2971\\` | \\`tests/.../DbContextBuilderTestsBase.cs:736\\` |\n\\`.ToList()\\` immediately followed by \\`.Select\\` → \\`.AsEnumerable()\\`;\ndrops the intermediate List allocation |\n| \\`S4144\\` | \\`tests/.../DbContextBuilderTestsBase.cs:1055\\` |\n**Removed duplicate test** — \\`_with_specified_values\\` was\nbyte-identical to \\`_with_specified_number_of_random_entities\\` right\nabove it; zero coverage lost. See \"Test change to review\" below. |\n| \\`S2325\\` |\n\\`tests/Wolfgang.DbContextBuilder-EF6.Tests.Unit/DbContextBuilderTests.cs:12\\`\n| \\`CreateDbContextBuilder\\` doesn't use \\`this\\` → \\`static\\` |\n| \\`S1481\\` × 3 | 3 files | \\`var sut = new ...\\` / \\`var unused = new\n...\\` (test's real assertion is \"construction doesn't throw\") → \\`_ =\nnew ...\\` |\n| \\`RedundantSuppressNullableWarningExpression\\` × 2 | 2 files |\n\\`row!.X\\` after \\`Assert.NotNull(row)\\` — \\`!\\` redundant with xUnit's\nNotNull annotation. Removed. |\n| \\`RedundantTypeArgumentsOfMethod\\` × 3 |\n\\`TestsWithSqliteAndAutoFixture.cs:516-518\\` | \\`.SeedWith<T>(x)\\` →\n\\`.SeedWith(x)\\` (T inferable) |\n| \\`RedundantUsingDirective\\` |\n\\`SqliteForMsSqlServerModelCustomizerTests.cs:2\\` | \\`using Moq;\\` only\nneeded under \\`#if EF_CORE_6\\` — wrapped in the same \\`#if\\` |\n| \\`MA0202\\` | \\`SqliteForMsSqlServerModelCustomizerTests.cs:24\\` |\n\\`#elif EF_CORE_7 \\|\\| EF_CORE_8\\` branch was identical to \\`#else\\` —\ncollapsed |\n\n## Narrow-scope suppressions (code correct, warning wrong)\n\nEvery suppression sits at the tightest scope that eliminates the FP.\n\n- **Test-model POCOs populated via reflection** — file-level \\`//\nReSharper disable UnusedAutoPropertyAccessor.Global\\` on 5 fixture files\n(\\`Models/TableWithDefaults.cs\\`, \\`Models/Category.cs\\`,\n\\`Models/Product.cs\\`, \\`CoverageWidget\\` in\n\\`SeedWithRandomCoverageTests.cs\\`, \\`TestClass\\` in\n\\`IgnoreVirtualMembersCustomizationTests.cs\\`). R# can't see reflection\nconsumers.\n- **\\`Sample\\` fixture in \\`BogusRandomEntityCreatorTests.cs\\`** —\npopulated by Bogus via reflection; file-level \\`// ReSharper disable\\`\nfor \\`UnusedMember.Local\\` + \\`UnusedAutoPropertyAccessor.Local\\` +\n\\`#pragma warning disable S3459\\`, scoped to the class only.\n- **BDN \\`[Params]\\` in benchmarks** — set by BenchmarkDotNet via\nreflection; per-line \\`// ReSharper disable once\nUnusedAutoPropertyAccessor.Global\\`.\n- **\\`WriteOnlyPropertyClass\\` in \\`IgnoreVirtualMembersTests.cs\\`** —\nthe write-only shape + unread backing field ARE the test fixture.\nPer-class \\`[SuppressMessage]\\` for \\`S2376\\` / \\`S4487\\` with\njustification.\n- **\\`NonVirtualMethod\\` in\n\\`IgnoreVirtualMembersCustomizationTests.cs\\`** — making it \\`static\\`\nwould defeat the \"virtual vs non-virtual\" contrast the test relies on.\nPer-line \\`#pragma warning disable S2325\\` with justification.\n- **\\`sut.SeedWith(new[] { \"Invalid value\" })\\`** — the explicit array\nliteral FORCES overload resolution to the params/array overload.\nPer-line \\`#pragma warning disable S3878\\` with justification.\n- **\\`ICreateRandomEntitiesTestsBase\\`** — deliberate name mirrors the\ninterface under test. \\`[SuppressMessage(\"Naming\", \"S101\")]\\` with\njustification.\n\n## Test change to review\n\nThe \\`S4144\\` fix **deleted\n\\`SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_values\\`**\nbecause it was byte-identical to the method right above it (no unique\nassertions). The name suggests it was intended to also assert on the\nseeded field values (\\`BusinessEntityId\\`, etc.) but the assertions were\nnever written. If a real \"specified values\" test is desired, please open\na follow-up — the deletion here only removes a duplicate that added zero\ncoverage.\n\n## Verified locally\n\n- \\`dotnet build src/... -c Release -p:TreatWarningsAsErrors=true\\` → 0\nErrors\n- \\`dotnet test tests/Wolfgang.DbContextBuilder-Core.Tests.Unit\\` →\n**86/86** pass on net6/7/8/9/10\n- \\`dotnet test tests/Wolfgang.DbContextBuilder.AutoFixture.Tests.Unit\\`\n→ **196/196** pass on all TFMs\n- \\`dotnet test tests/Wolfgang.DbContextBuilder.Bogus.Tests.Unit\\` →\n**7/7** pass on all TFMs\n\n## Expected effect (across the full stack)\n\n| Stage | Alerts remaining |\n|---|--:|\n| Before PR-1 (main) | 2,999 |\n| After PR-1 lands | ~2,501 |\n| After PR-2 lands | ~119 |\n| After PR-3 lands | ~45 |\n| **After this PR lands** | **~0-5** (any drift / SARIF lag) |\n\nWell under the #377 target of <25.\n\n## References\n\n- Stacked on #381 (PR-3), which is stacked on #380 (PR-2), which is\nstacked on #379 (PR-1)\n- Umbrella #377\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+          "timestamp": "2026-08-17T22:50:28-04:00",
+          "tree_id": "5a37baeb9acf35d6ed9174a2980244dfdd8b208c",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/adb12bcb3086214c96a20928b06287acebfde805"
+        },
+        "date": 1787021539683,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 38276.395975748695,
+            "unit": "ns",
+            "range": "± 1120.4453529688826"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 60140.4511311849,
+            "unit": "ns",
+            "range": "± 1642.1647257284894"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 249354.849609375,
+            "unit": "ns",
+            "range": "± 15501.313185754867"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 38736.564453125,
+            "unit": "ns",
+            "range": "± 1916.4719963031462"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 125173.39908854167,
+            "unit": "ns",
+            "range": "± 6076.9514160236495"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 475026.5221354167,
+            "unit": "ns",
+            "range": "± 23687.896651728366"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 38170.41141764323,
+            "unit": "ns",
+            "range": "± 1490.4609331395693"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 440871.6809895833,
+            "unit": "ns",
+            "range": "± 11086.597313800678"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 3360423.1822916665,
+            "unit": "ns",
+            "range": "± 1449456.5392759745"
           }
         ]
       }
