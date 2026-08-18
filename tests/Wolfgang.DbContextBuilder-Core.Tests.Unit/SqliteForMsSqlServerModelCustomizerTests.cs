@@ -1,6 +1,15 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Moq;
 
+// SqliteForMsSqlServerModelCustomizer is a wrapper over EF Core's ModelCustomizer,
+// and its public surface takes ModelCustomizerDependencies — an EF-internal type
+// (Microsoft.EntityFrameworkCore.Infrastructure). Every test in this file
+// constructs that dependency or exercises the customizer via its EF-internal
+// callers, which is EF1001 by design — the type under test IS the wrapper over
+// the internal API. Suppressing the diagnostic at the file level rather than
+// adding 21 separate [SuppressMessage] attributes or per-line pragmas.
+#pragma warning disable EF1001 // Internal EF Core API usage — see file-level rationale above
+
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
 /// <summary>

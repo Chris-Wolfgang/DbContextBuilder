@@ -80,7 +80,13 @@ public static class DbContextBuilderSqliteExtensions
         // Avoid registering EF services multiple times. Use a typeof check on the
         // SQLite options extension type rather than matching its FullName as a string
         // (which silently breaks if EF renames or moves the type).
+        //
+        // SqliteOptionsExtension lives in EF Core's internal namespace
+        // (Microsoft.EntityFrameworkCore.Sqlite.Infrastructure.Internal) — the typeof
+        // check on it is deliberate for the reason above, so EF1001 is expected here.
+#pragma warning disable EF1001 // Internal EF Core API usage
         if (!builder.ServiceCollection.Any(sd => sd.ServiceType == typeof(SqliteOptionsExtension)))
+#pragma warning restore EF1001
         {
             builder.ServiceCollection.AddEntityFrameworkSqlite();
         }
