@@ -24,3 +24,14 @@ dotnet_diagnostic.CA2007.severity = none
 # re-scaffolding always reintroduces MA0003/MA0051/CA1062 etc.
 [**/Models/Generated/*.cs]
 generated_code = true
+
+# CS8632 — "annotation for nullable reference types should only be used
+# in code within a '#nullable' annotations context." The scaffolder emits
+# `string?` / `T?` in these files but does NOT emit a `#nullable enable`
+# header. The repo-wide `<Nullable>enable</Nullable>` in Directory.Build.props
+# means the C# compiler sees them as valid (no CS8632 locally), but
+# `jb inspectcode` evaluates the analyzer without picking up the DBP
+# nullable context and flags every `?` (354 alerts across the 5
+# AdventureWorks-EF* projects). Suppress only inside Models/Generated/
+# so a real CS8632 in hand-written code still surfaces.
+dotnet_diagnostic.CS8632.severity = none
