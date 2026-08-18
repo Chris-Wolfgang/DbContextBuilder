@@ -16,9 +16,9 @@ public class NoCircularReferencesCustomizationTests
     public void Can_create_instance_of_NoCircularReferencesCustomization()
     {
         // Arrange
-        
-        // Act
-        var unused = new AutoFixtureRandomEntityCreator.NoCircularReferencesCustomization();
+
+        // Act — construction alone is the assertion (must not throw).
+        _ = new AutoFixtureRandomEntityCreator.NoCircularReferencesCustomization();
     }
 
 

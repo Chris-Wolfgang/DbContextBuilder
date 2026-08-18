@@ -9,7 +9,7 @@ namespace Wolfgang.DbContextBuilderEF6.Tests.Unit;
 public class DbContextBuilderTests
 {
 
-    private DbContextBuilder<TestDbContext> CreateDbContextBuilder() =>
+    private static DbContextBuilder<TestDbContext> CreateDbContextBuilder() =>
         new DbContextBuilder<TestDbContext>()
             .UseEffort()
             .UseAutoFixture();

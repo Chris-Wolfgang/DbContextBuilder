@@ -512,15 +512,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         }
 
         // Prefer a principal that is not the dependent itself (handles self-referencing FKs).
-        foreach (var candidate in candidates)
-        {
-            if (!ReferenceEquals(candidate, dependent))
-            {
-                return candidate;
-            }
-        }
-
-        return null;
+        return candidates.FirstOrDefault(candidate => !ReferenceEquals(candidate, dependent));
     }
 
 

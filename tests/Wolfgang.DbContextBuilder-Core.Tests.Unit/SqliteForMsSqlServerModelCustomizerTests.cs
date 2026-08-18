@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
+#if EF_CORE_6
 using Moq;
+#endif
 
 // SqliteForMsSqlServerModelCustomizer is a wrapper over EF Core's ModelCustomizer,
 // and its public surface takes ModelCustomizerDependencies — an EF-internal type
@@ -28,15 +30,12 @@ public class SqliteForMsSqlServerModelCustomizerTests
 #if EF_CORE_6
         var finder = new Mock<IDbSetFinder>().Object;
         var dependencies = new ModelCustomizerDependencies(finder);
-#elif EF_CORE_7 || EF_CORE_8 
-        var dependencies = new ModelCustomizerDependencies();
 #else
         var dependencies = new ModelCustomizerDependencies();
 #endif
 
-        // Act & Assert
-        // ReSharper disable once UnusedVariable
-        var sut = new SqliteForMsSqlServerModelCustomizer(dependencies);
+        // Act & Assert — construction alone is the assertion (must not throw).
+        _ = new SqliteForMsSqlServerModelCustomizer(dependencies);
     }
 
 

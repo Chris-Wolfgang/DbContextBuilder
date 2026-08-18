@@ -5,8 +5,14 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 /// </summary>
 public class BogusRandomEntityCreatorTests
 {
-    // One property of every type BogusRandomEntityCreator has a rule for, so a single
-    // generation exercises every value generator.
+    // Every property on `Sample` is populated by `BogusRandomEntityCreator` via
+    // reflection — the class exists to give the creator a shape with one property
+    // per type-rule to exercise. R# and Sonar can only see the declaration and
+    // report them as unused / unassigned; the fixture pattern is deliberate.
+    // Suppressions kept on the fixture class only, not the surrounding tests.
+    // ReSharper disable UnusedMember.Local
+    // ReSharper disable UnusedAutoPropertyAccessor.Local
+#pragma warning disable S3459 // Unassigned auto-property — assigned via reflection by Bogus
     private sealed class Sample
     {
         public string Name { get; set; } = string.Empty;
@@ -33,6 +39,9 @@ public class BogusRandomEntityCreatorTests
 
         public DateTimeOffset UpdatedOn { get; set; }
     }
+#pragma warning restore S3459
+    // ReSharper restore UnusedAutoPropertyAccessor.Local
+    // ReSharper restore UnusedMember.Local
 
 
 
