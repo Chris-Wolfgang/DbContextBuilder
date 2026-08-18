@@ -3,7 +3,7 @@
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
 		<TargetFramework>net10.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Version>0.8.0</Version>
+		<Version>0.8.1</Version>
 		<!-- Pin AssemblyVersion to a fixed binding-stability baseline so consumers
 		     do not need to recompile / add binding redirects on every minor/patch
 		     bump. Bump only on a deliberate breaking API change. FileVersion +
@@ -56,7 +56,7 @@
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="[10.0.5,11.0.0)" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[10.0.5,11.0.0)" />
 	  <!-- Pin SQLite native lib above SQLitePCLRaw.lib.e_sqlite3 2.1.2 (GHSA-2m69-gcr7-jv3q / NU1903). -->
-	  <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.50.3" />
+	  <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
 	</ItemGroup>
 	<ItemGroup>
 		<!-- Include the icon and README file directly in the package's root -->
