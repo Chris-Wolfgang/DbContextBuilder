@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784861078644,
+  "lastUpdate": 1787021418533,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -468,6 +468,84 @@ window.BENCHMARK_DATA = {
             "value": 2861955.4661458335,
             "unit": "ns",
             "range": "± 759438.3559097871"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4bde6b859f86a3fb503c80196581e084e4d2001a",
+          "message": "chore(inspectcode): narrow EF1001 pragmas at intentional-internals sites (PR-3 of #377) (#381)\n\n## Summary\n\nPR-3 of the per-bucket #377 rework. **Stacked on #380 (PR-2)** — merge\nPR-1 → PR-2 → this in order.\n\nEF1001 fires on intentional consumption of EF Core internal APIs. This\nlibrary *is* a DbContext-builder that wraps EF's \\`ModelCustomizer\\` /\nservice-collection wiring, so touching internals is the library's whole\npurpose — but the diagnostic is correct for hand-written product code\nthat isn't in the wrapper layer. Suppress narrowly at each intentional\nsite, not globally.\n\n## The 74 EF1001 alerts by location\n\n| File | Alert count | Scope of fix |\n|---|--:|---|\n|\n\\`src/Wolfgang.DbContextBuilder-Core/DbContextBuilderSqliteExtensions.cs\\`\n| 1 (line 83) | Per-expression \\`#pragma\\` around the single\n\\`typeof(SqliteOptionsExtension)\\` check |\n|\n\\`tests/Wolfgang.DbContextBuilder-Core.Tests.Unit/SqliteModelCustomizerTests.cs\\`\n| 52 (52 distinct lines) | File-level \\`#pragma\\` — every test\nconstructs \\`ModelCustomizerDependencies\\` or exercises internal callers\n(\\`IDbSetFinder\\`, \\`IModelRuntimeInitializer\\`) because the *type under\ntest IS* the wrapper over the internal API |\n|\n\\`tests/Wolfgang.DbContextBuilder-Core.Tests.Unit/SqliteForMsSqlServerModelCustomizerTests.cs\\`\n| 21 (21 distinct lines) | Same pattern, file-level \\`#pragma\\` |\n\nEvery other test in the suite (and any future test of hand-written\nproduct code) still gets EF1001 enforced by the in-build analyzer.\n\n## Verified locally\n\n- \\`dotnet build src/Wolfgang.DbContextBuilder-Core/*.csproj -c Release\n-p:TreatWarningsAsErrors=true\\` → **0 Errors**\n- \\`dotnet build\ntests/Wolfgang.DbContextBuilder-Core.Tests.Unit/*.csproj -c Release\\` →\n**0 Errors**\n\n## Expected effect\n\n- After PR-1 + PR-2 land: ~119 alerts remain\n- After this PR: **~45 remaining**\n- PR-4: real triage of residual Sonar/MA/local-unused findings to reach\nthe #377 target of <25\n\n## Test plan\n\n- [ ] Stage 1 / 2 / 3 tests still pass (no accidental behavior change\nfrom the pragma placement)\n- [ ] \\`ReSharper InspectCode\\` PR check no longer reports EF1001 in\nthese files\n- [ ] After stack merges, verify alert count via \\`gh api\\`\n\n## References\n\n- Stacked on #380 (PR-2), which is stacked on #379 (PR-1)\n- Umbrella #377\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+          "timestamp": "2026-08-17T22:48:25-04:00",
+          "tree_id": "9a6287304167ff8e1c01cc809d570544bfe85c43",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/4bde6b859f86a3fb503c80196581e084e4d2001a"
+        },
+        "date": 1787021416668,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 34470.65779622396,
+            "unit": "ns",
+            "range": "± 3242.5513044954882"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 45529.01202392578,
+            "unit": "ns",
+            "range": "± 1392.5582093195833"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 247981.0021158854,
+            "unit": "ns",
+            "range": "± 14442.024058631061"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 34308.41190592448,
+            "unit": "ns",
+            "range": "± 2927.037807536611"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 142217.0439453125,
+            "unit": "ns",
+            "range": "± 34892.27635922694"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 471348.1223958333,
+            "unit": "ns",
+            "range": "± 75122.30506370359"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 33186.21518961588,
+            "unit": "ns",
+            "range": "± 2205.3310005350822"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 403307.4134114583,
+            "unit": "ns",
+            "range": "± 11859.030509402746"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 4223073.125,
+            "unit": "ns",
+            "range": "± 1322484.407452973"
           }
         ]
       }
