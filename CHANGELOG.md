@@ -19,6 +19,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.8.1] - 2026-08-18
+
+Maintenance release — patch-safe dependency bumps and Code Scanning noise-floor
+cleanup. No public API changes; drop-in replacement for 0.8.0.
+
+### Changed
+
+- Bumped `SQLitePCLRaw.lib.e_sqlite3` `3.50.3` → `3.53.3` across all Core /
+  Core-EF6..10 src packages.
+- Bumped `Microsoft.NET.Test.Sdk` to `18.9.0` on every net8.0+ test/example path
+  (net6.0/net7.0 branches keep `17.8.0`, which is the last Test.Sdk line that
+  supports those target frameworks). (#384)
+- Bumped `System.Formats.Asn1` and `System.Text.Json` `10.0.9` → `10.0.11` in
+  the EF7 AdventureWorks demo project.
+
+### Fixed
+
+- **InspectCode Code Scanning noise floor** — brought open alert count on
+  `main` from ~2,999 down toward zero without introducing solution-wide
+  blanket suppressions. Root cause was a file-naming trap: the shared
+  ReSharper settings file was named `Wolfgang.DbContextBuilder.sln.DotSettings`
+  while the solution is `.slnx`, so `jb inspectcode` never loaded it and no
+  noise floor existed. Renamed to `Wolfgang.DbContextBuilder.slnx.DotSettings`;
+  scoped suppressions where legitimately warranted (per-project
+  `AdventureWorks-EF*.csproj.DotSettings` for EF-scaffolded generated code;
+  per-file `#pragma warning disable EF1001` on the three files that
+  intentionally wrap EF Core internals; a folder `.editorconfig` entry for
+  CS8632 under `Models/Generated/*.cs`); solution-wide suppression kept
+  only for the `RS0016` / `RS0036` / `RS0037` false positives caused by
+  `jb inspectcode` not forwarding `PublicAPI.*.txt` as `AdditionalFiles`.
+  Residual real findings — `S3267` (`foreach + if` → LINQ `FirstOrDefault`
+  in `DbContextBuilder.FindPrincipal`), `S2971` (`ToList` → `AsEnumerable`
+  in test harness), redundant type arguments, redundant nullable
+  suppressions after `Assert.NotNull`, and a duplicate no-op test — were
+  fixed in place. (#377, #379, #380, #381, #382)
+
 ## [0.8.0] - 2026-06-25
 
 ### Added
