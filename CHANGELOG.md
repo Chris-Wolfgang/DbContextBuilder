@@ -33,6 +33,13 @@ cleanup. No public API changes; drop-in replacement for 0.8.0.
   supports those target frameworks). (#384)
 - Bumped `System.Formats.Asn1` and `System.Text.Json` `10.0.9` → `10.0.11` in
   the EF7 AdventureWorks demo project.
+- Bumped `Microsoft.CodeAnalysis.PublicApiAnalyzers` `3.3.4` → `5.6.0`
+  in `Directory.Build.props`. Aligns with the fleet-standard version
+  (matches ETL-Xml, which has 0 open InspectCode alerts on `main`) and
+  is expected to clear the residual ~496 spurious `RS0016` / `RS0037` /
+  `RS0036` findings on the Code Scanning dashboard — analyser 3.3.4
+  emitted those under InspectCode even with a valid `PublicAPI.*.txt`
+  file present, 5.6.0 does not.
 
 ### Fixed
 
