@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787021540930,
+  "lastUpdate": 1787279582888,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -624,6 +624,84 @@ window.BENCHMARK_DATA = {
             "value": 3360423.1822916665,
             "unit": "ns",
             "range": "± 1449456.5392759745"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "343bd64c9be144b2d39b172a7c8b4bdac0d905b2",
+          "message": "chore(deps): patch-safe NuGet bumps + version bump 0.8.0 → 0.8.1 (release vNext) (#384)\n\n## Summary\n\nOpens the \\`vNext\\` release integration branch for **0.8.1** and lands\nthe mechanical patch-safe NuGet bumps. Scope per pre-work confirmation:\npatch-safe 3rd-party bumps only + repo version bump; PATCH target (no\npublic API changes).\n\n## Package bumps\n\n| Package | Old | New | Where |\n|---|---|---|---|\n| \\`SQLitePCLRaw.lib.e_sqlite3\\` | 3.50.3 | 3.53.3 | 6 src csprojs\n(Core, Core-EF6/7/8/9/10) |\n| \\`System.Formats.Asn1\\` | 10.0.9 | 10.0.11 |\nextra-projects/AdventureWorks-EF7 |\n| \\`System.Text.Json\\` | 10.0.9 | 10.0.11 |\nextra-projects/AdventureWorks-EF7 |\n| \\`Microsoft.NET.Test.Sdk\\` | 17.13.0 → 18.9.0 | 5 net8+ single-TFM\ntest csprojs + the net8+ branch of every conditional multi-TFM test\ncsproj |\n| \\`Microsoft.NET.Test.Sdk\\` | 18.3.0 → 18.9.0 | EF6 (.NET Framework)\ntest csproj |\n| \\`Microsoft.NET.Test.Sdk\\` | 17.8.0 (net6/net7 branches) | **kept\nas-is** | Test.Sdk 17.14 dropped net6/net7 support (17.14.1 errors\nlocally with \"doesn't support net6.0\" / \"net7.0\"); 17.8.0 pin stays |\n\n## Repo version\n\nAll 10 src csprojs \\`<Version>\\`: **0.8.0 → 0.8.1** (patch).\n\n## Deliberately NOT in this PR\n\n- **\\`xunit.runner.visualstudio\\` 2.8.2** — kept. Fleet memory says\nrunner 3.x is xunit-2.x compatible (CLAUDE.md is stale on that pin), but\nthe bump is out of scope for a PATCH release.\n- **\\`examples/…\\` reference to \\`Wolfgang.DbContextBuilder-Core-EF8\\`\n0.7.0** — bump this AFTER 0.8.1 publishes (references what's actually on\nNuGet).\n- **\\`Wolfgang.Etl.Abstractions\\` 0.23.2** — this repo has zero\nconsumers of the ETL family; no dependency to add. (Confirmed with a\nfull-repo grep.)\n\n## Verified locally on vNext\n\n- \\`dotnet build src/... -c Release -p:TreatWarningsAsErrors=true\\` →\n**0 Errors**\n- \\`dotnet test tests/Wolfgang.DbContextBuilder-Core.Tests.Unit\\` →\n**86/86** pass on net6/7/8/9/10\n- \\`dotnet test tests/Wolfgang.DbContextBuilder.AutoFixture.Tests.Unit\\`\n→ **196/196** pass on net6/7/8/9/10\n- \\`dotnet test tests/Wolfgang.DbContextBuilder.Bogus.Tests.Unit\\` →\n**7/7** pass on net8/9/10\n- \\`dotnet build extra-projects/AdventureWorks-EF7\\` → **0 Errors**\n\n## Next steps toward 0.8.1\n\n- [ ] This PR lands on \\`vNext\\`\n- [ ] Any additional in-flight PRs stack on \\`vNext\\`\n- [ ] Bump examples reference to \\`Wolfgang.DbContextBuilder-Core-EF8\\`\n0.8.1 after publish\n- [ ] Update CHANGELOG.md\n- [ ] Merge \\`vNext\\` → \\`main\\`\n- [ ] Tag \\`v0.8.1\\` (user; you don't create releases)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+          "timestamp": "2026-08-20T22:31:08-04:00",
+          "tree_id": "ca187eba5651b0e3210c48dd314ed4185835136a",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/343bd64c9be144b2d39b172a7c8b4bdac0d905b2"
+        },
+        "date": 1787279581955,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 39126.19934082031,
+            "unit": "ns",
+            "range": "± 1458.2369141833326"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 62801.35017903646,
+            "unit": "ns",
+            "range": "± 1040.684024473429"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 283462.5638020833,
+            "unit": "ns",
+            "range": "± 59565.51823459239"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 39109.10245768229,
+            "unit": "ns",
+            "range": "± 1644.770310960203"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 126373.05875651042,
+            "unit": "ns",
+            "range": "± 5921.217109562603"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 473378.3528645833,
+            "unit": "ns",
+            "range": "± 28363.960561128322"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 39111.65946451823,
+            "unit": "ns",
+            "range": "± 1623.5224097271587"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 455122.6888020833,
+            "unit": "ns",
+            "range": "± 8454.763126875614"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 3447379.9296875,
+            "unit": "ns",
+            "range": "± 1484848.554182034"
           }
         ]
       }
