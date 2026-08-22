@@ -67,13 +67,17 @@
 
   <ItemGroup>
     <!-- A1: PublicApiAnalyzers — track public API surface for breaking-change
-         detection. AdditionalFiles below are opt-in PER PROJECT via Exists():
-         drop PublicAPI.Shipped.txt + PublicAPI.Unshipped.txt into a src
-         project directory and the analyzer activates for that project only.
-         Library projects under src/ should opt in; test / example /
-         benchmark projects should not. Per-repo enablement is tracked as a
-         follow-up maintenance issue. -->
-    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0">
+         detection. Opt-in PER PROJECT: drop PublicAPI.Shipped.txt +
+         PublicAPI.Unshipped.txt into a src project directory and the analyzer
+         both loads and activates for that project only. The Exists() gate on
+         the PackageReference below prevents the analyzer from being loaded on
+         projects that don't opt in (tests, benchmarks, examples, demo apps),
+         which under `jb inspectcode`'s hosting otherwise fire ~430 spurious
+         RS0016 / RS0037 diagnostics on every public test class/method.
+         Local `dotnet build` keeps the same PublicApiAnalyzer coverage for
+         src (opt-in) that it always had. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0"
+                      Condition="Exists('PublicAPI.Shipped.txt')">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
