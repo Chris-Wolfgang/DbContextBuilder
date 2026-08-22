@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787426604841,
+  "lastUpdate": 1787438149570,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -858,6 +858,84 @@ window.BENCHMARK_DATA = {
             "value": 2732503.1692708335,
             "unit": "ns",
             "range": "± 172007.69971360356"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "401da5a63b60cda470c5dc1f32bda981b71f9818",
+          "message": "chore(pack): institute PackageValidation baseline 0.8.1 across all 10 src packages (#391)\n\n## Summary\n\nPost-release step for v0.8.1: institute\n\\`PackageValidationBaselineVersion\\` = 0.8.1 across all 10 src packages,\nnow that all are indexed on the NuGet flatcontainer CDN (verified\n2026-08-22 after release.yaml completed).\n\n**This repo has never had \\`<PackageValidationBaselineVersion>\\` set on\nany src project**, so this PR is INSTITUTING the baseline for the first\ntime — matching the fleet convention already in place on ETL-Xml\n(per-csproj, not DBP). Going forward, each release cycle bumps this\nbaseline in a small follow-up PR after CDN indexing confirms.\n\n## Changes\n\nInserted immediately after \\`<IsPackable>true</IsPackable>\\` in each of\nthe 10 src csprojs:\n\n\\`\\`\\`xml\n<EnablePackageValidation>true</EnablePackageValidation>\n\n<PackageValidationBaselineVersion>0.8.1</PackageValidationBaselineVersion>\n\\`\\`\\`\n\nPackages covered (all 10, in lockstep — they ship together):\n\n- Wolfgang.DbContextBuilder-Core\n- Wolfgang.DbContextBuilder-Core-EF{6,7,8,9,10}\n- Wolfgang.DbContextBuilder-EF6 (classic EF6)\n- Wolfgang.DbContextBuilder.Abstractions\n- Wolfgang.DbContextBuilder.AutoFixture\n- Wolfgang.DbContextBuilder.Bogus\n\n## Verified locally\n\n- \\`dotnet pack src/Wolfgang.DbContextBuilder-Core/*.csproj -c Release\\`\n— downloads Wolfgang.DbContextBuilder-Core 0.8.1 from NuGet as the\nbaseline, validates the just-built 0.8.1 against it. **Successfully\ncreates the .nupkg + .snupkg with no ApiCompat suppressions needed** —\nconfirming the metadata reconciliation in #389 was clean.\n- \\`dotnet pack src/Wolfgang.DbContextBuilder.Abstractions/*.csproj -c\nRelease\\` — same clean result on the single-TFM package.\n\n## What this enables\n\nEvery future \\`dotnet pack\\` (local + CI) automatically compares the\nin-flight build against 0.8.1 from NuGet and reports any ABI break as a\nbuild error unless explicitly suppressed in\n\\`CompatibilitySuppressions.xml\\`. Catches accidental breaks the next\ntime someone touches Assertions / SqliteModelCustomizer / any public\nsurface.\n\n## References\n\n- #377 (umbrella)\n- v0.8.1 tag:\n[\\`f6eda60\\`](https://github.com/Chris-Wolfgang/DbContextBuilder/releases/tag/v0.8.1)\n- Fleet memory: \\`feedback_post_deploy_baseline_bump\\` +\n\\`reference_packagevalidation_baseline_timing\\`\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+          "timestamp": "2026-08-22T18:33:49-04:00",
+          "tree_id": "6335df5d7701da490559978cc65be456b75add5c",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/401da5a63b60cda470c5dc1f32bda981b71f9818"
+        },
+        "date": 1787438147926,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 38035.153971354164,
+            "unit": "ns",
+            "range": "± 1320.277451957207"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 61483.96018473307,
+            "unit": "ns",
+            "range": "± 922.1172621959743"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 240625.17041015625,
+            "unit": "ns",
+            "range": "± 17679.55895342945"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 38771.834493001305,
+            "unit": "ns",
+            "range": "± 1637.0777927774222"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 125089.83740234375,
+            "unit": "ns",
+            "range": "± 6507.564105261459"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 472545.7649739583,
+            "unit": "ns",
+            "range": "± 30902.79667647997"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 37460.366149902344,
+            "unit": "ns",
+            "range": "± 1798.1520599641021"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 448822.4908854167,
+            "unit": "ns",
+            "range": "± 20412.968759810752"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 3892396.578125,
+            "unit": "ns",
+            "range": "± 1214933.9562474745"
           }
         ]
       }
