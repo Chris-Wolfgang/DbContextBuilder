@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787420818276,
+  "lastUpdate": 1787426604841,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -780,6 +780,84 @@ window.BENCHMARK_DATA = {
             "value": 1785300.6588541667,
             "unit": "ns",
             "range": "± 29768.260234002144"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f6eda60840578b538bd08485ca6efe66ec0a3902",
+          "message": "release: finalize v0.8.1 — forwarded PublicAPI declaration + CHANGELOG (#390)\n\n## Summary\n\n**Final PR of the 0.8.1 release cut.** Merges the two remaining pieces\nof the release:\n\n1. Declares the type-forwarded\n\\`ICreateRandomEntities.CreateRandomEntities<TEntity>\\` method entry\nthat Core exposes via \\`[assembly: TypeForwardedTo]\\` from Abstractions\n— closes the last real \\`RS0016\\` alert on \\`main\\`.\n2. Finalizes the \\`## [0.8.1]\\` CHANGELOG entry: sets the date to today\n(2026-08-22), rewrites the summary to acknowledge the PublicAPI metadata\nreconciliation, and attributes every bullet to the PRs that shipped it.\n\n## What's in 0.8.1 (recap of the full cycle)\n\n| PR | Scope |\n|---|---|\n| #379 | Rename \\`.sln.DotSettings\\` → \\`.slnx.DotSettings\\` +\nsolution-wide DO_NOT_SHOW for RS0016/36/37 (tool-wide FP baseline) |\n| #380 | Per-project \\`.csproj.DotSettings\\` for AdventureWorks\nEF-scaffolded generated code |\n| #381 | Per-file \\`#pragma warning disable EF1001\\` for the 3 files\nthat intentionally wrap EF internals |\n| #382 | Triage of residual 41 alerts — real code fixes + narrow\nsuppressions |\n| #384 | Patch-safe NuGet bumps (SQLitePCLRaw, Test.Sdk,\nSystem.Formats.Asn1, System.Text.Json) + \\`<Version>\\` 0.8.0 → 0.8.1 +\ninitial CHANGELOG |\n| #385 | \\`Microsoft.CodeAnalysis.PublicApiAnalyzers\\` 3.3.4 → 5.6.0\n(protected-file bypass) |\n| #386 | Drop unused \\`args\\` from AdventureWorks demo Program.cs +\ntrigger SARIF refresh |\n| #388 | Gate \\`PublicApiAnalyzers\\` PackageReference on\n\\`Exists('PublicAPI.Shipped.txt')\\` — architectural fix, not suppression\n|\n| #389 | Fold 60 missing/un-annotated PublicAPI symbols; sync -Core-EFx\nsiblings; Unshipped → Shipped for 0.8.1 |\n| **#390 (this PR)** | Forwarded\n\\`ICreateRandomEntities.CreateRandomEntities\\` declaration + finalize\nCHANGELOG |\n\n## SemVer classification: **PATCH** (0.8.0 → 0.8.1)\n\nPer \\`feedback_patch_release_scope\\`:\n- **Zero source-code changes** to any public/protected member signature.\n- **Zero new public API surface** — the PublicAPI additions in #389 are\ncatching up on 0.7.0-era symbols that were already publicly usable but\nnever declared in \\`PublicAPI.*.txt\\`. Metadata reconciliation, not new\nsurface.\n- \\`dotnet pack -c Release\\` against the 0.8.0 baseline succeeds without\nApiCompat suppressions (verified locally on this branch).\n\n## Verified locally\n\n- \\`dotnet build src/Wolfgang.DbContextBuilder-Core/*.csproj -c Release\n-p:TreatWarningsAsErrors=true\\` → **0 Errors**\n- \\`dotnet pack src/Wolfgang.DbContextBuilder-Core/*.csproj -c Release\\`\n→ **Wolfgang.DbContextBuilder-Core.0.8.1.nupkg** created;\nPackageValidation vs 0.8.0 baseline passes.\n\n## Test plan\n\n- [ ] \\`Detect .NET Projects\\` guard passes (this PR touches only\n\\`src/**/PublicAPI.Shipped.txt\\` + \\`CHANGELOG.md\\`)\n- [ ] Stage 1/2/3, InspectCode, all security scans green\n- [ ] After merge, tag \\`v0.8.1\\` on main HEAD to trigger\n\\`release.yaml\\` (user tags per \\`feedback_no_create_releases\\`)\n\n## Post-release (opened separately after tag)\n\n- [ ] NuGet flatcontainer indexing for all 10 packages\n- [ ] \\`PackageValidationBaselineVersion\\` 0.8.0 → 0.8.1 across all src\ncsprojs (once CDN has 0.8.1)\n- [ ] Delete \\`vNext\\` locally + branch cleanup\n- [ ] Close umbrella #377 (InspectCode alerts driven from 2,999 to <5)\n\n## References\n\n- #377 (umbrella — InspectCode noise-floor cleanup)\n- Full CHANGELOG entry: [\\`CHANGELOG.md\\` → \\`##\n[0.8.1]\\`](../blob/chore/publicapi-add-forwarded-createrandomentities/CHANGELOG.md)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+          "timestamp": "2026-08-22T15:21:25-04:00",
+          "tree_id": "1355ee2dc9350139b12154d01f5d29e74fd1954b",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/f6eda60840578b538bd08485ca6efe66ec0a3902"
+        },
+        "date": 1787426603432,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 39478.630991617836,
+            "unit": "ns",
+            "range": "± 2087.0553832654796"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 63578.33158365885,
+            "unit": "ns",
+            "range": "± 1346.7961589649258"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 260827.59765625,
+            "unit": "ns",
+            "range": "± 15438.322541231153"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 40326.13466389974,
+            "unit": "ns",
+            "range": "± 1945.965979031518"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 134015.54134114584,
+            "unit": "ns",
+            "range": "± 6506.618085960926"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 530960.0973307291,
+            "unit": "ns",
+            "range": "± 57629.7687013959"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 40328.817810058594,
+            "unit": "ns",
+            "range": "± 1659.9721579370257"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 471243.41796875,
+            "unit": "ns",
+            "range": "± 12069.962492733937"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 2732503.1692708335,
+            "unit": "ns",
+            "range": "± 172007.69971360356"
           }
         ]
       }
