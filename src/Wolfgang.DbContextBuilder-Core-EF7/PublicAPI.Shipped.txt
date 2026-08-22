@@ -31,6 +31,7 @@ Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions
 Wolfgang.DbContextBuilderCore.ICreateDbContext
 Wolfgang.DbContextBuilderCore.ICreateDbContext.CreateDbContextAsync<TDbContext>(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<TDbContext!>! optionsBuilder) -> System.Threading.Tasks.Task<TDbContext!>!
 Wolfgang.DbContextBuilderCore.ICreateRandomEntities (forwarded, contained in Wolfgang.DbContextBuilder.Abstractions)
+Wolfgang.DbContextBuilderCore.ICreateRandomEntities.CreateRandomEntities<TEntity>(int count) -> System.Collections.Generic.IEnumerable<TEntity!>! (forwarded, contained in Wolfgang.DbContextBuilder.Abstractions)
 Wolfgang.DbContextBuilderCore.ISeedProfile<T>
 Wolfgang.DbContextBuilderCore.ISeedProfile<T>.Apply(Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>! builder) -> void
 Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer
