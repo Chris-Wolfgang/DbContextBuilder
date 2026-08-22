@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787279582888,
+  "lastUpdate": 1787420818276,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -702,6 +702,84 @@ window.BENCHMARK_DATA = {
             "value": 3447379.9296875,
             "unit": "ns",
             "range": "± 1484848.554182034"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bb510eba11292301ff750ebee67010bfdb22c9bb",
+          "message": "build(publicapi): declare 60 missing symbols + fold Unshipped → Shipped for 0.8.1 (#389)\n\n## Summary\n\nCloses the residual 63 real \\`RS0016\\` + \\`RS0036\\` InspectCode alerts\non \\`main\\` **and** folds the resulting \\`Unshipped.txt\\` entries into\n\\`Shipped.txt\\` for the 0.8.1 release. Zero suppression.\n\nTwo commits:\n\n1. **Declare 60 missing/un-annotated symbols across 5 src projects**\n(previous commit)\n2. **Fold Unshipped → Shipped for 0.8.1 + sync -Core-EFx siblings to\n-Core** (new commit)\n\n## Root cause\n\nUnder PublicApiAnalyzers **3.3.4** (through v0.7.0), drift in PublicAPI\ndeclarations was emitted below \\`warning\\` severity and slipped past\n\\`TreatWarningsAsErrors=true\\` locally. The 0.7.0 additions —\n\\`UseSeedProfile\\`, \\`UseDiagnosticOutput\\`,\n\\`UseCustomRandomEntityCreator\\`, \\`DbSetAssertions.Should\\`,\n\\`UseSqlite<TDbContext>\\`, etc. — were never folded, and nullability\nannotations (\\`!\\` / \\`?\\`) were missing on many already-declared\nentries.\n\nPublicApiAnalyzers **5.6.0** (bumped in #385) still emits below-warning\nlocally, but under \\`jb inspectcode\\`'s Roslyn hosting they surface at\n\\`--severity=WARNING\\` and land in SARIF. Once #388 gated the analyzer\nto opt-in projects, the 63 real src-side findings were left in view.\n\n## Commit 1 — declare the missing surface\n\nEvery edit is either an **in-place annotation fixup** on an existing\n\\`Shipped.txt\\` line, or a **new declaration** appended to\n\\`Unshipped.txt\\`.\n\n| Project | Shipped fixups (`!`/`?` added) | Unshipped additions |\n|---|--:|--:|\n| Wolfgang.DbContextBuilder-Core          | 19 | 18 |\n| Wolfgang.DbContextBuilder-EF6           | 11 |  2 |\n| Wolfgang.DbContextBuilder.Abstractions  |  1 |  0 |\n| Wolfgang.DbContextBuilder.AutoFixture   |  6 |  1 |\n| Wolfgang.DbContextBuilder.Bogus         |  2 |  0 |\n| **Total**                               | **39** | **21** |\n\n## Commit 2 — fold Unshipped → Shipped for 0.8.1 + sync -Core-EFx\n\n**Fold**: the 21 entries in \\`Unshipped.txt\\` are promoted into\n\\`Shipped.txt\\` for the 0.8.1 release. Each \\`Unshipped.txt\\` is reset\nto the bare \\`#nullable enable\\` header.\n\n| Project | Unshipped before → after | Shipped before → after |\n|---|--:|--:|\n| -Core         | 19 → 1 | 36 → 54 |\n| -EF6          |  3 → 1 | 19 → 21 |\n| .AutoFixture  |  2 → 1 | 16 → 17 |\n\n**Sync**: the 5 sibling packages\n\\`Wolfgang.DbContextBuilder-Core-EF{6,7,8,9,10}\\` compile the **same\nsource files** as \\`-Core\\` (via \\`<Compile\nInclude=\\\"..\\Wolfgang.DbContextBuilder-Core\\*.cs\\\" Link=\\\"...\\\" />\\`) —\nso their assemblies expose an identical public surface. Their\n\\`PublicAPI.Shipped.txt\\` files were lagging at 32 lines each while\n-Core grew to 54. Copied -Core's 54-line file verbatim into all five\nsiblings. \\`dotnet build … -p:TreatWarningsAsErrors=true\\` = 0 Errors\nfor each.\n\n## Verified locally\n\n- \\`dotnet build src/Wolfgang.DbContextBuilder-Core/*.csproj -c Release\n-p:TreatWarningsAsErrors=true\\` → 0 Errors\n- Same for -EF6, Abstractions, AutoFixture, Bogus → 0 Errors each\n- Same for all 5 Core-EF6..10 siblings → 0 Errors each\n\n## Expected effect after merge\n\nNext InspectCode analysis of \\`main\\`: **64 → ~1** (residual is the\nstale SARIF entry on \\`BuildAsyncBenchmarks.SeedCount\\` — already fixed\non main).\n\n## Release-scope for 0.8.1\n\nThis PR aligns \\`Shipped.txt\\` with the actual 0.8.0-and-prior public\nsurface. On tag \\`v0.8.1\\`, all 10 packages will publish with accurate\nPublicAPI baselines going forward.\n\n## References\n\n- #377 (umbrella)\n- #385 (PublicApiAnalyzer 3.3.4 → 5.6.0)\n- #388 (gated analyzer to opt-in projects)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+          "timestamp": "2026-08-22T13:44:59-04:00",
+          "tree_id": "b97016ae9e9e951e5f6ab2c53bbc3cdb955d3c2e",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/bb510eba11292301ff750ebee67010bfdb22c9bb"
+        },
+        "date": 1787420817396,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 25729.5361328125,
+            "unit": "ns",
+            "range": "± 235.38470782720515"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 37728.01161702474,
+            "unit": "ns",
+            "range": "± 1982.287942894111"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 133658.14111328125,
+            "unit": "ns",
+            "range": "± 6752.357880869217"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 25253.634552001953,
+            "unit": "ns",
+            "range": "± 21.591868905176334"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 66242.50162760417,
+            "unit": "ns",
+            "range": "± 7452.750982721367"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 567098.5983072916,
+            "unit": "ns",
+            "range": "± 68926.41480940241"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 26211.930419921875,
+            "unit": "ns",
+            "range": "± 19.022388043061515"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 242803.3976236979,
+            "unit": "ns",
+            "range": "± 1382.491535322128"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 1785300.6588541667,
+            "unit": "ns",
+            "range": "± 29768.260234002144"
           }
         ]
       }
