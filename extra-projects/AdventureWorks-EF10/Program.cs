@@ -3,7 +3,7 @@ namespace AdventureWorks_EF10
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     internal class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             Console.WriteLine("Hello, World!");
         }
