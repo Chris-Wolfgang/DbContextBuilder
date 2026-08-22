@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<coverage version="1.0" date="2026-08-22_19-46-24" tag="">
+  <assembly name="AdventureWorks-EF10" />
+  <assembly name="AdventureWorks-EF6" />
+  <assembly name="AdventureWorks-EF7" />
+  <assembly name="AdventureWorks-EF8" />
+  <assembly name="AdventureWorks-EF9" />
+  <assembly name="Wolfgang.DbContextBuilder-Core-EF10">
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException" coveredlines="3" coverablelines="3" totallines="21" coveredbranches="0" totalbranches="0" coveredcodeelements="3" fullcoveredcodeelements="3" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions" coveredlines="4" coverablelines="4" totallines="45" coveredbranches="0" totalbranches="0" coveredcodeelements="2" fullcoveredcodeelements="2" totalcodeelements="2" />
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1" coveredlines="52" coverablelines="52" totallines="189" coveredbranches="14" totalbranches="14" coveredcodeelements="7" fullcoveredcodeelements="7" totalcodeelements="7" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextActivator`1" coveredlines="14" coverablelines="15" totallines="60" coveredbranches="1" totalbranches="2" coveredcodeelements="3" fullcoveredcodeelements="2" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextBuilder`1" coveredlines="149" coverablelines="151" totallines="618" coveredbranches="81" totalbranches="90" coveredcodeelements="24" fullcoveredcodeelements="23" totalcodeelements="24" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions" coveredlines="14" coverablelines="14" totallines="99" coveredbranches="7" totalbranches="8" coveredcodeelements="3" fullcoveredcodeelements="3" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator" coveredlines="3" coverablelines="3" totallines="21" coveredbranches="0" totalbranches="0" coveredcodeelements="2" fullcoveredcodeelements="2" totalcodeelements="2" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteDbContextCreator" coveredlines="12" coverablelines="12" totallines="58" coveredbranches="2" totalbranches="2" coveredcodeelements="4" fullcoveredcodeelements="4" totalcodeelements="4" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer" coveredlines="16" coverablelines="16" totallines="57" coveredbranches="4" totalbranches="4" coveredcodeelements="1" fullcoveredcodeelements="1" totalcodeelements="1" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer" coveredlines="81" coverablelines="81" totallines="302" coveredbranches="39" totalbranches="40" coveredcodeelements="15" fullcoveredcodeelements="15" totalcodeelements="15" />
+  </assembly>
+  <assembly name="Wolfgang.DbContextBuilder-Core-EF6">
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException" coveredlines="3" coverablelines="3" totallines="21" coveredbranches="0" totalbranches="0" coveredcodeelements="3" fullcoveredcodeelements="3" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions" coveredlines="4" coverablelines="4" totallines="45" coveredbranches="0" totalbranches="0" coveredcodeelements="2" fullcoveredcodeelements="2" totalcodeelements="2" />
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1" coveredlines="52" coverablelines="52" totallines="189" coveredbranches="14" totalbranches="14" coveredcodeelements="7" fullcoveredcodeelements="7" totalcodeelements="7" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextActivator`1" coveredlines="14" coverablelines="15" totallines="60" coveredbranches="1" totalbranches="2" coveredcodeelements="3" fullcoveredcodeelements="2" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextBuilder`1" coveredlines="140" coverablelines="151" totallines="618" coveredbranches="75" totalbranches="90" coveredcodeelements="24" fullcoveredcodeelements="21" totalcodeelements="24" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions" coveredlines="14" coverablelines="14" totallines="99" coveredbranches="7" totalbranches="8" coveredcodeelements="3" fullcoveredcodeelements="3" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator" coveredlines="3" coverablelines="3" totallines="21" coveredbranches="0" totalbranches="0" coveredcodeelements="2" fullcoveredcodeelements="2" totalcodeelements="2" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteDbContextCreator" coveredlines="12" coverablelines="12" totallines="58" coveredbranches="2" totalbranches="2" coveredcodeelements="4" fullcoveredcodeelements="4" totalcodeelements="4" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer" coveredlines="16" coverablelines="16" totallines="57" coveredbranches="4" totalbranches="4" coveredcodeelements="1" fullcoveredcodeelements="1" totalcodeelements="1" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer" coveredlines="78" coverablelines="81" totallines="302" coveredbranches="36" totalbranches="40" coveredcodeelements="15" fullcoveredcodeelements="12" totalcodeelements="15" />
+  </assembly>
+  <assembly name="Wolfgang.DbContextBuilder-Core-EF7">
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException" coveredlines="3" coverablelines="3" totallines="21" coveredbranches="0" totalbranches="0" coveredcodeelements="3" fullcoveredcodeelements="3" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions" coveredlines="4" coverablelines="4" totallines="45" coveredbranches="0" totalbranches="0" coveredcodeelements="2" fullcoveredcodeelements="2" totalcodeelements="2" />
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1" coveredlines="52" coverablelines="52" totallines="189" coveredbranches="14" totalbranches="14" coveredcodeelements="7" fullcoveredcodeelements="7" totalcodeelements="7" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextActivator`1" coveredlines="14" coverablelines="15" totallines="60" coveredbranches="1" totalbranches="2" coveredcodeelements="3" fullcoveredcodeelements="2" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextBuilder`1" coveredlines="140" coverablelines="151" totallines="618" coveredbranches="75" totalbranches="90" coveredcodeelements="24" fullcoveredcodeelements="21" totalcodeelements="24" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions" coveredlines="14" coverablelines="14" totallines="99" coveredbranches="7" totalbranches="8" coveredcodeelements="3" fullcoveredcodeelements="3" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator" coveredlines="3" coverablelines="3" totallines="21" coveredbranches="0" totalbranches="0" coveredcodeelements="2" fullcoveredcodeelements="2" totalcodeelements="2" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteDbContextCreator" coveredlines="12" coverablelines="12" totallines="58" coveredbranches="2" totalbranches="2" coveredcodeelements="4" fullcoveredcodeelements="4" totalcodeelements="4" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer" coveredlines="16" coverablelines="16" totallines="57" coveredbranches="4" totalbranches="4" coveredcodeelements="1" fullcoveredcodeelements="1" totalcodeelements="1" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer" coveredlines="78" coverablelines="81" totallines="302" coveredbranches="36" totalbranches="40" coveredcodeelements="15" fullcoveredcodeelements="12" totalcodeelements="15" />
+  </assembly>
+  <assembly name="Wolfgang.DbContextBuilder-Core-EF8">
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException" coveredlines="3" coverablelines="3" totallines="21" coveredbranches="0" totalbranches="0" coveredcodeelements="3" fullcoveredcodeelements="3" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions" coveredlines="4" coverablelines="4" totallines="45" coveredbranches="0" totalbranches="0" coveredcodeelements="2" fullcoveredcodeelements="2" totalcodeelements="2" />
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1" coveredlines="52" coverablelines="52" totallines="189" coveredbranches="14" totalbranches="14" coveredcodeelements="7" fullcoveredcodeelements="7" totalcodeelements="7" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextActivator`1" coveredlines="14" coverablelines="15" totallines="60" coveredbranches="1" totalbranches="2" coveredcodeelements="3" fullcoveredcodeelements="2" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextBuilder`1" coveredlines="140" coverablelines="151" totallines="618" coveredbranches="75" totalbranches="90" coveredcodeelements="24" fullcoveredcodeelements="21" totalcodeelements="24" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions" coveredlines="14" coverablelines="14" totallines="99" coveredbranches="7" totalbranches="8" coveredcodeelements="3" fullcoveredcodeelements="3" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator" coveredlines="3" coverablelines="3" totallines="21" coveredbranches="0" totalbranches="0" coveredcodeelements="2" fullcoveredcodeelements="2" totalcodeelements="2" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteDbContextCreator" coveredlines="12" coverablelines="12" totallines="58" coveredbranches="2" totalbranches="2" coveredcodeelements="4" fullcoveredcodeelements="4" totalcodeelements="4" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer" coveredlines="16" coverablelines="16" totallines="57" coveredbranches="4" totalbranches="4" coveredcodeelements="1" fullcoveredcodeelements="1" totalcodeelements="1" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer" coveredlines="78" coverablelines="81" totallines="302" coveredbranches="36" totalbranches="40" coveredcodeelements="15" fullcoveredcodeelements="12" totalcodeelements="15" />
+  </assembly>
+  <assembly name="Wolfgang.DbContextBuilder-Core-EF9">
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException" coveredlines="3" coverablelines="3" totallines="21" coveredbranches="0" totalbranches="0" coveredcodeelements="3" fullcoveredcodeelements="3" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions" coveredlines="4" coverablelines="4" totallines="45" coveredbranches="0" totalbranches="0" coveredcodeelements="2" fullcoveredcodeelements="2" totalcodeelements="2" />
+    <class name="Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions`1" coveredlines="52" coverablelines="52" totallines="189" coveredbranches="14" totalbranches="14" coveredcodeelements="7" fullcoveredcodeelements="7" totalcodeelements="7" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextActivator`1" coveredlines="14" coverablelines="15" totallines="60" coveredbranches="1" totalbranches="2" coveredcodeelements="3" fullcoveredcodeelements="2" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextBuilder`1" coveredlines="140" coverablelines="151" totallines="618" coveredbranches="75" totalbranches="90" coveredcodeelements="24" fullcoveredcodeelements="21" totalcodeelements="24" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions" coveredlines="14" coverablelines="14" totallines="99" coveredbranches="7" totalbranches="8" coveredcodeelements="3" fullcoveredcodeelements="3" totalcodeelements="3" />
+    <class name="Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator" coveredlines="3" coverablelines="3" totallines="21" coveredbranches="0" totalbranches="0" coveredcodeelements="2" fullcoveredcodeelements="2" totalcodeelements="2" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteDbContextCreator" coveredlines="12" coverablelines="12" totallines="58" coveredbranches="2" totalbranches="2" coveredcodeelements="4" fullcoveredcodeelements="4" totalcodeelements="4" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer" coveredlines="16" coverablelines="16" totallines="57" coveredbranches="4" totalbranches="4" coveredcodeelements="1" fullcoveredcodeelements="1" totalcodeelements="1" />
+    <class name="Wolfgang.DbContextBuilderCore.SqliteModelCustomizer" coveredlines="78" coverablelines="81" totallines="302" coveredbranches="36" totalbranches="40" coveredcodeelements="15" fullcoveredcodeelements="12" totalcodeelements="15" />
+  </assembly>
+  <assembly name="Wolfgang.DbContextBuilder.Abstractions" />
+  <assembly name="Wolfgang.DbContextBuilder.AutoFixture">
+    <class name="Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator" coveredlines="36" coverablelines="36" totallines="165" coveredbranches="14" totalbranches="14" coveredcodeelements="7" fullcoveredcodeelements="7" totalcodeelements="7" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions" coveredlines="3" coverablelines="3" totallines="26" coveredbranches="0" totalbranches="0" coveredcodeelements="1" fullcoveredcodeelements="1" totalcodeelements="1" />
+  </assembly>
+  <assembly name="Wolfgang.DbContextBuilder.Bogus">
+    <class name="Wolfgang.DbContextBuilderCore.BogusRandomEntityCreator" coveredlines="16" coverablelines="16" totallines="53" coveredbranches="26" totalbranches="26" coveredcodeelements="1" fullcoveredcodeelements="1" totalcodeelements="1" />
+    <class name="Wolfgang.DbContextBuilderCore.DbContextBuilderBogusExtensions" coveredlines="3" coverablelines="3" totallines="26" coveredbranches="0" totalbranches="0" coveredcodeelements="1" fullcoveredcodeelements="1" totalcodeelements="1" />
+  </assembly>
+</coverage>

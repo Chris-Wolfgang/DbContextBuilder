@@ -1,78 +1,78 @@
 Summary
-  Generated on: 6/26/2026 - 9:32:57 PM
-  Coverage date: 6/26/2026 - 9:32:36 PM - 6/26/2026 - 9:32:54 PM
+  Generated on: 8/22/2026 - 7:46:24 PM
+  Coverage date: 8/22/2026 - 7:45:57 PM - 8/22/2026 - 7:46:20 PM
   Parser: MultiReport (8x Cobertura)
   Assemblies: 7
   Classes: 54
   Files: 14
-  Line coverage: 96.2%
-  Covered lines: 1765
-  Uncovered lines: 68
-  Coverable lines: 1833
-  Total lines: 1742
-  Branch coverage: 88.2% (759 of 860)
-  Covered branches: 759
-  Total branches: 860
+  Line coverage: 96.5%
+  Covered lines: 1750
+  Uncovered lines: 63
+  Coverable lines: 1813
+  Total lines: 1740
+  Branch coverage: 88.5% (744 of 840)
+  Covered branches: 744
+  Total branches: 840
   Method coverage: 100% (330 of 330)
-  Full method coverage: 89.3% (295 of 330)
+  Full method coverage: 90.9% (300 of 330)
   Covered methods: 330
-  Fully covered methods: 295
+  Fully covered methods: 300
   Total methods: 330
 
-Wolfgang.DbContextBuilder-Core-EF10                                        98.8%
+Wolfgang.DbContextBuilder-Core-EF10                                        99.1%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
   Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
   Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                          98%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        98.6%
   Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
   Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
   Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%
   Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer         100%
   Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                       100%
 
-Wolfgang.DbContextBuilder-Core-EF6                                         95.4%
+Wolfgang.DbContextBuilder-Core-EF6                                         95.7%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
   Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
   Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.2%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.7%
   Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
   Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
   Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%
   Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer         100%
   Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                      96.2%
 
-Wolfgang.DbContextBuilder-Core-EF7                                         95.4%
+Wolfgang.DbContextBuilder-Core-EF7                                         95.7%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
   Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
   Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.2%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.7%
   Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
   Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
   Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%
   Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer         100%
   Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                      96.2%
 
-Wolfgang.DbContextBuilder-Core-EF8                                         95.4%
+Wolfgang.DbContextBuilder-Core-EF8                                         95.7%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
   Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
   Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.2%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.7%
   Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
   Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
   Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%
   Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer         100%
   Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                      96.2%
 
-Wolfgang.DbContextBuilder-Core-EF9                                         95.4%
+Wolfgang.DbContextBuilder-Core-EF9                                         95.7%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
   Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
   Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
   Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.2%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.7%
   Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
   Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
   Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%

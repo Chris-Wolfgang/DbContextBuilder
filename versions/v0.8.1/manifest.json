@@ -1,0 +1,302 @@
+{
+  "source_base_path": "D:/a/DbContextBuilder/DbContextBuilder/docfx_project",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "Resource",
+      "output": {
+        "resource": {
+          "relative_path": "index.json"
+        }
+      }
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.yml\" sourcestartlinenumber=\"1\">Thrown when a <xref href=\"Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions%601\" data-throw-if-not-resolved=\"false\"></xref> assertion fails. Carries an\nEF-aware failure message that identifies the entity type and the specific check that\ndid not pass.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.yml\" sourcestartlinenumber=\"1\">Entry-point extensions that produce a <xref href=\"Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions%601\" data-throw-if-not-resolved=\"false\"></xref> from a\n<xref href=\"Microsoft.EntityFrameworkCore.DbSet%601\" data-throw-if-not-resolved=\"false\"></xref> or <xref href=\"System.Linq.IQueryable%601\" data-throw-if-not-resolved=\"false\"></xref>. Intended to be\nimported via <code>using Wolfgang.DbContextBuilderCore.Assertions;</code> in test files so\nthat <code>context.Set&lt;Product&gt;().Should()</code> resolves.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions-1.yml\" sourcestartlinenumber=\"1\">Fluent, chainable assertions over an <xref href=\"System.Linq.IQueryable%601\" data-throw-if-not-resolved=\"false\"></xref> — either a\n<xref href=\"Microsoft.EntityFrameworkCore.DbSet%601\" data-throw-if-not-resolved=\"false\"></xref> directly or a filtered query derived from one — for use\nin DbContextBuilder-backed tests. Each method runs the corresponding query\nasynchronously, throws <xref href=\"Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException\" data-throw-if-not-resolved=\"false\"></xref> with an EF-aware\nmessage on failure, and returns <code>this</code> so the next assertion can be chained.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.Assertions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.Assertions",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.DbContextBuilder<T>",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.DbContextBuilder-1.yml\" sourcestartlinenumber=\"1\">Uses the Builder pattern to create instances of DbContext types seeded with specified data.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions.yml\" sourcestartlinenumber=\"1\">Extension methods that configure <xref href=\"Wolfgang.DbContextBuilderCore.DbContextBuilder%601\" data-throw-if-not-resolved=\"false\"></xref> to\nuse a SQLite in-memory database (plain SQLite, or SQLite with the\nSQL-Server-compatibility customizations).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.ICreateDbContext.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.ICreateDbContext.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.ICreateDbContext",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.ICreateDbContext.yml\" sourcestartlinenumber=\"1\">Defines the contract for creating instances of <xref href=\"Microsoft.EntityFrameworkCore.DbContext\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.ISeedProfile-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.ISeedProfile-1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.ISeedProfile<T>",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.ISeedProfile-1.yml\" sourcestartlinenumber=\"1\">A reusable, named bundle of seed data that can be applied to any\n<xref href=\"Wolfgang.DbContextBuilderCore.DbContextBuilder%601\" data-throw-if-not-resolved=\"false\"></xref> in a single call via\n<xref href=\"Wolfgang.DbContextBuilderCore.DbContextBuilder%601.UseSeedProfile(Wolfgang.DbContextBuilderCore.ISeedProfile%7b%600%7d)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer.yml\" sourcestartlinenumber=\"1\">An implementation of SqliteModelCustomizer specifically configured to handle a DbContext\ndesigned for Microsoft SQL Server databases.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore.SqliteModelCustomizer",
+      "Summary": "<p sourcefile=\"api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.yml\" sourcestartlinenumber=\"1\">Overrides the default model creation process in the DbContext{T} with configurations suitable for SQLite.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Wolfgang.DbContextBuilderCore.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Wolfgang.DbContextBuilderCore.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Wolfgang.DbContextBuilderCore",
+      "Summary": null
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "apple-touch-icon.png",
+      "output": {
+        "resource": {
+          "relative_path": "apple-touch-icon.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/getting-started.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/getting-started.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/introduction.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/introduction.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "docs/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "docs/toc.html"
+        },
+        ".json": {
+          "relative_path": "docs/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "favicon.ico",
+      "output": {
+        "resource": {
+          "relative_path": "favicon.ico"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "favicon.svg",
+      "output": {
+        "resource": {
+          "relative_path": "favicon.svg"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "logo.svg",
+      "output": {
+        "resource": {
+          "relative_path": "logo.svg"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "public/version-picker.js",
+      "output": {
+        "resource": {
+          "relative_path": "public/version-picker.js"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "versions.json",
+      "output": {
+        "resource": {
+          "relative_path": "versions.json"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}
