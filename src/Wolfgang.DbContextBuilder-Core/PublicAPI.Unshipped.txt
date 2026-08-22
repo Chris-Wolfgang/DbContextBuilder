@@ -1,1 +1,19 @@
 #nullable enable
+Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException
+Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.DbContextAssertionException() -> void
+Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.DbContextAssertionException(string! message) -> void
+Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.DbContextAssertionException(string! message, System.Exception! innerException) -> void
+Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions
+Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>
+Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.AllSatisfy(System.Linq.Expressions.Expression<System.Func<TEntity!, bool>!>! predicate) -> System.Threading.Tasks.Task<Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!>!
+Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.BeEmpty() -> System.Threading.Tasks.Task<Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!>!
+Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.Contain(System.Linq.Expressions.Expression<System.Func<TEntity!, bool>!>! predicate) -> System.Threading.Tasks.Task<Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!>!
+Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.HaveCount(int expected) -> System.Threading.Tasks.Task<Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!>!
+Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.NotBeEmpty() -> System.Threading.Tasks.Task<Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!>!
+Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.NotContain(System.Linq.Expressions.Expression<System.Func<TEntity!, bool>!>! predicate) -> System.Threading.Tasks.Task<Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!>!
+Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(TEntity! entity) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
+Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(params TEntity![]! entities) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
+Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseCustomRandomEntityCreator(Wolfgang.DbContextBuilderCore.ICreateRandomEntities! creator) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
+Wolfgang.DbContextBuilderCore.ICreateRandomEntities (forwarded, contained in Wolfgang.DbContextBuilder.Abstractions)
+static Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should<TEntity>(this Microsoft.EntityFrameworkCore.DbSet<TEntity!>! set) -> Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!
+static Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should<TEntity>(this System.Linq.IQueryable<TEntity!>! query) -> Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!

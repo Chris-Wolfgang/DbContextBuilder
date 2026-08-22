@@ -1,1 +1,3 @@
 #nullable enable
+Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>.SeedWith<TEntity>(TEntity! entity) -> Wolfgang.DbContextBuilderEF6.DbContextBuilder<T!>!
+Wolfgang.DbContextBuilderEF6.DbContextBuilder<T>.SeedWith<TEntity>(params TEntity![]! entities) -> Wolfgang.DbContextBuilderEF6.DbContextBuilder<T!>!
