@@ -19,27 +19,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-## [0.8.1] - 2026-08-18
+## [0.8.1] - 2026-08-22
 
-Maintenance release — patch-safe dependency bumps and Code Scanning noise-floor
-cleanup. No public API changes; drop-in replacement for 0.8.0.
+Maintenance release — patch-safe dependency bumps, Code Scanning noise-floor
+cleanup, and PublicAPI baseline reconciliation. No source-code or public-API
+surface changes; drop-in replacement for 0.8.0.
 
 ### Changed
 
 - Bumped `SQLitePCLRaw.lib.e_sqlite3` `3.50.3` → `3.53.3` across all Core /
-  Core-EF6..10 src packages.
+  Core-EF6..10 src packages. (#384)
 - Bumped `Microsoft.NET.Test.Sdk` to `18.9.0` on every net8.0+ test/example path
   (net6.0/net7.0 branches keep `17.8.0`, which is the last Test.Sdk line that
   supports those target frameworks). (#384)
 - Bumped `System.Formats.Asn1` and `System.Text.Json` `10.0.9` → `10.0.11` in
-  the EF7 AdventureWorks demo project.
-- Bumped `Microsoft.CodeAnalysis.PublicApiAnalyzers` `3.3.4` → `5.6.0`
-  in `Directory.Build.props`. Aligns with the fleet-standard version
-  (matches ETL-Xml, which has 0 open InspectCode alerts on `main`) and
-  is expected to clear the residual ~496 spurious `RS0016` / `RS0037` /
-  `RS0036` findings on the Code Scanning dashboard — analyser 3.3.4
-  emitted those under InspectCode even with a valid `PublicAPI.*.txt`
-  file present, 5.6.0 does not.
+  the EF7 AdventureWorks demo project. (#384)
+- Bumped `Microsoft.CodeAnalysis.PublicApiAnalyzers` `3.3.4` → `5.6.0` in
+  `Directory.Build.props`. Aligns with the fleet-standard analyzer version
+  (matches ETL-Xml). (#385)
+- Gated the `PublicApiAnalyzers` `PackageReference` on
+  `Exists('PublicAPI.Shipped.txt')` so the analyzer is only loaded on src
+  projects that opt in — mirrors the pattern already used for the sibling
+  `AdditionalFiles` block and prevents ~433 spurious `RS0016` / `RS0037`
+  findings on tests and benchmarks under `jb inspectcode`'s Roslyn hosting.
+  (#388)
+- Folded 60 previously-shipped-but-un-declared public symbols across five
+  src projects (Core, EF6, Abstractions, AutoFixture, Bogus) into their
+  respective `PublicAPI.Shipped.txt` — 39 in-place annotation fixups
+  (`!` / `?` markers required by `#nullable enable`) plus 21 new
+  declarations promoted from Unshipped for 0.8.1. Zero source-code
+  changes; strictly a metadata reconciliation of what was already public
+  since 0.7.0 (`UseSeedProfile`, `UseDiagnosticOutput`,
+  `UseCustomRandomEntityCreator`, `DbSetAssertions.Should`,
+  `DbContextAssertionsExtensions.Should`, `UseSqlite<TDbContext>`,
+  `UseSqliteForMsSqlServer<TDbContext>`, and the whole
+  `DbSetAssertions<TEntity>` type surface). Also synced the five
+  `-Core-EF{6,7,8,9,10}` sibling packages' `Shipped.txt` to match `-Core`
+  (they compile the same source via `<Compile Include>` links, so their
+  assemblies expose an identical public surface), and declared the
+  type-forwarded `ICreateRandomEntities.CreateRandomEntities<TEntity>`
+  method that Core forwards from `.Abstractions` via
+  `[assembly: TypeForwardedTo]`. (#389, #390)
 
 ### Fixed
 
