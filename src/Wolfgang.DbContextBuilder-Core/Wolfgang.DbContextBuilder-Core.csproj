@@ -26,6 +26,8 @@
 		<PackageTags>dbcontext;efcore;entity-framework;testing;unit-testing;in-memory;sqlite</PackageTags>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>true</IsPackable>
+		<EnablePackageValidation>true</EnablePackageValidation>
+		<PackageValidationBaselineVersion>0.8.1</PackageValidationBaselineVersion>
 		<IsTestProject>false</IsTestProject>
 		<DefineConstants>$(DefineConstants);EF_CORE_6;EF_CORE_6_OR_GREATER</DefineConstants>
 	</PropertyGroup>
