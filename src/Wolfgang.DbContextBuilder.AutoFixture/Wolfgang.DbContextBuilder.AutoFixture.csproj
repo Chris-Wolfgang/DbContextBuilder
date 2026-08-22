@@ -21,6 +21,8 @@
 		<PackageTags>dbcontext;efcore;entity-framework;testing;autofixture;random-data;test-data</PackageTags>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>true</IsPackable>
+		<EnablePackageValidation>true</EnablePackageValidation>
+		<PackageValidationBaselineVersion>0.8.1</PackageValidationBaselineVersion>
 		<IsTestProject>false</IsTestProject>
 	</PropertyGroup>
 	<ItemGroup>
