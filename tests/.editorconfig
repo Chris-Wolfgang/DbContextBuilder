@@ -46,3 +46,13 @@ dotnet_diagnostic.S1144.severity = none
 
 # xUnit2013: Use Assert.Single instead of Assert.Equal for collection size
 dotnet_diagnostic.xUnit2013.severity = none
+
+# PublicApiAnalyzers RS0016/RS0036/RS0037 — public API tracking is a src-only
+# concern. Test projects have no PublicAPI.*.txt (nor should they), so the
+# analyzer is dormant locally. But `jb inspectcode`'s Roslyn hosting still
+# emits these diagnostics on every public test class/method (~365 alerts
+# across the test suite). Silence at the tests scope only; src still gets
+# full RS0016 drift detection.
+dotnet_diagnostic.RS0016.severity = none
+dotnet_diagnostic.RS0036.severity = none
+dotnet_diagnostic.RS0037.severity = none
