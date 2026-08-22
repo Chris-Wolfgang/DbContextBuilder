@@ -5,6 +5,7 @@ Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator.AutoFixtureRandomEn
 Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator.CreateRandomEntities<TEntity>(int count) -> System.Collections.Generic.IEnumerable<TEntity!>!
 Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator.Fixture.get -> AutoFixture.Fixture!
 Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator.IgnoreVirtualMembers
+Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator.IgnoreVirtualMembers.Create(object! request, AutoFixture.Kernel.ISpecimenContext! context) -> object?
 Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator.IgnoreVirtualMembers.IgnoreVirtualMembers() -> void
 Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator.IgnoreVirtualMembersCustomization
 Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator.IgnoreVirtualMembersCustomization.Customize(AutoFixture.IFixture! fixture) -> void

@@ -1,13 +1,28 @@
 #nullable enable
+Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException
+Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.DbContextAssertionException() -> void
+Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.DbContextAssertionException(string! message) -> void
+Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException.DbContextAssertionException(string! message, System.Exception! innerException) -> void
+Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions
+Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>
+Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.AllSatisfy(System.Linq.Expressions.Expression<System.Func<TEntity!, bool>!>! predicate) -> System.Threading.Tasks.Task<Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!>!
+Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.BeEmpty() -> System.Threading.Tasks.Task<Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!>!
+Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.Contain(System.Linq.Expressions.Expression<System.Func<TEntity!, bool>!>! predicate) -> System.Threading.Tasks.Task<Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!>!
+Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.HaveCount(int expected) -> System.Threading.Tasks.Task<Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!>!
+Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.NotBeEmpty() -> System.Threading.Tasks.Task<Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!>!
+Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity>.NotContain(System.Linq.Expressions.Expression<System.Func<TEntity!, bool>!>! predicate) -> System.Threading.Tasks.Task<Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!>!
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.BuildAsync() -> System.Threading.Tasks.Task<T!>!
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.DbContextBuilder() -> void
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.Dispose() -> void
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(System.Collections.Generic.IEnumerable<TEntity!>! entities) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
+Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(TEntity! entity) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
+Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(params TEntity![]! entities) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(params TEntity[] entities) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int count) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int count, System.Func<TEntity!, TEntity!>! func) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int count, System.Func<TEntity!, int, TEntity!>! func) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
+Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseCustomRandomEntityCreator(Wolfgang.DbContextBuilderCore.ICreateRandomEntities! creator) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseDbContextOptionsBuilder(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<T!>! dbContextOptionsBuilder) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseDiagnosticOutput(System.Action<string!>! writeLine) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseInMemory() -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
@@ -15,6 +30,7 @@ Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseSeedProfile(Wolfgang.DbCont
 Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions
 Wolfgang.DbContextBuilderCore.ICreateDbContext
 Wolfgang.DbContextBuilderCore.ICreateDbContext.CreateDbContextAsync<TDbContext>(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<TDbContext!>! optionsBuilder) -> System.Threading.Tasks.Task<TDbContext!>!
+Wolfgang.DbContextBuilderCore.ICreateRandomEntities (forwarded, contained in Wolfgang.DbContextBuilder.Abstractions)
 Wolfgang.DbContextBuilderCore.ISeedProfile<T>
 Wolfgang.DbContextBuilderCore.ISeedProfile<T>.Apply(Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>! builder) -> void
 Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer
@@ -31,6 +47,8 @@ Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenaming.get ->
 Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.OverrideTableRenaming.set -> void
 Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.SqliteModelCustomizer(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies! dependencies) -> void
 override Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.Customize(Microsoft.EntityFrameworkCore.ModelBuilder! modelBuilder, Microsoft.EntityFrameworkCore.DbContext! context) -> void
+static Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should<TEntity>(this Microsoft.EntityFrameworkCore.DbSet<TEntity!>! set) -> Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!
+static Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions.Should<TEntity>(this System.Linq.IQueryable<TEntity!>! query) -> Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<TEntity!>!
 static Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions.UseSqlite<TDbContext>(this Wolfgang.DbContextBuilderCore.DbContextBuilder<TDbContext!>! builder) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<TDbContext!>!
 static Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions.UseSqliteForMsSqlServer<TDbContext>(this Wolfgang.DbContextBuilderCore.DbContextBuilder<TDbContext!>! builder) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<TDbContext!>!
 virtual Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.Dispose(bool disposing) -> void
