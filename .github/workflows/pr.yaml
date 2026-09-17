@@ -24,6 +24,7 @@ env:
   CODECOV_MINIMUM: 90
   
 on:
+  # zizmor: ignore[dangerous-triggers]
   pull_request_target:  # Runs from the main branch, not from PR branch
     branches:
       - main
@@ -909,6 +910,33 @@ jobs:
             8.0.x
             9.0.x
             10.0.x
+
+      - name: TFM parity between src/ and test projects (guard 3)
+        # Warns when a src/ project targets a framework no test project can
+        # exercise - the gap that let DbContextBuilder ship untested net47 /
+        # net6.0 assets. Warning-only by design (a platform TFM may have no
+        # test story yet); the point is that it is visible. Runs on this
+        # stage because Windows has every SDK the matrix needs. The script is
+        # taken from main so a PR cannot edit the check it is subject to;
+        # when main does not carry it yet (first adoption) the step skips.
+        shell: pwsh
+        env:
+          # The checkout uses persist-credentials:false (nothing in .git/config for
+          # PR-controlled build steps to read), so a bare `git fetch origin` has no
+          # auth and fails on a private repository. Pass the job token on this one
+          # command only; it is never written to git config.
+          TRUSTED_MAIN_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
+        run: |
+          git fetch "$env:TRUSTED_MAIN_URL" main:refs/remotes/origin/main --depth=1
+          if ($LASTEXITCODE -ne 0) { Write-Host "::error::Failed to fetch origin/main"; exit 1 }
+          git cat-file -e origin/main:scripts/tfm-parity.ps1 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "::notice::scripts/tfm-parity.ps1 is not on main yet - skipping the TFM parity check."
+            exit 0
+          }
+          git checkout origin/main -- scripts/tfm-parity.ps1
+          if ($LASTEXITCODE -ne 0) { Write-Host "::error::Failed to checkout origin/main:scripts/tfm-parity.ps1"; exit 1 }
+          pwsh ./scripts/tfm-parity.ps1
 
       - name: Restore .NET workloads
         # Some projects (MAUI / MauiHybrid / Android / iOS / WPF) declare workloads via

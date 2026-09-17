@@ -1,15 +1,15 @@
 {
   "template": "Chris-Wolfgang/repo-template",
-  "commit": "a7bed5df70323fefbf791a093b7644086431b781",
+  "commit": "8827b6f4ae99791e0b3936d3d1e9b072e9b07236",
   "updated": "2026-09-17",
   "placeholders": {
-    "GITHUB_OWNER": "Chris-Wolfgang",
-    "REPO_NAME": "DbContextBuilder",
     "GITHUB_REPO_URL": "https://github.com/Chris-Wolfgang/DbContextBuilder",
-    "DOCS_URL": "https://chris-wolfgang.github.io/DbContextBuilder/",
+    "REPO_NAME": "DbContextBuilder",
     "PROJECT_NAME": "Wolfgang.DbContextBuilder-Core",
-    "PACKAGE_NAME": "Wolfgang.DbContextBuilder-Core",
-    "LICENSE_TYPE": "MIT"
+    "DOCS_URL": "https://chris-wolfgang.github.io/DbContextBuilder/",
+    "LICENSE_TYPE": "MIT",
+    "GITHUB_OWNER": "Chris-Wolfgang",
+    "PACKAGE_NAME": "Wolfgang.DbContextBuilder-Core"
   },
   "note": "Written by scripts/setup.ps1 and scripts/upgrade.ps1; the template commit this repository last took template-managed files from, and the placeholder values setup used."
 }
