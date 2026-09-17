@@ -1,0 +1,67 @@
+name: SAST (Semgrep)
+
+# Security-grade static analysis beyond CodeQL (#164).
+#
+# Semgrep runs a different engine and ruleset from CodeQL (pattern/dataflow
+# rules for C#, a general security-audit pack, and a secrets pack), so it
+# surfaces issues CodeQL's queries don't. Findings upload to Code Scanning
+# (Security tab) as an additional signal; report-only for now (`|| true`) so a
+# noisy new ruleset can't block merges — promote to a gate once the baseline is
+# clean.
+#
+# Uses the public Semgrep registry packs, which need no account/login.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: semgrep-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  semgrep:
+    name: Semgrep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.x'
+
+      - name: Install Semgrep
+        # Hash-pinned rather than a bare `pip install semgrep` (OSSF Scorecard
+        # Pinned-Dependencies: "pipCommand not pinned by hash"). --require-hashes
+        # makes pip verify every wheel it downloads and refuse anything not
+        # listed, so the transitive tree is pinned too. Regenerate with the uv
+        # command recorded in the header of the requirements file; the resolution
+        # is universal, so it covers every runner platform and Python version.
+        run: pip install --require-hashes -r .github/requirements/semgrep.txt
+
+      - name: Run Semgrep
+        run: |
+          semgrep scan \
+            --config p/csharp \
+            --config p/security-audit \
+            --config p/secrets \
+            --sarif --output semgrep.sarif \
+            --error || true
+
+      - name: Upload Semgrep SARIF
+        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
+        with:
+          sarif_file: semgrep.sarif
