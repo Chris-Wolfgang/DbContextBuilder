@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787438149570,
+  "lastUpdate": 1789615762737,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -936,6 +936,84 @@ window.BENCHMARK_DATA = {
             "value": 3892396.578125,
             "unit": "ns",
             "range": "± 1214933.9562474745"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5f16dabba6ae324d93b8820e37a2987b41cf02c6",
+          "message": "ci: pin every workflow action to a commit SHA with an exact # vX.Y.Z comment (#403)\n\nFleet sweep for Chris-Wolfgang/repo-template#447 (and baseline item 11),\nproduced by `scripts/pin-actions.ps1 -PinTags` from repo-template#556.\n\n- `uses: owner/repo@v7` → `@<sha> # v7.0.1` (SHA pin, exact tag on that\ncommit)\n- `uses: owner/repo@<sha> # v7` → `# v7.0.1` (comment precision only;\nsame SHA)\n\nOnly the ref/comment text on `uses:` lines changed — nothing else in the\nfiles. Dependabot preserves the precision it finds, so this stays\nconverted on future bumps.\n\n`3 already exact, 42 line(s) rewritten, 42 tag reference(s), 0 pinned\nSHA(s) with no tag`\n\n**Needs the admin bypass** (workflow files → `Detect .NET Projects`\nfails by design).\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+          "timestamp": "2026-09-16T23:27:29-04:00",
+          "tree_id": "a8c5afa1e285d361abe0cf1c44eb41615afea1a2",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/5f16dabba6ae324d93b8820e37a2987b41cf02c6"
+        },
+        "date": 1789615760730,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 31693.931518554688,
+            "unit": "ns",
+            "range": "± 2091.909987023832"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 44158.34453328451,
+            "unit": "ns",
+            "range": "± 1917.1326795385148"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 244597.67903645834,
+            "unit": "ns",
+            "range": "± 16471.4418288461"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 32958.04724121094,
+            "unit": "ns",
+            "range": "± 1955.026146364448"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 100494.81412760417,
+            "unit": "ns",
+            "range": "± 5930.596731240175"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 477589.1341145833,
+            "unit": "ns",
+            "range": "± 79088.81363085787"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 33493.0361328125,
+            "unit": "ns",
+            "range": "± 1993.2133386888756"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 401930.9388020833,
+            "unit": "ns",
+            "range": "± 11848.545271100833"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 4227453.552083333,
+            "unit": "ns",
+            "range": "± 1331421.4670964598"
           }
         ]
       }
