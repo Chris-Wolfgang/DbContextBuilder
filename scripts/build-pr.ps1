@@ -81,6 +81,17 @@ else {
 if (-not $SkipTests -and $failed.Count -eq 0) {
     Write-Step "Step 2: Run Tests (all target frameworks)"
 
+    # Mirrors pr.yaml's Stage 2 TFM parity check (guard 3). Findings are
+    # warnings (exit 0); a non-zero exit means the evaluation itself broke and
+    # is a failure here exactly as it is in CI.
+    if (Test-Path './scripts/tfm-parity.ps1') {
+        & pwsh -NoProfile -File './scripts/tfm-parity.ps1'
+        if ($LASTEXITCODE -ne 0) {
+            Write-Fail "TFM parity guard failed to run (exit $LASTEXITCODE)"
+            $failed += "TFM parity"
+        }
+    }
+
     $testProjects = @(Get-ChildItem -Path './tests' -Recurse -File -Include '*.csproj', '*.vbproj', '*.fsproj' -ErrorAction SilentlyContinue)
 
     if ($testProjects.Count -eq 0) {
