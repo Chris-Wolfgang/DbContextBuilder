@@ -7,9 +7,9 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
 // reflection consumers so it reports the setters as never used.
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 //
-// Linked into every test project that shares BasicContext (AutoFixture, Bogus,
-// the EF6-EF10 variants); most of them only ever set Id, so the instrumented
-// test assemblies score this POCO at 0-33%. No logic to cover - excluded.
+// Compiled here and linked (<Compile Link>) into the AutoFixture and EF6-EF10
+// variant test projects; those only ever set Id, so the instrumented test
+// assemblies score this POCO at 0-33%. No logic to cover - excluded.
 [ExcludeFromCodeCoverage]
 internal class TableWithDefaults
 {
