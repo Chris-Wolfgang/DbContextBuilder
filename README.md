@@ -2,8 +2,8 @@
 
 Uses the `Builder` pattern to create Entity Framework Core and classic Entity Framework `DbContext` instances using an in-memory database for testing purposes. With DbContextBuilder, you can easily set up a `DbContext` with predefined data, making it ideal for unit tests and integration tests without having to rely on an actual database whose data can be changed or deleted over time.
 
-[![NuGet](https://img.shields.io/nuget/v/Wolfgang.DbContextBuilder-Core.svg?logo=nuget&label=NuGet)](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core)
-[![NuGet downloads](https://img.shields.io/nuget/dt/Wolfgang.DbContextBuilder-Core.svg?logo=nuget&label=downloads)](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core)
+[![NuGet](https://img.shields.io/nuget/v/Wolfgang.DbContextBuilder-Core-EF8.svg?logo=nuget&label=NuGet)](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF8)
+[![NuGet downloads](https://img.shields.io/nuget/dt/Wolfgang.DbContextBuilder-Core-EF8.svg?logo=nuget&label=downloads)](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF8)
 [![PR build](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/DbContextBuilder/pr.yaml?event=pull_request_target&label=PR%20build&logo=github)](https://github.com/Chris-Wolfgang/DbContextBuilder/actions/workflows/pr.yaml)
 [![Release](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/DbContextBuilder/release.yaml?event=release&label=release&logo=github)](https://github.com/Chris-Wolfgang/DbContextBuilder/actions/workflows/release.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
