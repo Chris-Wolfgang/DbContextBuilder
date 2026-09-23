@@ -1,17 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore.Tests.Unit</RootNamespace>
-		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+		<TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+		<CheckEolTargetFramework>false</CheckEolTargetFramework>
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
-		<!-- CA1707 (underscores) is intentional: test names follow MethodUnderTest_when_condition_expected_result. -->
-		<NoWarn>$(NoWarn);CA1707</NoWarn>
+		<!-- CA1707 (underscores) is intentional: test names follow MethodUnderTest_when_condition_expected_result.
+		     NU1901/NU1902 suppressed: the net6.0/net7.0 slices reference the maintenance/EOL EF Core 6/7
+		     packages, whose transitive Azure.Identity / Microsoft.Identity.Client carry known advisories
+		     with no in-range fix. Same rationale as the AutoFixture and Core-EF7 test projects. -->
+		<NoWarn>$(NoWarn);CA1707;NU1901;NU1902</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" Condition="'$(TargetFramework)' != 'net6.0' and '$(TargetFramework)' != 'net7.0'" />
+		<!-- Test SDK 18.x drops net6.0/net7.0; 17.8.0 is the last line that supports them. -->
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" Condition="'$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0'" />
 		<PackageReference Include="xunit" Version="2.9.3" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="[2.8.2]">
 			<PrivateAssets>all</PrivateAssets>
