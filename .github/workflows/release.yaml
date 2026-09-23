@@ -786,7 +786,10 @@ jobs:
     needs: validate-release
     permissions:
       contents: write  # Required by docfx.yaml to push to gh-pages branch
-    uses: ./.github/workflows/docfx.yaml
+    # GitHub's `$/` self-repository syntax is preferred here, but actionlint
+    # (a required check) rejects it until rhysd/actionlint#732 ships. Switch
+    # to `$/.github/workflows/docfx.yaml` and drop the ignore when it does.
+    uses: ./.github/workflows/docfx.yaml  # zizmor: ignore[self-repository]
     with:
       version: ${{ github.event.release.tag_name }}
 
