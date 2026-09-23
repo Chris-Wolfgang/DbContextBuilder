@@ -34,8 +34,8 @@ public class BuildAsyncBenchmarks
     // BenchmarkDotNet sets [Params]-annotated properties via reflection for
     // each combination; R# cannot see reflection consumers so it reports the
     // setter as unused.
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     [Params(1, 10, 100)]
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public int SeedCount { get; set; }
 
     private BenchmarkEntity[] _seedRows = [];
