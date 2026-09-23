@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789954548570,
+  "lastUpdate": 1790180554485,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -1092,6 +1092,84 @@ window.BENCHMARK_DATA = {
             "value": 3383540.7682291665,
             "unit": "ns",
             "range": "± 712958.6386071406"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "dacfc06ff4e64a1eb92ba3ce2c174dda928524df",
+          "message": "fix(benchmarks): put the UnusedAutoPropertyAccessor suppression below the attribute (#430)\n\nCloses the repository's only remaining non-Scorecard code-scanning alert\n(InspectCode #2869, open since 2026-08-03).\n\nThe suppression was already there - added 2026-08-13 in 31e94ac - but it sat\nABOVE `[Params(1, 10, 100)]`, so the line it disabled the inspection for was the\nattribute, not the property. `// ReSharper disable once` applies to the next\nline, and the next line was not the declaration.\n\nChecked that the alert is current rather than stale before touching anything:\nits most recent instance is commit ecbe528 on refs/heads/main, which is today's\nmerge of #427. So main has been rescanned and it still fires.\n\nThis is the same rule CLAUDE.md already states for analyzer pragmas - place them\ndirectly above the member, not above its [Fact]/[Theory]/[Params] attributes -\napplied to the one place in this repository that was still getting it wrong. The\nexplanatory comment above the attribute stays where it is, because it explains\nthe attribute and the property together.\n\nCo-authored-by: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-23T12:20:29-04:00",
+          "tree_id": "7f57c54b295b001a2353069c0c4d42dca91e723a",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/dacfc06ff4e64a1eb92ba3ce2c174dda928524df"
+        },
+        "date": 1790180552293,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 26906.96630859375,
+            "unit": "ns",
+            "range": "± 102.47479738128925"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 38980.654622395836,
+            "unit": "ns",
+            "range": "± 1612.576852446661"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 131558.90559895834,
+            "unit": "ns",
+            "range": "± 9951.565472461214"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 26823.06303914388,
+            "unit": "ns",
+            "range": "± 42.73906905919477"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 64989.076497395836,
+            "unit": "ns",
+            "range": "± 4573.823564782412"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 420137.9345703125,
+            "unit": "ns",
+            "range": "± 75415.2351443657"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 26627.91025797526,
+            "unit": "ns",
+            "range": "± 282.55337594626036"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 351673.8125,
+            "unit": "ns",
+            "range": "± 8063.951167782832"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 1744959.2434895833,
+            "unit": "ns",
+            "range": "± 29624.460565475794"
           }
         ]
       }
