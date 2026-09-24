@@ -10,9 +10,16 @@ This document describes the security measures implemented in the GitHub Actions 
 
 **Mechanism**: `pull_request` trigger, with gate integrity in a separate workflow
 
-The PR workflow runs on `pull_request`, so it builds and tests the PR's own code **and the PR's
-own copies of this workflow and of every analyzer/config file**. A pull request is therefore
-validated exactly as it will merge.
+The PR workflow runs on `pull_request`, so it builds and tests the PR's own code **and the PR's own
+copy of the workflow**. The validation a pull request receives is therefore the validation it asks
+for, and an edit that weakens it is visible in the same diff a reviewer reads.
+
+Analyzer and build configuration is deliberately **not** the PR's. Before the analyzer stages,
+`pr.yaml` re-fetches `.editorconfig`, `Directory.Build.props`/`.targets`, `BannedSymbols.txt`,
+`*.globalconfig`, `*.ruleset`, `*.DotSettings` and the CI scripts from `main`, so a pull request
+cannot lower a rule for its own run. That means a PR is **not** validated byte-for-byte as it will
+merge - its own copies of those files are ignored. This is defence in depth; the primary control is
+the guard below.
 
 ```yaml
 on:
@@ -58,7 +65,32 @@ A malicious PR could modify these files to disable security checks.
 - `*.ruleset` - Code analysis rulesets
 - `.github/workflows/*.yml` and `.github/workflows/*.yaml` - Workflow definitions
 
-In addition to the overwrite step, a separate "Detect protected configuration file changes" step in `pr.yaml` causes the PR to fail if any of these files differ from `main`, signalling that a maintainer must manually review the change. Dependabot is exempted (its bumps to `Directory.Build.props` are legitimate).
+The list above is what `pr.yaml` **overwrites**. The set the guard **protects** is larger, and is
+the authoritative one - `.github/workflows/protected-files.yaml` fails any PR that changes one of
+these alongside anything else:
+
+| Protected | Why |
+|---|---|
+| `.editorconfig`, `*.globalconfig`, `*.ruleset`, `*.DotSettings` | analyzer severities |
+| `Directory.Build.props` / `.targets`, **at any depth** | MSBuild discovers these per directory; this repo has four |
+| `BannedSymbols.txt` | banned-API gate |
+| `coverlet.runsettings` | what coverage counts |
+| `.config/dotnet-tools.json` | pins every CI tool version |
+| `.gitleaks.toml` | secret-scan rules |
+| `.github/workflows/*.yml` / `*.yaml` | the checks themselves |
+| `.github/license-audit/*.json` | licence allow-list |
+| `.github/requirements/*` | pip-installed and executed by the privileged scans |
+| `scripts/changelog.ps1`, `tfm-parity.ps1`, `build-pr.ps1`, `third-party-notices.ps1` | CI executes them |
+
+Matching is case-insensitive, because Windows and ReSharper resolve names that way.
+
+Dependabot is exempted from the overwrite step (its bumps to `Directory.Build.props` are
+legitimate), and from the guard.
+
+**Known limitation:** the guard is a required check, not a sandbox. It runs independently of the
+`pull_request` workflows, so a mixed PR's changed `.github/requirements/*` is still installed and
+executed by `actions-audit.yaml` and `semgrep.yaml` - both of which hold `security-events: write` -
+before the guard's failure blocks the merge. It prevents the change landing, not the code running.
 
 **Implementation** (in jobs that consume project source — e.g. `detect-projects`, the test stages, and the security scans; *not* the `secrets-scan` job, which only fetches `.gitleaks.toml`):
 ```yaml
