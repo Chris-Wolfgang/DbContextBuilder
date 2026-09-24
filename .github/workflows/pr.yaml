@@ -4,11 +4,16 @@
 # Stage 3: macOS tests (only if Stage 2 passes)
 #
 # SECURITY NOTE:
-# - Runs on `pull_request`: the PR's own code AND its own copies of this workflow and of every
-#   analyzer/config file are what get built and tested, so a PR is validated exactly as it will
-#   merge. GitHub hands a pull_request run a read-only GITHUB_TOKEN and no secrets for forks;
-#   nothing here uses a secret, and `permissions: contents: read` applies to same-repo PRs too.
-#   There is nothing for untrusted code to reach.
+# - Runs on `pull_request`: the PR's own code and its own copy of THIS WORKFLOW are what build
+#   and run, so the validation a PR gets is the validation it asks for, and a weakening edit is
+#   visible in the same diff a reviewer reads.
+#   Analyzer and build configuration is NOT the PR's: the steps below re-fetch .editorconfig,
+#   Directory.Build.props/targets, BannedSymbols.txt, *.globalconfig, *.ruleset, *.DotSettings
+#   and the CI scripts from main before the analyzer stages, so a PR cannot lower a rule for its
+#   own run. That is defence in depth rather than the primary control, and it means a PR is NOT
+#   validated byte-for-byte as it will merge - its own copies of those files are ignored here.
+#   GitHub hands a pull_request run a read-only GITHUB_TOKEN and no secrets for forks; nothing
+#   here uses a secret, and `permissions: contents: read` applies to same-repo PRs too.
 # - The previous model ran on pull_request_target - main's copy of this file, with the
 #   repository's token - and then checked out refs/pull/*/head into the SAME jobs. Trusted
 #   context and untrusted code in one place is the pwn-request pattern, and running main's YAML
