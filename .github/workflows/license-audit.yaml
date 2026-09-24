@@ -67,9 +67,12 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Install nuget-license
+      - name: Restore .NET tools
+        # Pinned through .config/dotnet-tools.json rather than installed globally at floating
+        # latest, so this gate and scripts/third-party-notices.ps1 run the same version and a
+        # new nuget-license release cannot change the verdict without a commit.
         if: steps.detect.outputs.found == 'true'
-        run: dotnet tool install --global nuget-license
+        run: dotnet tool restore
 
       # Gate: fail if any src project's dependency license is not on the allow-list.
       - name: Restore .NET workloads
@@ -90,7 +93,7 @@ jobs:
           while IFS= read -r proj; do
             echo "== $proj =="
             dotnet restore "$proj"
-            nuget-license -i "$proj" -t \
+            dotnet nuget-license -i "$proj" -t \
               -a .github/license-audit/allowed-licenses.json \
               -ignore .github/license-audit/ignored-packages.json \
               -mapping .github/license-audit/url-license-mappings.json \
