@@ -8,31 +8,46 @@ This document describes the security measures implemented in the GitHub Actions 
 
 ### 1. Workflow YAML Protection
 
-**Mechanism**: `pull_request_target` trigger
+**Mechanism**: `pull_request` trigger, with gate integrity in a separate workflow
 
-The PR workflow uses `pull_request_target` instead of `pull_request`. This means:
-- The workflow YAML file is always executed from the base branch (main)
-- Pull requests cannot modify the workflow logic that validates them
-- Prevents malicious PRs from weakening or bypassing validation checks
+The PR workflow runs on `pull_request`, so it builds and tests the PR's own code **and the PR's
+own copies of this workflow and of every analyzer/config file**. A pull request is therefore
+validated exactly as it will merge.
 
-**Code Reference**:
 ```yaml
 on:
-  pull_request_target:  # Runs from the main branch, not from PR branch
+  pull_request:
     branches:
       - main
 ```
 
+This replaced a `pull_request_target` model that ran main's copy of the workflow and then checked
+out `refs/pull/*/head` into the same jobs. That combination - trusted context plus untrusted code
+in one job - is the pwn-request pattern, and OpenSSF Scorecard reports it as a **critical**
+`DangerousWorkflow` finding. Running main's YAML is what made the checked-out PR code exploitable,
+not what prevented it.
+
+What stops a PR from weakening the checks it is subject to is **`.github/workflows/
+protected-files.yaml`**: a `pull_request_target` workflow that never checks out PR code at all. It
+lists the PR's changed files through the API and fails any PR mixing a protected file with other
+changes, so such a change must arrive as a configuration-only PR that a maintainer reviews on its
+own. It fails closed - if it cannot obtain a complete file list, it refuses rather than reporting
+"nothing protected changed".
+
+A `pull_request` run also gets a read-only `GITHUB_TOKEN` and no secrets for forks. The single
+write scope in `pr.yaml` is `security-events: write` on the SARIF upload job, which checks out the
+base commit explicitly and never PR content.
+
 ### 2. Configuration File Protection
 
-**Problem**: While `pull_request_target` protects the workflow YAML, the checked-out code includes configuration files (`.editorconfig`, `BannedSymbols.txt`, etc.) that control:
+**Problem**: A pull request supplies its own configuration files (`.editorconfig`, `BannedSymbols.txt`, etc.), which control:
 - Code analyzer behavior
 - Code quality standards
 - Security scanning rules
 
 A malicious PR could modify these files to disable security checks.
 
-**Solution**: After checking out the PR code, we fetch and overwrite configuration files from the trusted main branch.
+**Solution**: `protected-files.yaml` classifies these files as protected and fails any PR that changes one alongside anything else. A configuration change is therefore always reviewed as a standalone PR rather than being silently applied to the run that validates a code change. `pr.yaml` additionally re-fetches several of them from `main` before the analyzer steps, which remains as defence in depth.
 
 **Protected Configuration Files**:
 - `.editorconfig` - Code style and analyzer rules
@@ -103,7 +118,7 @@ This limits the impact if the `GITHUB_TOKEN` is somehow exposed or misused.
 
 ### Scenario 1: Malicious Workflow Modification
 **Attack**: PR modifies `.github/workflows/pr.yaml` to disable security checks
-**Prevention**: `pull_request_target` ensures workflow runs from main branch
+**Prevention**: `protected-files.yaml` fails any PR that changes a workflow alongside other files, so a workflow edit must arrive as a configuration-only PR reviewed on its own. The edit does take effect in its own PR's run - that is the point of `pull_request` - but it cannot ride along unnoticed with a code change.
 **Status**: ✅ Protected
 
 ### Scenario 2: Configuration File Tampering
