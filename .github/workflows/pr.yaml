@@ -539,7 +539,7 @@ jobs:
     if: >-
       always() && (needs.inspectcode.result == 'success' || needs.inspectcode.result == 'failure')
       && github.event.pull_request.head.repo.full_name == github.repository
-      && github.actor != 'dependabot[bot]'
+      && github.event.pull_request.user.login != 'dependabot[bot]'
     timeout-minutes: 10
     permissions:
       contents: read
@@ -550,6 +550,11 @@ jobs:
       - name: Checkout trusted base ref
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
+          # Pinned explicitly. Under pull_request_target an unpinned checkout defaulted to the
+          # BASE ref, which is what this step's name promises; under pull_request it would
+          # default to the PR MERGE ref and put untrusted content into the only job in this
+          # file holding security-events: write.
+          ref: ${{ github.event.pull_request.base.sha }}
           persist-credentials: false
 
       - name: Download the SARIF

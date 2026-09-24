@@ -56,14 +56,33 @@ jobs:
             exit 1
           fi
           mapfile -t all_changed < <(printf '%s' "$changed_raw")
+          # The pull-request files endpoint is capped at 3000 files. Past that the listing is
+          # silently short, and a protected file could sit outside it while the guard reports
+          # only what it saw. Compare against the PR's own changed_files count and refuse.
+          declared=$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq .changed_files) || {
+            echo "::error::Could not read the PR's changed_files count - refusing to classify."
+            exit 1
+          }
+          seen=$(printf '%s\n' "${all_changed[@]}" | sort -u | grep -c . || true)
+          if [ "$declared" -gt "$seen" ]; then
+            echo "::error::The API listed $seen changed file(s) but the PR declares $declared (endpoint caps at 3000) - refusing to classify an incomplete diff."
+            exit 1
+          fi
           if [ ${#all_changed[@]} -eq 0 ]; then
             echo "::error::The PR's changed-file list came back empty, which cannot be true for a pull request - refusing to classify."
             exit 1
           fi
           protected=(); other=()
           for file in "${all_changed[@]}"; do
-            case "$file" in
-              .editorconfig|Directory.Build.props|Directory.Build.targets|BannedSymbols.txt|coverlet.runsettings|.config/dotnet-tools.json|.gitleaks.toml|scripts/changelog.ps1|scripts/tfm-parity.ps1|scripts/build-pr.ps1|scripts/third-party-notices.ps1) protected+=("$file") ;;
+            # Lower-cased for matching only: Windows and ReSharper resolve names
+            # case-insensitively, so Directory.build.props is as live as Directory.Build.props
+            # and must not slip past the literal-name branch below.
+            lower=$(printf '%s' "$file" | tr '[:upper:]' '[:lower:]')
+            case "$lower" in
+              # Directory.Build.props/targets are matched at ANY depth: MSBuild discovers them
+              # by directory, so src/Directory.Build.props shapes the build exactly as the root
+              # one does. This repository has four of them.
+              .editorconfig|directory.build.props|directory.build.targets|*/directory.build.props|*/directory.build.targets|bannedsymbols.txt|coverlet.runsettings|.config/dotnet-tools.json|.gitleaks.toml|scripts/changelog.ps1|scripts/tfm-parity.ps1|scripts/build-pr.ps1|scripts/third-party-notices.ps1) protected+=("$file") ;;
               *)
                 # -i: Windows (and ReSharper on it) resolve names case-insensitively, so
                 # foo.dotsettings is as live as foo.DotSettings. The license-audit policy
