@@ -1,0 +1,20 @@
+{
+  "stryker-config": {
+    "solution": "Wolfgang.DbContextBuilder.slnx",
+    "target-framework": "net10.0",
+    "mutate": [
+      "**/*",
+      "!**/extra-projects/**"
+    ],
+    "reporters": [
+      "progress",
+      "html",
+      "json"
+    ],
+    "thresholds": {
+      "high": 90,
+      "low": 60,
+      "break": 0
+    }
+  }
+}
