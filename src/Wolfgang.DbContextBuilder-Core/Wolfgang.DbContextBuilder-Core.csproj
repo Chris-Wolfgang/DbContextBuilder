@@ -25,8 +25,18 @@
 		<SignAssembly>False</SignAssembly>
 		<PackageTags>dbcontext;efcore;entity-framework;testing;unit-testing;in-memory;sqlite</PackageTags>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<IsPackable>true</IsPackable>
-		<EnablePackageValidation>true</EnablePackageValidation>
+		<!-- Retired as a shipped package (#362). It duplicated -Core-EF6 - same EF Core 6, different
+		     runtime TFM - and net10.0 + EF Core 6 is an odd pairing nobody should be reaching for:
+		     EF Core 6 consumers want -Core-EF6, net10 consumers want -Core-EF10.
+		
+		     The PROJECT stays. It is the canonical source the five -Core-EFx wrappers <Compile Include>
+		     link, so deleting it would gut all of them. Only its packability changes.
+		
+		     Already-published versions stay on NuGet - existing consumers must keep resolving them.
+		     Marking the package deprecated on nuget.org is a separate manual step. -->
+		<IsPackable>false</IsPackable>
+		<!-- Nothing is packed any more, so there is no package to validate against the baseline. -->
+		<EnablePackageValidation>false</EnablePackageValidation>
 		<PackageValidationBaselineVersion>0.8.1</PackageValidationBaselineVersion>
 		<IsTestProject>false</IsTestProject>
 		<DefineConstants>$(DefineConstants);EF_CORE_6;EF_CORE_6_OR_GREATER</DefineConstants>

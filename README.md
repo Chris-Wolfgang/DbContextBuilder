@@ -2,9 +2,9 @@
 
 Uses the `Builder` pattern to create Entity Framework Core and classic Entity Framework `DbContext` instances using an in-memory database for testing purposes. With DbContextBuilder, you can easily set up a `DbContext` with predefined data, making it ideal for unit tests and integration tests without having to rely on an actual database whose data can be changed or deleted over time.
 
-[![NuGet](https://img.shields.io/nuget/v/Wolfgang.DbContextBuilder-Core.svg?logo=nuget&label=NuGet)](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core)
-[![NuGet downloads](https://img.shields.io/nuget/dt/Wolfgang.DbContextBuilder-Core.svg?logo=nuget&label=downloads)](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core)
-[![PR build](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/DbContextBuilder/pr.yaml?event=pull_request_target&label=PR%20build&logo=github)](https://github.com/Chris-Wolfgang/DbContextBuilder/actions/workflows/pr.yaml)
+[![NuGet](https://img.shields.io/nuget/v/Wolfgang.DbContextBuilder-Core-EF8.svg?logo=nuget&label=NuGet)](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF8)
+[![NuGet downloads](https://img.shields.io/nuget/dt/Wolfgang.DbContextBuilder-Core-EF8.svg?logo=nuget&label=downloads)](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF8)
+[![PR build](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/DbContextBuilder/pr.yaml?event=pull_request&label=PR%20build&logo=github)](https://github.com/Chris-Wolfgang/DbContextBuilder/actions/workflows/pr.yaml)
 [![Release](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/DbContextBuilder/release.yaml?event=release&label=release&logo=github)](https://github.com/Chris-Wolfgang/DbContextBuilder/actions/workflows/release.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-Multi--Targeted-purple.svg)](https://dotnet.microsoft.com/)
@@ -19,13 +19,18 @@ DbContextBuilder ships as a family of packages — install the one that matches 
 
 | Package | EF flavor | Notes |
 |---|---|---|
-| [`Wolfgang.DbContextBuilder-Core`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core) | EF Core 6 | Currently pins EF Core 6 (`[6.0.36, 7.0.0)`). EF Core 7-10 consumers should install the matching `-Core-EF7/8/9/10` package below. |
 | [`Wolfgang.DbContextBuilder-Core-EF6`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF6) | EF Core 6 | Pins EF Core 6 for projects on the LTS 6.x line. |
 | [`Wolfgang.DbContextBuilder-Core-EF7`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF7) | EF Core 7 | Pins EF Core 7. |
 | [`Wolfgang.DbContextBuilder-Core-EF8`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF8) | EF Core 8 | Pins EF Core 8 (LTS). |
 | [`Wolfgang.DbContextBuilder-Core-EF9`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF9) | EF Core 9 | Pins EF Core 9. |
 | [`Wolfgang.DbContextBuilder-Core-EF10`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF10) | EF Core 10 | Pins EF Core 10. |
 | [`Wolfgang.DbContextBuilder-EF6`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-EF6) | Classic EF 6 (non-Core) | For applications still on `System.Data.Entity` / EF 6.x. |
+
+> **`Wolfgang.DbContextBuilder-Core` is retired.** Versions up to 0.8.1 remain on NuGet and keep
+> resolving, but no new versions are published. It paired net10.0 with EF Core 6, which suited
+> nobody: if you are on **EF Core 6** move to `Wolfgang.DbContextBuilder-Core-EF6`, and if you are
+> on **net10.0** move to `Wolfgang.DbContextBuilder-Core-EF10`. The types and namespaces are
+> unchanged, so the migration is a package-reference swap.
 
 Random-data and shared add-on packages (install alongside your EF Core package):
 
@@ -47,7 +52,6 @@ Each package targets the .NET runtimes its EF version requires:
 
 | Package | Target Frameworks |
 |---|---|
-| `Wolfgang.DbContextBuilder-Core` | `net10.0` |
 | `Wolfgang.DbContextBuilder-Core-EF6` | `net6.0` |
 | `Wolfgang.DbContextBuilder-Core-EF7` | `net7.0` |
 | `Wolfgang.DbContextBuilder-Core-EF8` | `net8.0` |
