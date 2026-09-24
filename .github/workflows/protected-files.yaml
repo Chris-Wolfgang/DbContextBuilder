@@ -1,0 +1,115 @@
+# Protected-files guard: the one workflow that still runs on pull_request_target, and the
+# reason it may — it never checks out or executes anything from the PR. It runs from main
+# (so a PR cannot edit it), lists the PR's changed files through the API, and classifies
+# the PR:
+#   - no protected file changed      -> pass; pr.yaml validated everything
+#   - only protected files changed   -> pass with a notice; a maintainer reviews the diff
+#   - protected files + anything else -> FAIL, and nothing can bypass it: split the PR
+# "Protected" is every file that shapes what CI checks: the workflows, analyzer config,
+# build props, coverage config, the gitleaks config, the CI tool manifest, the
+# license-audit policy and the CI scripts pr.yaml and license-audit.yaml run.
+# Because pr.yaml runs on the PR's own copies of those files, a mixed PR would otherwise
+# be able to weaken a gate and pass it in the same change.
+name: Protected Files
+
+on:
+  # zizmor: ignore[dangerous-triggers]
+  pull_request_target:  # no checkout, no execution of PR content — see the note above
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    name: "Protected Files Guard"
+    runs-on: ubuntu-latest
+    # Dependabot's bumps to protected files (e.g. Directory.Build.props) are legitimate;
+    # its identity is GitHub-controlled and not spoofable.
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    timeout-minutes: 5
+    steps:
+      - name: Classify the PR's changed files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Every file the PR adds, modifies, renames, copies or deletes — the API's view of
+          # the PR diff against its merge base, so a PR that is merely behind main is not
+          # blamed for files main changed since it branched.
+          # Captured and checked explicitly, NOT read straight into mapfile from a process
+          # substitution: `set -e` does not see a failure inside <( ), so a failed or partly
+          # paginated `gh api` would leave all_changed empty and this guard would cheerfully
+          # report "no protected files changed". A guard that cannot list the diff must fail
+          # closed, not open.
+          if ! changed_raw=$(gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/files" --jq '.[] | .filename, (.previous_filename // empty)'); then
+            echo "::error::Could not list this PR's changed files - refusing to classify the change."
+            exit 1
+          fi
+          mapfile -t all_changed < <(printf '%s' "$changed_raw")
+          # The pull-request files endpoint is capped at 3000 files. Past that the listing is
+          # silently short, and a protected file could sit outside it while the guard reports
+          # only what it saw. Compare against the PR's own changed_files count and refuse.
+          declared=$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq .changed_files) || {
+            echo "::error::Could not read the PR's changed_files count - refusing to classify."
+            exit 1
+          }
+          seen=$(printf '%s\n' "${all_changed[@]}" | sort -u | grep -c . || true)
+          if [ "$declared" -gt "$seen" ]; then
+            echo "::error::The API listed $seen changed file(s) but the PR declares $declared (endpoint caps at 3000) - refusing to classify an incomplete diff."
+            exit 1
+          fi
+          if [ ${#all_changed[@]} -eq 0 ]; then
+            echo "::error::The PR's changed-file list came back empty, which cannot be true for a pull request - refusing to classify."
+            exit 1
+          fi
+          protected=(); other=()
+          for file in "${all_changed[@]}"; do
+            # Lower-cased for matching only: Windows and ReSharper resolve names
+            # case-insensitively, so Directory.build.props is as live as Directory.Build.props
+            # and must not slip past the literal-name branch below.
+            lower=$(printf '%s' "$file" | tr '[:upper:]' '[:lower:]')
+            case "$lower" in
+              # Directory.Build.props/targets are matched at ANY depth: MSBuild discovers them
+              # by directory, so src/Directory.Build.props shapes the build exactly as the root
+              # one does. This repository has four of them.
+              .editorconfig|directory.build.props|directory.build.targets|*/directory.build.props|*/directory.build.targets|bannedsymbols.txt|coverlet.runsettings|.config/dotnet-tools.json|.gitleaks.toml|scripts/changelog.ps1|scripts/tfm-parity.ps1|scripts/build-pr.ps1|scripts/third-party-notices.ps1) protected+=("$file") ;;
+              *)
+                # -i: Windows (and ReSharper on it) resolve names case-insensitively, so
+                # foo.dotsettings is as live as foo.DotSettings. The license-audit policy
+                # files are read from main by license-audit.yaml, so a change to them is
+                # configuration the PR cannot test - same rule as the workflows.
+                if echo "$file" | grep -qiE '(\.(globalconfig|ruleset|DotSettings|editorconfig)|^\.github/workflows/.*\.ya?ml|^\.github/license-audit/.*\.json|^\.github/requirements/.*)$'; then protected+=("$file"); else other+=("$file"); fi ;;
+            esac
+          done
+
+          if [ ${#protected[@]} -eq 0 ]; then
+            echo "✅ No protected configuration files changed."
+          elif [ ${#other[@]} -eq 0 ]; then
+            echo ""
+            echo "⚠️  CONFIGURATION-ONLY PULL REQUEST - protected files changed, nothing else:"
+            for file in "${protected[@]}"; do echo "  - $file"; done
+            echo ""
+            echo "::notice::Configuration-only PR: pr.yaml ran with these ${#protected[@]} file(s) as changed. Review the diff itself before merging — this is the change that decides what future PRs are checked against."
+          else
+            echo ""
+            echo "⚠️  PROTECTED CONFIGURATION FILES CHANGED ALONGSIDE OTHER CHANGES:"
+            for file in "${protected[@]}"; do echo "  - $file"; done
+            echo ""
+            echo "❌ These files decide what CI checks, and this PR changes them together with"
+            echo "   ${#other[@]} other file(s) that were checked under the changed rules."
+            echo ""
+            echo "Split the PR: put the protected files in their own PR (it passes this guard as"
+            echo "configuration-only and merges on review), then rebase the rest on top so it is"
+            echo "validated by the reviewed configuration. Nothing here can be bypassed."
+            exit 1
+          fi

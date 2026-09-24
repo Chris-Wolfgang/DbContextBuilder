@@ -56,8 +56,6 @@ jobs:
       # TokenPermissionsID, gitHubAction pins, ...) still fires.
       #
       # Suppressed whole rules:
-      #   DangerousWorkflowID  — pr.yaml deliberately uses pull_request_target +
-      #                          refs/pull/N/head so the workflow and the
       #                          protected config files come from main; see the
       #                          SECURITY NOTE header in pr.yaml.
       #   CodeReviewID         — solo-maintainer repository; requiring a second
@@ -98,7 +96,10 @@ jobs:
       - name: Filter suppressed findings from SARIF
         shell: bash
         env:
-          SUPPRESSED_RULES: 'DangerousWorkflowID CodeReviewID CIIBestPracticesID'
+          # DangerousWorkflowID removed: pr.yaml no longer runs pull_request_target with a
+          # checkout of PR code, so there is nothing left to excuse - and a global rule
+          # suppression would go on hiding the same class of finding in any FUTURE workflow.
+          SUPPRESSED_RULES: 'CodeReviewID CIIBestPracticesID'
           # PinnedDependenciesID message substrings suppressed everywhere, but
           # only when the finding's snippet is a restore command (see the
           # comment block above).
