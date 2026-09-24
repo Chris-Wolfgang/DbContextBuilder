@@ -43,6 +43,30 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Take the requirements file from the base branch
+        # This job holds security-events: write and, under pull_request, checks out the PR's
+        # own tree - including .github/requirements/semgrep.txt, which the next step
+        # pip-installs and then EXECUTES. --require-hashes does not help: the hashes live in
+        # the same PR-controlled file. protected-files.yaml fails such a PR, but it is a
+        # required check rather than a sandbox: it runs independently and blocks the merge,
+        # not the run. So the file is replaced with the base branch's copy first.
+        env:
+          # persist-credentials:false above leaves nothing in .git/config, so the fetch needs
+          # the job token. Used on this one command; never written to config.
+          TRUSTED_BASE_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
+          BASE_REF: ${{ github.event.pull_request.base.ref || github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          if ! git fetch --quiet --depth=1 "$TRUSTED_BASE_URL" "$BASE_REF:refs/remotes/origin/trusted-base"; then
+            echo "::error::Could not fetch $BASE_REF - refusing to install PR-controlled requirements."
+            exit 1
+          fi
+          if ! git checkout refs/remotes/origin/trusted-base -- .github/requirements/semgrep.txt; then
+            echo "::error::.github/requirements/semgrep.txt is not on $BASE_REF - refusing to fall back to the PR copy."
+            exit 1
+          fi
+          echo "Using $BASE_REF copy of .github/requirements/semgrep.txt"
+
       - name: Install Semgrep
         # Hash-pinned rather than a bare `pip install semgrep` (OSSF Scorecard
         # Pinned-Dependencies: "pipCommand not pinned by hash"). --require-hashes
