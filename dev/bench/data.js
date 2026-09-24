@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790180554485,
+  "lastUpdate": 1790209244294,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -1170,6 +1170,84 @@ window.BENCHMARK_DATA = {
             "value": 1744959.2434895833,
             "unit": "ns",
             "range": "± 29624.460565475794"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1b942f4d459c78b616760714c055bbb425398d5e",
+          "message": "build(core)!: stop packing the base Wolfgang.DbContextBuilder-Core package (#432)\n\n* build(core)!: stop packing the base Wolfgang.DbContextBuilder-Core package\n\nStep 2 of #362. The package duplicated -Core-EF6 - same EF Core 6, different\nruntime TFM - and net10.0 + EF Core 6 is a pairing that suits nobody: EF Core 6\nconsumers want -Core-EF6, net10 consumers want -Core-EF10.\n\nThe PROJECT is untouched, as the issue requires. Nothing ProjectReferences it;\nthe five -Core-EFx wrappers <Compile Include> its source files, so it remains the\ncanonical source and deleting it would gut all of them. Only IsPackable changes.\n\nPackageValidation is turned off with it: it compares a produced package against\nthe 0.8.1 baseline, and there is no longer a package to compare.\n\nrelease.yaml needs no change - it packs whatever the project loop produces and\npushes whatever .nupkg files appear. Verified by packing every src project:\nnine packages are produced and Wolfgang.DbContextBuilder-Core is not among them.\n\nREADME drops the base -Core row from both the Installation and Supported\nFrameworks tables and gains a short migration note. Already-published versions\nstay on NuGet and keep resolving; the types and namespaces are unchanged, so\nmoving is a package-reference swap.\n\nNot done here, because it is not a repository change: marking the package\ndeprecated on nuget.org with an alternate-package pointer (step 1 of the issue).\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n\n* docs(readme): point the NuGet badges at a package that is still published\n\nReview catch. The retirement notice added in this PR was contradicted three\nlines above it: the landing page's primary NuGet version and downloads badges\nstill advertised and linked Wolfgang.DbContextBuilder-Core, the package being\nretired. A visitor would have read \"retired\" and then clicked a badge straight\nat it.\n\nI had noticed this while writing the change and decided the badge target was a\ncall to leave to review - then did not actually say so anywhere, which made it\nan omission rather than a deferral.\n\nRepointed at Wolfgang.DbContextBuilder-Core-EF8, on the grounds that it is what\nthe README's own install example tells people to run:\n\n    dotnet add package Wolfgang.DbContextBuilder-Core-EF8\n\nAll the provider packages ship in lockstep at the same version, so the version\nbadge reads identically whichever is chosen; what actually differs is where the\nbadge sends people and whose download count is shown. -Core-EF10 is an equally\ndefensible pick if the landing page should lead with the newest EF rather than\nthe LTS one - it is a one-word change in two places.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-23T20:18:50-04:00",
+          "tree_id": "70de0a7639b8df734b5ce98eac79264257ecefaa",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/1b942f4d459c78b616760714c055bbb425398d5e"
+        },
+        "date": 1790209242258,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 24394.8813273112,
+            "unit": "ns",
+            "range": "± 95.16121862994903"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 34702.166015625,
+            "unit": "ns",
+            "range": "± 1688.0215628049853"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 125364.2099609375,
+            "unit": "ns",
+            "range": "± 10281.107054572076"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 23884.81719970703,
+            "unit": "ns",
+            "range": "± 52.67256167067502"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 59919.543619791664,
+            "unit": "ns",
+            "range": "± 4456.857267813696"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 479032.3473307292,
+            "unit": "ns",
+            "range": "± 111506.8718434728"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 24245.44138590495,
+            "unit": "ns",
+            "range": "± 151.98052382180882"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 227483.7744140625,
+            "unit": "ns",
+            "range": "± 1400.7044715145298"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 1711150.2395833333,
+            "unit": "ns",
+            "range": "± 32036.98805058923"
           }
         ]
       }
