@@ -72,7 +72,31 @@ jobs:
         # latest, so this gate and scripts/third-party-notices.ps1 run the same version and a
         # new nuget-license release cannot change the verdict without a commit.
         if: steps.detect.outputs.found == 'true'
-        run: dotnet tool restore
+        env:
+          # persist-credentials:false on the checkout leaves nothing in .git/config, so the fetch
+          # needs the job token. Used on this one command; never written to config.
+          TRUSTED_BASE_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
+          BASE_REF: ${{ github.event.pull_request.base.ref || github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          # `dotnet tool restore` installs and then RUNS whatever .config/dotnet-tools.json names.
+          # On a pull_request that file is the PR's copy, so without this a PR could point the
+          # manifest at arbitrary tool code and have this job execute it. protected-files.yaml
+          # classifies the manifest as protected, but it is a required check, not a sandbox: it
+          # blocks the MERGE, not the run - see docs/WORKFLOW_SECURITY.md. Same fix as the
+          # privileged scanners take for .github/requirements.
+          if [ "${GITHUB_EVENT_NAME:-}" = "pull_request" ]; then
+            if ! git fetch --quiet --depth=1 "$TRUSTED_BASE_URL" "$BASE_REF:refs/remotes/origin/trusted-base"; then
+              echo "::error::Could not fetch $BASE_REF - refusing to restore a PR-controlled tool manifest."
+              exit 1
+            fi
+            if ! git checkout refs/remotes/origin/trusted-base -- .config/dotnet-tools.json; then
+              echo "::error::.config/dotnet-tools.json is not on $BASE_REF - refusing to fall back to the PR copy."
+              exit 1
+            fi
+            echo "Using $BASE_REF copy of .config/dotnet-tools.json"
+          fi
+          dotnet tool restore
 
       # Gate: fail if any src project's dependency license is not on the allow-list.
       - name: Restore .NET workloads

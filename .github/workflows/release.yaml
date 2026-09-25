@@ -380,11 +380,15 @@ jobs:
         # closure and writes obj/THIRD-PARTY-NOTICES.md, which Directory.Build.props packs at
         # the package root. Never committed, so it cannot drift from the dependencies it
         # describes. Non-fatal: a project whose closure the licence gate rejects is warned
-        # about and skipped rather than failing the release - license-audit.yaml is the gate.
+        # -Strict: a project whose closure the generator cannot render fails the RELEASE. Without
+        # it the generator warns, packing continues, and Directory.Build.props's Exists() check
+        # then silently omits the notices - publishing a package without the attribution this
+        # exists to guarantee. license-audit.yaml is not a backstop here: release.yaml is
+        # triggered by a published release and does not depend on it.
         shell: pwsh
         run: |
           dotnet tool restore
-          pwsh ./scripts/third-party-notices.ps1
+          pwsh ./scripts/third-party-notices.ps1 -Strict
 
       - name: Pack NuGet packages
         id: check-packages
