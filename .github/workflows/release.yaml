@@ -223,6 +223,7 @@ jobs:
                   --no-build `
                   --no-restore `
                   --collect:"XPlat Code Coverage" `
+                  --settings coverlet.runsettings `
                   --results-directory "./TestResults" `
                   --logger "console;verbosity=minimal"
                 
@@ -244,6 +245,7 @@ jobs:
                   --no-build `
                   --no-restore `
                   --collect:"XPlat Code Coverage" `
+                  --settings coverlet.runsettings `
                   --results-directory "./TestResults" `
                   --logger "console;verbosity=minimal"
               } else {
