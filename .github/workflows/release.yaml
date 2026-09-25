@@ -729,6 +729,9 @@ jobs:
     needs: [pack-and-validate, verify-docs-build]
     if: needs.pack-and-validate.outputs.has-packages == 'true'
     runs-on: windows-latest
+    permissions:
+      id-token: write   # required for OIDC token issuance to nuget.org
+      contents: read
     steps:
       - name: Setup .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -748,22 +751,18 @@ jobs:
           name: nuget-packages
           path: ./packages
 
-      - name: Validate NuGet API key
-        shell: pwsh
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: |
-          if ([string]::IsNullOrEmpty($env:NUGET_API_KEY)) {
-            Write-Error "❌ NUGET_API_KEY secret not configured!"
-            Write-Host "Please add it in: Repository Settings → Secrets and variables → Actions → New repository secret"
-            exit 1
-          }
-          Write-Host "✅ NUGET_API_KEY is configured" -ForegroundColor Green
+      - name: NuGet login (OIDC → temporary API key)
+        # Exchanges this run's GitHub OIDC token for a push key that expires in about an hour.
+        # Nothing long-lived is stored in the repository; a leaked run log is scoped to one run.
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        id: nuget-login
+        with:
+          user: Chris-Wolfgang
 
       - name: Publish to NuGet
         shell: pwsh
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
           $packages = Get-ChildItem -Path './packages' -Filter '*.nupkg' -ErrorAction SilentlyContinue
           
