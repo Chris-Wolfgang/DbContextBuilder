@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Wolfgang.DbContextBuilderEF6.Tests.Unit.Models;
+using Xunit;
 
 namespace Wolfgang.DbContextBuilderEF6.Tests.Unit;
 
