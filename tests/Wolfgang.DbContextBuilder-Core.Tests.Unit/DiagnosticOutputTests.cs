@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using AdventureWorks.Models;
+using Xunit;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 

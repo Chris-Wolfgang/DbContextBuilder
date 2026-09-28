@@ -1,8 +1,11 @@
+using System;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Moq;
 using Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
+using Xunit;
 
 // SqliteModelCustomizer is a wrapper over EF Core's ModelCustomizer, and its
 // public surface takes ModelCustomizerDependencies — an EF-internal type
