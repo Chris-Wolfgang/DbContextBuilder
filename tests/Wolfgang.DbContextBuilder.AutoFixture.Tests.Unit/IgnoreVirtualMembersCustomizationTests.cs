@@ -1,4 +1,7 @@
+using System;
+using System.Linq;
 using AutoFixture;
+using Xunit;
 using static Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;

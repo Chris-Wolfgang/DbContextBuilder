@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Wolfgang.DbContextBuilderEF6.Tests.Unit.Models;
+using Xunit;
 
 namespace Wolfgang.DbContextBuilderEF6.Tests.Unit;
 
