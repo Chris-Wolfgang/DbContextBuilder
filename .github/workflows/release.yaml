@@ -856,6 +856,38 @@ jobs:
       - name: Zip coverage report
         run: zip -r release-coverage.zip ./release-coverage
 
+      # Publishes the expected SHA-256 of every released .nupkg so a third party can
+      # independently rebuild from the tag and confirm byte-for-byte reproducibility.
+      # See docs/REPRODUCIBLE-BUILD.md for the consumer-side verification procedure.
+      - name: Generate reproducible-build manifest
+        # Context values are passed via env (not inlined into the script) so a
+        # crafted tag name can't break out of the shell - zizmor template-injection.
+        env:
+          MANIFEST_REPO: ${{ github.repository }}
+          MANIFEST_TAG: ${{ github.event.release.tag_name }}
+          MANIFEST_COMMIT: ${{ github.sha }}
+        run: |
+          manifest="reproducible-build-manifest.json"
+          {
+            printf '{\n'
+            printf '  "schemaVersion": 1,\n'
+            printf '  "repository": "%s",\n' "$MANIFEST_REPO"
+            printf '  "tag": "%s",\n' "$MANIFEST_TAG"
+            printf '  "commit": "%s",\n' "$MANIFEST_COMMIT"
+            printf '  "artifacts": [\n'
+            sep=""
+            for f in ./nuget-packages/*.nupkg; do
+              [ -e "$f" ] || continue
+              name="$(basename "$f")"
+              hash="$(sha256sum "$f" | cut -d' ' -f1)"
+              printf '%s    { "file": "%s", "sha256": "%s" }' "$sep" "$name" "$hash"
+              sep=$',\n'
+            done
+            printf '\n  ]\n}\n'
+          } > "$manifest"
+          echo "Generated $manifest:"
+          cat "$manifest"
+
       # SLSA build-provenance (#303): cryptographically attests that these exact
       # .nupkg files were built by this workflow, from this repo, at this commit.
       # The attestation is stored in the GitHub attestation store; consumers verify
@@ -899,7 +931,7 @@ jobs:
           TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
           shopt -s nullglob
-          files=(./nuget-packages/*.nupkg ./nuget-packages/*.snupkg ./nuget-packages/*.bom.json "./DbContextBuilder-${TAG_NAME}.intoto.jsonl" release-coverage.zip)
+          files=(./nuget-packages/*.nupkg ./nuget-packages/*.snupkg ./nuget-packages/*.bom.json "./DbContextBuilder-${TAG_NAME}.intoto.jsonl" reproducible-build-manifest.json release-coverage.zip)
           echo "Uploading ${#files[@]} asset(s) to release $TAG_NAME"
           gh release upload "$TAG_NAME" "${files[@]}" --clobber
 
