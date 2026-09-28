@@ -85,6 +85,33 @@ repository, unmodified. Consumers (and enterprise procurement) can verify each l
 - **SBOM.** A CycloneDX SBOM (`*.bom.json`) for each package is attached to the
   GitHub Release, listing the exact dependency set the package was built against.
 
+## OSSF Scorecard
+
+[`scorecard.yaml`](.github/workflows/scorecard.yaml) runs the
+[OSSF Scorecard](https://github.com/ossf/scorecard) weekly and on every push
+to `main`, scoring this repo's security posture (branch protection, pinned
+dependencies, dangerous-workflow patterns, vulnerability response time, etc.)
+against the project's checks. Results publish to the
+[Scorecard viewer](https://securityscorecards.dev/viewer/?uri=github.com/Chris-Wolfgang/DbContextBuilder)
+and the badge in `README.md`, and upload as SARIF to this repo's Security tab
+alongside CodeQL alerts.
+
+**Score floor: 7.5.** The initial baseline score is whatever the first
+scheduled run reports — there was no prior run to snapshot before this
+workflow existed. If a later run drops the score below 7.5, note it in
+`CHANGELOG.md` under `### Security` and open a maintenance issue for the
+regressed check; don't let it sit unaddressed.
+
+**Known acceptable findings** (as of 2026-09-28, tracked separately and not
+blocking): `FuzzingID` ([#408](https://github.com/Chris-Wolfgang/DbContextBuilder/issues/408))
+is not achievable for this repo — OSS-Fuzz and ClusterFuzzLite have no .NET
+language support, and Scorecard has no detector for .NET-native fuzzing
+frameworks (CsCheck, SharpFuzz, DotnetFuzzing) even when one is present, so
+this finding fires permanently until Scorecard ships a .NET detector.
+`BranchProtectionID` ([#411](https://github.com/Chris-Wolfgang/DbContextBuilder/issues/411))
+is open and labeled `blocked` pending further investigation into what it
+needs.
+
 ## Credit
 
 Reporters are credited in the published advisory and in the release notes, unless you ask not to be.
