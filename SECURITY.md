@@ -55,6 +55,36 @@ the deadline passes, not after.
 
 Please keep the details private until the advisory is published.
 
+## Verifying the supply chain
+
+Every release publishes evidence that the packages on NuGet were built from this
+repository, unmodified. Consumers (and enterprise procurement) can verify each link:
+
+- **Build provenance (SLSA).** `release.yaml` generates a signed provenance
+  attestation for every `.nupkg` via `actions/attest-build-provenance`. It proves
+  the package was built by this repo's release workflow at a specific commit.
+  Verify a downloaded package with the GitHub CLI:
+
+  ```bash
+  gh attestation verify Wolfgang.DbContextBuilder-Core.<version>.nupkg \
+    --repo Chris-Wolfgang/DbContextBuilder
+  ```
+
+- **Repository signature.** NuGet.org applies a repository signature to every
+  published package. Verify it with:
+
+  ```bash
+  nuget verify -Signatures Wolfgang.DbContextBuilder-Core.<version>.nupkg
+  ```
+
+  > Author (code-signing-certificate) signing is not currently applied — packages
+  > carry NuGet.org's repository signature plus the build-provenance attestation
+  > above. Author signing may be added later; it requires a code-signing certificate
+  > (tracked separately, see #376).
+
+- **SBOM.** A CycloneDX SBOM (`*.bom.json`) for each package is attached to the
+  GitHub Release, listing the exact dependency set the package was built against.
+
 ## Credit
 
 Reporters are credited in the published advisory and in the release notes, unless you ask not to be.
