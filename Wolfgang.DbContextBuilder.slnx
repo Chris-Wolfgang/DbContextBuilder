@@ -37,5 +37,6 @@
     <Project Path="tests/Wolfgang.DbContextBuilder.AutoFixture.Tests.Unit/Wolfgang.DbContextBuilder.AutoFixture.Tests.Unit.csproj" />
     <Project Path="tests/Wolfgang.DbContextBuilder.Bogus.Tests.Unit/Wolfgang.DbContextBuilder.Bogus.Tests.Unit.csproj" />
     <Project Path="tests/Wolfgang.DbContextBuilder-EF6.Tests.Unit/Wolfgang.DbContextBuilder-EF6.Tests.Unit.csproj" />
+    <Project Path="tests/Wolfgang.DbContextBuilder.Tests.DocExamples/Wolfgang.DbContextBuilder.Tests.DocExamples.csproj" />
   </Folder>
 </Solution>
