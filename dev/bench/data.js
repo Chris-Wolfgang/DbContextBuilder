@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790209244294,
+  "lastUpdate": 1790607228179,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -1248,6 +1248,84 @@ window.BENCHMARK_DATA = {
             "value": 1711150.2395833333,
             "unit": "ns",
             "range": "± 32036.98805058923"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6cd61396bfd7eaa0901152a9146019a5500b2b77",
+          "message": "chore: explicit usings on every TFM (no implicit/global usings in multi-TFM projects) (#441)\n\nRemove <ImplicitUsings>enable</ImplicitUsings> and <Using Include=\"Xunit\" />\nfrom every multi-target project and add the using directives each file\nneeds. With implicit usings on, the modern TFM slice gets System, System.Linq\netc. globally, so InspectCode (which analyses one slice) flags usings the\nolder TFMs need as RedundantUsingDirective.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-28T10:50:28-04:00",
+          "tree_id": "c46c77353e4d7dbce0623346b2014b37de1aae2c",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/6cd61396bfd7eaa0901152a9146019a5500b2b77"
+        },
+        "date": 1790607226647,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 16348.42177327474,
+            "unit": "ns",
+            "range": "± 22.690219379817485"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 21689.511372884113,
+            "unit": "ns",
+            "range": "± 228.45309602038444"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 86666.53434244792,
+            "unit": "ns",
+            "range": "± 13805.011982394837"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 15937.961100260416,
+            "unit": "ns",
+            "range": "± 63.15586776848905"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 45784.112955729164,
+            "unit": "ns",
+            "range": "± 557.5885787465667"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 185208.6201171875,
+            "unit": "ns",
+            "range": "± 9240.920875215059"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 16594.865844726562,
+            "unit": "ns",
+            "range": "± 277.1243865999839"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 193902.33919270834,
+            "unit": "ns",
+            "range": "± 11165.98221371562"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 1238687.2161458333,
+            "unit": "ns",
+            "range": "± 125783.5221072776"
           }
         ]
       }
