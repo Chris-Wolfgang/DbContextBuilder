@@ -2,6 +2,7 @@ using System;
 using System.Data.Entity;
 using System.Diagnostics.CodeAnalysis;
 using Wolfgang.DbContextBuilderEF6.Tests.Unit.Models;
+using Xunit;
 
 namespace Wolfgang.DbContextBuilderEF6.Tests.Unit;
 
