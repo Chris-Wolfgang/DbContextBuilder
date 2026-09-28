@@ -19,7 +19,6 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>False</SignAssembly>
 		<PackageTags>dbcontext;efcore;entity-framework;testing;bogus;random-data;test-data</PackageTags>
-		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>true</IsPackable>
 		<EnablePackageValidation>true</EnablePackageValidation>
 		<PackageValidationBaselineVersion>0.8.1</PackageValidationBaselineVersion>

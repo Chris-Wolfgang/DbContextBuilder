@@ -1,4 +1,7 @@
+using System;
+using System.Linq;
 using AutoFixture;
+using Xunit;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 

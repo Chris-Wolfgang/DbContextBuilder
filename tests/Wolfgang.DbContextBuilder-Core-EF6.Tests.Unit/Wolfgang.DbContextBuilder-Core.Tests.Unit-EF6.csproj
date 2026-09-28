@@ -22,7 +22,6 @@
 		<SignAssembly>False</SignAssembly>
 		<PackageTags></PackageTags>
 
-		<ImplicitUsings>enable</ImplicitUsings>
 		<IsTestProject>true</IsTestProject>
 		<DefineConstants>$(DefineConstants);EF_CORE_6;EF_CORE_6_OR_GREATER</DefineConstants>
 
@@ -71,10 +70,6 @@
 	      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	    </PackageReference>
 	  </ItemGroup>
-
-	<ItemGroup>
-		<Using Include="Xunit" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<Folder Include="Models\Generated\" />
