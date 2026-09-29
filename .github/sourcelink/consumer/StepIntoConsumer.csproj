@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    A minimal consumer that steps into the library. It references the library
+    PROJECT (built with ContinuousIntegrationBuild=true so the PDB carries the
+    same SourceLink map a released package ships). A ProjectReference is used
+    rather than a PackageReference because netcoredbg — the only CI-scriptable
+    .NET debugger — does not reliably pair a package-sourced assembly with its
+    symbol package's PDB, so it cannot step into it. The SourceLink PDB under
+    test is identical either way; the packed-package symbol/URL resolution is
+    covered by sourcelink.yaml.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- Non-optimized so the step-into target is not reordered/inlined away. -->
+    <Optimize>false</Optimize>
+    <DebugType>portable</DebugType>
+    <!-- Set by the workflow to the repo's src project path. -->
+    <LibraryProject Condition="'$(LibraryProject)' == ''">../../../src/Wolfgang.DbContextBuilder-Core/Wolfgang.DbContextBuilder-Core.csproj</LibraryProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(LibraryProject)" />
+  </ItemGroup>
+
+</Project>

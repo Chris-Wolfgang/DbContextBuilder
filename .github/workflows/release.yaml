@@ -837,7 +837,9 @@ jobs:
     if: needs.pack-and-validate.outputs.has-packages == 'true'
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Required to upload assets to the GitHub Release
+      contents: write      # Required to upload assets to the GitHub Release
+      id-token: write      # Required for SLSA build-provenance attestation (OIDC)
+      attestations: write  # Required to write the provenance attestation to the store
     steps:
       - name: Download NuGet packages artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -854,6 +856,72 @@ jobs:
       - name: Zip coverage report
         run: zip -r release-coverage.zip ./release-coverage
 
+      # Publishes the expected SHA-256 of every released .nupkg so a third party can
+      # independently rebuild from the tag and confirm byte-for-byte reproducibility.
+      # See docs/REPRODUCIBLE-BUILD.md for the consumer-side verification procedure.
+      - name: Generate reproducible-build manifest
+        # Context values are passed via env (not inlined into the script) so a
+        # crafted tag name can't break out of the shell - zizmor template-injection.
+        env:
+          MANIFEST_REPO: ${{ github.repository }}
+          MANIFEST_TAG: ${{ github.event.release.tag_name }}
+          MANIFEST_COMMIT: ${{ github.sha }}
+        run: |
+          manifest="reproducible-build-manifest.json"
+          {
+            printf '{\n'
+            printf '  "schemaVersion": 1,\n'
+            printf '  "repository": "%s",\n' "$MANIFEST_REPO"
+            printf '  "tag": "%s",\n' "$MANIFEST_TAG"
+            printf '  "commit": "%s",\n' "$MANIFEST_COMMIT"
+            printf '  "artifacts": [\n'
+            sep=""
+            for f in ./nuget-packages/*.nupkg; do
+              [ -e "$f" ] || continue
+              name="$(basename "$f")"
+              hash="$(sha256sum "$f" | cut -d' ' -f1)"
+              printf '%s    { "file": "%s", "sha256": "%s" }' "$sep" "$name" "$hash"
+              sep=$',\n'
+            done
+            printf '\n  ]\n}\n'
+          } > "$manifest"
+          echo "Generated $manifest:"
+          cat "$manifest"
+
+      # SLSA build-provenance (#303): cryptographically attests that these exact
+      # .nupkg files were built by this workflow, from this repo, at this commit.
+      # The attestation is stored in the GitHub attestation store; consumers verify
+      # with `gh attestation verify <pkg> --repo Chris-Wolfgang/DbContextBuilder`.
+      # See SECURITY.md -> "Verifying the supply chain".
+      - name: Attest build provenance for packages
+        id: attest
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: './nuget-packages/*.nupkg'
+
+      # The attestation above lives in GitHub's attestation store, which is what
+      # `gh attestation verify` reads. Tooling that audits the RELEASE PAGE does not
+      # query that store - OpenSSF Scorecard's Signed-Releases check looks for an
+      # asset ending in .intoto.jsonl, and would otherwise see only .nupkg/.bom.json
+      # and score 0 despite every release being attested. The bundle the action
+      # writes IS that document, so it is attached below under a deterministic name.
+      #
+      # Nothing cryptographic changes: the attestation was already real and already
+      # verifiable. This only puts the same evidence where tools and people look.
+      - name: Stage the provenance bundle for the release
+        shell: bash
+        env:
+          BUNDLE_PATH: ${{ steps.attest.outputs.bundle-path }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          if [ ! -f "$BUNDLE_PATH" ]; then
+            echo "::error::attest-build-provenance reported no bundle at '$BUNDLE_PATH'"
+            exit 1
+          fi
+          cp "$BUNDLE_PATH" "./DbContextBuilder-${RELEASE_TAG}.intoto.jsonl"
+          ls -l "./DbContextBuilder-${RELEASE_TAG}.intoto.jsonl"
+
       # `gh` is pre-installed on the runner, so no third-party action is needed
       # to upload release assets (zizmor superfluous-actions).
       - name: Attach artifacts to release
@@ -863,7 +931,7 @@ jobs:
           TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
           shopt -s nullglob
-          files=(./nuget-packages/*.nupkg ./nuget-packages/*.snupkg ./nuget-packages/*.bom.json release-coverage.zip)
+          files=(./nuget-packages/*.nupkg ./nuget-packages/*.snupkg ./nuget-packages/*.bom.json "./DbContextBuilder-${TAG_NAME}.intoto.jsonl" reproducible-build-manifest.json release-coverage.zip)
           echo "Uploading ${#files[@]} asset(s) to release $TAG_NAME"
           gh release upload "$TAG_NAME" "${files[@]}" --clobber
 
