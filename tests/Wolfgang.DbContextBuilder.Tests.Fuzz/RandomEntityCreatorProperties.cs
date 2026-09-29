@@ -6,9 +6,9 @@ namespace Wolfgang.DbContextBuilder.Tests.Fuzz;
 /// Property bodies shared by every <see cref="ICreateRandomEntities"/> implementation's fuzz
 /// suite. <c>BogusRandomEntityCreator</c> and <c>AutoFixtureRandomEntityCreator</c> are two
 /// independent implementations of the same interface, and the interface's XML doc makes an
-/// explicit contract claim ("Count must be greater than 0", "returns exactly <paramref
-/// name="count"/> entities") - these properties fuzz both implementations against that one
-/// contract, rather than duplicating the assertions per class.
+/// explicit contract claim ("Count must be greater than 0", "returns exactly <c>count</c>
+/// entities") - these properties fuzz both implementations against that one contract, rather
+/// than duplicating the assertions per class.
 /// </summary>
 internal static class RandomEntityCreatorProperties
 {
@@ -47,6 +47,11 @@ internal static class RandomEntityCreatorProperties
         }
 
         var items = creator.CreateRandomEntities<FuzzEntity>(count).ToList();
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        // Nullable annotations are a compile-time hint, not an IL-enforced guarantee - a
+        // misbehaving ICreateRandomEntities implementation could still yield a null reference
+        // at runtime despite FuzzEntity being non-nullable. That is exactly the kind of thing
+        // fuzzing this contract is meant to catch.
         return items.Count == count && items.TrueForAll(item => item is not null);
     }
 }

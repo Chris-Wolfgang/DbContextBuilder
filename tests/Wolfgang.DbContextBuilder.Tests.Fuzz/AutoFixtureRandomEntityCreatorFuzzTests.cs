@@ -1,5 +1,4 @@
 using Wolfgang.DbContextBuilderCore;
-using Xunit;
 
 namespace Wolfgang.DbContextBuilder.Tests.Fuzz;
 
