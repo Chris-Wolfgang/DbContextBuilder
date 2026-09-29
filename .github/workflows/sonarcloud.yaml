@@ -1,0 +1,118 @@
+# SonarQube Cloud analysis (#293)
+#
+# Security static analysis beyond CodeQL and Semgrep. SonarQube Cloud adds taint
+# analysis, which traces untrusted input to a dangerous sink. The SonarAnalyzer.CSharp
+# rules already in the build can't do that. Free for public repositories.
+#
+# Pull request results are posted by the SonarQube Cloud GitHub App, both as PR
+# decoration and as its own check. They show NEW issues only, measured against main's
+# last analysis. The push run on main keeps that baseline current.
+#
+# One-time setup, outside this file:
+#   1. Import the repository at https://sonarcloud.io (sign in with GitHub).
+#   2. Administration > Analysis Method: turn Automatic Analysis OFF. C# is analysed
+#      here, around a real build, and the two cannot both be on.
+#   3. Store the analysis token as the SONAR_TOKEN repository secret.
+# The organisation and project keys default to SonarQube Cloud's import defaults
+# (lower-cased owner, and <owner>_<repo>). Override them with the SONAR_ORGANIZATION
+# and SONAR_PROJECT_KEY repository variables.
+name: SonarQube Cloud
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sonarcloud-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: SonarQube Cloud analysis
+    # Windows, like InspectCode: the solution includes .NET Framework projects, and
+    # the reference assemblies resolve natively here.
+    runs-on: windows-latest
+    # Pull requests from forks get no secrets, so the scan cannot run there.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    timeout-minutes: 45
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Blame data and new-code detection need the full history.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore CI tools (SonarScanner for .NET)
+        # Pinned in .config/dotnet-tools.json (a protected file); never installed unversioned.
+        run: dotnet tool restore
+
+      - name: Analyze
+        shell: pwsh
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          # A scan that cannot authenticate must fail, not skip. Otherwise a missing
+          # secret looks exactly like a clean analysis.
+          if (-not $env:SONAR_TOKEN) {
+            Write-Host "::error::The SONAR_TOKEN secret is not set, so there is no analysis. See the setup notes at the top of sonarcloud.yaml."
+            exit 1
+          }
+
+          $org = if ($env:SONAR_ORGANIZATION) { $env:SONAR_ORGANIZATION } else { $env:REPO_OWNER.ToLowerInvariant() }
+          $key = if ($env:SONAR_PROJECT_KEY) { $env:SONAR_PROJECT_KEY } else { "$($env:REPO_OWNER)_$($env:REPO_NAME)" }
+          Write-Host "Organization: $org  Project key: $key"
+
+          # extra-projects/ holds the EF-scaffolded AdventureWorks models the tests build
+          # against. They are generated code, not library code.
+          dotnet sonarscanner begin `
+            /k:"$key" `
+            /o:"$org" `
+            /d:sonar.host.url="https://sonarcloud.io" `
+            /d:sonar.token="$env:SONAR_TOKEN" `
+            /d:sonar.exclusions="extra-projects/**" `
+            /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml"
+          if ($LASTEXITCODE -ne 0) { Write-Host "::error::sonarscanner begin failed"; exit 1 }
+
+          dotnet build Wolfgang.DbContextBuilder.slnx --configuration Release
+          if ($LASTEXITCODE -ne 0) { Write-Host "::error::Build failed"; exit 1 }
+
+          # Coverage on net10.0 only. The coverage gate proper lives in pr.yaml. This
+          # run just gives SonarQube Cloud's new-code coverage condition real numbers
+          # instead of an empty report. Sonar's C# plugin reads OpenCover, not the
+          # Cobertura that coverlet.runsettings asks for, so the format is overridden here.
+          $tests = @(Get-ChildItem -Path tests -Recurse -File -Filter *.csproj |
+            Where-Object { (Get-Content $_.FullName -Raw) -match '<TargetFrameworks?>[^<]*\bnet10\.0\b' })
+          if ($tests.Count -eq 0) { Write-Host "::error::No net10.0 test project found under tests/"; exit 1 }
+          foreach ($t in $tests) {
+            dotnet test $t.FullName --configuration Release --no-build --framework net10.0 `
+              --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory TestResults `
+              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+            if ($LASTEXITCODE -ne 0) { Write-Host "::error::Tests failed: $($t.Name)"; exit 1 }
+          }
+          $reports = @(Get-ChildItem -Path TestResults -Recurse -Filter coverage.opencover.xml)
+          Write-Host "OpenCover reports: $($reports.Count) from $($tests.Count) test project(s)"
+          if ($reports.Count -lt $tests.Count) {
+            Write-Host "::error::Expected an OpenCover report from each of the $($tests.Count) test projects, found $($reports.Count)."
+            exit 1
+          }
+
+          dotnet sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"
+          if ($LASTEXITCODE -ne 0) { Write-Host "::error::sonarscanner end failed"; exit 1 }
