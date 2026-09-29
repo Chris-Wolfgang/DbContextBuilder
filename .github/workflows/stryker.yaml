@@ -122,6 +122,13 @@ jobs:
 
           if (Test-Path 'stryker-config.json') {
             Write-Host "::group::Stryker with root umbrella stryker-config.json"
+            # Restore first. Stryker analyses every project BEFORE its own restore,
+            # and on a fresh checkout a .NET Framework project analysed unrestored
+            # comes back without its package references, so its mutated compile
+            # fails ("System.Data.Entity does not exist") and the run aborts.
+            $solution = (Get-Content 'stryker-config.json' -Raw | ConvertFrom-Json).'stryker-config'.solution
+            if ($solution) { dotnet restore $solution } else { dotnet restore }
+            if ($LASTEXITCODE -ne 0) { Write-Host "::error::dotnet restore failed"; exit 1 }
             $started = Get-Date
             dotnet stryker --config-file stryker-config.json @reporters
             if ($LASTEXITCODE -ne 0) { $failed++ }
@@ -145,10 +152,15 @@ jobs:
               Write-Host "::group::Stryker in $dir"
               Push-Location $dir
               try {
-                $started = Get-Date
-                dotnet stryker @reporters
+                # Restore before Stryker analyses the project; see the umbrella branch.
+                dotnet restore
                 if ($LASTEXITCODE -ne 0) { $failed++ }
-                elseif (-not (Test-StrykerRun -Dir $dir -Since $started)) { $failed++ }
+                else {
+                  $started = Get-Date
+                  dotnet stryker @reporters
+                  if ($LASTEXITCODE -ne 0) { $failed++ }
+                  elseif (-not (Test-StrykerRun -Dir $dir -Since $started)) { $failed++ }
+                }
               } finally {
                 Pop-Location
               }
