@@ -22,8 +22,9 @@ public static class DocExampleCompiler
     // usage code need that declaration emitted as a sibling member of the generated namespace,
     // not folded into the wrapper method body - a class cannot be declared inside a method.
     private static readonly Regex TypeDeclarationStart = new(
-        @"^\s*(public\s+|internal\s+|private\s+)?(sealed\s+|abstract\s+|static\s+|partial\s+)*(class|interface|struct|record)\b",
-        RegexOptions.Compiled);
+        @"^\s*(?:public\s+|internal\s+|private\s+)?(?:sealed\s+|abstract\s+|static\s+|partial\s+)*(?:class|interface|struct|record)\b",
+        RegexOptions.Compiled | RegexOptions.ExplicitCapture,
+        TimeSpan.FromSeconds(1));
 
 
     /// <summary>
@@ -169,11 +170,10 @@ public static class DocExampleCompiler
     }
 
 
-    // Chooses the wrapper method shape that lets the snippet's BODY compile:
-    //   - a `yield` snippet must sit in an async-iterator method;
-    //   - an `await` snippet needs `async Task`;
-    //   - anything else (e.g. a plain `foreach`) is a synchronous `void` body,
-    //     which avoids a spurious CS1998 "async method lacks await" on those.
+    // Chooses the wrapper method shape that lets the snippet's BODY compile: a `yield`
+    // snippet needs an async-iterator wrapper; an `await` snippet needs an async wrapper;
+    // anything else (e.g. a plain `foreach`) gets a synchronous, non-async wrapper, which
+    // avoids a spurious CS1998 "async method lacks await" on those.
     private static (string Signature, string Closer) WrapperSignature(string code)
     {
         if (ContainsWord(code, "yield"))
