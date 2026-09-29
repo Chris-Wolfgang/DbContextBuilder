@@ -65,16 +65,49 @@ public class ConcurrentBuilderIsolationTests
             .SeedWith(new ConcurrencyEntity { Tag = tag });
 
         await using var context = await builder.BuildAsync().ConfigureAwait(false);
-        var rows = await context.Set<ConcurrencyEntity>().ToListAsync().ConfigureAwait(false);
+        var rows = await context.Entities.ToListAsync().ConfigureAwait(false);
 
-        if (rows.Count != 1 || !string.Equals(rows[0].Tag, tag, StringComparison.Ordinal))
+        VerifyIsolated(tag, rows.Select(r => r.Tag).ToList());
+    }
+
+
+    // Extracted so the failure path (which has no other way to execute during a normal,
+    // passing test run - it only fires when isolation is genuinely broken) can be pinned by a
+    // direct, deterministic unit test instead of relying on Coyote to ever schedule a real
+    // cross-contamination.
+    internal static void VerifyIsolated(string tag, IReadOnlyList<string> seenTags)
+    {
+        if (seenTags.Count != 1 || !string.Equals(seenTags[0], tag, StringComparison.Ordinal))
         {
-            var seen = string.Join(", ", rows.Select(r => r.Tag));
+            var seen = string.Join(", ", seenTags);
             throw new InvalidOperationException(
                 $"Isolation violated: builder tagged '{tag}' expected exactly one row of its own "
-                + $"data, but saw {rows.Count} row(s) [{seen}] - another concurrent builder's seed "
-                + "data leaked across DbContextBuilder<T> instances.");
+                + $"data, but saw {seenTags.Count} row(s) [{seen}] - another concurrent builder's "
+                + "seed data leaked across DbContextBuilder<T> instances.");
         }
+    }
+
+
+    [Fact]
+    public void VerifyIsolated_throws_when_another_builders_data_leaked_in()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => VerifyIsolated("first", ["first", "second"]));
+
+        Assert.Contains("first", exception.Message, StringComparison.Ordinal);
+    }
+
+
+    // EF Core's InMemory materializer assigns ConcurrencyEntity.Id via a direct field write
+    // rather than the compiler-generated setter (a known optimization), and the isolation test
+    // above only ever reads Tag back - so Id's own get/set accessors need a direct test to be
+    // exercised at all.
+    [Fact]
+    public void ConcurrencyEntity_Id_round_trips()
+    {
+        var entity = new ConcurrencyEntity { Id = 42, Tag = "whatever" };
+
+        Assert.Equal(42, entity.Id);
     }
 }
 
