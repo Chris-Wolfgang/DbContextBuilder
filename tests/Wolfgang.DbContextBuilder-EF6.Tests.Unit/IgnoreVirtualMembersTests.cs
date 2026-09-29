@@ -4,6 +4,7 @@ using System.Linq;
 using AutoFixture;
 using AutoFixture.Kernel;
 using Wolfgang.DbContextBuilderEF6.Tests.Unit.Models;
+using Xunit;
 
 namespace Wolfgang.DbContextBuilderEF6.Tests.Unit;
 

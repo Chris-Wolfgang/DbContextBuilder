@@ -28,10 +28,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Using Include="Xunit" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-EF6\Wolfgang.DbContextBuilder-EF6.csproj" />
 	</ItemGroup>
 

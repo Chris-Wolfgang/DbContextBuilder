@@ -1,4 +1,6 @@
+using System;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Xunit;
 #if EF_CORE_6
 using Moq;
 #endif
