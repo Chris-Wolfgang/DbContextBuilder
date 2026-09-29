@@ -109,6 +109,11 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
 
     $testProjects = @(Get-ChildItem -Path './tests' -Recurse -File -Include '*.csproj', '*.vbproj', '*.fsproj' -ErrorAction SilentlyContinue)
 
+    # Mirrors pr.yaml's Stage 2 ledger: the assembly of every project that ran a
+    # coverage-collecting framework. Step 3 requires each of them to have a row in
+    # the coverage report, so a dropped collector fails instead of passing quietly.
+    $ranAssemblies = @()
+
     if ($testProjects.Count -eq 0) {
         Write-Host "No test projects found in ./tests — skipping"
     }
@@ -136,6 +141,7 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
 
             Write-Host "  Frameworks: $($frameworks -join ', ')"
 
+            $collectedCoverage = $false
             foreach ($fw in $frameworks) {
                 Write-Host "  Testing: $fw" -ForegroundColor Yellow
 
@@ -154,6 +160,7 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
                         $testArgs += '--settings'
                         $testArgs += 'coverlet.runsettings'
                     }
+                    $collectedCoverage = $true
                 }
 
                 dotnet test @testArgs
@@ -166,6 +173,11 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
             }
 
             if ($failed.Count -gt 0) { break }
+
+            if ($collectedCoverage) {
+                $asmMatch = [regex]::Match($content, '<AssemblyName>([^<]+)</AssemblyName>')
+                $ranAssemblies += if ($asmMatch.Success) { $asmMatch.Groups[1].Value.Trim() } else { $testProj.BaseName }
+            }
         }
 
         if ($failed.Count -eq 0) {
@@ -182,17 +194,24 @@ if (-not $SkipTests -and -not $SkipCoverage -and $failed.Count -eq 0) {
 
     $coverageFiles = Get-ChildItem -Path TestResults -Recurse -Filter coverage.cobertura.xml -ErrorAction SilentlyContinue
 
-    if (-not $coverageFiles) {
-        Write-Host "No coverage files found — skipping"
+    $ran = @($ranAssemblies | Where-Object { $_ } | Sort-Object -Unique)
+
+    if (-not $coverageFiles -and $ran.Count -gt 0) {
+        # Tests ran with the collector, so no coverage files means collection broke.
+        # Skipping here is how a dropped coverlet.collector used to report green.
+        Write-Fail "Tests ran but produced no coverage files — the coverage gate cannot be evaluated. Test assemblies that ran: $($ran -join ', ')"
+        $failed += "Coverage"
     }
-    else {
+    elseif (-not $coverageFiles) {
+        Write-Host "No coverage files found and no test assembly collected coverage — skipping"
+    }
+    elseif (-not (Restore-LocalTools)) {
         # ReportGenerator is pinned in .config/dotnet-tools.json, exactly as pr.yaml
         # uses it. Run it as a local tool: no global install, no PATH dependency, so
         # it works from any shell or account that has `dotnet` on PATH.
-        if (-not (Restore-LocalTools)) {
-            $failed += "Coverage"
-        }
-
+        $failed += "Coverage"
+    }
+    else {
         dotnet reportgenerator `
             -reports:"TestResults/**/coverage.cobertura.xml" `
             -targetdir:"CoverageReport" `
@@ -202,6 +221,25 @@ if (-not $SkipTests -and -not $SkipCoverage -and $failed.Count -eq 0) {
             Write-Host ""
             Get-Content "CoverageReport/Summary.txt"
             Write-Host ""
+
+            # Every test assembly that ran must have a row: the gate below can only
+            # judge modules that appear in the report. Module rows start in column 1;
+            # -notcontains is an exact match, so X.Tests is never taken for X.Tests.Unit.
+            $rows = @(Get-Content "CoverageReport/Summary.txt" |
+                Where-Object { $_ -match '^\S' } |
+                ForEach-Object { ($_ -split '\s+')[0] })
+            $missing = @($ran | Where-Object { $rows -notcontains $_ })
+            if ($ran.Count -eq 0) {
+                Write-Fail "Coverage files exist but no test assembly was recorded as having collected coverage"
+                $failed += "Coverage"
+            }
+            elseif ($missing.Count -gt 0) {
+                Write-Fail "These test assemblies ran but produced no coverage row: $($missing -join ', '). Is coverlet.collector still referenced?"
+                $failed += "Coverage"
+            }
+            else {
+                Write-Pass "All $($ran.Count) test assemblies that collected coverage have a row in the report"
+            }
 
             $failedProjects = @()
             foreach ($line in (Get-Content "CoverageReport/Summary.txt")) {
@@ -220,15 +258,16 @@ if (-not $SkipTests -and -not $SkipCoverage -and $failed.Count -eq 0) {
             }
 
             if ($failedProjects.Count -gt 0) {
-                Write-Fail "Coverage gate FAILED: $($failedProjects -join ', ')"
+                Write-Fail "Coverage threshold FAILED: $($failedProjects -join ', ')"
                 $failed += "Coverage"
             }
             else {
-                Write-Pass "Coverage gate passed"
+                Write-Pass "Coverage threshold passed"
             }
         }
         else {
-            Write-Host "Coverage report not generated — skipping threshold check"
+            Write-Fail "Coverage report not generated (reportgenerator exit code $LASTEXITCODE) — the coverage gate cannot be evaluated"
+            $failed += "Coverage"
         }
     }
 }
