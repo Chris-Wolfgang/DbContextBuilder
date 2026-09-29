@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Doc-example rot detection (#306). This is a tooling test that hosts the
+       Roslyn C# compiler to build every <example><code> block found in the
+       library's XML-doc comments, so it targets a single modern TFM rather than
+       the library's full matrix. -->
+  <PropertyGroup>
+    <RootNamespace>Wolfgang.DbContextBuilder.Tests.DocExamples</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <Title>$(AssemblyName)</Title>
+    <Authors>Chris Wolfgang</Authors>
+    <Description>Doc-example compilation tests for Wolfgang.DbContextBuilder</Description>
+    <Copyright>Copyright 2026 Chris Wolfgang</Copyright>
+    <PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <SignAssembly>False</SignAssembly>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="[2.8.2]">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.runner.console" Version="2.9.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="coverlet.collector" Version="10.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+
+    <!-- Hosts the C# compiler used to build the extracted doc snippets. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- References -Core-EF10, not -Core: -Core.csproj pins Microsoft.EntityFrameworkCore to
+         [6.0.36,7.0.0) despite targeting net10.0 (a pre-existing mismatch, unrelated to this
+         test project), which NU1107-conflicts with .Bogus's net10.0 EF Core 10.x requirement.
+         -Core-EF10 links the exact same source files as -Core (see docs/adr/0001), so it
+         exposes an identical API for the examples to compile against - ISeedProfile.cs
+         (-Core's own doc example) and BogusRandomEntityCreator.cs (.Bogus's). -->
+    <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core-EF10\Wolfgang.DbContextBuilder-Core-EF10.csproj" />
+    <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder.Bogus\Wolfgang.DbContextBuilder.Bogus.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
+
+</Project>
