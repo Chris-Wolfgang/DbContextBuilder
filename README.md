@@ -177,3 +177,12 @@ pwsh ./scripts/format.ps1
 # Run the PR workflow's Windows stage locally (build, tests on every TFM, coverage gates, DevSkim, gitleaks)
 pwsh ./scripts/build-pr.ps1
 ```
+
+## 🔐 Verify the build
+
+Every release publishes a signed SLSA build-provenance attestation, a CycloneDX
+SBOM, and a reproducible-build manifest alongside the NuGet packages. See
+[SECURITY.md § Verifying the supply chain](SECURITY.md#verifying-the-supply-chain)
+to verify a downloaded package came from this repository's CI, and
+[docs/REPRODUCIBLE-BUILD.md](docs/REPRODUCIBLE-BUILD.md) to independently rebuild
+a release from source and compare hashes.

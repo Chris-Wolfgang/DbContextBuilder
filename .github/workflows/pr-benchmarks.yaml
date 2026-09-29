@@ -1,0 +1,222 @@
+# Per-PR performance regression gate (#318).
+#
+# Distinct from benchmarks.yaml: that workflow graphs the BDN trend on every
+# push to main (backward-looking) using a ShortRun job and a flat 200%
+# alert-threshold against the last gh-pages snapshot, and does not gate
+# merging. This workflow is forward-looking and per-PR: it runs the
+# benchmark suite twice -- once on the PR's own HEAD, once on the merge-base
+# commit where the PR branched off its base -- so the comparison isolates
+# exactly this PR's diff (not whatever else has landed on base since). It
+# always posts a full delta table (not just on alert), applies separate
+# time/allocation thresholds, and can be overridden per-PR with the
+# perf-impact-acknowledged label.
+
+name: PR Benchmarks
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    # `labeled` is here so the documented override actually works. The gate reads the
+    # label from the event payload, and a re-run replays the ORIGINAL payload - so a
+    # label added after a red run is invisible to it and the only way through was an
+    # empty commit, which re-runs every workflow rather than this one.
+    #
+    # `unlabeled` for the symmetric case: without it, removing the override after an
+    # acknowledged run leaves the green check and its comment standing, still claiming
+    # an acknowledgement that no longer exists.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'benchmarks/**'
+
+concurrency:
+  group: pr-benchmarks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  TIME_THRESHOLD_PCT: '20'
+  ALLOC_THRESHOLD_PCT: '50'
+  # A percentage-only threshold flags the smallest/fastest benchmarks the
+  # hardest: this suite runs entirely against the EF Core InMemory provider,
+  # so every measurement is already small (low-ms range), and a shared-runner
+  # GC pause or a neighboring job stealing CPU for a fraction of a
+  # millisecond reads as a large percentage swing. Require the ABSOLUTE mean
+  # delta to also clear this floor before something counts as regressed, so
+  # noise on the fastest benchmarks can't trip the gate on percentage alone.
+  # 500us was chosen to sit below the total wall-clock time of the smallest
+  # real (SeedCount: 1) operations in this suite, so a genuine regression
+  # there still has room to clear it.
+  TIME_ABS_FLOOR_NS: '500000'
+  BENCH_FILTER: '*Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks*'
+  BENCH_PROJECT: benchmarks/DbContextBuilder.Benchmarks/DbContextBuilder.Benchmarks.csproj
+
+jobs:
+  perf-delta:
+    name: Benchmark delta vs base
+    # A label event re-runs this only for the override itself, added or removed; every
+    # other label would otherwise pay for a full base-and-head BenchmarkDotNet run.
+    # `github.event.label` is populated for both actions.
+    if: >-
+      (github.event.action != 'labeled' && github.event.action != 'unlabeled')
+      || github.event.label.name == 'perf-impact-acknowledged'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write   # marocchino/sticky-pull-request-comment posts/updates the delta-table comment
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history: the merge-base lookup below needs both the PR
+          # head and base-branch ancestry, and the default shallow clone
+          # only carries the merge commit itself.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Find merge-base commit
+        id: mergebase
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          sha="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Run benchmarks on PR head
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git checkout "$HEAD_SHA"
+          dotnet run \
+            --project "$BENCH_PROJECT" \
+            --configuration Release \
+            --framework net10.0 \
+            -- \
+            --exporters json \
+            --filter "$BENCH_FILTER" \
+            --memory \
+            --artifacts ./bdn-artifacts-head
+
+      - name: Clean build outputs before switching commits
+        # bin/obj from the head build must not leak into the merge-base
+        # build -- MSBuild incremental builds are timestamp-based and could
+        # otherwise mix stale outputs across the two different commits.
+        # Excludes the head-run's exported artifacts dir, which is untracked
+        # and would otherwise be swept up by -x too.
+        run: git clean -xdf -e bdn-artifacts-head
+
+      - name: Run benchmarks on merge-base
+        env:
+          MERGE_BASE_SHA: ${{ steps.mergebase.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git checkout "$MERGE_BASE_SHA"
+          dotnet run \
+            --project "$BENCH_PROJECT" \
+            --configuration Release \
+            --framework net10.0 \
+            -- \
+            --exporters json \
+            --filter "$BENCH_FILTER" \
+            --memory \
+            --artifacts ./bdn-artifacts-base
+
+      - name: Compute delta
+        id: delta
+        env:
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          set -euo pipefail
+
+          head_report="$(find ./bdn-artifacts-head -path '*/results/*BuildAsyncBenchmarks-report-full*.json' | head -1)"
+          base_report="$(find ./bdn-artifacts-base -path '*/results/*BuildAsyncBenchmarks-report-full*.json' | head -1)"
+          if [ -z "$head_report" ] || [ -z "$base_report" ]; then
+            echo "::error::Missing a BDN report (head='$head_report' base='$base_report')"
+            exit 1
+          fi
+
+          rows="$(jq -n \
+            --slurpfile head "$head_report" \
+            --slurpfile base "$base_report" \
+            --argjson timeThreshold "$TIME_THRESHOLD_PCT" \
+            --argjson allocThreshold "$ALLOC_THRESHOLD_PCT" \
+            --argjson timeAbsFloorNs "$TIME_ABS_FLOOR_NS" \
+            '
+            ($base[0].Benchmarks | map({(.FullName): .}) | add) as $baseByName |
+            [$head[0].Benchmarks[] |
+              . as $h |
+              $baseByName[$h.FullName] as $b |
+              select($b != null) |
+              ($h.Statistics.Mean - $b.Statistics.Mean) as $timeDeltaNs |
+              ($timeDeltaNs / $b.Statistics.Mean * 100) as $timePct |
+              (($h.Memory.BytesAllocatedPerOperation - $b.Memory.BytesAllocatedPerOperation) / $b.Memory.BytesAllocatedPerOperation * 100) as $allocPct |
+              {
+                name: $h.FullName,
+                baseMeanNs: $b.Statistics.Mean, headMeanNs: $h.Statistics.Mean, timePct: ($timePct | round),
+                baseAllocBytes: $b.Memory.BytesAllocatedPerOperation, headAllocBytes: $h.Memory.BytesAllocatedPerOperation, allocPct: ($allocPct | round),
+                # Percentage alone flags the fastest benchmarks hardest -- also require the
+                # absolute time delta to clear a floor, so runner-jitter noise on a small
+                # baseline (big % of a tiny number) cannot trip the gate on its own.
+                regressed: ((($timePct > $timeThreshold) and ($timeDeltaNs > $timeAbsFloorNs)) or ($allocPct > $allocThreshold))
+              }
+            ] | sort_by(-.timePct)
+            ')"
+
+          echo "$rows" > ./delta.json
+          regressed_count="$(echo "$rows" | jq '[.[] | select(.regressed)] | length')"
+          echo "regressed=$regressed_count" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "table<<BENCHDELTA"
+            echo "| Benchmark | Base mean | Head mean | Δ time | Base alloc | Head alloc | Δ alloc |"
+            echo "|---|---:|---:|---:|---:|---:|---:|"
+            echo "$rows" | jq -r '.[] | "| \(.name) | \(.baseMeanNs/1000|round) us | \(.headMeanNs/1000|round) us | \(if .regressed then "**" else "" end)\(.timePct)%\(if .regressed then "**" else "" end) | \(.baseAllocBytes) B | \(.headAllocBytes) B | \(if .regressed then "**" else "" end)\(.allocPct)%\(if .regressed then "**" else "" end) |"'
+            echo "BENCHDELTA"
+          } >> "$GITHUB_OUTPUT"
+
+          if [ "$regressed_count" -gt 0 ] && [[ ",$LABELS," != *",perf-impact-acknowledged,"* ]]; then
+            echo "acknowledged=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "acknowledged=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Comment delta table on PR
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          header: perf-delta
+          message: |
+            ### Benchmark delta vs base (`${{ steps.mergebase.outputs.sha }}`)
+
+            Time threshold: ${{ env.TIME_THRESHOLD_PCT }}% (and >${{ env.TIME_ABS_FLOOR_NS }}ns absolute) · Allocation threshold: ${{ env.ALLOC_THRESHOLD_PCT }}%. Bold = over threshold.
+
+            ${{ steps.delta.outputs.table }}
+
+            ${{ steps.delta.outputs.regressed != '0' && (steps.delta.outputs.acknowledged == 'true' && '⚠️ Regression(s) found, but the PR carries `perf-impact-acknowledged` -- not blocking.' || '🔴 Regression(s) found beyond threshold. Add the `perf-impact-acknowledged` label to override, or address the regression.') || '✅ No regressions beyond threshold.' }}
+
+      - name: Fail on unacknowledged regression
+        if: steps.delta.outputs.acknowledged == 'false'
+        env:
+          REGRESSED_COUNT: ${{ steps.delta.outputs.regressed }}
+        run: |
+          echo "::error::$REGRESSED_COUNT benchmark(s) regressed beyond threshold (time >${TIME_THRESHOLD_PCT}% and >${TIME_ABS_FLOOR_NS}ns absolute, or alloc >${ALLOC_THRESHOLD_PCT}%). Add the 'perf-impact-acknowledged' label to override."
+          exit 1
+
+      - name: Upload delta artifact
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pr-benchmark-delta
+          path: ./delta.json
+          if-no-files-found: warn
