@@ -1,0 +1,165 @@
+name: Cross-Platform Differential
+
+# pr.yaml's Stages 1/2/3 already prove the test suite PASSES on Linux,
+# Windows, and macOS independently. This workflow proves something stronger:
+# that it passes the SAME WAY everywhere -- the same tests, in the same
+# order by name, with the same outcome. A library can be green on all three
+# while quietly behaving differently on one (line-ending handling,
+# culture-sensitive sorts, filesystem case sensitivity, timing-dependent
+# assertions) and nothing in the per-OS gate would ever catch that, because
+# each OS leg only ever compares itself to "pass/fail", never to its
+# siblings.
+#
+# Scope: the deterministic Core Tests.Unit suite only (InMemory/SQLite-backed,
+# no external services) -- the EFx-pinned sibling suites compile the same
+# linked source as Core (see Directory.Build.props), so diffing them too would
+# just re-verify identical source under a different TFM. Tests that are
+# *intentionally* platform-specific opt out via
+# `[Trait("Category", "PlatformSpecific")]`; none exist today, but the
+# convention is wired in from the start.
+
+on:
+  # NO `paths:` FILTER on pull_request -- this isn't a required check today,
+  # but if it's ever promoted to one, a paths filter would let a
+  # non-matching PR sit "Blocked" forever.
+  pull_request:
+    branches: [main, vNext]
+  push:
+    branches: [vNext]
+    paths:
+      - 'src/**'
+      - 'tests/Wolfgang.DbContextBuilder-Core.Tests.Unit/**'
+      - '.github/workflows/cross-platform-differential.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cross-platform-differential-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run-tests:
+    name: Run tests (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux-x64
+          - os: ubuntu-24.04-arm
+            platform: linux-arm64
+          - os: macos-14
+            platform: macos-arm64
+          - os: windows-latest
+            platform: windows-x64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            10.0.x
+
+      - name: Run Core Tests.Unit
+        shell: pwsh
+        run: |
+          # --framework net10.0 pins to a single TFM -- Tests.Unit multi-targets
+          # net6.0/net7.0/net8.0/net9.0/net10.0, `dotnet test` runs every built
+          # TFM by default, and this runner only has .NET 10 installed
+          # (setup-dotnet above doesn't provision 6.0-9.0). This differential is
+          # about OS/arch behavior, not TFM availability -- pr.yaml's per-TFM
+          # matrix already covers that separately.
+          dotnet test tests/Wolfgang.DbContextBuilder-Core.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit.csproj `
+            -c Release `
+            --framework net10.0 `
+            --filter "Category!=PlatformSpecific" `
+            --logger "trx;LogFileName=results.trx" `
+            --results-directory ./TestResults
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Test run failed on ${{ matrix.platform }} -- fix the failure before the differential can mean anything."
+            exit $LASTEXITCODE
+          }
+
+      - name: Normalize results
+        shell: pwsh
+        run: |
+          $trxPath = "TestResults/results.trx"
+          $trx = [xml](Get-Content -Raw $trxPath)
+
+          # TRX's default xmlns makes prefixed XPath awkward; GetElementsByTagName
+          # matches by unprefixed qualified name regardless of the default
+          # namespace, which is exactly what TRX uses.
+          $lines = $trx.GetElementsByTagName("UnitTestResult") | ForEach-Object {
+            "$($_.testName)`t$($_.outcome)"
+          } | Sort-Object
+
+          if ($lines.Count -eq 0) {
+            Write-Error "No UnitTestResult entries found in $trxPath -- something is wrong with the TRX output, not a real 0-test suite."
+            exit 1
+          }
+
+          $lines | Out-File -Encoding utf8 "results-${{ matrix.platform }}.txt"
+          Write-Host "$($lines.Count) test results normalized for ${{ matrix.platform }}."
+
+      - name: Upload normalized results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: results-${{ matrix.platform }}
+          path: results-${{ matrix.platform }}.txt
+          retention-days: 14
+
+  diff:
+    name: Diff platforms
+    needs: run-tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all normalized results
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: results-*
+          merge-multiple: true
+
+      - name: Normalize line endings
+        run: |
+          set -euo pipefail
+          # The windows-x64 leg's PowerShell Out-File writes CRLF (it follows
+          # the OS newline convention); Linux/macOS write LF. Left alone,
+          # `diff` would show every line as changed on a CRLF file even when
+          # the content is identical -- a tooling artifact, not a real
+          # platform divergence. Strip \r from every file so the comparison
+          # is actually about test outcomes.
+          sed -i 's/\r$//' results-*.txt
+
+      - name: Diff every platform against linux-x64
+        run: |
+          set -euo pipefail
+          baseline="results-linux-x64.txt"
+
+          if [ ! -f "$baseline" ]; then
+            echo "::error::Baseline $baseline missing -- did the linux-x64 leg fail to upload?"
+            exit 1
+          fi
+
+          failed=0
+          for f in results-*.txt; do
+            [ "$f" = "$baseline" ] && continue
+            echo "Diffing $f against $baseline..."
+            if ! diff -u "$baseline" "$f"; then
+              echo "::error::$f diverges from $baseline -- same test suite, different outcome per platform."
+              failed=1
+            fi
+          done
+
+          if [ "$failed" -ne 0 ]; then
+            exit 1
+          fi
+          echo "All platforms match linux-x64 exactly."
