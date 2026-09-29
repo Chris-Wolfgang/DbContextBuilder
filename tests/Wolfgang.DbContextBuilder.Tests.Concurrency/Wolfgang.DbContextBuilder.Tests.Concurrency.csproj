@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      Systematic concurrency-testing suite (#302). net10.0-only: Coyote's binary rewriting
+      targets one build output at a time and this suite's value is exploration depth
+      (schedule interleavings), not TFM coverage - the behavioural correctness those
+      interleavings exercise is already covered on every shipped TFM by the unit suite.
+    -->
+    <RootNamespace>Wolfgang.DbContextBuilder.Tests.Concurrency</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <Title>$(AssemblyName)</Title>
+    <Authors>Chris Wolfgang</Authors>
+    <Description>Systematic concurrency tests for Wolfgang.DbContextBuilder</Description>
+    <Copyright>Copyright 2026 Chris Wolfgang</Copyright>
+    <PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <SignAssembly>False</SignAssembly>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- CA1707 (underscores): test method names follow the
+         MethodUnderTest_when_condition_expected_result convention. -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- -Core-EF10, not -Core - see docs/adr/0001 and the DocExamples project's csproj for
+         why -Core itself is avoided (its EF Core package-reference range predates its own
+         net10.0 TargetFramework). -Core-EF10 links the identical source files. -->
+    <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core-EF10\Wolfgang.DbContextBuilder-Core-EF10.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="[2.8.2]">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.runner.console" Version="2.9.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="coverlet.collector" Version="10.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Coyote" Version="1.7.11" />
+    <PackageReference Include="Microsoft.Coyote.Test" Version="1.7.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
+
+</Project>

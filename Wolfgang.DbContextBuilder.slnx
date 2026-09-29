@@ -39,5 +39,6 @@
     <Project Path="tests/Wolfgang.DbContextBuilder-EF6.Tests.Unit/Wolfgang.DbContextBuilder-EF6.Tests.Unit.csproj" />
     <Project Path="tests/Wolfgang.DbContextBuilder.Tests.DocExamples/Wolfgang.DbContextBuilder.Tests.DocExamples.csproj" />
     <Project Path="tests/Wolfgang.DbContextBuilder.Tests.Fuzz/Wolfgang.DbContextBuilder.Tests.Fuzz.csproj" />
+    <Project Path="tests/Wolfgang.DbContextBuilder.Tests.Concurrency/Wolfgang.DbContextBuilder.Tests.Concurrency.csproj" />
   </Folder>
 </Solution>
