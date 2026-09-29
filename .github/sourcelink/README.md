@@ -39,9 +39,10 @@ resolution is covered by `sourcelink.yaml`.
 
 - `consumer/StepIntoConsumer.csproj` / `Program.cs` — the fixture consumer. It
   references `Wolfgang.DbContextBuilder-Core` and the break line is marked
-  `STEP_INTO_TARGET`.
-- `Directory.Build.props` / `.targets` — empty isolation stubs so the consumer
-  does **not** inherit the repo's analyzers / BannedSymbols / multi-TFM policy.
+  `STEP_INTO_TARGET`. Inherits the repo's own analyzers rather than an
+  isolation-stub `Directory.Build.props`/`.targets` (that pattern hit a stale,
+  root-only protected-file check elsewhere in `pr.yaml`) — the couple of
+  warnings that come from that are suppressed inline instead.
 - `verify_stepinto.py` — the debugger driver (exit 0 = step-into resolved real
   source).
 
