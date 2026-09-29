@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      Continuous-fuzz suite (#291). net10.0-only: the fuzz workflow runs a single modern
+      runtime with a large per-property case budget; multi-TFM would multiply CI hours for
+      no extra behavioural coverage (the Unit test projects already run on every shipped TFM).
+    -->
+    <RootNamespace>Wolfgang.DbContextBuilder.Tests.Fuzz</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <Title>$(AssemblyName)</Title>
+    <Authors>Chris Wolfgang</Authors>
+    <Description>Continuous-fuzz property tests for Wolfgang.DbContextBuilder</Description>
+    <Copyright>Copyright 2026 Chris Wolfgang</Copyright>
+    <PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <SignAssembly>False</SignAssembly>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- CA1707 (underscores): test/property method names follow the
+         MethodUnderTest_when_condition_expected_result convention. -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="[2.8.2]">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.runner.console" Version="2.9.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="coverlet.collector" Version="10.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="FsCheck.Xunit" Version="3.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Both random-entity-creator implementations under fuzz; each transitively pulls in
+         -Core-EF10 (not -Core - see docs/adr/0001 and the DocExamples project's csproj for why
+         -Core itself is avoided here: it pins EF Core to a range that predates its own net10.0
+         TargetFramework). -->
+    <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder.Bogus\Wolfgang.DbContextBuilder.Bogus.csproj" />
+    <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder.AutoFixture\Wolfgang.DbContextBuilder.AutoFixture.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
+
+</Project>
