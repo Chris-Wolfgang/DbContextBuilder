@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -966,5 +967,75 @@ public class SqliteModelCustomizerTests
 
         // Assert — renamed to {LeftPrincipalTable}_{RightPrincipalTable}
         Assert.Equal("Posts_Tags", entity.GetTableName());
+    }
+
+
+
+    /// <summary>
+    /// Verifies the customizer rewrites a real model: it drops the schema, and applies the default-
+    /// value and computed-column overrides when they change the SQL. The other tests exercise the
+    /// override delegates in isolation, so these three writes never ran from this suite.
+    /// </summary>
+    [Fact]
+    public void Customize_drops_the_schema_and_applies_changed_default_and_computed_SQL()
+    {
+        var options = new DbContextOptionsBuilder<SchemaContext>()
+            .UseSqlite("DataSource=:memory:")
+            .ReplaceService<IModelCustomizer, RewritingSqliteModelCustomizer>()
+            .Options;
+        using var context = new SchemaContext(options);
+
+        // The design-time model keeps the SQL annotations; EF 7+'s runtime model drops them.
+        var entity = context.GetService<IDesignTimeModel>().Model.FindEntityType(typeof(Invoice))!;
+
+        Assert.Null(entity.GetSchema());
+        Assert.Equal("CURRENT_TIMESTAMP", entity.FindProperty(nameof(Invoice.CreatedAt))!.GetDefaultValueSql());
+        Assert.Equal("\"Qty\" * \"Price\"", entity.FindProperty(nameof(Invoice.Total))!.GetComputedColumnSql());
+    }
+
+
+
+    /// <summary>
+    /// A customizer whose overrides change the SQL, as a SQL-Server-to-SQLite port would.
+    /// </summary>
+    private sealed class RewritingSqliteModelCustomizer : SqliteModelCustomizer
+    {
+        public RewritingSqliteModelCustomizer(ModelCustomizerDependencies dependencies)
+            : base(dependencies)
+        {
+            OverrideDefaultValueHandling = sql => string.Equals(sql, "GETDATE()", StringComparison.Ordinal) ? "CURRENT_TIMESTAMP" : sql;
+            OverrideComputedValueHandling = sql => sql?.Replace("[", "\"", StringComparison.Ordinal).Replace("]", "\"", StringComparison.Ordinal);
+        }
+    }
+
+
+
+    [ExcludeFromCodeCoverage(Justification = "Test model: only its mapping is inspected, never an instance")]
+    private sealed class Invoice
+    {
+        public int Id { get; set; }
+
+        public int Qty { get; set; }
+
+        public decimal Price { get; set; }
+
+        public decimal Total { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+    }
+
+
+
+    private sealed class SchemaContext(DbContextOptions<SchemaContext> options) : DbContext(options)
+    {
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Invoice>(invoice =>
+            {
+                invoice.ToTable("Invoice", "sales");
+                invoice.Property(i => i.CreatedAt).HasDefaultValueSql("GETDATE()");
+                invoice.Property(i => i.Total).HasComputedColumnSql("[Qty] * [Price]");
+            });
+        }
     }
 }

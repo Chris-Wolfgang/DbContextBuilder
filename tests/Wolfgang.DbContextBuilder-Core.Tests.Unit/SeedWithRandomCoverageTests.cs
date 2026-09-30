@@ -218,6 +218,99 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
+    /// Verifies the singleton overload, given an <c>IEnumerable&lt;object&gt;</c> at runtime, seeds every
+    /// item. The argument is typed as <see cref="object"/> so overload resolution picks the singleton
+    /// overload; a <c>List&lt;object&gt;</c> would bind to the <c>IEnumerable&lt;TEntity&gt;</c> overload instead.
+    /// </summary>
+    [Fact]
+    public async Task SeedWith_singleton_given_a_sequence_seeds_every_item()
+    {
+        object sequence = new List<object> { new CoverageManufacturer { Id = 1, Name = "a" }, new CoverageManufacturer { Id = 2, Name = "b" } };
+        using var sut = new DbContextBuilder<CoverageContext>().UseInMemory();
+
+        await using var context = await sut.SeedWith(sequence).BuildAsync();
+
+        Assert.Equal(2, context.Manufacturers.Count());
+    }
+
+
+
+    /// <summary>
+    /// Verifies the singleton overload rejects a sequence containing a string, and rejects it
+    /// atomically: the valid item before it is not seeded either.
+    /// </summary>
+    [Fact]
+    public async Task SeedWith_singleton_given_a_sequence_with_a_string_throws_and_seeds_nothing()
+    {
+        object sequence = new List<object> { new CoverageManufacturer { Id = 1, Name = "a" }, "not an entity" };
+        using var sut = new DbContextBuilder<CoverageContext>().UseInMemory();
+
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(sequence));
+        Assert.Equal("entity", ex.ParamName);
+
+        await using var context = await sut.BuildAsync();
+        Assert.Equal(0, context.Manufacturers.Count());
+    }
+
+
+
+    /// <summary>
+    /// Verifies the params overload flattens an item that is itself an <c>IEnumerable&lt;object&gt;</c>.
+    /// </summary>
+    [Fact]
+    public async Task SeedWith_params_flattens_a_sequence_item()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>().UseInMemory();
+
+        await using var context = await sut
+            .SeedWith<object>
+            (
+                new CoverageManufacturer { Id = 1, Name = "a" },
+                new List<object> { new CoverageManufacturer { Id = 2, Name = "b" }, new CoverageManufacturer { Id = 3, Name = "c" } }
+            )
+            .BuildAsync();
+
+        Assert.Equal(3, context.Manufacturers.Count());
+    }
+
+
+
+    /// <summary>
+    /// Verifies the params overload rejects a string item.
+    /// </summary>
+    [Fact]
+    public void SeedWith_params_with_a_string_item_throws_ArgumentException()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>();
+
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith<object>(new CoverageManufacturer { Id = 1 }, "not an entity"));
+
+        Assert.Equal("entities", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Verifies a database that cannot be created surfaces as DbContextBuilder's own
+    /// <see cref="InvalidOperationException"/> with the EF failure as its inner exception, not
+    /// EF's bare error. An entity with no primary key cannot be modelled; EF validates the model
+    /// lazily, and the first thing in <c>BuildAsync</c> to touch it is <c>EnsureCreatedAsync</c>.
+    /// (Options with no provider do not work here: the builder supplies InMemory.)
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_when_the_database_cannot_be_created_wraps_the_EF_failure()
+    {
+        using var sut = new DbContextBuilder<KeylessContext>().UseInMemory();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.BuildAsync());
+
+        Assert.StartsWith("DbContextBuilder failed to create the in-memory database", ex.Message, StringComparison.Ordinal);
+        Assert.IsType<InvalidOperationException>(ex.InnerException);
+    }
+
+
+
+    /// <summary>
     /// Verifies UseDbContextOptionsBuilder accepts a builder and rejects null.
     /// </summary>
     [Fact]
@@ -400,4 +493,20 @@ internal sealed class CoverageContext(DbContextOptions<CoverageContext> options)
     public DbSet<CoverageSupplier> Suppliers => Set<CoverageSupplier>();
 
     public DbSet<CoverageWidget> Widgets => Set<CoverageWidget>();
+}
+
+
+
+[ExcludeFromCodeCoverage(Justification = "Test model")]
+internal sealed class KeylessEntity
+{
+    public string Name { get; set; } = string.Empty;
+}
+
+
+
+[ExcludeFromCodeCoverage(Justification = "Test model")]
+internal sealed class KeylessContext(DbContextOptions<KeylessContext> options) : DbContext(options)
+{
+    public DbSet<KeylessEntity> Items => Set<KeylessEntity>();
 }
