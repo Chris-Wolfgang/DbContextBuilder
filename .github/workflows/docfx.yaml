@@ -188,7 +188,9 @@ jobs:
           # time and adds extra failure surface for older targets. Pin to
           # net10.0 — the modern target that's always present in this fleet.
           dotnet test --configuration Release --no-build --no-restore --framework net10.0 --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory ./coverage-raw 2>&1 | Out-Host
-          dotnet tool update -g dotnet-reportgenerator-globaltool 2>$null || dotnet tool install -g dotnet-reportgenerator-globaltool 2>$null
+          # ReportGenerator is pinned in .config/dotnet-tools.json (a protected file) and run as a
+          # local tool, like every other consumer of it in this repo.
+          dotnet tool restore | Out-Host
           $coverageFiles = @(Get-ChildItem -Path ./coverage-raw -Recurse -Filter "coverage.cobertura.xml" -ErrorAction SilentlyContinue)
           if ($coverageFiles.Count -eq 0) {
             Write-Host "::notice::No coverage files generated - skipping coverage report step"
@@ -219,7 +221,7 @@ jobs:
             Write-Host "::notice::Could not restore prior coverage history ($($_.Exception.Message)) - starting fresh."
           }
 
-          reportgenerator "-reports:$reports" "-targetdir:$outDir" "-reporttypes:Html;TextSummary" "-historydir:$historyDir"
+          dotnet reportgenerator "-reports:$reports" "-targetdir:$outDir" "-reporttypes:Html;TextSummary" "-historydir:$historyDir"
           Write-Host "Coverage report (with trend) written to $outDir"
 
       - name: Generate versions.json
