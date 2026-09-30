@@ -21,7 +21,6 @@
 		<SignAssembly>False</SignAssembly>
 		<PackageTags></PackageTags>
 
-		<ImplicitUsings>enable</ImplicitUsings>
 		<IsTestProject>true</IsTestProject>
 		<DefineConstants>$(DefineConstants);EF_CORE_10;EF_CORE_10_OR_GREATER</DefineConstants>
 
@@ -54,10 +53,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
-	<ItemGroup>
-		<Using Include="Xunit" />
-	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core-EF10\Wolfgang.DbContextBuilder-Core-EF10.csproj" />
