@@ -82,12 +82,57 @@ jobs:
           #      tests/. A per-project stryker-config.json next to a test
           #      project overrides Stryker's defaults when present.
 
+          #
+          # A zero exit code is not proof that Stryker measured anything. With a
+          # break threshold of 0 it exits 0 even after "Compilation failed" aborts
+          # the run before a single mutant is tested: score 0.00 %, no report, and
+          # a green job. So every run must also leave a JSON report holding at
+          # least one tested mutant, or it counts as failed. The reporters are
+          # passed on the command line (they override the config's list) so the
+          # JSON report exists in both modes.
+
           $failed = 0
+          $reporters = @('--reporter', 'progress', '--reporter', 'html', '--reporter', 'json')
+
+          function Test-StrykerRun([string]$Dir, [datetime]$Since) {
+            $reports = @(Get-ChildItem -Path (Join-Path $Dir 'StrykerOutput') -Recurse -Filter 'mutation-report.json' -ErrorAction SilentlyContinue |
+              Where-Object { $_.LastWriteTime -ge $Since })
+            if ($reports.Count -eq 0) {
+              Write-Host "::error::Stryker in $Dir wrote no mutation-report.json - it stopped before testing any mutant."
+              return $false
+            }
+            $counts = @{}
+            foreach ($report in $reports) {
+              $json = Get-Content $report.FullName -Raw | ConvertFrom-Json
+              foreach ($file in $json.files.PSObject.Properties) {
+                foreach ($mutant in $file.Value.mutants) { $counts[$mutant.status] = 1 + [int]$counts[$mutant.status] }
+              }
+            }
+            Write-Host "Mutant statuses in ${Dir}: $(($counts.GetEnumerator() | Sort-Object Name | ForEach-Object { "$($_.Name)=$($_.Value)" }) -join ', ')"
+            # Stryker's score: detected (Killed + Timeout) over valid (detected + Survived + NoCoverage).
+            $detected = [int]$counts['Killed'] + [int]$counts['Timeout']
+            $valid = $detected + [int]$counts['Survived'] + [int]$counts['NoCoverage']
+            if ($valid -eq 0) {
+              Write-Host "::error::Stryker in $Dir tested no mutants - there is no score to judge."
+              return $false
+            }
+            Write-Host ("Mutation score in {0}: {1:N2} % ({2} of {3} detected)" -f $Dir, (100.0 * $detected / $valid), $detected, $valid)
+            return $true
+          }
 
           if (Test-Path 'stryker-config.json') {
             Write-Host "::group::Stryker with root umbrella stryker-config.json"
-            dotnet stryker --config-file stryker-config.json
+            # Restore first. Stryker analyses every project BEFORE its own restore,
+            # and on a fresh checkout a .NET Framework project analysed unrestored
+            # comes back without its package references, so its mutated compile
+            # fails ("System.Data.Entity does not exist") and the run aborts.
+            $solution = (Get-Content 'stryker-config.json' -Raw | ConvertFrom-Json).'stryker-config'.solution
+            if ($solution) { dotnet restore $solution } else { dotnet restore }
+            if ($LASTEXITCODE -ne 0) { Write-Host "::error::dotnet restore failed"; exit 1 }
+            $started = Get-Date
+            dotnet stryker --config-file stryker-config.json @reporters
             if ($LASTEXITCODE -ne 0) { $failed++ }
+            elseif (-not (Test-StrykerRun -Dir (Get-Location).Path -Since $started)) { $failed++ }
             Write-Host "::endgroup::"
           }
           else {
@@ -107,8 +152,15 @@ jobs:
               Write-Host "::group::Stryker in $dir"
               Push-Location $dir
               try {
-                dotnet stryker
+                # Restore before Stryker analyses the project; see the umbrella branch.
+                dotnet restore
                 if ($LASTEXITCODE -ne 0) { $failed++ }
+                else {
+                  $started = Get-Date
+                  dotnet stryker @reporters
+                  if ($LASTEXITCODE -ne 0) { $failed++ }
+                  elseif (-not (Test-StrykerRun -Dir $dir -Since $started)) { $failed++ }
+                }
               } finally {
                 Pop-Location
               }
