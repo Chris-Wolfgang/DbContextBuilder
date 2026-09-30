@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Wolfgang.DbContextBuilder.Samples.ShadowWorkload</RootNamespace>
+    <AssemblyName>Wolfgang.DbContextBuilder.Samples.ShadowWorkload</AssemblyName>
+
+    <!--
+      Baseline/current toggle for shadow.yaml (#292): the SAME workload code runs
+      twice — once against the current commit's source, once against the
+      last-published NuGet package — so latency/allocation numbers are directly
+      comparable without needing a git-tag checkout of an old revision (which
+      wouldn't even contain this sample the first time it's added). Default is
+      the ProjectReference (current source); pass -p:UseBaselinePackage=true
+      -p:BaselineVersion=X.Y.Z to switch to the published package instead.
+
+      Baselines against -Core-EF10, not -Core: -Core.csproj pins EF Core to a
+      range that predates its own net10.0 TargetFramework (see docs/adr/0001),
+      and -Core stopped publishing entirely as of #362 - there is no current
+      -Core package version to baseline against. -Core-EF10 links the identical
+      source and ships every release -Core did before.
+
+      BaselineVersion must be bumped to the new version AFTER each release,
+      alongside PackageValidationBaselineVersion in the src projects. Left
+      behind, this gate silently stops measuring what it is for: it compares
+      main against a package several releases old, so accumulated change reads
+      as a regression and a regression introduced since the last release is
+      invisible against the larger delta.
+    -->
+    <UseBaselinePackage Condition="'$(UseBaselinePackage)' == ''">false</UseBaselinePackage>
+    <BaselineVersion Condition="'$(BaselineVersion)' == ''">0.8.1</BaselineVersion>
+
+    <!-- Example/demo-style code: relax the strict-library analyzers that don't
+         apply to a runnable sample (mirrors examples/Wolfgang.DbContextBuilder.Examples). -->
+    <NoWarn>$(NoWarn);CA1515;CA1812;MA0004;MA0048;CA2007</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(UseBaselinePackage)' != 'true'">
+    <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core-EF10\Wolfgang.DbContextBuilder-Core-EF10.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseBaselinePackage)' == 'true'">
+    <PackageReference Include="Wolfgang.DbContextBuilder-Core-EF10" Version="$(BaselineVersion)" />
+  </ItemGroup>
+
+</Project>

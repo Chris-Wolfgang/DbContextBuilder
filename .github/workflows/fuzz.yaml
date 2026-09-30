@@ -1,0 +1,90 @@
+name: Continuous fuzz
+
+# Runs the opt-in [Trait("Category","Fuzz")] property suite at a large per-property
+# case budget (FUZZ_CASES) for CI-time minutes on a weekly schedule — the long-form
+# complement to the ~1,000-case default in Wolfgang.DbContextBuilder.Tests.Fuzz. On a
+# counterexample the run fails, uploads the results (the trx carries FsCheck's shrunk
+# input + replay seed), and files a tracking issue.
+
+on:
+  workflow_dispatch:
+    inputs:
+      cases:
+        description: 'Cases per property (FUZZ_CASES)'
+        required: false
+        default: '100000'
+  schedule:
+    - cron: '30 4 * * 1'   # Mondays 04:30 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fuzz-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fuzz:
+    name: Fuzz random-entity creators
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write   # required to file a tracking issue on failure
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Run fuzz suite
+        env:
+          # workflow_dispatch input wins; scheduled runs fall back to the default.
+          FUZZ_CASES: ${{ github.event.inputs.cases || '100000' }}
+        run: |
+          dotnet test tests/Wolfgang.DbContextBuilder.Tests.Fuzz/Wolfgang.DbContextBuilder.Tests.Fuzz.csproj \
+            -c Release \
+            --filter "Category=Fuzz" \
+            --logger "trx;LogFileName=fuzz.trx" \
+            --results-directory ./fuzz-results
+
+      # The trx + console log carry FsCheck's shrunk counterexample and replay seed,
+      # so a failing input can be reproduced deterministically from the artifact.
+      - name: Upload fuzz results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fuzz-results
+          path: ./fuzz-results
+          if-no-files-found: warn
+
+      - name: File a tracking issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          # Ensure the label exists (idempotent), then avoid piling up duplicates:
+          # only open a new issue when none is already open.
+          gh label create fuzz-failure --color B60205 \
+            --description "A scheduled continuous-fuzz run found a counterexample" 2>/dev/null || true
+
+          open_count="$(gh issue list --label fuzz-failure --state open --json number --jq 'length')"
+          if [ "${open_count:-0}" -gt 0 ]; then
+            echo "An open fuzz-failure issue already exists — not filing another."
+            exit 0
+          fi
+
+          gh issue create \
+            --title "Continuous fuzz found a counterexample" \
+            --label fuzz-failure \
+            --body "The scheduled continuous-fuzz run failed — an FsCheck property found (and shrank) a counterexample.
+
+          Download the \`fuzz-results\` artifact from the run for the failing input and replay seed, add it as a deterministic regression to the unit suite, then fix the underlying issue.
+
+          Run: ${RUN_URL}"

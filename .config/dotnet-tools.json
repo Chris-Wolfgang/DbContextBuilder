@@ -8,6 +8,20 @@
         "nuget-license"
       ],
       "rollForward": false
+    },
+    "dotnet-reportgenerator-globaltool": {
+      "version": "5.5.11",
+      "commands": [
+        "reportgenerator"
+      ],
+      "rollForward": true
+    },
+    "microsoft.cst.devskim.cli": {
+      "version": "1.0.90",
+      "commands": [
+        "devskim"
+      ],
+      "rollForward": true
     }
   }
 }
