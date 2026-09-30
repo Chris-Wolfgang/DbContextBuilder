@@ -2,7 +2,6 @@ using Microsoft.Coyote;
 using Microsoft.Coyote.SystematicTesting;
 using Microsoft.EntityFrameworkCore;
 using Wolfgang.DbContextBuilderCore;
-using Xunit;
 
 namespace Wolfgang.DbContextBuilder.Tests.Concurrency;
 
