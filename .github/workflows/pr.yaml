@@ -925,14 +925,15 @@ jobs:
             echo "ℹ️  No coverage files found - skipping coverage report generation"
           fi
 
-      - name: Install ReportGenerator
+      - name: Restore CI tools (ReportGenerator)
         if: steps.check-coverage.outputs.has-coverage == 'true'
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+        # Pinned in .config/dotnet-tools.json (a protected file); never installed unversioned.
+        run: dotnet tool restore
 
       - name: Generate coverage report
         if: steps.check-coverage.outputs.has-coverage == 'true'
         run: |
-          reportgenerator \
+          dotnet reportgenerator \
             -reports:"TestResults/**/coverage.cobertura.xml" \
             -targetdir:"CoverageReport" \
             -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
@@ -1350,15 +1351,16 @@ jobs:
           }
         shell: pwsh
 
-      - name: Install ReportGenerator
+      - name: Restore CI tools (ReportGenerator)
         if: steps.check-coverage.outputs.has-coverage == 'true'
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+        # Pinned in .config/dotnet-tools.json (a protected file); never installed unversioned.
+        run: dotnet tool restore
 
       - name: Generate coverage report
         if: steps.check-coverage.outputs.has-coverage == 'true'
         shell: pwsh
         run: |
-          reportgenerator `
+          dotnet reportgenerator `
             -reports:"TestResults/**/coverage.cobertura.xml" `
             -targetdir:"CoverageReport" `
             -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
@@ -1799,13 +1801,14 @@ jobs:
             echo ""
           done
 
-      - name: Install ReportGenerator
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+      - name: Restore CI tools (ReportGenerator)
+        # Pinned in .config/dotnet-tools.json (a protected file); never installed unversioned.
+        run: dotnet tool restore
 
       - name: Generate coverage report
         run: |
           if find ./TestResults -name "coverage.cobertura.xml" -print -quit 2>/dev/null | grep -q .; then
-            reportgenerator \
+            dotnet reportgenerator \
               -reports:"TestResults/**/coverage.cobertura.xml" \
               -targetdir:"CoverageReport" \
               -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
@@ -2021,12 +2024,13 @@ jobs:
           echo ""
           echo "✅ Configuration files secured - using versions from main branch"
 
-      - name: Install DevSkim CLI
-        run: dotnet tool install --global Microsoft.CST.DevSkim.CLI
+      - name: Restore CI tools (DevSkim CLI)
+        # Pinned in .config/dotnet-tools.json (a protected file); never installed unversioned.
+        run: dotnet tool restore
 
       - name: Run DevSkim security scan
         run: |
-          devskim analyze \
+          dotnet devskim analyze \
             --source-code . \
             --file-format text \
             --output-file devskim-results.txt \

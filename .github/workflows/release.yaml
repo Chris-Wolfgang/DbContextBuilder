@@ -286,9 +286,12 @@ jobs:
             exit 1
           }
           
-          dotnet tool install -g dotnet-reportgenerator-globaltool
-          
-          reportgenerator `
+          # Pinned in .config/dotnet-tools.json (a protected file); never installed unversioned.
+          # Invoked as `dotnet reportgenerator`: a restored local tool is not on PATH.
+          dotnet tool restore
+          if ($LASTEXITCODE -ne 0) { Write-Error "❌ dotnet tool restore failed"; exit 1 }
+
+          dotnet reportgenerator `
             -reports:"TestResults/**/coverage.cobertura.xml" `
             -targetdir:"CoverageReport" `
             -reporttypes:"TextSummary;Html"
