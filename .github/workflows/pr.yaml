@@ -233,12 +233,23 @@ jobs:
             exit 1
           fi
           mapfile -t all_changed < <(git diff --name-only --diff-filter=AMRCD "$base" HEAD)
+          # Same classification as protected-files.yaml - keep the two in lock-step. This step
+          # is the one the ruleset REQUIRES ("Detect .NET Projects"), so a narrower list here
+          # both under-protects and calls a configuration-only PR "mixed" when it touches a
+          # file only protected-files.yaml knows about (e.g. .config/dotnet-tools.json, or a
+          # Directory.Build.props below the repository root).
           protected=(); other=()
           for file in "${all_changed[@]}"; do
-            case "$file" in
-              .editorconfig|Directory.Build.props|Directory.Build.targets|BannedSymbols.txt) protected+=("$file") ;;
+            # Lower-cased for matching only: Windows and ReSharper resolve names
+            # case-insensitively, so Directory.build.props is as live as Directory.Build.props.
+            lower=$(printf '%s' "$file" | tr '[:upper:]' '[:lower:]')
+            case "$lower" in
+              # Directory.Build.props/targets are matched at ANY depth: MSBuild discovers them
+              # by directory, so src/Directory.Build.props shapes the build exactly as the root
+              # one does.
+              .editorconfig|directory.build.props|directory.build.targets|*/directory.build.props|*/directory.build.targets|bannedsymbols.txt|coverlet.runsettings|.config/dotnet-tools.json|.gitleaks.toml|scripts/changelog.ps1|scripts/tfm-parity.ps1|scripts/build-pr.ps1|scripts/third-party-notices.ps1) protected+=("$file") ;;
               *)
-                if echo "$file" | grep -qiE '(\.(globalconfig|ruleset|DotSettings)|^\.github/workflows/.*\.ya?ml)$'; then protected+=("$file"); else other+=("$file"); fi ;;
+                if echo "$file" | grep -qiE '(\.(globalconfig|ruleset|DotSettings|editorconfig)|^\.github/workflows/.*\.ya?ml|^\.github/license-audit/.*\.json|^\.github/requirements/.*)$'; then protected+=("$file"); else other+=("$file"); fi ;;
             esac
           done
 
