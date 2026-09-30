@@ -1,4 +1,5 @@
 using Microsoft.Coyote;
+using Microsoft.Coyote.Rewriting;
 using Microsoft.Coyote.SystematicTesting;
 using Microsoft.EntityFrameworkCore;
 using Wolfgang.DbContextBuilderCore;
@@ -36,13 +37,29 @@ public class ConcurrentBuilderIsolationTests
         // provider does real work Coyote cannot fully control, and the periodic
         // deadlock-detection heuristic can mistake ordinary latency for a hang. A real bug
         // still fails the test via the exception thrown below.
+        // Rewritten (coyote.yaml): systematic exploration of the interleavings. Not rewritten
+        // (pr.yaml): Coyote controls nothing, so the Task.Yield points below would read as a
+        // deadlock; systematic fuzzing (delay injection) is the mode built for that case.
+        var rewritten = RewritingEngine.IsAssemblyRewritten(typeof(ConcurrentBuilderIsolationTests).Assembly);
         var config = Configuration.Create()
             .WithTestingIterations(Iterations)
-            .WithPotentialDeadlocksReportedAsBugs(false);
+            .WithPotentialDeadlocksReportedAsBugs(false)
+            .WithSystematicFuzzingEnabled(!rewritten);
         var engine = TestingEngine.Create(config, RunConcurrentBuildsAsync);
         engine.Run();
 
         Assert.True(engine.TestReport.NumOfFoundBugs == 0, engine.TestReport.GetText(config));
+
+        // A rewritten run that made no scheduling decisions explored one execution path N times
+        // and proved nothing. That is what this suite did before the Task.Yield points below:
+        // "Explored 5000 execution paths ... 1 unique ... 0 scheduling decisions", reported as a
+        // pass. Only meaningful when rewritten; pr.yaml runs it un-rewritten, where Coyote
+        // controls nothing and the step count is 0 by design.
+        Assert.True
+        (
+            !rewritten || engine.TestReport.MinExploredFairSteps > 0,
+            "Coyote explored no scheduling decisions, so no interleaving was tested. " + engine.TestReport.GetText(config)
+        );
     }
 
 
@@ -58,12 +75,17 @@ public class ConcurrentBuilderIsolationTests
 
     private static async Task BuildSeedAndVerifyAsync(string tag)
     {
+        // Scheduling points. The InMemory provider completes its async work synchronously, so
+        // without these the two builders run back to back and Coyote has nothing to interleave.
+        await Task.Yield();
+
         using var builder = new DbContextBuilder<ConcurrencyTestContext>();
         builder
             .UseInMemory()
             .SeedWith(new ConcurrencyEntity { Tag = tag });
 
         await using var context = await builder.BuildAsync().ConfigureAwait(false);
+        await Task.Yield();
         var rows = await context.Entities.ToListAsync().ConfigureAwait(false);
 
         VerifyIsolated(tag, rows.Select(r => r.Tag).ToList());
