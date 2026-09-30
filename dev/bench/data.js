@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790607228179,
+  "lastUpdate": 1790782858149,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -1326,6 +1326,84 @@ window.BENCHMARK_DATA = {
             "value": 1238687.2161458333,
             "unit": "ns",
             "range": "± 125783.5221072776"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "964f4a8645bd6a4d56cadfb4e234f6ead6a9ffc7",
+          "message": "deps(efcore): raise the EF Core 8, 9 and 10 floors to the latest patches (#476)\n\n-Core-EF8   [8.0.25,9.0.0)   -> [8.0.31,9.0.0)\n-Core-EF9   [9.0.14,10.0.0)  -> [9.0.20,10.0.0)\n-Core-EF10  [10.0.5,11.0.0)  -> [10.0.12,11.0.0)\n\nThis covers EntityFrameworkCore, .InMemory and .Sqlite in each src package. The\nAdventureWorks-EF8/9/10 test-model projects (EF Core, .Design, .SqlServer, .Tools)\nmove to the same versions, so a test build never mixes EF patches. NuGet resolves\nthe lowest version in range, and Dependabot does not move range floors, so\nconsumers who don't reference EF Core directly were getting the old patches.\n\nUpper bounds are unchanged, so each package still stays on its own EF Core major.\nNo known advisory affects the old floors. This is hygiene, not a security fix.\n\nPart of the TFM/EF alignment reviewed for #362.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-30T11:39:08-04:00",
+          "tree_id": "6766c0493a9e56d8e23d099226bbdc01438b7f15",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/964f4a8645bd6a4d56cadfb4e234f6ead6a9ffc7"
+        },
+        "date": 1790782856090,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 17328.776173909504,
+            "unit": "ns",
+            "range": "± 45.07333954050984"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 22066.959543863934,
+            "unit": "ns",
+            "range": "± 177.09456543293976"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 102843.37386067708,
+            "unit": "ns",
+            "range": "± 19123.043312354286"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 17399.60385131836,
+            "unit": "ns",
+            "range": "± 688.8612136042959"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 44738.1142578125,
+            "unit": "ns",
+            "range": "± 2269.0909460738935"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 188459.69010416666,
+            "unit": "ns",
+            "range": "± 28582.66821060763"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 19311.988911946613,
+            "unit": "ns",
+            "range": "± 1833.540899992066"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 176138.4490559896,
+            "unit": "ns",
+            "range": "± 5263.228399055857"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 1266490.4270833333,
+            "unit": "ns",
+            "range": "± 29799.141300717914"
           }
         ]
       }
