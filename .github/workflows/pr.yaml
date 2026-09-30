@@ -233,12 +233,23 @@ jobs:
             exit 1
           fi
           mapfile -t all_changed < <(git diff --name-only --diff-filter=AMRCD "$base" HEAD)
+          # Same classification as protected-files.yaml - keep the two in lock-step. This step
+          # is the one the ruleset REQUIRES ("Detect .NET Projects"), so a narrower list here
+          # both under-protects and calls a configuration-only PR "mixed" when it touches a
+          # file only protected-files.yaml knows about (e.g. .config/dotnet-tools.json, or a
+          # Directory.Build.props below the repository root).
           protected=(); other=()
           for file in "${all_changed[@]}"; do
-            case "$file" in
-              .editorconfig|Directory.Build.props|Directory.Build.targets|BannedSymbols.txt) protected+=("$file") ;;
+            # Lower-cased for matching only: Windows and ReSharper resolve names
+            # case-insensitively, so Directory.build.props is as live as Directory.Build.props.
+            lower=$(printf '%s' "$file" | tr '[:upper:]' '[:lower:]')
+            case "$lower" in
+              # Directory.Build.props/targets are matched at ANY depth: MSBuild discovers them
+              # by directory, so src/Directory.Build.props shapes the build exactly as the root
+              # one does.
+              .editorconfig|directory.build.props|directory.build.targets|*/directory.build.props|*/directory.build.targets|bannedsymbols.txt|coverlet.runsettings|.config/dotnet-tools.json|.gitleaks.toml|scripts/changelog.ps1|scripts/tfm-parity.ps1|scripts/build-pr.ps1|scripts/third-party-notices.ps1) protected+=("$file") ;;
               *)
-                if echo "$file" | grep -qiE '(\.(globalconfig|ruleset|DotSettings)|^\.github/workflows/.*\.ya?ml)$'; then protected+=("$file"); else other+=("$file"); fi ;;
+                if echo "$file" | grep -qiE '(\.(globalconfig|ruleset|DotSettings|editorconfig)|^\.github/workflows/.*\.ya?ml|^\.github/license-audit/.*\.json|^\.github/requirements/.*)$'; then protected+=("$file"); else other+=("$file"); fi ;;
             esac
           done
 
@@ -817,7 +828,19 @@ jobs:
             exit 0
           fi
 
-          mapfile -d '' -t test_projects < <(find ./tests -type f \( -name "*.csproj" -o -name "*.vbproj" -o -name "*.fsproj" \) -not -name "*.Tests.Integration.*" -print0)
+          # Every test project runs here, *.Tests.Integration.* included: this is the
+          # job that gates coverage, and every test assembly is held to
+          # CODECOV_TEST_MINIMUM. Linux runners have Docker, so Testcontainers-based
+          # integration suites run as they do locally. (Integration projects used to be
+          # excluded "for a separate workflow", which left them unmeasured everywhere.)
+          mapfile -d '' -t test_projects < <(find ./tests -type f \( -name "*.csproj" -o -name "*.vbproj" -o -name "*.fsproj" \) -print0)
+
+          # Assemblies that actually ran tests in this job. The coverage steps below
+          # require a coverage row for each one, so a test project whose coverage is
+          # never collected (e.g. no coverlet.collector) fails the gate instead of
+          # silently dropping out of it.
+          ran_assemblies_file="$RUNNER_TEMP/stage1-ran-test-assemblies.txt"
+          : > "$ran_assemblies_file"
 
           if [ ${#test_projects[@]} -eq 0 ]; then
             if find ./src -type f \( -name "*.csproj" -o -name "*.vbproj" -o -name "*.fsproj" \) -print -quit 2>/dev/null | grep -q .; then
@@ -873,6 +896,14 @@ jobs:
                 --results-directory "./TestResults" \
                 --logger "console;verbosity=minimal" || exit 1
             done <<< "$frameworks"
+            # Same assembly-name rule as the coverage gate below. grep exits 1 when the
+            # csproj sets no <AssemblyName>; the `|| true` covers only that no-match case
+            # (the basename fallback follows).
+            asm=$(grep -oE '<AssemblyName>[^<]+' "$test_proj" 2>/dev/null | head -1 | cut -d'>' -f2 || true)
+            if [ -z "$asm" ]; then
+              asm=$(basename "$test_proj"); asm="${asm%.*}"
+            fi
+            echo "$asm" >> "$ran_assemblies_file"
             echo ""
           done
 
@@ -882,19 +913,27 @@ jobs:
           if find TestResults -type f -name "coverage.cobertura.xml" 2>/dev/null | grep -q .; then
             echo "has-coverage=true" >> "$GITHUB_OUTPUT"
             echo "✅ Coverage files found"
+          elif [ -s "$RUNNER_TEMP/stage1-ran-test-assemblies.txt" ]; then
+            # Do NOT skip. Every later coverage step is gated on has-coverage == 'true', so a
+            # dropped coverlet.collector used to skip the whole coverage gate and report green.
+            # Tests ran, so absence of coverage means collection broke.
+            echo "❌ Tests ran but produced no coverage files - the coverage gate cannot be evaluated. Test assemblies that ran:"
+            cat "$RUNNER_TEMP/stage1-ran-test-assemblies.txt"
+            exit 1
           else
             echo "has-coverage=false" >> "$GITHUB_OUTPUT"
             echo "ℹ️  No coverage files found - skipping coverage report generation"
           fi
 
-      - name: Install ReportGenerator
+      - name: Restore CI tools (ReportGenerator)
         if: steps.check-coverage.outputs.has-coverage == 'true'
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+        # Pinned in .config/dotnet-tools.json (a protected file); never installed unversioned.
+        run: dotnet tool restore
 
       - name: Generate coverage report
         if: steps.check-coverage.outputs.has-coverage == 'true'
         run: |
-          reportgenerator \
+          dotnet reportgenerator \
             -reports:"TestResults/**/coverage.cobertura.xml" \
             -targetdir:"CoverageReport" \
             -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
@@ -996,6 +1035,22 @@ jobs:
           if [ "$matched_count" -eq 0 ]; then
             echo "❌ Coverage parser matched 0 modules in Summary.txt - regex or report format is out of sync. Refusing to silently pass the gate."
             exit 1
+          fi
+
+          # Every test assembly that ran must appear in the report. A missing row means
+          # its coverage was never collected, and an unmeasured assembly must not pass.
+          # Exact match on the first column ($1 == asm), so a module whose name is a
+          # prefix of another (X.Tests vs X.Tests.Unit) is never mistaken for it.
+          ran_assemblies_file="$RUNNER_TEMP/stage1-ran-test-assemblies.txt"
+          if [ -f "$ran_assemblies_file" ]; then
+            while IFS= read -r asm; do
+              [ -z "$asm" ] && continue
+              if ! awk -v asm="$asm" '/^[^ ]/ && $1 == asm { found = 1 } END { exit !found }' CoverageReport/Summary.txt; then
+                echo "Checking test module: '$asm' - Coverage: none collected"
+                echo "  ❌ FAIL: tests ran but no coverage was recorded (is coverlet.collector referenced?)"
+                failed_projects="$failed_projects $asm (no coverage data)"
+              fi
+            done < <(sort -u "$ran_assemblies_file")
           fi
 
           if [ -n "$failed_projects" ]; then
@@ -1198,12 +1253,18 @@ jobs:
           Write-Host "==========================================" -ForegroundColor Cyan
           $testProjects | ForEach-Object { Write-Host $_.FullName -ForegroundColor White }
           Write-Host ""
-          
+
+          # The Stage 1 ledger, on this stage. Recorded only for projects that ran a
+          # COVERAGE-COLLECTING framework: net4x and netcoreapp3.1 are tested below without
+          # the XPlat collector by design, so a project targeting only those must not be
+          # expected to have a coverage row.
+          $ranAssemblies = @()
+
           foreach ($testProj in $testProjects) {
             Write-Host "==========================================" -ForegroundColor Cyan
             Write-Host "Testing project: $($testProj.FullName)" -ForegroundColor Cyan
             Write-Host "==========================================" -ForegroundColor Cyan
-            
+
             # Extract target frameworks from the project file
             # Support both <TargetFramework> (single) and <TargetFrameworks> (multiple)
             $content = Get-Content $testProj.FullName -Raw
@@ -1231,6 +1292,7 @@ jobs:
             # netcoreapp3.1 and net4x are tested but excluded from coverage:
             # netcoreapp3.1 has no matching test TFM on Linux (Stage 1) so its numbers
             # would not be comparable; net4x cannot use the XPlat collector on Windows.
+            $collectedCoverage = $false
             foreach ($fw in $frameworks) {
               Write-Host "Testing framework: $fw" -ForegroundColor Yellow
 
@@ -1243,6 +1305,7 @@ jobs:
                   --settings coverlet.runsettings `
                   --results-directory "./TestResults" `
                   --logger "console;verbosity=normal"
+                $collectedCoverage = $true
               } else {
                 dotnet test $testProj.FullName `
                   --configuration Release `
@@ -1256,8 +1319,17 @@ jobs:
                 exit 1
               }
             }
+
+            if ($collectedCoverage) {
+              $asmMatch = [regex]::Match((Get-Content $testProj.FullName -Raw), '<AssemblyName>([^<]+)</AssemblyName>')
+              $ranAssemblies += if ($asmMatch.Success) { $asmMatch.Groups[1].Value.Trim() } else { $testProj.BaseName }
+            }
             Write-Host ""
           }
+
+          $ranFile = Join-Path $env:RUNNER_TEMP 'stage2-ran-test-assemblies.txt'
+          Set-Content -Path $ranFile -Value $ranAssemblies
+          Write-Host "Recorded $($ranAssemblies.Count) test assembly/assemblies with coverage: $($ranAssemblies -join ', ')"
 
       - name: Check for coverage files
         id: check-coverage
@@ -1265,24 +1337,72 @@ jobs:
           if (Get-ChildItem -Path TestResults -Recurse -Filter coverage.cobertura.xml -ErrorAction SilentlyContinue) {
             echo "has-coverage=true" >> $env:GITHUB_OUTPUT
             Write-Host "✅ Coverage files found"
+          } elseif ((Test-Path (Join-Path $env:RUNNER_TEMP 'stage2-ran-test-assemblies.txt')) -and
+                    @(Get-Content (Join-Path $env:RUNNER_TEMP 'stage2-ran-test-assemblies.txt') | Where-Object { $_.Trim() }).Count -gt 0) {
+            # Do NOT skip. Every later coverage step is gated on has-coverage == 'true', so a
+            # dropped coverlet.collector used to skip the whole coverage gate and report green.
+            # Tests ran, so absence of coverage means collection broke.
+            Write-Host "::error::Tests ran but produced no coverage files - the coverage gate cannot be evaluated. Test assemblies that ran:"
+            Get-Content (Join-Path $env:RUNNER_TEMP 'stage2-ran-test-assemblies.txt')
+            exit 1
           } else {
             echo "has-coverage=false" >> $env:GITHUB_OUTPUT
             Write-Host "ℹ️  No coverage files found - skipping coverage report generation"
           }
         shell: pwsh
 
-      - name: Install ReportGenerator
+      - name: Restore CI tools (ReportGenerator)
         if: steps.check-coverage.outputs.has-coverage == 'true'
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+        # Pinned in .config/dotnet-tools.json (a protected file); never installed unversioned.
+        run: dotnet tool restore
 
       - name: Generate coverage report
         if: steps.check-coverage.outputs.has-coverage == 'true'
         shell: pwsh
         run: |
-          reportgenerator `
+          dotnet reportgenerator `
             -reports:"TestResults/**/coverage.cobertura.xml" `
             -targetdir:"CoverageReport" `
             -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
+
+      - name: Every test assembly that ran must be in the coverage report
+        # The coverage gate can only judge modules that APPEAR in the report, so an assembly that
+        # ran and recorded nothing drops out of it and the gate passes while measuring less than
+        # it did yesterday. Same check as Stage 1, for the subset of the suite this stage runs.
+        if: steps.check-coverage.outputs.has-coverage == 'true'
+        shell: pwsh
+        run: |
+          $ranFile = Join-Path $env:RUNNER_TEMP 'stage2-ran-test-assemblies.txt'
+          if (-not (Test-Path $ranFile)) {
+            Write-Host "::error::The ran-assemblies ledger is missing, so the row check cannot run."
+            exit 1
+          }
+          $ran = @(Get-Content $ranFile | Where-Object { $_.Trim() } | Sort-Object -Unique)
+          if ($ran.Count -eq 0) {
+            Write-Host "::error::Coverage files exist but no test assembly was recorded as having collected coverage - refusing to pass a check that measured nothing."
+            exit 1
+          }
+          if (-not (Test-Path 'CoverageReport/Summary.txt')) {
+            Write-Host "::error::CoverageReport/Summary.txt is missing, so the row check cannot run."
+            exit 1
+          }
+
+          # Module rows start in column 1; every other line in Summary.txt is indented.
+          # -notcontains is an exact (case-insensitive) match, so X.Tests is never taken for X.Tests.Unit.
+          $rows = @(Get-Content 'CoverageReport/Summary.txt' |
+            Where-Object { $_ -match '^\S' } |
+            ForEach-Object { ($_ -split '\s+')[0] })
+
+          $missing = @($ran | Where-Object { $rows -notcontains $_ })
+          foreach ($asm in $ran) {
+            if ($missing -contains $asm) { Write-Host "  FAIL $asm ran but recorded no coverage" }
+            else { Write-Host "  OK   $asm has a coverage row" }
+          }
+          if ($missing.Count -gt 0) {
+            Write-Host "::error::These test assemblies ran but produced no coverage row: $($missing -join ', '). Is coverlet.collector still referenced?"
+            exit 1
+          }
+          Write-Host "Every test assembly that collected coverage is present in the report."
 
       - name: Enforce 90% coverage threshold
         if: steps.check-coverage.outputs.has-coverage == 'true'
@@ -1681,13 +1801,14 @@ jobs:
             echo ""
           done
 
-      - name: Install ReportGenerator
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+      - name: Restore CI tools (ReportGenerator)
+        # Pinned in .config/dotnet-tools.json (a protected file); never installed unversioned.
+        run: dotnet tool restore
 
       - name: Generate coverage report
         run: |
           if find ./TestResults -name "coverage.cobertura.xml" -print -quit 2>/dev/null | grep -q .; then
-            reportgenerator \
+            dotnet reportgenerator \
               -reports:"TestResults/**/coverage.cobertura.xml" \
               -targetdir:"CoverageReport" \
               -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
@@ -1903,12 +2024,13 @@ jobs:
           echo ""
           echo "✅ Configuration files secured - using versions from main branch"
 
-      - name: Install DevSkim CLI
-        run: dotnet tool install --global Microsoft.CST.DevSkim.CLI
+      - name: Restore CI tools (DevSkim CLI)
+        # Pinned in .config/dotnet-tools.json (a protected file); never installed unversioned.
+        run: dotnet tool restore
 
       - name: Run DevSkim security scan
         run: |
-          devskim analyze \
+          dotnet devskim analyze \
             --source-code . \
             --file-format text \
             --output-file devskim-results.txt \

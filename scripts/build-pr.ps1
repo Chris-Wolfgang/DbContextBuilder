@@ -54,6 +54,21 @@ function Write-Fail($message) {
     Write-Host $message -ForegroundColor Red
 }
 
+
+# Restores the tools pinned in .config/dotnet-tools.json once per run. Local tools
+# resolve through the repo's manifest, so nothing needs ~/.dotnet/tools on PATH.
+$script:localToolsRestored = $false
+function Restore-LocalTools {
+    if ($script:localToolsRestored) { return $true }
+    dotnet tool restore | Out-Host
+    if ($LASTEXITCODE -ne 0) {
+        Write-Fail "dotnet tool restore failed (see .config/dotnet-tools.json)"
+        return $false
+    }
+    $script:localToolsRestored = $true
+    return $true
+}
+
 # ============================================================================
 # STEP 1: Restore and Build
 # ============================================================================
@@ -94,6 +109,11 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
 
     $testProjects = @(Get-ChildItem -Path './tests' -Recurse -File -Include '*.csproj', '*.vbproj', '*.fsproj' -ErrorAction SilentlyContinue)
 
+    # Mirrors pr.yaml's Stage 2 ledger: the assembly of every project that ran a
+    # coverage-collecting framework. Step 3 requires each of them to have a row in
+    # the coverage report, so a dropped collector fails instead of passing quietly.
+    $ranAssemblies = @()
+
     if ($testProjects.Count -eq 0) {
         Write-Host "No test projects found in ./tests — skipping"
     }
@@ -121,6 +141,7 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
 
             Write-Host "  Frameworks: $($frameworks -join ', ')"
 
+            $collectedCoverage = $false
             foreach ($fw in $frameworks) {
                 Write-Host "  Testing: $fw" -ForegroundColor Yellow
 
@@ -139,6 +160,7 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
                         $testArgs += '--settings'
                         $testArgs += 'coverlet.runsettings'
                     }
+                    $collectedCoverage = $true
                 }
 
                 dotnet test @testArgs
@@ -151,6 +173,11 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
             }
 
             if ($failed.Count -gt 0) { break }
+
+            if ($collectedCoverage) {
+                $asmMatch = [regex]::Match($content, '<AssemblyName>([^<]+)</AssemblyName>')
+                $ranAssemblies += if ($asmMatch.Success) { $asmMatch.Groups[1].Value.Trim() } else { $testProj.BaseName }
+            }
         }
 
         if ($failed.Count -eq 0) {
@@ -167,34 +194,25 @@ if (-not $SkipTests -and -not $SkipCoverage -and $failed.Count -eq 0) {
 
     $coverageFiles = Get-ChildItem -Path TestResults -Recurse -Filter coverage.cobertura.xml -ErrorAction SilentlyContinue
 
-    if (-not $coverageFiles) {
-        Write-Host "No coverage files found — skipping"
+    $ran = @($ranAssemblies | Where-Object { $_ } | Sort-Object -Unique)
+
+    if (-not $coverageFiles -and $ran.Count -gt 0) {
+        # Tests ran with the collector, so no coverage files means collection broke.
+        # Skipping here is how a dropped coverlet.collector used to report green.
+        Write-Fail "Tests ran but produced no coverage files — the coverage gate cannot be evaluated. Test assemblies that ran: $($ran -join ', ')"
+        $failed += "Coverage"
+    }
+    elseif (-not $coverageFiles) {
+        Write-Host "No coverage files found and no test assembly collected coverage — skipping"
+    }
+    elseif (-not (Restore-LocalTools)) {
+        # ReportGenerator is pinned in .config/dotnet-tools.json, exactly as pr.yaml
+        # uses it. Run it as a local tool: no global install, no PATH dependency, so
+        # it works from any shell or account that has `dotnet` on PATH.
+        $failed += "Coverage"
     }
     else {
-        # Install ReportGenerator if not present
-        $rgPath = Get-Command reportgenerator -ErrorAction SilentlyContinue
-        if (-not $rgPath) {
-            Write-Host "Installing ReportGenerator..."
-            dotnet tool update -g dotnet-reportgenerator-globaltool 2>$null
-            if ($LASTEXITCODE -ne 0) { dotnet tool install -g dotnet-reportgenerator-globaltool }
-            # Ensure global tools dir is on PATH for this session. The .NET
-            # installer normally adds it to the user's profile, but a fresh
-            # shell or a pwsh-invoked-from-script session may not have it yet.
-            $globalToolsDir = if ($IsWindows -or $env:OS -eq 'Windows_NT') {
-                Join-Path $env:USERPROFILE '.dotnet\tools'
-            } else {
-                Join-Path $HOME '.dotnet/tools'
-            }
-            if (Test-Path $globalToolsDir -PathType Container) {
-                $sep = [IO.Path]::PathSeparator
-                $pathSegments = $env:PATH -split [regex]::Escape($sep)
-                if ($pathSegments -notcontains $globalToolsDir) {
-                    $env:PATH = "$globalToolsDir$sep$env:PATH"
-                }
-            }
-        }
-
-        reportgenerator `
+        dotnet reportgenerator `
             -reports:"TestResults/**/coverage.cobertura.xml" `
             -targetdir:"CoverageReport" `
             -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
@@ -203,6 +221,25 @@ if (-not $SkipTests -and -not $SkipCoverage -and $failed.Count -eq 0) {
             Write-Host ""
             Get-Content "CoverageReport/Summary.txt"
             Write-Host ""
+
+            # Every test assembly that ran must have a row: the gate below can only
+            # judge modules that appear in the report. Module rows start in column 1;
+            # -notcontains is an exact match, so X.Tests is never taken for X.Tests.Unit.
+            $rows = @(Get-Content "CoverageReport/Summary.txt" |
+                Where-Object { $_ -match '^\S' } |
+                ForEach-Object { ($_ -split '\s+')[0] })
+            $missing = @($ran | Where-Object { $rows -notcontains $_ })
+            if ($ran.Count -eq 0) {
+                Write-Fail "Coverage files exist but no test assembly was recorded as having collected coverage"
+                $failed += "Coverage"
+            }
+            elseif ($missing.Count -gt 0) {
+                Write-Fail "These test assemblies ran but produced no coverage row: $($missing -join ', '). Is coverlet.collector still referenced?"
+                $failed += "Coverage"
+            }
+            else {
+                Write-Pass "All $($ran.Count) test assemblies that collected coverage have a row in the report"
+            }
 
             $failedProjects = @()
             foreach ($line in (Get-Content "CoverageReport/Summary.txt")) {
@@ -221,15 +258,16 @@ if (-not $SkipTests -and -not $SkipCoverage -and $failed.Count -eq 0) {
             }
 
             if ($failedProjects.Count -gt 0) {
-                Write-Fail "Coverage gate FAILED: $($failedProjects -join ', ')"
+                Write-Fail "Coverage threshold FAILED: $($failedProjects -join ', ')"
                 $failed += "Coverage"
             }
             else {
-                Write-Pass "Coverage gate passed"
+                Write-Pass "Coverage threshold passed"
             }
         }
         else {
-            Write-Host "Coverage report not generated — skipping threshold check"
+            Write-Fail "Coverage report not generated (reportgenerator exit code $LASTEXITCODE) — the coverage gate cannot be evaluated"
+            $failed += "Coverage"
         }
     }
 }
@@ -240,20 +278,31 @@ if (-not $SkipTests -and -not $SkipCoverage -and $failed.Count -eq 0) {
 if (-not $SkipSecurity) {
     Write-Step "Step 4: DevSkim Security Scan"
 
-    $devskim = Get-Command devskim -ErrorAction SilentlyContinue
-    if (-not $devskim) {
-        Write-Host "Installing DevSkim CLI..."
-        dotnet tool install --global Microsoft.CST.DevSkim.CLI
+    # Pinned in .config/dotnet-tools.json and run as a local tool, as pr.yaml does.
+    # A global `devskim` lookup used to fail silently when ~/.dotnet/tools was not on
+    # PATH: analyze never ran, no results file was written, and the step reported
+    # "No security issues found". Any failure to run is now a failure.
+    $devskimRan = $false
+    $devskimExit = $null
+    if (Restore-LocalTools) {
+        dotnet devskim analyze `
+            --source-code . `
+            --file-format text `
+            --output-file devskim-results.txt `
+            --ignore-rule-ids DS176209 `
+            --ignore-globs "**/api/**,**/CoverageReport/**,**/TestResults/**"
+        # Mirror pr.yaml, where a non-zero exit fails the DevSkim step.
+        $devskimExit = $LASTEXITCODE
+        $devskimRan = ($devskimExit -eq 0)
     }
 
-    devskim analyze `
-        --source-code . `
-        --file-format text `
-        --output-file devskim-results.txt `
-        --ignore-rule-ids DS176209 `
-        --ignore-globs "**/api/**,**/CoverageReport/**,**/TestResults/**"
-
-    if (Test-Path "devskim-results.txt") {
+    if (-not $devskimRan) {
+        if (Test-Path "devskim-results.txt") { Get-Content "devskim-results.txt" -Raw | Write-Host }
+        Write-Fail "DevSkim did not complete successfully (exit code $devskimExit)"
+        $failed += "DevSkim"
+        Remove-Item "devskim-results.txt" -ErrorAction SilentlyContinue
+    }
+    elseif (Test-Path "devskim-results.txt") {
         $results = Get-Content "devskim-results.txt" -Raw
         if ($results -and $results -match '(?i)(error|critical|high)') {
             Write-Host $results
