@@ -1,0 +1,110 @@
+name: Continuous concurrency testing
+
+# Runs the opt-in Coyote systematic-concurrency suite at a large scheduling
+# budget (COYOTE_ITERATIONS) on a weekly schedule — the deep-exploration
+# complement to the modest, unrewritten default (5 iterations) that runs
+# automatically in pr.yaml via its test-project auto-discovery.
+#
+# `coyote rewrite` is what gives Coyote control over the scheduler (it
+# instruments Task/async IL so it can force different interleavings). It has
+# to run against BOTH the library assembly and the test assembly — pr.yaml
+# never rewrites anything, so its runs exercise the real scenario but without
+# genuine systematic exploration. This workflow does the full job.
+#
+# Ported from AuditTrail's equivalent workflow (#302).
+
+on:
+  workflow_dispatch:
+    inputs:
+      iterations:
+        description: 'Testing iterations (COYOTE_ITERATIONS)'
+        required: false
+        default: '5000'
+  schedule:
+    - cron: '30 5 * * 1'   # Mondays 05:30 UTC (after fuzz.yaml's 04:30 slot)
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coyote-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coyote:
+    name: Coyote concurrency suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write   # required to file a tracking issue on failure
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install Coyote CLI
+        run: dotnet tool install --global Microsoft.Coyote.CLI
+
+      - name: Build
+        run: dotnet build tests/Wolfgang.DbContextBuilder.Tests.Concurrency/Wolfgang.DbContextBuilder.Tests.Concurrency.csproj -c Release
+
+      - name: Rewrite assemblies for systematic testing
+        run: |
+          set -euo pipefail
+          # The test project's own build output already has
+          # Wolfgang.DbContextBuilder-Core-EF10.dll and its EF Core dependencies
+          # colocated (normal ProjectReference/PackageReference copy-local
+          # behavior) -- no separate publish step needed to get `coyote rewrite`
+          # a resolvable dependency graph.
+          out=tests/Wolfgang.DbContextBuilder.Tests.Concurrency/bin/Release/net10.0
+          coyote rewrite "$out/Wolfgang.DbContextBuilder-Core-EF10.dll"
+          coyote rewrite "$out/Wolfgang.DbContextBuilder.Tests.Concurrency.dll"
+
+      - name: Run Coyote suite
+        env:
+          # workflow_dispatch input wins; scheduled runs fall back to the default.
+          COYOTE_ITERATIONS: ${{ github.event.inputs.iterations || '5000' }}
+        run: |
+          dotnet test tests/Wolfgang.DbContextBuilder.Tests.Concurrency/Wolfgang.DbContextBuilder.Tests.Concurrency.csproj \
+            -c Release --no-build \
+            --logger "trx;LogFileName=coyote.trx" \
+            --results-directory ./coyote-results
+
+      - name: Upload Coyote results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coyote-results
+          path: ./coyote-results
+          if-no-files-found: warn
+
+      - name: File a tracking issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create coyote-failure --color B60205 \
+            --description "A scheduled Coyote systematic-testing run found a bug" 2>/dev/null || true
+
+          open_count="$(gh issue list --label coyote-failure --state open --json number --jq 'length')"
+          if [ "${open_count:-0}" -gt 0 ]; then
+            echo "An open coyote-failure issue already exists — not filing another."
+            exit 0
+          fi
+
+          gh issue create \
+            --title "Continuous Coyote testing found a concurrency bug" \
+            --label coyote-failure \
+            --body "The scheduled Coyote systematic-testing run found a bug — a genuine interleaving of the concurrent builder-isolation scenario produced an unhandled exception or assertion failure.
+
+          Download the \`coyote-results\` artifact from the run for the trx log; Coyote's own console output (in the run log) includes the scheduling trace needed to reproduce it deterministically via \`--seed\`.
+
+          Run: ${RUN_URL}"
