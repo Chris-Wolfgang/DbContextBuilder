@@ -22,8 +22,11 @@ public sealed class DbContextBuilderSeedFuzzTests
     /// <summary>
     /// <c>SeedWith</c> round-trips every entity: same count, same values, nothing added or
     /// dropped. Covers the empty set too, which seeds nothing and must build an empty table.
+    /// <c>EndSize</c> raises FsCheck's size ceiling from its default of 100, which never produced an
+    /// array longer than 47 in 2,000 cases. With it, 10,000 cases reach 247 entities (23% of cases
+    /// above 100); <see cref="MagnitudeBound"/> caps the rest.
     /// </summary>
-    [FuzzProperty]
+    [FuzzProperty(EndSize = MagnitudeBound)]
     public async Task<bool> SeedWith_round_trips_every_entity(string?[] names, bool firstIsActive)
     {
         ArgumentNullException.ThrowIfNull(names);
@@ -41,14 +44,24 @@ public sealed class DbContextBuilderSeedFuzzTests
 
         using var builder = new DbContextBuilder<FuzzDbContext>();
         await using var context = await builder.UseInMemory().SeedWith(seeded).BuildAsync().ConfigureAwait(false);
-        var saved = await context.Entities.AsNoTracking().OrderBy(e => e.Id).ToListAsync().ConfigureAwait(false);
+        try
+        {
+            var saved = await context.Entities.AsNoTracking().OrderBy(e => e.Id).ToListAsync().ConfigureAwait(false);
 
-        return saved.Count == seeded.Count
-            && saved.Zip(seeded).All(pair =>
-                pair.First.Id == pair.Second.Id
-                && string.Equals(pair.First.Name, pair.Second.Name, StringComparison.Ordinal)
-                && pair.First.IsActive == pair.Second.IsActive
-                && pair.First.Price == pair.Second.Price);
+            return saved.Count == seeded.Count
+                && saved.Zip(seeded).All(pair =>
+                    pair.First.Id == pair.Second.Id
+                    && string.Equals(pair.First.Name, pair.Second.Name, StringComparison.Ordinal)
+                    && pair.First.IsActive == pair.Second.IsActive
+                    && pair.First.Price == pair.Second.Price);
+        }
+        finally
+        {
+            // Each builder seeds a GUID-named database in EF's process-wide InMemory root, and
+            // disposing the context does not remove it. Over the weekly 100,000-case run every
+            // case's rows would stay resident for the life of the process.
+            await context.Database.EnsureDeletedAsync().ConfigureAwait(false);
+        }
     }
 }
 
