@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -75,7 +74,6 @@ public class DbContextActivatorTests
 
 
 
-    [ExcludeFromCodeCoverage(Justification = "Test-only DbContext used solely to exercise the activator's compiled-delegate path.")]
     private sealed class ContextWithGenericOptionsCtor : DbContext
     {
         public ContextWithGenericOptionsCtor(DbContextOptions<ContextWithGenericOptionsCtor> options)
@@ -86,7 +84,6 @@ public class DbContextActivatorTests
 
 
 
-    [ExcludeFromCodeCoverage(Justification = "Test-only DbContext used solely to show a non-generic options ctor takes the compiled path.")]
     private sealed class ContextWithNonGenericOptionsCtor : DbContext
     {
         public ContextWithNonGenericOptionsCtor(DbContextOptions options)
@@ -97,7 +94,6 @@ public class DbContextActivatorTests
 
 
 
-    [ExcludeFromCodeCoverage(Justification = "Test-only DbContext with no options ctor, used solely to drive the activator's Activator.CreateInstance fallback.")]
     private sealed class ContextWithoutOptionsCtor : DbContext
     {
     }

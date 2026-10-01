@@ -497,16 +497,13 @@ internal sealed class CoverageContext(DbContextOptions<CoverageContext> options)
 
 
 
-[ExcludeFromCodeCoverage(Justification = "Test model")]
-internal sealed class KeylessEntity
-{
-    public string Name { get; set; } = string.Empty;
-}
+// No members, so no executable lines to leave uncovered (#450 allows no test-model exclusions).
+// It has no key either, which is the point: EF cannot model it.
+internal sealed class KeylessEntity;
 
 
 
-[ExcludeFromCodeCoverage(Justification = "Test model")]
 internal sealed class KeylessContext(DbContextOptions<KeylessContext> options) : DbContext(options)
 {
-    public DbSet<KeylessEntity> Items => Set<KeylessEntity>();
+    protected override void OnModelCreating(ModelBuilder modelBuilder) => modelBuilder.Entity<KeylessEntity>();
 }

@@ -1,6 +1,6 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -996,6 +996,38 @@ public class SqliteModelCustomizerTests
 
 
     /// <summary>
+    /// The rewritten SQL is valid SQLite, not just different text: a row inserted through the
+    /// customized model gets the SQLite default for <c>CreatedAt</c> and the computed <c>Total</c>.
+    /// </summary>
+    [Fact]
+    public void Customize_rewritten_default_and_computed_SQL_runs_on_SQLite()
+    {
+        using var connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
+        var options = new DbContextOptionsBuilder<SchemaContext>()
+            .UseSqlite(connection)
+            .ReplaceService<IModelCustomizer, RewritingSqliteModelCustomizer>()
+            .Options;
+        using (var context = new SchemaContext(options))
+        {
+            context.Database.EnsureCreated();
+            context.Add(new Invoice { Qty = 2, Price = 3.5m });
+            context.SaveChanges();
+        }
+
+        using var readBack = new SchemaContext(options);
+        var invoice = readBack.Set<Invoice>().Single();
+
+        Assert.Equal(1, invoice.Id);
+        Assert.Equal(2, invoice.Qty);
+        Assert.Equal(3.5m, invoice.Price);
+        Assert.Equal(7m, invoice.Total);
+        Assert.NotEqual(default, invoice.CreatedAt);
+    }
+
+
+
+    /// <summary>
     /// A customizer whose overrides change the SQL, as a SQL-Server-to-SQLite port would.
     /// </summary>
     private sealed class RewritingSqliteModelCustomizer : SqliteModelCustomizer
@@ -1010,7 +1042,6 @@ public class SqliteModelCustomizerTests
 
 
 
-    [ExcludeFromCodeCoverage(Justification = "Test model: only its mapping is inspected, never an instance")]
     private sealed class Invoice
     {
         public int Id { get; set; }
