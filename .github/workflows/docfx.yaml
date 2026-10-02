@@ -145,8 +145,12 @@ jobs:
         run: dotnet build --configuration Release --no-restore
         shell: pwsh
 
+      # Pinned, not floating (#517). Keep DOCFX_VERSION in step across build-all-versions.yaml,
+      # docfx.yaml and release.yaml.
       - name: Install DocFX
-        run: dotnet tool update docfx --global || dotnet tool install docfx --global
+        env:
+          DOCFX_VERSION: '2.81.0'
+        run: dotnet tool update docfx --global --version $env:DOCFX_VERSION || dotnet tool install docfx --global --version $env:DOCFX_VERSION
         shell: pwsh
 
       - name: Build DocFX Metadata
