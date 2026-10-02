@@ -615,11 +615,15 @@ jobs:
             Pop-Location
           }
 
+      # CycloneDX is pinned, not floating (#517). Keep CYCLONEDX_VERSION in step with sbom.yaml.
       - name: Generate SBOM (CycloneDX)
         if: steps.check-packages.outputs.has-packages == 'true'
         shell: pwsh
+        env:
+          CYCLONEDX_VERSION: '6.2.0'
         run: |
-          dotnet tool install --global CycloneDX
+          dotnet tool install --global CycloneDX --version $env:CYCLONEDX_VERSION
+          if ($LASTEXITCODE -ne 0) { Write-Error "CycloneDX $env:CYCLONEDX_VERSION failed to install"; exit 1 }
 
           $sbomDir = Join-Path $PWD 'nuget-packages'
           $srcProjects = Get-ChildItem -Path 'src' -Filter '*.csproj' -Recurse -ErrorAction SilentlyContinue
@@ -720,10 +724,14 @@ jobs:
         if: steps.check.outputs.found == 'true'
         run: dotnet build --no-restore --configuration Release
 
+      # Pinned, not floating (#517). Keep DOCFX_VERSION in step across build-all-versions.yaml,
+      # docfx.yaml and release.yaml.
       - name: Install DocFX
         if: steps.check.outputs.found == 'true'
         shell: pwsh
-        run: dotnet tool update docfx --global || dotnet tool install docfx --global
+        env:
+          DOCFX_VERSION: '2.81.0'
+        run: dotnet tool update docfx --global --version $env:DOCFX_VERSION || dotnet tool install docfx --global --version $env:DOCFX_VERSION
 
       - name: Build DocFX metadata
         if: steps.check.outputs.found == 'true'

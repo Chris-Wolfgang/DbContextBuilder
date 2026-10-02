@@ -41,9 +41,13 @@ jobs:
             9.0.x
             10.0.x
 
+      # Pinned, not floating (#517). Keep DOCFX_VERSION in step across build-all-versions.yaml,
+      # docfx.yaml and release.yaml.
       - name: Install DocFX
+        env:
+          DOCFX_VERSION: '2.81.0'
         run: |
-          dotnet tool update docfx --global || dotnet tool install docfx --global
+          dotnet tool update docfx --global --version $env:DOCFX_VERSION || dotnet tool install docfx --global --version $env:DOCFX_VERSION
         shell: pwsh
 
       - name: Build docs for each version
