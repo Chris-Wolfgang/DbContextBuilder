@@ -434,8 +434,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
     /// <summary>
-    /// Makes single-property integer primary keys unique across the seeded entities of each type,
-    /// changing only randomly-seeded entities. A random creator fills keys like any other integer
+    /// Makes single-property integer primary keys unique across the seeded entities sharing each
+    /// key, changing only randomly-seeded entities. Every type in an inheritance hierarchy shares
+    /// the root's key, so a base and a derived entity are made unique against each other. A random creator fills keys like any other integer
     /// (Bogus draws from 1..100,000), so two entities can share a key and EF refuses to track them
     /// (#515). A random key that is still free is kept; one that collides with a key already taken,
     /// by a <c>SeedWith</c> entity or an earlier random one, gets the lowest unused value. Runs before
@@ -449,40 +450,44 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             return;
         }
 
+        // FindPrimaryKey on a derived type returns the root's key, so grouping by its property
+        // puts a whole hierarchy in one group: EF tracks identity per root, not per CLR type.
         var keyedGroups = _seedData
-            .GroupBy(entity => entity.GetType())
-            .Select(group => (Entities: group, Key: FindIntegralPrimaryKey(context, group.Key)))
-            .Where(group => group.Key is not null);
+            .Select(entity => (Entity: entity, Key: FindIntegralPrimaryKey(context, entity.GetType())))
+            .Where(item => item.Key is not null)
+            .GroupBy(item => item.Key!, item => item.Entity);
 
-        foreach (var (entities, keyProperty) in keyedGroups)
+        foreach (var entities in keyedGroups)
         {
+            var keyProperty = entities.Key.PropertyInfo!;
+
             // Keys given via SeedWith are fixed; random keys yield to them.
             var used = entities
                 .Where(entity => !_randomlySeeded.Contains(entity))
-                .Select(entity => ReadKey(keyProperty!, entity))
+                .Select(entity => ReadKey(keyProperty, entity))
                 .ToHashSet();
 
             long candidate = 1;
             // A random entity whose key is still free claims it; only a colliding one is renumbered.
-            foreach (var entity in entities.Where(entity => _randomlySeeded.Contains(entity) && !used.Add(ReadKey(keyProperty!, entity))))
+            foreach (var entity in entities.Where(entity => _randomlySeeded.Contains(entity) && !used.Add(ReadKey(keyProperty, entity))))
             {
                 while (!used.Add(candidate))
                 {
                     candidate++;
                 }
 
-                keyProperty!.SetValue(entity, Convert.ChangeType(candidate, keyProperty.PropertyType, CultureInfo.InvariantCulture));
+                keyProperty.SetValue(entity, Convert.ChangeType(candidate, keyProperty.PropertyType, CultureInfo.InvariantCulture));
             }
         }
     }
 
 
 
-    private static PropertyInfo? FindIntegralPrimaryKey(DbContext context, Type clrType)
+    private static IProperty? FindIntegralPrimaryKey(DbContext context, Type clrType)
     {
         var keyProperties = context.Model.FindEntityType(clrType)?.FindPrimaryKey()?.Properties;
-        var property = keyProperties is { Count: 1 } ? keyProperties[0].PropertyInfo : null;
-        return property is not null && IntegralKeyTypes.Contains(property.PropertyType) ? property : null;
+        var property = keyProperties is { Count: 1 } ? keyProperties[0] : null;
+        return property?.PropertyInfo is not null && IntegralKeyTypes.Contains(property.PropertyInfo.PropertyType) ? property : null;
     }
 
 

@@ -377,6 +377,31 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
+    /// #515: a base type and a derived type share the root's primary key, so keys must be unique
+    /// across the whole hierarchy, not per CLR type. Grouping by runtime type left a base and a
+    /// derived entity both on the colliding key, and EF refused to track the second.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_makes_primary_keys_unique_across_an_inheritance_hierarchy()
+    {
+        using var sut = new DbContextBuilder<HierarchyContext>()
+            .UseInMemory()
+            .UseCustomRandomEntityCreator(new CollidingKeyRandomEntityCreator());
+
+        await using var context = await sut
+            .SeedWithRandom<HierarchyAnimal>(2)
+            .SeedWithRandom<HierarchyDog>(2)
+            .BuildAsync();
+
+        var animals = context.Set<HierarchyAnimal>().ToList();
+        Assert.Equal(4, animals.Select(animal => animal.Id).Distinct().Count());
+        Assert.All(animals, animal => Assert.StartsWith("value-", animal.Name, StringComparison.Ordinal));
+        Assert.Equal(2, animals.OfType<HierarchyDog>().Count(dog => dog.Breed.StartsWith("value-", StringComparison.Ordinal)));
+    }
+
+
+
+    /// <summary>
     /// Verifies UseDbContextOptionsBuilder accepts a builder and rejects null.
     /// </summary>
     [Fact]
@@ -572,6 +597,36 @@ internal sealed class KeylessEntity;
 internal sealed class KeylessContext(DbContextOptions<KeylessContext> options) : DbContext(options)
 {
     protected override void OnModelCreating(ModelBuilder modelBuilder) => modelBuilder.Entity<KeylessEntity>();
+}
+
+
+
+/// <summary>Base type of a TPH hierarchy whose types share one primary key (#515).</summary>
+internal class HierarchyAnimal
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+}
+
+
+
+/// <summary>Derived type in <see cref="HierarchyContext"/>; keyed by <see cref="HierarchyAnimal.Id"/>.</summary>
+internal sealed class HierarchyDog : HierarchyAnimal
+{
+    public string Breed { get; set; } = string.Empty;
+}
+
+
+
+/// <summary>Context mapping <see cref="HierarchyAnimal"/> and <see cref="HierarchyDog"/> as one hierarchy.</summary>
+internal sealed class HierarchyContext(DbContextOptions<HierarchyContext> options) : DbContext(options)
+{
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<HierarchyAnimal>();
+        modelBuilder.Entity<HierarchyDog>();
+    }
 }
 
 
