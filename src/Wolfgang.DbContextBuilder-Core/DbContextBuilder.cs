@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -305,6 +307,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// principals too), and an optional FK with no seeded principal is set to <c>null</c>. The
     /// FK values on a randomly-seeded entity are therefore not the raw random values produced
     /// by the creator. Entities added via <c>SeedWith</c> are never reconciled.
+    /// A single-property integer primary key is kept unique across all seeded entities of the
+    /// type: a random key that collides with another (random or <c>SeedWith</c>) key is replaced
+    /// with the lowest unused value. Keys given via <c>SeedWith</c> are never changed.
     /// </remarks>
     /// <param name="count">The number of items to create</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
@@ -343,6 +348,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// principals too), and an optional FK with no seeded principal is set to <c>null</c>. The
     /// FK values on a randomly-seeded entity are therefore not the raw random values produced
     /// by the creator. Entities added via <c>SeedWith</c> are never reconciled.
+    /// A single-property integer primary key is kept unique across all seeded entities of the
+    /// type: a random key that collides with another (random or <c>SeedWith</c>) key is replaced
+    /// with the lowest unused value. Keys given via <c>SeedWith</c> are never changed.
     /// </remarks>
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and returns an updated TEntity</param>
@@ -385,6 +393,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// principals too), and an optional FK with no seeded principal is set to <c>null</c>. The
     /// FK values on a randomly-seeded entity are therefore not the raw random values produced
     /// by the creator. Entities added via <c>SeedWith</c> are never reconciled.
+    /// A single-property integer primary key is kept unique across all seeded entities of the
+    /// type: a random key that collides with another (random or <c>SeedWith</c>) key is replaced
+    /// with the lowest unused value. Keys given via <c>SeedWith</c> are never changed.
     /// </remarks>
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and the index number of the entity and returns an updated TEntity</param>
@@ -415,6 +426,74 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
         return this;
     }
+
+
+
+    private static readonly HashSet<Type> IntegralKeyTypes = [typeof(int), typeof(long), typeof(short), typeof(byte)];
+
+
+
+    /// <summary>
+    /// Makes single-property integer primary keys unique across the seeded entities sharing each
+    /// key, changing only randomly-seeded entities. Every type in an inheritance hierarchy shares
+    /// the root's key, so a base and a derived entity are made unique against each other. A random creator fills keys like any other integer
+    /// (Bogus draws from 1..100,000), so two entities can share a key and EF refuses to track them
+    /// (#515). A random key that is still free is kept; one that collides with a key already taken,
+    /// by a <c>SeedWith</c> entity or an earlier random one, gets the lowest unused value. Runs before
+    /// <see cref="ReconcileRandomForeignKeys"/>, so foreign keys copy the final keys.
+    /// </summary>
+    /// <param name="context">A context whose model is used to find each type's primary key.</param>
+    private void EnsureUniqueRandomPrimaryKeys(DbContext context)
+    {
+        if (_randomlySeeded.Count == 0)
+        {
+            return;
+        }
+
+        // FindPrimaryKey on a derived type returns the root's key, so grouping by its property
+        // puts a whole hierarchy in one group: EF tracks identity per root, not per CLR type.
+        var keyedGroups = _seedData
+            .Select(entity => (Entity: entity, Key: FindIntegralPrimaryKey(context, entity.GetType())))
+            .Where(item => item.Key is not null)
+            .GroupBy(item => item.Key!, item => item.Entity);
+
+        foreach (var entities in keyedGroups)
+        {
+            var keyProperty = entities.Key.PropertyInfo!;
+
+            // Keys given via SeedWith are fixed; random keys yield to them.
+            var used = entities
+                .Where(entity => !_randomlySeeded.Contains(entity))
+                .Select(entity => ReadKey(keyProperty, entity))
+                .ToHashSet();
+
+            long candidate = 1;
+            // A random entity whose key is still free claims it; only a colliding one is renumbered.
+            foreach (var entity in entities.Where(entity => _randomlySeeded.Contains(entity) && !used.Add(ReadKey(keyProperty, entity))))
+            {
+                while (!used.Add(candidate))
+                {
+                    candidate++;
+                }
+
+                keyProperty.SetValue(entity, Convert.ChangeType(candidate, keyProperty.PropertyType, CultureInfo.InvariantCulture));
+            }
+        }
+    }
+
+
+
+    private static IProperty? FindIntegralPrimaryKey(DbContext context, Type clrType)
+    {
+        var keyProperties = context.Model.FindEntityType(clrType)?.FindPrimaryKey()?.Properties;
+        var property = keyProperties is { Count: 1 } ? keyProperties[0] : null;
+        return property?.PropertyInfo is not null && IntegralKeyTypes.Contains(property.PropertyInfo.PropertyType) ? property : null;
+    }
+
+
+
+    private static long ReadKey(PropertyInfo keyProperty, object entity) =>
+        Convert.ToInt64(keyProperty.GetValue(entity), CultureInfo.InvariantCulture);
 
 
 
@@ -569,6 +648,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
             if (_seedData.Count > 0)
             {
+                EnsureUniqueRandomPrimaryKeys(seedContext);
                 ReconcileRandomForeignKeys(seedContext);
                 seedContext.AddRange(_seedData.AsEnumerable());
                 await seedContext.SaveChangesAsync().ConfigureAwait(false);

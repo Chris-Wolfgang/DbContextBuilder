@@ -461,8 +461,13 @@ jobs:
           dotnet restore
           dotnet build -c Release --no-restore
 
+      # Pinned, not floating (#517). A global install, not a .config/dotnet-tools.json local tool:
+      # under the SDK's major roll-forward the local tool dies with FileLoadException
+      # (System.Runtime 8.0.0.0), and its 181 MB package would ride every `dotnet tool restore`.
       - name: Install JetBrains.ReSharper.GlobalTools
-        run: dotnet tool install -g JetBrains.ReSharper.GlobalTools
+        env:
+          RESHARPER_VERSION: '2026.2.3.1'
+        run: dotnet tool install -g JetBrains.ReSharper.GlobalTools --version "$RESHARPER_VERSION"
 
       - name: Run InspectCode
         run: |

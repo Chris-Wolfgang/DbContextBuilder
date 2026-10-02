@@ -63,12 +63,15 @@ jobs:
             9.0.x
             10.0.x
 
+      # Pinned, not floating (#517).
       - name: Install dotnet-stryker
         shell: pwsh
+        env:
+          STRYKER_VERSION: '5.0.0'
         run: |
-          dotnet tool update -g dotnet-stryker
+          dotnet tool update -g dotnet-stryker --version $env:STRYKER_VERSION
           if ($LASTEXITCODE -ne 0) {
-            dotnet tool install -g dotnet-stryker
+            dotnet tool install -g dotnet-stryker --version $env:STRYKER_VERSION
           }
 
       - name: Run Stryker
