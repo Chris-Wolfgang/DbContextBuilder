@@ -22,7 +22,12 @@
     Skip DevSkim and gitleaks scans.
 
 .PARAMETER CoverageThreshold
-    Minimum coverage percentage required. Defaults to 95. Mirrors CODECOV_MINIMUM in pr.yaml.
+    Minimum line coverage for PRODUCTION assemblies (anything not built from tests/).
+    Defaults to 95. Mirrors CODECOV_MINIMUM in pr.yaml.
+
+.PARAMETER TestCoverageThreshold
+    Minimum line coverage for TEST assemblies (projects under tests/). Defaults to 100:
+    test code that never executes has no purpose. Mirrors CODECOV_TEST_MINIMUM in pr.yaml.
 
 .EXAMPLE
     pwsh ./scripts/build-pr.ps1
@@ -33,7 +38,8 @@ param(
     [switch]$SkipTests,
     [switch]$SkipCoverage,
     [switch]$SkipSecurity,
-    [int]$CoverageThreshold = 95
+    [int]$CoverageThreshold = 95,
+    [int]$TestCoverageThreshold = 100
 )
 
 $ErrorActionPreference = 'Stop'
@@ -190,7 +196,7 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
 # STEP 3: Coverage Report and Threshold
 # ============================================================================
 if (-not $SkipTests -and -not $SkipCoverage -and $failed.Count -eq 0) {
-    Write-Step "Step 3: Coverage Report (threshold: ${CoverageThreshold}%)"
+    Write-Step "Step 3: Coverage Report (threshold: ${CoverageThreshold}% src, ${TestCoverageThreshold}% tests)"
 
     $coverageFiles = Get-ChildItem -Path TestResults -Recurse -Filter coverage.cobertura.xml -ErrorAction SilentlyContinue
 
@@ -241,15 +247,24 @@ if (-not $SkipTests -and -not $SkipCoverage -and $failed.Count -eq 0) {
                 Write-Pass "All $($ran.Count) test assemblies that collected coverage have a row in the report"
             }
 
+            # Same classification as pr.yaml: a test assembly is one built from a project
+            # under tests/, identified by LOCATION, never by name (a shipped package can
+            # contain "Test" in its name and must still be held to the src threshold).
+            $testAssemblies = @($testProjects | ForEach-Object {
+                $m = [regex]::Match((Get-Content $_.FullName -Raw), '<AssemblyName>([^<]+)</AssemblyName>')
+                if ($m.Success) { $m.Groups[1].Value.Trim() } else { $_.BaseName }
+            })
+
             $failedProjects = @()
             foreach ($line in (Get-Content "CoverageReport/Summary.txt")) {
                 if ($line -match '^\s*(\S+)\s+(\d+(?:\.\d+)?)%\s*$' -and $line -notmatch '^\s*Summary') {
                     $module = $Matches[1]
                     $percent = [int][math]::Floor([double]$Matches[2])
+                    $applies = if ($testAssemblies -contains $module) { $TestCoverageThreshold } else { $CoverageThreshold }
 
-                    if ($percent -lt $CoverageThreshold) {
-                        Write-Fail "  $module — ${percent}% (below ${CoverageThreshold}%)"
-                        $failedProjects += "$module (${percent}%)"
+                    if ($percent -lt $applies) {
+                        Write-Fail "  $module — ${percent}% (below ${applies}%)"
+                        $failedProjects += "$module (${percent}%, needs ${applies}%)"
                     }
                     else {
                         Write-Pass "  $module — ${percent}%"
