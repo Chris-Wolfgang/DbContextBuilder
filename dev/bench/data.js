@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790782858149,
+  "lastUpdate": 1790949873130,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -1404,6 +1404,84 @@ window.BENCHMARK_DATA = {
             "value": 1266490.4270833333,
             "unit": "ns",
             "range": "± 29799.141300717914"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5ae2fbaab9b3ebab532e725cdee76a5f8cdf4a45",
+          "message": "fix: SeedWithRandom makes colliding random primary keys unique (closes #515) (#520)\n\n* fix: SeedWithRandom makes colliding random primary keys unique (#515)\n\nA random entity creator fills integer primary keys like any other integer (Bogus\ndraws from 1..100,000), so two randomly seeded entities could share a key.\nBuildAsync then threw EF's identity conflict: \"another instance with the same\nkey value for {'Id'} is already being tracked\". That's about 5% of builds at 100\nentities and ~70% at 500. Found by a fuzz property for #291.\n\nBuildAsync now runs EnsureUniqueRandomPrimaryKeys before ReconcileRandomForeignKeys.\nFor each seeded type with a single-property integral primary key (int, long,\nshort, byte):\n- keys given via SeedWith are fixed and never changed;\n- a random entity keeps its random key while it is still free;\n- a colliding one gets the lowest unused value.\nIt runs before FK reconciliation because reconciliation copies principals' key\nVALUES into dependents. Resetting keys to default instead (the first idea) would\nhave wired every reconciled FK to 0, so they are renumbered, not reset. The\nSeedWithRandom remarks on all three overloads describe the behaviour.\n\nTests (the shared Core.Tests.Unit), with a creator that gives every entity the\nsame Id to reproduce the collision deterministically:\n- colliding random keys become unique and the build succeeds;\n- a SeedWith key is kept, and colliding random ones are renumbered around it;\n- under SQLite (FK enforced), every dependent points at a real renumbered principal.\nWith the fix disabled, all three fail with #515's identity-conflict error.\n\nVerified locally:\n- Solution Release build: 0 errors.\n- Every test project on net8/9/10: 24 runs, 0 failures (AutoFixture/Bogus suites included).\n- Core test matrix: 20 runs, 0 failures. Every new src line is covered; test assemblies at 100%.\n\nCloses #515.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* fix: make random keys unique across an inheritance hierarchy, not per CLR type (#515)\n\nEF tracks identity per root entity type: a base and a derived entity share\nthe root's primary key. Grouping by runtime type gave each its own set of\nused keys, so a base and a derived entity could both keep the colliding key\nand the build still threw the identity conflict. Entities are now grouped by\nthe key property FindPrimaryKey returns, which is the root's for every type\nin the hierarchy. New regression test fails before the change with \"The\ninstance of entity type 'HierarchyDog' cannot be tracked\".\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-02T10:02:48-04:00",
+          "tree_id": "71e5012ef160ccf99bf30b9f3436048612acdab4",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/5ae2fbaab9b3ebab532e725cdee76a5f8cdf4a45"
+        },
+        "date": 1790949871378,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 31660.675374348957,
+            "unit": "ns",
+            "range": "± 509.9162419178426"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 46296.354431152344,
+            "unit": "ns",
+            "range": "± 1362.2942562963349"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 262635.1943359375,
+            "unit": "ns",
+            "range": "± 26197.936316607596"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 33468.5224202474,
+            "unit": "ns",
+            "range": "± 2297.5342823980686"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 100689.92985026042,
+            "unit": "ns",
+            "range": "± 4854.334394797376"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 488690.0657552083,
+            "unit": "ns",
+            "range": "± 5396.443526157212"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 33617.00449625651,
+            "unit": "ns",
+            "range": "± 2163.024873680236"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 417899.9466145833,
+            "unit": "ns",
+            "range": "± 12488.722297215956"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 4602247.5546875,
+            "unit": "ns",
+            "range": "± 1243154.1845391968"
           }
         ]
       }
