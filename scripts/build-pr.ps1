@@ -22,7 +22,7 @@
     Skip DevSkim and gitleaks scans.
 
 .PARAMETER CoverageThreshold
-    Minimum coverage percentage required. Defaults to 90.
+    Minimum coverage percentage required. Defaults to 95. Mirrors CODECOV_MINIMUM in pr.yaml.
 
 .EXAMPLE
     pwsh ./scripts/build-pr.ps1
@@ -33,7 +33,7 @@ param(
     [switch]$SkipTests,
     [switch]$SkipCoverage,
     [switch]$SkipSecurity,
-    [int]$CoverageThreshold = 90
+    [int]$CoverageThreshold = 95
 )
 
 $ErrorActionPreference = 'Stop'
