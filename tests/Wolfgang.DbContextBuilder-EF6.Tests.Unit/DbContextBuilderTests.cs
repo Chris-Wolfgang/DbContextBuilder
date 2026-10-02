@@ -795,8 +795,9 @@ public class DbContextBuilderTests
 
 
     /// <summary>
-    /// Verifies that SeedWith(params) handles a list passed as a single param
-    /// by flattening the collection into the seed data.
+    /// Verifies that SeedWith(params) flattens a list passed as one of its items into the
+    /// seed data. Two arguments force the params overload: a lone list binds to the
+    /// singleton overload instead, which never reaches the params flattening branch.
     /// </summary>
     [Fact]
     public void SeedWith_params_when_passed_a_list_flattens_into_seed_data()
@@ -809,13 +810,66 @@ public class DbContextBuilderTests
             new Product { Name = "Widget", Price = 9.99m, CreatedDate = DateTime.UtcNow },
             new Product { Name = "Gadget", Price = 19.99m, CreatedDate = DateTime.UtcNow }
         };
+        var category = new Category { Name = "Electronics" };
 
-        // Act — passing a List<Product> as a single param element triggers the IEnumerable<object> branch
-        // The params overload receives one element (the list itself), which matches IEnumerable<object>
-        var result = sut.SeedWith(products);
+        // Act
+        using var context = sut
+            .SeedWith<object>(products, category)
+            .Build();
 
         // Assert
-        Assert.IsType<DbContextBuilder<TestDbContext>>(result);
+        Assert.Equal
+        (
+            new[] { "Gadget", "Widget" },
+            context.Products.Select(p => p.Name).OrderBy(n => n).ToArray()
+        );
+        Assert.Single(context.Categories);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that a lone list binds to the singleton SeedWith overload, which seeds
+    /// every item of the sequence rather than the list itself.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_passed_a_list_seeds_every_item()
+    {
+        // Arrange
+        var sut = CreateDbContextBuilder();
+
+        var products = new List<Product>
+        {
+            new Product { Name = "Widget", Price = 9.99m, CreatedDate = DateTime.UtcNow },
+            new Product { Name = "Gadget", Price = 19.99m, CreatedDate = DateTime.UtcNow }
+        };
+
+        // Act
+        using var context = sut
+            .SeedWith(products)
+            .Build();
+
+        // Assert
+        Assert.Equal
+        (
+            new[] { "Gadget", "Widget" },
+            context.Products.Select(p => p.Name).OrderBy(n => n).ToArray()
+        );
+    }
+
+
+
+    /// <summary>
+    /// Verifies that the singleton SeedWith overload rejects a null entity with
+    /// ArgumentNullException naming the parameter.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_passed_null_throws_ArgumentNullException()
+    {
+        var sut = new DbContextBuilder<TestDbContext>();
+
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.SeedWith((Product)null!));
+        Assert.Equal("entity", ex.ParamName);
     }
 
 
