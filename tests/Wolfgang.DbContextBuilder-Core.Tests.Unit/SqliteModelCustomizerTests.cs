@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -966,5 +967,106 @@ public class SqliteModelCustomizerTests
 
         // Assert — renamed to {LeftPrincipalTable}_{RightPrincipalTable}
         Assert.Equal("Posts_Tags", entity.GetTableName());
+    }
+
+
+
+    /// <summary>
+    /// Verifies the customizer rewrites a real model: it drops the schema, and applies the default-
+    /// value and computed-column overrides when they change the SQL. The other tests exercise the
+    /// override delegates in isolation, so these three writes never ran from this suite.
+    /// </summary>
+    [Fact]
+    public void Customize_drops_the_schema_and_applies_changed_default_and_computed_SQL()
+    {
+        var options = new DbContextOptionsBuilder<SchemaContext>()
+            .UseSqlite("DataSource=:memory:")
+            .ReplaceService<IModelCustomizer, RewritingSqliteModelCustomizer>()
+            .Options;
+        using var context = new SchemaContext(options);
+
+        // The design-time model keeps the SQL annotations; EF 7+'s runtime model drops them.
+        var entity = context.GetService<IDesignTimeModel>().Model.FindEntityType(typeof(Invoice))!;
+
+        Assert.Null(entity.GetSchema());
+        Assert.Equal("CURRENT_TIMESTAMP", entity.FindProperty(nameof(Invoice.CreatedAt))!.GetDefaultValueSql());
+        Assert.Equal("\"Qty\" * \"Price\"", entity.FindProperty(nameof(Invoice.Total))!.GetComputedColumnSql());
+    }
+
+
+
+    /// <summary>
+    /// The rewritten SQL is valid SQLite, not just different text: a row inserted through the
+    /// customized model gets the SQLite default for <c>CreatedAt</c> and the computed <c>Total</c>.
+    /// </summary>
+    [Fact]
+    public void Customize_rewritten_default_and_computed_SQL_runs_on_SQLite()
+    {
+        using var connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
+        var options = new DbContextOptionsBuilder<SchemaContext>()
+            .UseSqlite(connection)
+            .ReplaceService<IModelCustomizer, RewritingSqliteModelCustomizer>()
+            .Options;
+        using (var context = new SchemaContext(options))
+        {
+            context.Database.EnsureCreated();
+            context.Add(new Invoice { Qty = 2, Price = 3.5m });
+            context.SaveChanges();
+        }
+
+        using var readBack = new SchemaContext(options);
+        var invoice = readBack.Set<Invoice>().Single();
+
+        Assert.Equal(1, invoice.Id);
+        Assert.Equal(2, invoice.Qty);
+        Assert.Equal(3.5m, invoice.Price);
+        Assert.Equal(7m, invoice.Total);
+        Assert.NotEqual(default, invoice.CreatedAt);
+    }
+
+
+
+    /// <summary>
+    /// A customizer whose overrides change the SQL, as a SQL-Server-to-SQLite port would.
+    /// </summary>
+    private sealed class RewritingSqliteModelCustomizer : SqliteModelCustomizer
+    {
+        public RewritingSqliteModelCustomizer(ModelCustomizerDependencies dependencies)
+            : base(dependencies)
+        {
+            OverrideDefaultValueHandling = sql => string.Equals(sql, "GETDATE()", StringComparison.Ordinal) ? "CURRENT_TIMESTAMP" : sql;
+            OverrideComputedValueHandling = sql => sql?.Replace("[", "\"", StringComparison.Ordinal).Replace("]", "\"", StringComparison.Ordinal);
+        }
+    }
+
+
+
+    private sealed class Invoice
+    {
+        public int Id { get; set; }
+
+        public int Qty { get; set; }
+
+        public decimal Price { get; set; }
+
+        public decimal Total { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+    }
+
+
+
+    private sealed class SchemaContext(DbContextOptions<SchemaContext> options) : DbContext(options)
+    {
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Invoice>(invoice =>
+            {
+                invoice.ToTable("Invoice", "sales");
+                invoice.Property(i => i.CreatedAt).HasDefaultValueSql("GETDATE()");
+                invoice.Property(i => i.Total).HasComputedColumnSql("[Qty] * [Price]");
+            });
+        }
     }
 }
