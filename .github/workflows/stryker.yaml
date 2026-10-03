@@ -17,6 +17,12 @@
 # - Per-project stryker-config.json (or none): if no root config exists, runs
 #   Stryker once per test project; per-project configs override Stryker's
 #   defaults when present.
+#
+# After every run (#300) the `publish` job charts the mutation score on gh-pages
+# under /dev/stryker (the same action as the /dev/bench benchmark charts) and keeps
+# ONE rolling `kind:mutation-survives` issue listing the surviving and uncovered
+# mutants (closed when a run leaves none). It is a separate ubuntu job so the long Stryker job, which builds and
+# runs the repository's code, never holds a write token.
 name: Stryker (mutation testing)
 
 on:
@@ -41,6 +47,8 @@ jobs:
     # the .NET test-stage jobs in pr.yaml.
     if: github.repository != 'Chris-Wolfgang/repo-template'
     timeout-minutes: 120
+    outputs:
+      score: ${{ steps.score.outputs.score }}
     steps:
       - name: Check out repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -176,6 +184,86 @@ jobs:
             exit 1
           }
 
+      - name: Summarize mutation score and survivors
+        id: score
+        # always(): a run that fell below the break floor is exactly when the trend and
+        # the survivor list matter most. Reads the same JSON reports Test-StrykerRun checks.
+        if: always()
+        shell: pwsh
+        run: |
+          $reports = @(Get-ChildItem -Path . -Recurse -Filter 'mutation-report.json' -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -match '[\\/]StrykerOutput[\\/]' })
+          if ($reports.Count -eq 0) {
+            Write-Host "::warning::No mutation-report.json - there is no score to publish."
+            exit 0
+          }
+
+          $counts = @{}
+          $gaps = [System.Collections.Generic.List[object]]::new()
+          foreach ($report in $reports) {
+            $json = Get-Content $report.FullName -Raw | ConvertFrom-Json
+            foreach ($file in $json.files.PSObject.Properties) {
+              # Keys are absolute and can climb through a linked project
+              # (src\X-EF10\..\X\File.cs); report them relative to the repository.
+              $path = [IO.Path]::GetRelativePath($env:GITHUB_WORKSPACE, [IO.Path]::GetFullPath($file.Name)) -replace '\\', '/'
+              foreach ($mutant in $file.Value.mutants) {
+                $counts[$mutant.status] = 1 + [int]$counts[$mutant.status]
+                if ($mutant.status -in 'Survived', 'NoCoverage') {
+                  $start = $mutant.location.start
+                  $end = $mutant.location.end
+                  $gaps.Add([pscustomobject]@{
+                    Path = $path; Line = [int]$start.line; Column = [int]$start.column
+                    EndLine = [int]$end.line; EndColumn = [int]$end.column
+                    Status = $mutant.status; Mutator = $mutant.mutatorName; Replacement = [string]$mutant.replacement
+                  })
+                }
+              }
+            }
+          }
+
+          # Stryker's score: detected (Killed + Timeout) over valid (detected + Survived + NoCoverage).
+          $detected = [int]$counts['Killed'] + [int]$counts['Timeout']
+          $valid = $detected + [int]$counts['Survived'] + [int]$counts['NoCoverage']
+          if ($valid -eq 0) {
+            Write-Host "::warning::The reports hold no tested mutant - there is no score to publish."
+            exit 0
+          }
+          $score = [math]::Round(100.0 * $detected / $valid, 2)
+
+          # A source file linked into several projects (-Core into -Core-EF6..EF10) is
+          # mutated once per project, and those copies agree on path, span and replacement.
+          # Key on all of them so the copies collapse but two different mutations on one
+          # line (another column, or the same mutator with another replacement) both stay.
+          $lines = @($gaps |
+            Sort-Object Path, Line, Column, EndLine, EndColumn, Status, Mutator, Replacement -Unique |
+            ForEach-Object { "- ``$($_.Path):$($_.Line):$($_.Column)`` - $($_.Status): $($_.Mutator)" })
+          $config = Get-Content 'stryker-config.json' -Raw -ErrorAction SilentlyContinue | ConvertFrom-Json
+          $break = if ($config) { $config.'stryker-config'.thresholds.break } else { $null }
+          $floor = if ($null -ne $break) { "$break %" } else { 'none' }
+
+          New-Item -ItemType Directory -Force -Path stryker-summary | Out-Null
+          ConvertTo-Json -InputObject @(@{ name = 'Mutation score'; unit = '%'; value = $score }) |
+            Set-Content stryker-summary/mutation-score.json
+          $header = @(
+            ("Mutation score **{0} %** (break floor: {1}) over {2} valid mutants: {3} killed, {4} timed out, {5} survived, {6} not covered." -f
+              $score, $floor, $valid, [int]$counts['Killed'], [int]$counts['Timeout'], [int]$counts['Survived'], [int]$counts['NoCoverage'])
+            ''
+            "$($lines.Count) surviving or uncovered mutants (each distinct mutant once). Kill these to raise the score:"
+            ''
+          )
+          $header + $lines | Set-Content stryker-summary/survivors.md
+
+          Get-Content stryker-summary/survivors.md | Add-Content $env:GITHUB_STEP_SUMMARY
+          "score=$score" | Add-Content $env:GITHUB_OUTPUT
+
+      - name: Upload score and survivor summary
+        if: always() && steps.score.outputs.score != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: stryker-summary
+          path: stryker-summary/
+          retention-days: 30
+
       - name: Upload Stryker report
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -185,3 +273,78 @@ jobs:
             **/StrykerOutput/**
           if-no-files-found: ignore
           retention-days: 30
+
+  publish:
+    name: Publish score history and survivors
+    needs: stryker
+    # Runs after a failed gate too: the score and the survivors are the point then.
+    if: always() && needs.stryker.outputs.score != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write   # push the score-history chart to gh-pages
+      issues: write     # keep the single kind:mutation-survives issue current
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download score and survivor summary
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: stryker-summary
+          path: stryker-summary
+
+      - name: Publish mutation-score history to gh-pages
+        # Trend visibility only: the break floor in stryker-config.json is the gate,
+        # so the chart never fails the run. No concurrency group: when another gh-pages
+        # writer pushes first, the action resets its commit, re-fetches and retries, up to
+        # 10 times (writeBenchmarkToGitHubPagesWithRetry in this pinned version). A group
+        # would add nothing for that and could get this job cancelled while pending behind
+        # a long benchmarks.yaml run.
+        uses: benchmark-action/github-action-benchmark@4322e5726e6334590d251fc4f92bec0efafc45dc  # v1.22.2
+        with:
+          name: Mutation score
+          tool: 'customBiggerIsBetter'
+          output-file-path: stryker-summary/mutation-score.json
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: dev/stryker
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          summary-always: true
+          fail-on-alert: false
+
+      - name: Update the kind:mutation-survives issue
+        # ONE rolling issue, not one per mutant: there are dozens, and per-mutant issues
+        # would be noise. Work the list down, then ratchet the break floor up. When a run
+        # leaves no gaps, the open issue is closed rather than kept open at zero.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          count=$(grep -c '^- `' stryker-summary/survivors.md || true)
+          title="Mutation survivors (${count}) - kill these to raise the score"
+          {
+            echo "_Updated by the Stryker workflow, [run ${GITHUB_RUN_ID}](${RUN_URL}). The full HTML report is that run's \`stryker-report-${GITHUB_RUN_ID}\` artifact._"
+            echo
+            cat stryker-summary/survivors.md
+          } > issue-body.md
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --label "kind:mutation-survives" \
+            --state open --json number --jq '.[0].number // empty')
+          if [ "$count" -eq 0 ]; then
+            if [ -n "$existing" ]; then
+              gh issue close "$existing" --repo "$GITHUB_REPOSITORY" \
+                --comment "No surviving or uncovered mutants in [run ${GITHUB_RUN_ID}](${RUN_URL}). Closing; a later run that finds one reopens the list as a new issue."
+            fi
+            exit 0
+          fi
+          gh label create "kind:mutation-survives" --repo "$GITHUB_REPOSITORY" \
+            --color BFD4F2 --description "A mutant survived - a test gap to close" 2>/dev/null || true
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --repo "$GITHUB_REPOSITORY" --title "$title" --body-file issue-body.md
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file issue-body.md \
+              --label "kind:mutation-survives"
+          fi
