@@ -21,7 +21,7 @@
 # After every run (#300) the `publish` job charts the mutation score on gh-pages
 # under /dev/stryker (the same action as the /dev/bench benchmark charts) and keeps
 # ONE rolling `kind:mutation-survives` issue listing the surviving and uncovered
-# mutants. It is a separate ubuntu job so the long Stryker job, which builds and
+# mutants (closed when a run leaves none). It is a separate ubuntu job so the long Stryker job, which builds and
 # runs the repository's code, never holds a write token.
 name: Stryker (mutation testing)
 
@@ -209,7 +209,13 @@ jobs:
               foreach ($mutant in $file.Value.mutants) {
                 $counts[$mutant.status] = 1 + [int]$counts[$mutant.status]
                 if ($mutant.status -in 'Survived', 'NoCoverage') {
-                  $gaps.Add([pscustomobject]@{ Path = $path; Line = [int]$mutant.location.start.line; Status = $mutant.status; Mutator = $mutant.mutatorName })
+                  $start = $mutant.location.start
+                  $end = $mutant.location.end
+                  $gaps.Add([pscustomobject]@{
+                    Path = $path; Line = [int]$start.line; Column = [int]$start.column
+                    EndLine = [int]$end.line; EndColumn = [int]$end.column
+                    Status = $mutant.status; Mutator = $mutant.mutatorName; Replacement = [string]$mutant.replacement
+                  })
                 }
               }
             }
@@ -225,10 +231,12 @@ jobs:
           $score = [math]::Round(100.0 * $detected / $valid, 2)
 
           # A source file linked into several projects (-Core into -Core-EF6..EF10) is
-          # mutated once per project; list each gap once.
+          # mutated once per project, and those copies agree on path, span and replacement.
+          # Key on all of them so the copies collapse but two different mutations on one
+          # line (another column, or the same mutator with another replacement) both stay.
           $lines = @($gaps |
-            Sort-Object Path, Line, Status, Mutator -Unique |
-            ForEach-Object { "- ``$($_.Path):$($_.Line)`` - $($_.Status): $($_.Mutator)" })
+            Sort-Object Path, Line, Column, EndLine, EndColumn, Status, Mutator, Replacement -Unique |
+            ForEach-Object { "- ``$($_.Path):$($_.Line):$($_.Column)`` - $($_.Status): $($_.Mutator)" })
           $config = Get-Content 'stryker-config.json' -Raw -ErrorAction SilentlyContinue | ConvertFrom-Json
           $break = if ($config) { $config.'stryker-config'.thresholds.break } else { $null }
           $floor = if ($null -ne $break) { "$break %" } else { 'none' }
@@ -240,7 +248,7 @@ jobs:
             ("Mutation score **{0} %** (break floor: {1}) over {2} valid mutants: {3} killed, {4} timed out, {5} survived, {6} not covered." -f
               $score, $floor, $valid, [int]$counts['Killed'], [int]$counts['Timeout'], [int]$counts['Survived'], [int]$counts['NoCoverage'])
             ''
-            "$($lines.Count) surviving or uncovered mutants (unique by file, line and mutator). Kill these to raise the score:"
+            "$($lines.Count) surviving or uncovered mutants (each distinct mutant once). Kill these to raise the score:"
             ''
           )
           $header + $lines | Set-Content stryker-summary/survivors.md
@@ -276,10 +284,6 @@ jobs:
     permissions:
       contents: write   # push the score-history chart to gh-pages
       issues: write     # keep the single kind:mutation-survives issue current
-    # Same group as benchmarks.yaml, so two gh-pages writers never race a push.
-    concurrency:
-      group: gh-pages
-      cancel-in-progress: false
     steps:
       - name: Check out repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -294,7 +298,11 @@ jobs:
 
       - name: Publish mutation-score history to gh-pages
         # Trend visibility only: the break floor in stryker-config.json is the gate,
-        # so the chart never fails the run.
+        # so the chart never fails the run. No concurrency group: when another gh-pages
+        # writer pushes first, the action resets its commit, re-fetches and retries, up to
+        # 10 times (writeBenchmarkToGitHubPagesWithRetry in this pinned version). A group
+        # would add nothing for that and could get this job cancelled while pending behind
+        # a long benchmarks.yaml run.
         uses: benchmark-action/github-action-benchmark@4322e5726e6334590d251fc4f92bec0efafc45dc  # v1.22.2
         with:
           name: Mutation score
@@ -308,8 +316,9 @@ jobs:
           fail-on-alert: false
 
       - name: Update the kind:mutation-survives issue
-        # ONE rolling issue, not one per mutant: there are over a hundred, and per-mutant
-        # issues would be noise. Work the list down, then ratchet the break floor up.
+        # ONE rolling issue, not one per mutant: there are dozens, and per-mutant issues
+        # would be noise. Work the list down, then ratchet the break floor up. When a run
+        # leaves no gaps, the open issue is closed rather than kept open at zero.
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -322,10 +331,17 @@ jobs:
             echo
             cat stryker-summary/survivors.md
           } > issue-body.md
-          gh label create "kind:mutation-survives" --repo "$GITHUB_REPOSITORY" \
-            --color BFD4F2 --description "A mutant survived - a test gap to close" 2>/dev/null || true
           existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --label "kind:mutation-survives" \
             --state open --json number --jq '.[0].number // empty')
+          if [ "$count" -eq 0 ]; then
+            if [ -n "$existing" ]; then
+              gh issue close "$existing" --repo "$GITHUB_REPOSITORY" \
+                --comment "No surviving or uncovered mutants in [run ${GITHUB_RUN_ID}](${RUN_URL}). Closing; a later run that finds one reopens the list as a new issue."
+            fi
+            exit 0
+          fi
+          gh label create "kind:mutation-survives" --repo "$GITHUB_REPOSITORY" \
+            --color BFD4F2 --description "A mutant survived - a test gap to close" 2>/dev/null || true
           if [ -n "$existing" ]; then
             gh issue edit "$existing" --repo "$GITHUB_REPOSITORY" --title "$title" --body-file issue-body.md
           else
