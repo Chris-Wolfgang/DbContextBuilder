@@ -49,7 +49,7 @@ Run these commands in the repository root in this exact order:
    ```bash
    cat CoverageReport/Summary.txt
    ```
-   - **REQUIREMENT**: the coverage gate is **per-module (assembly), ≥ 90%** — every shippable
+   - **REQUIREMENT**: the coverage gate is **per-module (assembly), ≥ 95% for src and 100% for test assemblies** — every shippable
      package's coverage is checked individually, aggregated across all test projects
 
 6. **Security Scanning** (< 1 second):
