@@ -49,8 +49,11 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      # Pinned, not floating (#517).
       - name: Install Coyote CLI
-        run: dotnet tool install --global Microsoft.Coyote.CLI
+        env:
+          COYOTE_VERSION: '1.7.11'
+        run: dotnet tool install --global Microsoft.Coyote.CLI --version "$COYOTE_VERSION"
 
       - name: Build
         run: dotnet build tests/Wolfgang.DbContextBuilder.Tests.Concurrency/Wolfgang.DbContextBuilder.Tests.Concurrency.csproj -c Release

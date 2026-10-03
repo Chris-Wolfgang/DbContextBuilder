@@ -82,9 +82,12 @@ jobs:
             dotnet build "$proj" -c Release -f net10.0 -p:ContinuousIntegrationBuild=true
           done < <(git ls-files 'src/**/*.csproj' 'src/*.csproj')
 
+      # Pinned, not floating (#517).
       - name: Install sourcelink tool
         if: steps.detect.outputs.found == 'true'
-        run: dotnet tool install --global sourcelink
+        env:
+          SOURCELINK_VERSION: '3.1.1'
+        run: dotnet tool install --global sourcelink --version "$SOURCELINK_VERSION"
 
       - name: Verify SourceLink resolves for every PDB
         if: steps.detect.outputs.found == 'true'

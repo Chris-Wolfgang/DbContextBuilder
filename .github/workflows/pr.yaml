@@ -1,5 +1,5 @@
 # Sequential PR validation workflow with coverage gating
-# Stage 1: Linux tests with 90% coverage requirement
+# Stage 1: Linux tests with the coverage gate (95% src, 100% tests)
 # Stage 2: Windows .NET (5.0-10.0) and .NET Framework (4.6.2-4.8.1) tests (only if Linux passes)
 # Stage 3: macOS tests (only if Stage 2 passes)
 #
@@ -40,7 +40,7 @@ permissions:
 
 env:
   # Minimum line coverage for PRODUCTION assemblies (anything under src/).
-  CODECOV_MINIMUM: 90
+  CODECOV_MINIMUM: 95
   # Minimum line coverage for TEST assemblies (anything under tests/). Test code that never
   # executes has no purpose - an uncovered helper, fake or branch in a test project is dead
   # code and should be exercised or deleted. LINE coverage only: branch coverage legitimately
@@ -461,8 +461,13 @@ jobs:
           dotnet restore
           dotnet build -c Release --no-restore
 
+      # Pinned, not floating (#517). A global install, not a .config/dotnet-tools.json local tool:
+      # under the SDK's major roll-forward the local tool dies with FileLoadException
+      # (System.Runtime 8.0.0.0), and its 181 MB package would ride every `dotnet tool restore`.
       - name: Install JetBrains.ReSharper.GlobalTools
-        run: dotnet tool install -g JetBrains.ReSharper.GlobalTools
+        env:
+          RESHARPER_VERSION: '2026.2.3.1'
+        run: dotnet tool install -g JetBrains.ReSharper.GlobalTools --version "$RESHARPER_VERSION"
 
       - name: Run InspectCode
         run: |
@@ -938,7 +943,7 @@ jobs:
             -targetdir:"CoverageReport" \
             -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
 
-      - name: Enforce 90% coverage threshold
+      - name: Enforce coverage threshold
         if: steps.check-coverage.outputs.has-coverage == 'true'
         run: |
           if [ ! -f CoverageReport/Summary.txt ]; then
@@ -951,7 +956,7 @@ jobs:
           echo ""
           
           failed_projects=""
-          threshold=${CODECOV_MINIMUM:-90}
+          threshold=${CODECOV_MINIMUM:-95}
           test_threshold=${CODECOV_TEST_MINIMUM:-100}
           matched_count=0
 
@@ -1404,7 +1409,7 @@ jobs:
           }
           Write-Host "Every test assembly that collected coverage is present in the report."
 
-      - name: Enforce 90% coverage threshold
+      - name: Enforce coverage threshold
         if: steps.check-coverage.outputs.has-coverage == 'true'
         shell: pwsh
         run: |
@@ -1417,7 +1422,7 @@ jobs:
           Get-Content "CoverageReport/Summary.txt"
           Write-Host ""
 
-          $threshold     = if ($env:CODECOV_MINIMUM) { [int]$env:CODECOV_MINIMUM } else { 90 }
+          $threshold     = if ($env:CODECOV_MINIMUM) { [int]$env:CODECOV_MINIMUM } else { 95 }
           $testThreshold = if ($env:CODECOV_TEST_MINIMUM) { [int]$env:CODECOV_TEST_MINIMUM } else { 100 }
           $failedProjects = @()
           $matchedCount   = 0
@@ -1816,7 +1821,7 @@ jobs:
             echo "ℹ️  No coverage files found - skipping report generation"
           fi
 
-      - name: Enforce 90% coverage threshold
+      - name: Enforce coverage threshold
         run: |
           # If no cobertura files were produced (no tests, all test projects
           # skipped, etc.), the preceding step explicitly skipped report
@@ -1836,7 +1841,7 @@ jobs:
           cat CoverageReport/Summary.txt
           echo ""
 
-          THRESHOLD=${CODECOV_MINIMUM:-90}
+          THRESHOLD=${CODECOV_MINIMUM:-95}
           TEST_THRESHOLD=${CODECOV_TEST_MINIMUM:-100}
           FAILED=0
           MATCHED=0
@@ -1938,7 +1943,7 @@ jobs:
           echo "=========================================="
           echo "✅ ALL STAGES PASSED"
           echo "=========================================="
-          echo "Stage 1: Linux tests + 90% coverage ✅"
+          echo "Stage 1: Linux tests + coverage gate ✅"
           echo "Stage 2: Windows .NET Core & .NET Framework tests ✅"
           echo "Stage 3: macOS tests ✅"
           echo ""
