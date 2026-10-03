@@ -671,10 +671,31 @@ jobs:
                 Write-Error "❌ git commit failed with exit code $LASTEXITCODE — aborting deploy."
                 throw "git commit failed"
               }
-              git -C $WORK_DIR push origin HEAD:gh-pages
-              if ($LASTEXITCODE -ne 0) {
-                Write-Error "❌ git push origin HEAD:gh-pages failed with exit code $LASTEXITCODE — deploy did not land."
-                throw "git push failed"
+              # Other workflows push to gh-pages too (benchmarks.yaml's /dev/bench chart, the
+              # stryker.yaml publish job's /dev/stryker chart), and one can land between the
+              # fetch above and this push, which then fails as non-fast-forward. Those writers
+              # only touch dev/, which this deploy preserves, so rebase the docs commit onto the
+              # new tip and push again. A rebase conflict means another writer changed the same
+              # files: fail rather than guess. No concurrency group instead: GitHub keeps only
+              # one pending job per group, so a queued release deploy could be cancelled.
+              $maxPushAttempts = 5
+              for ($attempt = 1; ; $attempt++) {
+                git -C $WORK_DIR push origin HEAD:gh-pages
+                if ($LASTEXITCODE -eq 0) { break }
+                if ($attempt -ge $maxPushAttempts) {
+                  Write-Host "::error::git push origin HEAD:gh-pages failed $attempt times — deploy did not land."
+                  throw "git push failed"
+                }
+                Write-Host "::warning::git push to gh-pages was rejected (attempt $attempt of $maxPushAttempts); rebasing onto the current gh-pages and retrying."
+                Start-Sleep -Seconds (2 * $attempt)
+                git -C $WORK_DIR fetch origin gh-pages
+                if ($LASTEXITCODE -ne 0) { throw "git fetch origin gh-pages failed with exit code $LASTEXITCODE" }
+                git -C $WORK_DIR rebase FETCH_HEAD
+                if ($LASTEXITCODE -ne 0) {
+                  git -C $WORK_DIR rebase --abort 2>&1 | Out-Null
+                  Write-Host "::error::Rebasing the docs commit onto the current gh-pages conflicted — another writer changed the same files. Deploy did not land."
+                  throw "git rebase failed"
+                }
               }
               Write-Host "✅ Documentation deployed in a single commit."
             } elseif ($diffExit -eq 0) {
