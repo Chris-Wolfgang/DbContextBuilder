@@ -1260,9 +1260,7 @@ jobs:
           Write-Host ""
 
           # The Stage 1 ledger, on this stage. Recorded only for projects that ran a
-          # COVERAGE-COLLECTING framework: net4x and netcoreapp3.1 are tested below without
-          # the XPlat collector by design, so a project targeting only those must not be
-          # expected to have a coverage row.
+          # COVERAGE-COLLECTING framework, so every assembly it names must have a row.
           $ranAssemblies = @()
 
           foreach ($testProj in $testProjects) {
@@ -1293,15 +1291,40 @@ jobs:
             Write-Host "Target frameworks: $($frameworks -join ', ')" -ForegroundColor White
             Write-Host ""
             
-            # Test each framework; collect coverage only for .NET 5.0+ TFMs.
-            # netcoreapp3.1 and net4x are tested but excluded from coverage:
-            # netcoreapp3.1 has no matching test TFM on Linux (Stage 1) so its numbers
-            # would not be comparable; net4x cannot use the XPlat collector on Windows.
+            # Test each framework; collect coverage on .NET 5.0+ TFMs.
+            # netcoreapp3.1 is tested without coverage: it has no matching test TFM on
+            # Linux (Stage 1), so its numbers would not be comparable.
+            # net4x is tested without coverage when the project also has a .NET 5.0+ TFM,
+            # which measures the same code. A FRAMEWORK-ONLY project (e.g. one testing a
+            # package that ships only net4x) has no other run, so it is measured on net4x
+            # with Microsoft's collector: coverlet.collector 8.0+ ships only net8.0+ builds
+            # and cannot load in a .NET Framework test host (#523).
+            $frameworkOnly = @($frameworks | Where-Object { $_ -match '^net([5-9]|[1-9][0-9]+)\.' }).Count -eq 0
             $collectedCoverage = $false
             foreach ($fw in $frameworks) {
               Write-Host "Testing framework: $fw" -ForegroundColor Yellow
 
-              if ($fw -match '^net([5-9]|[1-9][0-9]+)\.') {
+              if ($frameworkOnly -and $fw -match '^net4[0-9]+$') {
+                $netfxResults = "./TestResults/netfx-$($testProj.BaseName)-$fw"
+                dotnet test $testProj.FullName `
+                  --configuration Release `
+                  --framework $fw `
+                  --no-build --no-restore `
+                  --collect:"Code Coverage;Format=Cobertura" `
+                  --results-directory $netfxResults `
+                  --logger "console;verbosity=normal"
+                if ($LASTEXITCODE -eq 0) {
+                  # Microsoft's collector names its file <user>_<machine>_<timestamp>.cobertura.xml;
+                  # the report and the presence check read coverage.cobertura.xml.
+                  $netfxReports = @(Get-ChildItem -Path $netfxResults -Recurse -Filter '*.cobertura.xml')
+                  if ($netfxReports.Count -ne 1) {
+                    Write-Error "Expected one Cobertura file from Microsoft's collector for $fw in $($testProj.Name), found $($netfxReports.Count)."
+                    exit 1
+                  }
+                  Move-Item -LiteralPath $netfxReports[0].FullName -Destination (Join-Path $netfxReports[0].DirectoryName 'coverage.cobertura.xml')
+                  $collectedCoverage = $true
+                }
+              } elseif ($fw -match '^net([5-9]|[1-9][0-9]+)\.') {
                 dotnet test $testProj.FullName `
                   --configuration Release `
                   --framework $fw `
