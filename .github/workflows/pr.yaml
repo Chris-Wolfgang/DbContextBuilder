@@ -1306,6 +1306,8 @@ jobs:
 
               if ($frameworkOnly -and $fw -match '^net4[0-9]+$') {
                 $netfxResults = "./TestResults/netfx-$($testProj.BaseName)-$fw"
+                # Start empty so the exactly-one check below sees only this run's file.
+                if (Test-Path -LiteralPath $netfxResults) { Remove-Item -LiteralPath $netfxResults -Recurse -Force }
                 dotnet test $testProj.FullName `
                   --configuration Release `
                   --framework $fw `

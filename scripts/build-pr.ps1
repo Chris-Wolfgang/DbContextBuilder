@@ -165,6 +165,9 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
 
                 if ($frameworkOnly -and $fw -match '^net4[0-9]+$') {
                     $netfxResults = "./TestResults/netfx-$($testProj.BaseName)-$fw"
+                    # A previous run left its renamed coverage.cobertura.xml here; clear it so the
+                    # exactly-one check below sees only this run's file.
+                    if (Test-Path -LiteralPath $netfxResults) { Remove-Item -LiteralPath $netfxResults -Recurse -Force }
                     $testArgs += '--collect:Code Coverage;Format=Cobertura'
                     $testArgs += '--results-directory'
                     $testArgs += $netfxResults
