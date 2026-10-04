@@ -402,6 +402,76 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
+    /// #530: a creator that leaves a store-generated key at 0 means "let EF generate it". Keeping
+    /// 0 for the first entity and numbering the rest from 1 made EF generate 1 for it, colliding
+    /// with the assigned 1. Every unset key is now assigned, so no key is left for EF to generate.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_assigns_keys_a_creator_left_at_the_default()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>()
+            .UseInMemory()
+            .UseCustomRandomEntityCreator(new CollidingKeyRandomEntityCreator(0));
+
+        await using var context = await sut.SeedWithRandom<CoverageManufacturer>(5).BuildAsync();
+
+        Assert.Equal
+        (
+            new[] { 1, 2, 3, 4, 5 },
+            context.Manufacturers.Select(m => m.Id).OrderBy(id => id).ToArray()
+        );
+    }
+
+
+
+    /// <summary>
+    /// #530: a SeedWith entity left at 0 would also get an EF-generated key that can collide with
+    /// an assigned random one, so it is assigned the lowest unused value as well. A SeedWith key
+    /// that is set is still never changed.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_assigns_an_unset_SeedWith_key_and_keeps_a_set_one()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>()
+            .UseInMemory()
+            .UseCustomRandomEntityCreator(new CollidingKeyRandomEntityCreator(0));
+
+        await using var context = await sut
+            .SeedWith(new CoverageManufacturer { Name = "unset" }, new CoverageManufacturer { Id = 2, Name = "set" })
+            .SeedWithRandom<CoverageManufacturer>(2)
+            .BuildAsync();
+
+        var manufacturers = context.Manufacturers.ToList();
+        Assert.Equal(4, manufacturers.Select(m => m.Id).Distinct().Count());
+        Assert.DoesNotContain(0, manufacturers.Select(m => m.Id));
+        Assert.Equal(2, manufacturers.Single(m => string.Equals(m.Name, "set", StringComparison.Ordinal)).Id);
+    }
+
+
+
+    /// <summary>
+    /// #530: on a key EF never generates, 0 is an ordinary value, so one random entity keeps it
+    /// and only the colliding ones are renumbered.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_keeps_0_as_a_real_key_when_EF_never_generates_it()
+    {
+        using var sut = new DbContextBuilder<ManualKeyContext>()
+            .UseInMemory()
+            .UseCustomRandomEntityCreator(new CollidingKeyRandomEntityCreator(0));
+
+        await using var context = await sut.SeedWithRandom<CoverageManufacturer>(3).BuildAsync();
+
+        Assert.Equal
+        (
+            new[] { 0, 1, 2 },
+            context.Set<CoverageManufacturer>().Select(m => m.Id).OrderBy(id => id).ToArray()
+        );
+    }
+
+
+
+    /// <summary>
     /// Verifies UseDbContextOptionsBuilder accepts a builder and rejects null.
     /// </summary>
     [Fact]
@@ -601,6 +671,15 @@ internal sealed class KeylessContext(DbContextOptions<KeylessContext> options) :
 
 
 
+/// <summary>Maps <see cref="CoverageManufacturer"/> with a key EF never generates (#530).</summary>
+internal sealed class ManualKeyContext(DbContextOptions<ManualKeyContext> options) : DbContext(options)
+{
+    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<CoverageManufacturer>().Property(m => m.Id).ValueGeneratedNever();
+}
+
+
+
 /// <summary>Base type of a TPH hierarchy whose types share one primary key (#515).</summary>
 internal class HierarchyAnimal
 {
@@ -635,7 +714,7 @@ internal sealed class HierarchyContext(DbContextOptions<HierarchyContext> option
 /// Wraps <see cref="DeterministicRandomEntityCreator"/> and gives every generated entity the same
 /// <c>Id</c>, reproducing #515's primary-key collision deterministically (Bogus only collides by chance).
 /// </summary>
-internal sealed class CollidingKeyRandomEntityCreator : ICreateRandomEntities
+internal sealed class CollidingKeyRandomEntityCreator(int key = CollidingKeyRandomEntityCreator.Key) : ICreateRandomEntities
 {
     internal const int Key = 7;
 
@@ -648,7 +727,7 @@ internal sealed class CollidingKeyRandomEntityCreator : ICreateRandomEntities
     {
         var entities = _inner.CreateRandomEntities<TEntity>(count).ToList();
         var id = typeof(TEntity).GetProperty("Id", BindingFlags.Public | BindingFlags.Instance)!;
-        entities.ForEach(entity => id.SetValue(entity, Key));
+        entities.ForEach(entity => id.SetValue(entity, key));
         return entities;
     }
 }

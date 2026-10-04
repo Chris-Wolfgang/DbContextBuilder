@@ -309,7 +309,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// by the creator. Entities added via <c>SeedWith</c> are never reconciled.
     /// A single-property integer primary key is kept unique across all seeded entities of the
     /// type: a random key that collides with another (random or <c>SeedWith</c>) key is replaced
-    /// with the lowest unused value. Keys given via <c>SeedWith</c> are never changed.
+    /// with the lowest unused value. Keys given via <c>SeedWith</c> are never changed. On a key EF
+    /// generates, an entity left at the default (0), from either method, gets the lowest unused value
+    /// too, as EF would have generated one for it.
     /// </remarks>
     /// <param name="count">The number of items to create</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
@@ -350,7 +352,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// by the creator. Entities added via <c>SeedWith</c> are never reconciled.
     /// A single-property integer primary key is kept unique across all seeded entities of the
     /// type: a random key that collides with another (random or <c>SeedWith</c>) key is replaced
-    /// with the lowest unused value. Keys given via <c>SeedWith</c> are never changed.
+    /// with the lowest unused value. Keys given via <c>SeedWith</c> are never changed. On a key EF
+    /// generates, an entity left at the default (0), from either method, gets the lowest unused value
+    /// too, as EF would have generated one for it.
     /// </remarks>
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and returns an updated TEntity</param>
@@ -395,7 +399,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// by the creator. Entities added via <c>SeedWith</c> are never reconciled.
     /// A single-property integer primary key is kept unique across all seeded entities of the
     /// type: a random key that collides with another (random or <c>SeedWith</c>) key is replaced
-    /// with the lowest unused value. Keys given via <c>SeedWith</c> are never changed.
+    /// with the lowest unused value. Keys given via <c>SeedWith</c> are never changed. On a key EF
+    /// generates, an entity left at the default (0), from either method, gets the lowest unused value
+    /// too, as EF would have generated one for it.
     /// </remarks>
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and the index number of the entity and returns an updated TEntity</param>
@@ -439,8 +445,11 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// the root's key, so a base and a derived entity are made unique against each other. A random creator fills keys like any other integer
     /// (Bogus draws from 1..100,000), so two entities can share a key and EF refuses to track them
     /// (#515). A random key that is still free is kept; one that collides with a key already taken,
-    /// by a <c>SeedWith</c> entity or an earlier random one, gets the lowest unused value. Runs before
-    /// <see cref="ReconcileRandomForeignKeys"/>, so foreign keys copy the final keys.
+    /// by a <c>SeedWith</c> entity or an earlier random one, gets the lowest unused value. On a key
+    /// EF generates, the CLR default (0) means "not set": EF would generate a value for it, and that
+    /// value could collide with a key assigned here (#530). So every entity in the group left at the
+    /// default, random or <c>SeedWith</c>, gets the lowest unused value too, as EF would have given it.
+    /// Runs before <see cref="ReconcileRandomForeignKeys"/>, so foreign keys copy the final keys.
     /// </summary>
     /// <param name="context">A context whose model is used to find each type's primary key.</param>
     private void EnsureUniqueRandomPrimaryKeys(DbContext context)
@@ -460,16 +469,19 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         foreach (var entities in keyedGroups)
         {
             var keyProperty = entities.Key.PropertyInfo!;
+            var generated = entities.Key.ValueGenerated != ValueGenerated.Never;
+            bool IsUnset(object entity) => generated && ReadKey(keyProperty, entity) == 0;
 
             // Keys given via SeedWith are fixed; random keys yield to them.
             var used = entities
-                .Where(entity => !_randomlySeeded.Contains(entity))
+                .Where(entity => !_randomlySeeded.Contains(entity) && !IsUnset(entity))
                 .Select(entity => ReadKey(keyProperty, entity))
                 .ToHashSet();
 
             long candidate = 1;
-            // A random entity whose key is still free claims it; only a colliding one is renumbered.
-            foreach (var entity in entities.Where(entity => _randomlySeeded.Contains(entity) && !used.Add(ReadKey(keyProperty, entity))))
+            // An unset key is always assigned. A random entity whose key is still free claims it;
+            // only a colliding one is renumbered.
+            foreach (var entity in entities.Where(entity => IsUnset(entity) || (_randomlySeeded.Contains(entity) && !used.Add(ReadKey(keyProperty, entity)))))
             {
                 while (!used.Add(candidate))
                 {
