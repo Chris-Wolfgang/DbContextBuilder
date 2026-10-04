@@ -135,6 +135,7 @@ jobs:
           echo "No regressions beyond threshold (latency >${LATENCY_THRESHOLD_PCT}% and >${LATENCY_ABS_FLOOR_MS}ms absolute, or allocations >${ALLOC_THRESHOLD_PCT}%)."
 
       - name: Upload shadow results
+        id: upload
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -156,6 +157,7 @@ jobs:
           CURRENT_OUTCOME: ${{ steps.current.outcome }}
           BASELINE_OUTCOME: ${{ steps.baseline.outcome }}
           COMPARE_OUTCOME: ${{ steps.compare.outcome }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
         run: |
           set -euo pipefail
           if [ "$COMPARE_OUTCOME" = "failure" ]; then
@@ -175,11 +177,16 @@ jobs:
             label_description="A scheduled shadow-workload run could not complete"
             title="Shadow workload could not run the baseline package"
             body="The scheduled shadow-workload run failed in **Run against baseline package** (the last-published release, restored from NuGet), so there is nothing to compare against. The current-source run completed; its report is in the \`shadow-results\` artifact."
+          elif [ "$UPLOAD_OUTCOME" = "failure" ]; then
+            label=shadow-failure
+            label_description="A scheduled shadow-workload run could not complete"
+            title="Shadow workload could not upload its results"
+            body="The scheduled shadow-workload run completed both runs and the comparison without finding a regression, but **Upload shadow results** failed, so the reports are not attached to the run. Nothing in the library is implicated; see the run log for the upload error."
           else
             label=shadow-failure
             label_description="A scheduled shadow-workload run could not complete"
-            title="Shadow workload failed before it could run"
-            body="The scheduled shadow-workload run failed before running the workload (checkout or .NET setup). See the run log."
+            title="Shadow workload failed outside its workload steps"
+            body="The scheduled shadow-workload run failed in a step other than the two workload runs, the comparison and the upload (most likely checkout or .NET setup), so the workload may not have run. See the run log."
           fi
 
           gh label create "$label" --color B60205 --description "$label_description" 2>/dev/null || true
