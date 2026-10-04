@@ -179,6 +179,7 @@ public class DbSetAssertionsTests
         var ex = await Assert.ThrowsAsync<DbContextAssertionException>(
             async () => await context.Set<TableWithDefaults>().Should().NotContain(t => t.Id >= 1));
 
+        Assert.Contains("to contain NO entity matching", ex.Message, StringComparison.Ordinal);
         Assert.Contains("3 matching entities", ex.Message, StringComparison.Ordinal);
     }
 
@@ -323,5 +324,20 @@ public class DbSetAssertionsTests
         await Assert.ThrowsAsync<ArgumentNullException>(() => assertions.Contain(null!));
         await Assert.ThrowsAsync<ArgumentNullException>(() => assertions.NotContain(null!));
         await Assert.ThrowsAsync<ArgumentNullException>(() => assertions.AllSatisfy(null!));
+    }
+
+
+
+    /// <summary>
+    /// AllSatisfy on an empty set returns before it ever uses the predicate (vacuous truth), so
+    /// only the up-front guard rejects a null predicate there. Without it the call would pass.
+    /// </summary>
+    [Fact]
+    public async Task AllSatisfy_when_set_is_empty_and_predicate_is_null_throws_ArgumentNullException()
+    {
+        await using var context = await CreateSeededContextAsync(0);
+
+        var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => context.Set<TableWithDefaults>().Should().AllSatisfy(null!));
+        Assert.Equal("predicate", ex.ParamName);
     }
 }
