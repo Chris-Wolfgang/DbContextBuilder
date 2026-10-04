@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790949873130,
+  "lastUpdate": 1791156689119,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -1482,6 +1482,84 @@ window.BENCHMARK_DATA = {
             "value": 4602247.5546875,
             "unit": "ns",
             "range": "± 1243154.1845391968"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7b3a679d7f506d5c9eb7db7f6dcc37f6eb222e60",
+          "message": "fix: assign random keys left at the default instead of keeping one at 0 (#530) (#532)\n\n* fix: assign random keys left at the default instead of keeping one at 0 (#530)\n\nA creator that leaves a store-generated key at 0 (the shadow workload's,\nand most hand-written ones) means \"let EF generate it\". #520's\nunique-key pass treated 0 as a real key: the first entity kept it as\n\"still free\" and the rest were numbered from 1, so EF generated 1 for\nthe entity at 0 and the build threw the identity conflict #520 was meant\nto prevent. The scheduled shadow run hit it on SeedWithRandom100.\n\nOn a key EF generates, the CLR default now means unset: every entity in\nthe key group left at 0, random or SeedWith, gets the lowest unused\nvalue, as EF would have given it, so generated and assigned keys cannot\ncollide. A SeedWith key that is set is still never changed, and on a\nkey EF never generates 0 stays an ordinary value.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* fix: treat the key's configured sentinel as unset, not a hard-coded 0 (#530)\n\nReview fixes:\n- EF Core 8+ lets a generated key declare its own sentinel (HasSentinel).\n  The unset check hard-coded 0, so with HasSentinel(-1) an explicit 0 was\n  rewritten and entities at -1 were kept, letting EF generate over them.\n  The check now reads IProperty.Sentinel on EF Core 8+ and the CLR default\n  of the key type on EF Core 6/7, which have no per-property sentinel. The\n  sentinel itself is never assigned: EF would read it as unset again.\n- The SeedWithRandom remarks said SeedWith keys are never changed and then\n  that an unset SeedWith key is changed. They now say a key a SeedWith\n  entity sets is never changed, and an unset one is assigned.\n\nThree EF Core 8+ tests (HasSentinel(-1) and HasSentinel(1)) fail on the\nprevious commit and pass now.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-04T19:29:43-04:00",
+          "tree_id": "059e6183a7b4b5e5d61a25227f59af6318a7325c",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/7b3a679d7f506d5c9eb7db7f6dcc37f6eb222e60"
+        },
+        "date": 1791156688257,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 37389.61981201172,
+            "unit": "ns",
+            "range": "± 1730.128437912113"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 60139.72375488281,
+            "unit": "ns",
+            "range": "± 2089.0418735706426"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 264816.68668619794,
+            "unit": "ns",
+            "range": "± 15383.107422256062"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 39415.01983642578,
+            "unit": "ns",
+            "range": "± 1497.775185394067"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 133139.40266927084,
+            "unit": "ns",
+            "range": "± 3979.5428745450727"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 507434.5764973958,
+            "unit": "ns",
+            "range": "± 49623.22384958716"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 40406.02643839518,
+            "unit": "ns",
+            "range": "± 1903.5307215287492"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 460218.6282552083,
+            "unit": "ns",
+            "range": "± 8670.141808262273"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 4100479.6328125,
+            "unit": "ns",
+            "range": "± 1448352.4233423262"
           }
         ]
       }
