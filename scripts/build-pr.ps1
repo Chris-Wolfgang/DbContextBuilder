@@ -147,7 +147,12 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
 
             Write-Host "  Frameworks: $($frameworks -join ', ')"
 
+            # Same rule as pr.yaml Stage 2: a FRAMEWORK-ONLY project has no .NET 5.0+ run to
+            # measure it, so it is measured on net4x with Microsoft's collector
+            # (coverlet.collector 8.0+ cannot load in a .NET Framework test host, #523).
+            $frameworkOnly = @($frameworks | Where-Object { $_ -match '^net([5-9]|[1-9][0-9]+)\.' }).Count -eq 0
             $collectedCoverage = $false
+            $netfxResults = $null
             foreach ($fw in $frameworks) {
                 Write-Host "  Testing: $fw" -ForegroundColor Yellow
 
@@ -158,7 +163,17 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
                     '--logger', 'console;verbosity=normal'
                 )
 
-                if ($fw -match '^net([5-9]|[1-9][0-9]+)\.') {
+                if ($frameworkOnly -and $fw -match '^net4[0-9]+$') {
+                    $netfxResults = "./TestResults/netfx-$($testProj.BaseName)-$fw"
+                    # A previous run left its renamed coverage.cobertura.xml here; clear it so the
+                    # exactly-one check below sees only this run's file.
+                    if (Test-Path -LiteralPath $netfxResults) { Remove-Item -LiteralPath $netfxResults -Recurse -Force }
+                    $testArgs += '--collect:Code Coverage;Format=Cobertura'
+                    $testArgs += '--results-directory'
+                    $testArgs += $netfxResults
+                }
+                elseif ($fw -match '^net([5-9]|[1-9][0-9]+)\.') {
+                    $netfxResults = $null
                     $testArgs += '--collect:XPlat Code Coverage'
                     $testArgs += '--results-directory'
                     $testArgs += './TestResults'
@@ -175,6 +190,20 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
                     Write-Fail "  Tests failed for $fw"
                     $failed += "Tests ($fw)"
                     break
+                }
+
+                if ($frameworkOnly -and $netfxResults) {
+                    # Microsoft's collector names its file <user>_<machine>_<timestamp>.cobertura.xml;
+                    # the report reads coverage.cobertura.xml.
+                    $netfxReports = @(Get-ChildItem -Path $netfxResults -Recurse -Filter '*.cobertura.xml' -ErrorAction SilentlyContinue)
+                    if ($netfxReports.Count -ne 1) {
+                        Write-Fail "  Expected one Cobertura file from Microsoft's collector for $fw, found $($netfxReports.Count)"
+                        $failed += "Coverage ($fw)"
+                        break
+                    }
+                    Move-Item -LiteralPath $netfxReports[0].FullName -Destination (Join-Path $netfxReports[0].DirectoryName 'coverage.cobertura.xml')
+                    $collectedCoverage = $true
+                    $netfxResults = $null
                 }
             }
 
