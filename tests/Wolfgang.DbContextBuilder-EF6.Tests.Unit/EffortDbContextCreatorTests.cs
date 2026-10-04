@@ -91,6 +91,46 @@ public class EffortDbContextCreatorTests
         // Act & Assert
         Assert.ThrowsAny<Exception>(() => sut.CreateDbContext<NoConnectionConstructorContext>());
     }
+
+
+    /// <summary>
+    /// Contexts are created with contextOwnsConnection: false, so disposing one leaves the shared
+    /// connection (and the in-memory database other contexts use) alone.
+    /// </summary>
+    [Fact]
+    public void Disposing_a_context_does_not_dispose_the_shared_connection()
+    {
+        using var sut = new EffortDbContextCreator();
+        var disposals = 0;
+        using (var context = sut.CreateDbContext<TestDbContext>())
+        {
+            context.Database.Connection.Disposed += (_, _) => disposals++;
+        }
+
+        Assert.Equal(0, disposals);
+    }
+
+
+
+    /// <summary>
+    /// Dispose disposes the shared connection exactly once, however often it is called.
+    /// </summary>
+    [Fact]
+    public void Dispose_disposes_the_shared_connection_once()
+    {
+        var sut = new EffortDbContextCreator();
+        var disposals = 0;
+        using (var context = sut.CreateDbContext<TestDbContext>())
+        {
+            context.Database.Connection.Disposed += (_, _) => disposals++;
+        }
+
+        sut.Dispose();
+        sut.Dispose();
+
+        Assert.Equal(1, disposals);
+    }
+
 }
 
 

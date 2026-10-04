@@ -261,6 +261,7 @@ public class DbContextBuilderTests
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(products.AsEnumerable()));
+        Assert.StartsWith("One of the entities is null", ex.Message, StringComparison.Ordinal);
         Assert.Equal("entities", ex.ParamName);
     }
 
@@ -278,6 +279,7 @@ public class DbContextBuilderTests
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(invalidValues.AsEnumerable()));
+        Assert.StartsWith("The type of TEntity cannot be string", ex.Message, StringComparison.Ordinal);
         Assert.Equal("entities", ex.ParamName);
     }
 
@@ -389,6 +391,7 @@ public class DbContextBuilderTests
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(product1, null!, product2));
+        Assert.StartsWith("One of the entities is null", ex.Message, StringComparison.Ordinal);
         Assert.Equal("entities", ex.ParamName);
     }
 
@@ -406,6 +409,7 @@ public class DbContextBuilderTests
         // Act & Assert — two string args bind unambiguously to the params overload
         // (a single string arg now binds to the SeedWith(TEntity) singleton overload).
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value", "another value"));
+        Assert.StartsWith("One of the entities passed in is of type string", ex.Message, StringComparison.Ordinal);
         Assert.Equal("entities", ex.ParamName);
     }
 
@@ -463,6 +467,7 @@ public class DbContextBuilderTests
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<Product>(0));
+        Assert.StartsWith("Count must be greater than 0", ex.Message, StringComparison.Ordinal);
         Assert.Equal("count", ex.ParamName);
     }
 
@@ -491,6 +496,7 @@ public class DbContextBuilderTests
     /// Verifies that a newly created DbContext contains the specified number of randomly created entities.
     /// </summary>
     [Theory]
+    [InlineData(1)]
     [InlineData(3)]
     [InlineData(7)]
     public void SeedWithRandom_int_seeds_DbContext_with_specified_number_of_random_entities(int count)
@@ -528,6 +534,7 @@ public class DbContextBuilderTests
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom(0, func));
+        Assert.StartsWith("Count must be greater than 0", ex.Message, StringComparison.Ordinal);
         Assert.Equal("count", ex.ParamName);
     }
 
@@ -575,6 +582,7 @@ public class DbContextBuilderTests
     /// with the transformation function applied.
     /// </summary>
     [Theory]
+    [InlineData(1)]
     [InlineData(3)]
     [InlineData(7)]
     public void SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
@@ -618,6 +626,7 @@ public class DbContextBuilderTests
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom(0, func));
+        Assert.StartsWith("Count must be greater than 0", ex.Message, StringComparison.Ordinal);
         Assert.Equal("count", ex.ParamName);
     }
 
@@ -665,6 +674,7 @@ public class DbContextBuilderTests
     /// with the index-based transformation function applied.
     /// </summary>
     [Theory]
+    [InlineData(1)]
     [InlineData(3)]
     [InlineData(7)]
     public void SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
@@ -943,7 +953,9 @@ public class DbContextBuilderTests
         var sut = new DbContextBuilder<TestDbContext>();
         var stringList = new List<string> { "a", "b", "c" };
 
-        Assert.Throws<ArgumentException>(() => sut.SeedWith(stringList));
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(stringList));
+        Assert.StartsWith("One of the entities passed in is of type string", ex.Message, StringComparison.Ordinal);
+        Assert.Equal("entity", ex.ParamName);
     }
 
 
@@ -958,6 +970,86 @@ public class DbContextBuilderTests
     {
         var sut = new DbContextBuilder<TestDbContext>();
 
-        Assert.Throws<ArgumentException>(() => sut.SeedWith<object>("not an entity"));
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith<object>("not an entity"));
+        Assert.StartsWith("One of the entities passed in is of type string", ex.Message, StringComparison.Ordinal);
+        Assert.Equal("entity", ex.ParamName);
     }
+
+
+
+    /// <summary>
+    /// UseAutoFixture replaces a creator set earlier, so it switches back to AutoFixture rather
+    /// than being a no-op on top of the default.
+    /// </summary>
+    [Fact]
+    public void UseAutoFixture_replaces_a_previously_set_random_entity_creator()
+    {
+        var custom = new AutoFixtureRandomEntityCreator(new AutoFixture.Fixture());
+        var sut = new DbContextBuilder<TestDbContext>().UseCustomRandomEntityCreator(custom);
+
+        sut.UseAutoFixture();
+
+        Assert.IsType<AutoFixtureRandomEntityCreator>(sut.RandomEntityCreator);
+        Assert.NotSame(custom, sut.RandomEntityCreator);
+    }
+
+
+
+    /// <summary>
+    /// Build uses a context creator already set on the builder instead of making a new Effort
+    /// one, so a caller-supplied creator is honored.
+    /// </summary>
+    [Fact]
+    public void Build_uses_a_context_creator_already_set_on_the_builder()
+    {
+        using var creator = new CountingDbContextCreator();
+        var sut = new DbContextBuilder<TestDbContext> { CreateDbContext = creator };
+
+        using var context = sut.Build();
+
+        Assert.Equal(2, creator.Created);
+        Assert.Same(creator, sut.CreateDbContext);
+    }
+
+
+
+    /// <summary>
+    /// BuildAsync uses a context creator already set on the builder instead of making a new
+    /// Effort one, so a caller-supplied creator is honored.
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_uses_a_context_creator_already_set_on_the_builder()
+    {
+        using var creator = new CountingDbContextCreator();
+        var sut = new DbContextBuilder<TestDbContext> { CreateDbContext = creator };
+
+        using var context = await sut.BuildAsync();
+
+        Assert.Equal(2, creator.Created);
+        Assert.Same(creator, sut.CreateDbContext);
+    }
+}
+
+
+
+/// <summary>Wraps <see cref="EffortDbContextCreator"/> and counts the contexts it creates.</summary>
+internal sealed class CountingDbContextCreator : ICreateDbContext
+{
+    private readonly EffortDbContextCreator _inner = new();
+
+
+
+    public int Created { get; private set; }
+
+
+
+    public TDbContext CreateDbContext<TDbContext>() where TDbContext : System.Data.Entity.DbContext
+    {
+        Created++;
+        return _inner.CreateDbContext<TDbContext>();
+    }
+
+
+
+    public void Dispose() => _inner.Dispose();
 }
