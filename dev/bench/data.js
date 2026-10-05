@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791156689119,
+  "lastUpdate": 1791161950051,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -1560,6 +1560,84 @@ window.BENCHMARK_DATA = {
             "value": 4100479.6328125,
             "unit": "ns",
             "range": "± 1448352.4233423262"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "235a05f238ca7b63830bc65ea4f9455849a8072f",
+          "message": "test(ef6): kill the #531 mutation survivors in the classic EF6 package (#534)\n\nTests for what the survivors showed was unchecked:\n- exception messages on the SeedWith/SeedWithRandom guards and the\n  AutoFixture creator (asserted with StartsWith: .NET Framework appends\n  \"Parameter name: x\");\n- count == 1 for all three SeedWithRandom overloads (`< 1` vs `<= 1`);\n- Build and BuildAsync use a context creator already set on the builder;\n- UseAutoFixture replaces a creator set earlier;\n- EffortDbContextCreator: disposing a context leaves the shared\n  connection alone, and Dispose disposes it exactly once (observed through\n  DbConnection's Disposed event, since Effort keeps the data readable\n  either way);\n- the AutoFixture creator omits self-references and leaves virtual\n  members unset.\n\nAutoFixtureRandomEntityCreator repeated by hand what\nNoCircularReferencesCustomization already does (remove\nThrowingRecursionBehavior, add OmitOnRecursionBehavior), so removing any\none of the three copies changed nothing and the mutants were equivalent.\nThe duplicates are gone; the customization alone now provably matters.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-04T20:55:45-04:00",
+          "tree_id": "bc5ec46773c49d4c11c96a0c294efebdf1c2ec2c",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/235a05f238ca7b63830bc65ea4f9455849a8072f"
+        },
+        "date": 1791161948749,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 18777.942545572918,
+            "unit": "ns",
+            "range": "± 29.64914316524236"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 24351.074584960938,
+            "unit": "ns",
+            "range": "± 686.7717480403946"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 100622.26285807292,
+            "unit": "ns",
+            "range": "± 24557.397097187913"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 19156.651641845703,
+            "unit": "ns",
+            "range": "± 827.2958693266515"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 49679.225911458336,
+            "unit": "ns",
+            "range": "± 6404.141592194658"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 204880.19108072916,
+            "unit": "ns",
+            "range": "± 27224.419875035917"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 18947.382751464844,
+            "unit": "ns",
+            "range": "± 477.88073015724694"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 179460.9181315104,
+            "unit": "ns",
+            "range": "± 1991.528145845793"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 1292383.1614583333,
+            "unit": "ns",
+            "range": "± 55705.00570033889"
           }
         ]
       }
