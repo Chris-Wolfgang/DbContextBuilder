@@ -17,10 +17,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="coverlet.collector" Version="10.0.1">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
+		<!-- No coverlet.collector: from 8.0 it ships only net8.0+ builds and cannot load in a
+		     .NET Framework test host, and this project targets only net4x. pr.yaml Stage 2 and
+		     build-pr.ps1 measure it with Microsoft's collector (Microsoft.NET.Test.Sdk) instead (#523). -->
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
 		<PackageReference Include="Moq" Version="4.20.72" />
 		<PackageReference Include="xunit" Version="2.9.3" />

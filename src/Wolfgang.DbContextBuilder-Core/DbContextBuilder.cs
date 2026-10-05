@@ -309,7 +309,10 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// by the creator. Entities added via <c>SeedWith</c> are never reconciled.
     /// A single-property integer primary key is kept unique across all seeded entities of the
     /// type: a random key that collides with another (random or <c>SeedWith</c>) key is replaced
-    /// with the lowest unused value. Keys given via <c>SeedWith</c> are never changed.
+    /// with the lowest unused value. A key that a <c>SeedWith</c> entity sets is never changed. A
+    /// key left unset (at the property's sentinel, 0 unless configured otherwise) on a key EF
+    /// generates is assigned the lowest unused value instead, by either method, as EF would have
+    /// generated one for it.
     /// </remarks>
     /// <param name="count">The number of items to create</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
@@ -350,7 +353,10 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// by the creator. Entities added via <c>SeedWith</c> are never reconciled.
     /// A single-property integer primary key is kept unique across all seeded entities of the
     /// type: a random key that collides with another (random or <c>SeedWith</c>) key is replaced
-    /// with the lowest unused value. Keys given via <c>SeedWith</c> are never changed.
+    /// with the lowest unused value. A key that a <c>SeedWith</c> entity sets is never changed. A
+    /// key left unset (at the property's sentinel, 0 unless configured otherwise) on a key EF
+    /// generates is assigned the lowest unused value instead, by either method, as EF would have
+    /// generated one for it.
     /// </remarks>
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and returns an updated TEntity</param>
@@ -395,7 +401,10 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// by the creator. Entities added via <c>SeedWith</c> are never reconciled.
     /// A single-property integer primary key is kept unique across all seeded entities of the
     /// type: a random key that collides with another (random or <c>SeedWith</c>) key is replaced
-    /// with the lowest unused value. Keys given via <c>SeedWith</c> are never changed.
+    /// with the lowest unused value. A key that a <c>SeedWith</c> entity sets is never changed. A
+    /// key left unset (at the property's sentinel, 0 unless configured otherwise) on a key EF
+    /// generates is assigned the lowest unused value instead, by either method, as EF would have
+    /// generated one for it.
     /// </remarks>
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and the index number of the entity and returns an updated TEntity</param>
@@ -439,8 +448,13 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// the root's key, so a base and a derived entity are made unique against each other. A random creator fills keys like any other integer
     /// (Bogus draws from 1..100,000), so two entities can share a key and EF refuses to track them
     /// (#515). A random key that is still free is kept; one that collides with a key already taken,
-    /// by a <c>SeedWith</c> entity or an earlier random one, gets the lowest unused value. Runs before
-    /// <see cref="ReconcileRandomForeignKeys"/>, so foreign keys copy the final keys.
+    /// by a <c>SeedWith</c> entity or an earlier random one, gets the lowest unused value. On a key
+    /// EF generates, the property's sentinel (0 unless configured with <c>HasSentinel</c> on EF
+    /// Core 8+) means "not set": EF would generate a value for it, and that value could collide with
+    /// a key assigned here (#530). So every entity in the group left at the sentinel, random or
+    /// <c>SeedWith</c>, gets the lowest unused value too, as EF would have given it. The sentinel is
+    /// never assigned, since EF would read it as "not set" again.
+    /// Runs before <see cref="ReconcileRandomForeignKeys"/>, so foreign keys copy the final keys.
     /// </summary>
     /// <param name="context">A context whose model is used to find each type's primary key.</param>
     private void EnsureUniqueRandomPrimaryKeys(DbContext context)
@@ -460,16 +474,26 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         foreach (var entities in keyedGroups)
         {
             var keyProperty = entities.Key.PropertyInfo!;
+            // On a key EF never generates there is no "not set" value: every value is a real key.
+            long? sentinel = entities.Key.ValueGenerated == ValueGenerated.Never ? null : ReadSentinel(entities.Key);
+            bool IsUnset(object entity) => ReadKey(keyProperty, entity) == sentinel;
 
             // Keys given via SeedWith are fixed; random keys yield to them.
             var used = entities
-                .Where(entity => !_randomlySeeded.Contains(entity))
+                .Where(entity => !_randomlySeeded.Contains(entity) && !IsUnset(entity))
                 .Select(entity => ReadKey(keyProperty, entity))
                 .ToHashSet();
 
+            // Never hand out the sentinel: EF would treat that key as unset and generate over it.
+            if (sentinel is { } reserved)
+            {
+                used.Add(reserved);
+            }
+
             long candidate = 1;
-            // A random entity whose key is still free claims it; only a colliding one is renumbered.
-            foreach (var entity in entities.Where(entity => _randomlySeeded.Contains(entity) && !used.Add(ReadKey(keyProperty, entity))))
+            // An unset key is always assigned. A random entity whose key is still free claims it;
+            // only a colliding one is renumbered.
+            foreach (var entity in entities.Where(entity => IsUnset(entity) || (_randomlySeeded.Contains(entity) && !used.Add(ReadKey(keyProperty, entity)))))
             {
                 while (!used.Add(candidate))
                 {
@@ -489,6 +513,17 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         var property = keyProperties is { Count: 1 } ? keyProperties[0] : null;
         return property?.PropertyInfo is not null && IntegralKeyTypes.Contains(property.PropertyInfo.PropertyType) ? property : null;
     }
+
+
+
+    // EF Core 8 added per-property sentinels (HasSentinel). Before that the CLR default of the
+    // key's type was the only "not set" value (0 for the integer keys handled here).
+    private static long ReadSentinel(IProperty key) =>
+#if EF_CORE_6 || EF_CORE_7
+        Convert.ToInt64(Activator.CreateInstance(key.ClrType), CultureInfo.InvariantCulture);
+#else
+        Convert.ToInt64(key.Sentinel, CultureInfo.InvariantCulture);
+#endif
 
 
 
