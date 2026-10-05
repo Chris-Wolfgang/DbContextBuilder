@@ -16,12 +16,8 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
 {
     public AutoFixtureRandomEntityCreator()
     {
-        // Prevents issues with circular references
-        Fixture.Behaviors
-            .OfType<ThrowingRecursionBehavior>()
-            .ToList()
-            .ForEach(b => Fixture.Behaviors.Remove(b));
-        Fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        // Swaps ThrowingRecursionBehavior for OmitOnRecursionBehavior, so circular references
+        // are cut instead of failing creation.
         Fixture.Customize(new NoCircularReferencesCustomization());
         Fixture.Customize(new IgnoreVirtualMembersCustomization());
     }

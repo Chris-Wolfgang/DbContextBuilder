@@ -43,6 +43,7 @@ public class AutoFixtureRandomEntityCreatorTests
         // Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.CreateRandomEntities<Product>(count).ToList());
         Assert.Equal("count", ex.ParamName);
+        Assert.StartsWith("Value cannot be less than 1", ex.Message, StringComparison.Ordinal);
     }
 
 
@@ -92,4 +93,58 @@ public class AutoFixtureRandomEntityCreatorTests
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new AutoFixtureRandomEntityCreator(null!));
     }
+
+
+
+    /// <summary>
+    /// A type that references itself would make AutoFixture's default ThrowingRecursionBehavior
+    /// throw; the default constructor's customization omits the recursion instead.
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_when_a_type_references_itself_omits_the_recursion()
+    {
+        var sut = new AutoFixtureRandomEntityCreator();
+
+        var node = Assert.Single(sut.CreateRandomEntities<SelfReferencingNode>(1));
+
+        Assert.NotEqual(0, node.Id);
+        Assert.Null(node.Parent?.Parent);
+    }
+
+
+
+    /// <summary>
+    /// Virtual members (EF navigation properties) are left unset by the default constructor, so
+    /// random entities do not drag in random object graphs.
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_leaves_virtual_members_unset()
+    {
+        var sut = new AutoFixtureRandomEntityCreator();
+
+        var entity = Assert.Single(sut.CreateRandomEntities<EntityWithVirtualMember>(1));
+
+        Assert.NotEmpty(entity.Name);
+        Assert.Null(entity.Navigation);
+    }
+}
+
+
+
+/// <summary>A type whose non-virtual property refers to its own type.</summary>
+public class SelfReferencingNode
+{
+    public int Id { get; set; }
+
+    public SelfReferencingNode? Parent { get; set; }
+}
+
+
+
+/// <summary>A type with a virtual member, like an EF navigation property.</summary>
+public class EntityWithVirtualMember
+{
+    public string Name { get; set; } = string.Empty;
+
+    public virtual Category? Navigation { get; set; }
 }

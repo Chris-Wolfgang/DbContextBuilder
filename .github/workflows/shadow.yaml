@@ -69,6 +69,7 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Run against current source
+        id: current
         env:
           ITERATIONS: ${{ github.event.inputs.iterations || '200' }}
         run: |
@@ -79,6 +80,7 @@ jobs:
             -- ./current.json "$ITERATIONS"
 
       - name: Run against baseline package
+        id: baseline
         env:
           ITERATIONS: ${{ github.event.inputs.iterations || '200' }}
         run: |
@@ -90,6 +92,7 @@ jobs:
             -- ./baseline.json "$ITERATIONS"
 
       - name: Compare against baseline
+        id: compare
         env:
           LATENCY_THRESHOLD_PCT: ${{ github.event.inputs['latency-threshold-pct'] || '20' }}
           ALLOC_THRESHOLD_PCT: ${{ github.event.inputs['alloc-threshold-pct'] || '50' }}
@@ -132,6 +135,7 @@ jobs:
           echo "No regressions beyond threshold (latency >${LATENCY_THRESHOLD_PCT}% and >${LATENCY_ABS_FLOOR_MS}ms absolute, or allocations >${ALLOC_THRESHOLD_PCT}%)."
 
       - name: Upload shadow results
+        id: upload
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -142,26 +146,57 @@ jobs:
             ./regressions.json
           if-no-files-found: warn
 
+      # A crash is not a regression. A workload that throws against the current source is a
+      # bug in the library (#530 was filed as a "regression" when SeedWithRandom100 threw), so
+      # it gets its own title and label: an open issue of one kind must not hide the other.
       - name: File a tracking issue on failure
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          CURRENT_OUTCOME: ${{ steps.current.outcome }}
+          BASELINE_OUTCOME: ${{ steps.baseline.outcome }}
+          COMPARE_OUTCOME: ${{ steps.compare.outcome }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
         run: |
-          gh label create shadow-regression --color B60205 \
-            --description "A scheduled shadow-workload run found a performance/allocation regression" 2>/dev/null || true
+          set -euo pipefail
+          if [ "$COMPARE_OUTCOME" = "failure" ]; then
+            label=shadow-regression
+            label_description="A scheduled shadow-workload run found a performance/allocation regression"
+            title="Shadow workload found a performance/allocation regression"
+            body="The scheduled shadow-workload run found the current commit regressing beyond threshold vs. the last-published release baseline.
 
-          open_count="$(gh issue list --label shadow-regression --state open --json number --jq 'length')"
+          Download the \`shadow-results\` artifact from the run for the full current/baseline reports and the specific regressions found."
+          elif [ "$CURRENT_OUTCOME" = "failure" ]; then
+            label=shadow-failure
+            label_description="A scheduled shadow-workload run could not complete"
+            title="Shadow workload crashed against the current source"
+            body="The scheduled shadow-workload run failed in **Run against current source**: a scenario threw (or the sample failed to build) against the current commit, so there is no report to compare. This is a bug, not a performance regression. The run log names the scenario and the exception."
+          elif [ "$BASELINE_OUTCOME" = "failure" ]; then
+            label=shadow-failure
+            label_description="A scheduled shadow-workload run could not complete"
+            title="Shadow workload could not run the baseline package"
+            body="The scheduled shadow-workload run failed in **Run against baseline package** (the last-published release, restored from NuGet), so there is nothing to compare against. The current-source run completed; its report is in the \`shadow-results\` artifact."
+          elif [ "$UPLOAD_OUTCOME" = "failure" ]; then
+            label=shadow-failure
+            label_description="A scheduled shadow-workload run could not complete"
+            title="Shadow workload could not upload its results"
+            body="The scheduled shadow-workload run completed both runs and the comparison without finding a regression, but **Upload shadow results** failed, so the reports are not attached to the run. Nothing in the library is implicated; see the run log for the upload error."
+          else
+            label=shadow-failure
+            label_description="A scheduled shadow-workload run could not complete"
+            title="Shadow workload failed outside its workload steps"
+            body="The scheduled shadow-workload run failed in a step other than the two workload runs, the comparison and the upload (most likely checkout or .NET setup), so the workload may not have run. See the run log."
+          fi
+
+          gh label create "$label" --color B60205 --description "$label_description" 2>/dev/null || true
+
+          open_count="$(gh issue list --label "$label" --state open --json number --jq 'length')"
           if [ "${open_count:-0}" -gt 0 ]; then
-            echo "An open shadow-regression issue already exists — not filing another."
+            echo "An open $label issue already exists — not filing another."
             exit 0
           fi
 
-          gh issue create \
-            --title "Shadow workload found a performance/allocation regression" \
-            --label shadow-regression \
-            --body "The scheduled shadow-workload run found the current commit regressing beyond threshold vs. the last-published release baseline.
-
-          Download the \`shadow-results\` artifact from the run for the full current/baseline reports and the specific regressions found.
+          gh issue create --title "$title" --label "$label" --body "$body
 
           Run: ${RUN_URL}"
