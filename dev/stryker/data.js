@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791105950504,
+  "lastUpdate": 1791219941512,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "Mutation score": [
@@ -26,6 +26,33 @@ window.BENCHMARK_DATA = {
           {
             "name": "Mutation score",
             "value": 90.65,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "id": "cf291d1dd9f2b40950e0d5edfe9231172112c58d",
+          "message": "ci(stryker): give the full run 240 minutes; it outgrew 120 (#300)\n\nThe full run took 54 min on 2026-09-30 (run 36770590098), 76 min on\n2026-10-04 (37188029950), and was cancelled at the 120-minute limit on\n2026-10-05 (37318653068) with 1240 mutants still in its test phase. A\nthird of detected mutants are timeouts (370 of 1074, 374 of 1173), each\nwaiting out Stryker's per-mutant timeout, so the run grows with the test\nsuite. 240 stays under GitHub's 360-minute job limit. Raising Stryker's\nconcurrency instead would load the runner and turn more mutants into\nload-sensitive timeouts, moving the score.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-05T15:45:37Z",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/cf291d1dd9f2b40950e0d5edfe9231172112c58d"
+        },
+        "date": 1791219940251,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score",
+            "value": 97.59,
             "unit": "%"
           }
         ]
