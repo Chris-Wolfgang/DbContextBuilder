@@ -69,14 +69,15 @@ public sealed class DbContextBuilderSeedFuzzTests
     /// <summary>
     /// #515/#530: whatever integer keys a random creator hands back (colliding, negative, or 0,
     /// which EF reads as "not set"), SeedWithRandom builds, and every entity gets its own key.
-    /// A 0 is always prepended, so every case covers the unset key and the count is never 0.
+    /// A 0 is always prepended, so every case covers the unset key and the count is never 0; it
+    /// counts toward <see cref="MagnitudeBound"/>, so a case seeds at most that many entities.
     /// </summary>
     [FuzzProperty(EndSize = MagnitudeBound)]
     public async Task<bool> SeedWithRandom_gives_every_entity_a_distinct_key(int[] keys)
     {
         ArgumentNullException.ThrowIfNull(keys);
 
-        var ids = keys.Take(MagnitudeBound).Prepend(0).ToArray();
+        var ids = keys.Take(MagnitudeBound - 1).Prepend(0).ToArray();
 
         using var builder = new DbContextBuilder<FuzzDbContext>();
         await using var context = await builder
