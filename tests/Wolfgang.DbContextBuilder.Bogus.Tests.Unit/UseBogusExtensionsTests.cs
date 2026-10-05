@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -57,7 +56,6 @@ public class UseBogusExtensionsTests
 
 
 
-    [ExcludeFromCodeCoverage(Justification = "Test model")]
     public class SampleEntity
     {
         public int Id { get; set; }
@@ -67,7 +65,6 @@ public class UseBogusExtensionsTests
 
 
 
-    [ExcludeFromCodeCoverage(Justification = "Test model")]
     public class SampleDbContext(DbContextOptions<SampleDbContext> options) : DbContext(options)
     {
         public DbSet<SampleEntity> Samples => Set<SampleEntity>();

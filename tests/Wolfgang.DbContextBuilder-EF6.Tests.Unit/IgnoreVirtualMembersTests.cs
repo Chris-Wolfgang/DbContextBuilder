@@ -137,6 +137,25 @@ public class IgnoreVirtualMembersTests
         // Assert
         Assert.IsType<NoSpecimen>(result);
     }
+
+
+
+    /// <summary>
+    /// Verifies the premise of the write-only test above: <see cref="WriteOnlyPropertyClass.WriteOnly"/>
+    /// has no getter and a working, non-virtual setter, so its NoSpecimen result comes from the
+    /// missing getter and not from the virtual-member rule.
+    /// </summary>
+    [Fact]
+    public void WriteOnlyPropertyClass_WriteOnly_has_no_getter_and_a_working_non_virtual_setter()
+    {
+        var writeOnlyProp = typeof(WriteOnlyPropertyClass).GetProperty(nameof(WriteOnlyPropertyClass.WriteOnly))!;
+        var instance = new WriteOnlyPropertyClass();
+
+        writeOnlyProp.SetValue(instance, "value");
+
+        Assert.Null(writeOnlyProp.GetGetMethod());
+        Assert.False(writeOnlyProp.GetSetMethod()!.IsVirtual);
+    }
 }
 
 
@@ -148,7 +167,6 @@ public class IgnoreVirtualMembersTests
 /// pattern. Sonar S2376 / S4487 and R# NotAccessedField.Local would eliminate the
 /// pattern under test.
 /// </summary>
-[ExcludeFromCodeCoverage]
 [SuppressMessage("Minor Code Smell", "S2376:Write-only properties should not be used", Justification = "The write-only shape is the test fixture.")]
 [SuppressMessage("Minor Code Smell", "S4487:Unread \"private\" fields should be removed", Justification = "Backing field is deliberately unread; the write-only property is under test.")]
 internal class WriteOnlyPropertyClass

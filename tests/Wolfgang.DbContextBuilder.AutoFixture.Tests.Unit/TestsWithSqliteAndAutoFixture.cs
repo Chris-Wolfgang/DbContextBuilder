@@ -290,68 +290,31 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
                 var defaultValue = reader["dflt_value"].ToString();
                 string? computedValue = null;
 
-                // Try to get computed value using PRAGMA table_xinfo (if available) or sqlite_master
-                // SQLite stores computed columns in the "generated" column in PRAGMA table_xinfo (SQLite 3.31+)
-                // Fallback: parse the SQL from sqlite_master
+                // A computed column keeps its "GENERATED ALWAYS AS (...)" clause in the CREATE TABLE
+                // statement in sqlite_master. (PRAGMA table_xinfo has no "generated" column - it
+                // reports generated columns only through "hidden" - so it cannot supply the expression.)
+                const string getTableSqlCmdText = "SELECT sql FROM sqlite_master WHERE type='table' AND name=@tableName;";
+                await using var getTableSqlCmd = connection.CreateCommand();
+                getTableSqlCmd.CommandText = getTableSqlCmdText;
+                getTableSqlCmd.CommandType = System.Data.CommandType.Text;
+                var param = getTableSqlCmd.CreateParameter();
+                param.ParameterName = "tableName";
+                param.Value = tableName;
+                getTableSqlCmd.Parameters.Add(param);
 
-                // Try PRAGMA table_xinfo first
-                try
+                var tableSql = "";
+                await using var sqlReader = await getTableSqlCmd.ExecuteReaderAsync();
+                if (await sqlReader.ReadAsync())
                 {
-                    var xinfoCmdText = $"PRAGMA table_xinfo('{tableName}');";
-                    await using var xinfoCmd = connection.CreateCommand();
-                    xinfoCmd.CommandText = xinfoCmdText;
-                    xinfoCmd.CommandType = System.Data.CommandType.Text;
-
-                    await using var xinfoReader = await xinfoCmd.ExecuteReaderAsync();
-                    while (await xinfoReader.ReadAsync())
-                    {
-                        var xinfoColName = xinfoReader["name"].ToString();
-                        if (string.Equals(xinfoColName, columnName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            var generated = xinfoReader["generated"].ToString();
-                            if (!string.IsNullOrEmpty(generated) && !string.Equals(generated, "0", StringComparison.Ordinal))
-                            {
-                                // Try to get the expression from the "hidden" column
-                                computedValue = xinfoReader["dflt_value"].ToString();
-                            }
-                            break;
-                        }
-                    }
-                }
-                catch
-                {
-                    // Ignore errors, fallback to sqlite_master
+                    tableSql = sqlReader["sql"].ToString() ?? "";
                 }
 
-                // Fallback: parse CREATE TABLE statement for generated columns
-                if (computedValue == null)
+                if (!string.IsNullOrEmpty(tableSql))
                 {
-                    const string getTableSqlCmdText = "SELECT sql FROM sqlite_master WHERE type='table' AND name=@tableName;";
-                    await using var getTableSqlCmd = connection.CreateCommand();
-                    getTableSqlCmd.CommandText = getTableSqlCmdText;
-                    getTableSqlCmd.CommandType = System.Data.CommandType.Text;
-                    var param = getTableSqlCmd.CreateParameter();
-                    param.ParameterName = "tableName";
-                    param.Value = tableName;
-                    getTableSqlCmd.Parameters.Add(param);
-
-                    var tableSql = "";
-                    await using var sqlReader = await getTableSqlCmd.ExecuteReaderAsync();
-                    if (await sqlReader.ReadAsync())
-                    {
-                        tableSql = sqlReader["sql"].ToString() ?? "";
-                    }
-
-                    if (!string.IsNullOrEmpty(tableSql))
-                    {
-                        // Try to find the column definition with "GENERATED ALWAYS AS"
-                        var pattern = $@"\b{columnName}\b\s+[^\(]*GENERATED\s+ALWAYS\s+AS\s*\((.*?)\)";
-                        var match = System.Text.RegularExpressions.Regex.Match(tableSql, pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1));
-                        if (match is { Success: true, Groups.Count: > 1 })
-                        {
-                            computedValue = match.Groups[1].Value;
-                        }
-                    }
+                    // Try to find the column definition with "GENERATED ALWAYS AS"
+                    var pattern = $@"\b{columnName}\b\s+[^\(]*GENERATED\s+ALWAYS\s+AS\s*\((.*?)\)";
+                    var match = System.Text.RegularExpressions.Regex.Match(tableSql, pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1));
+                    computedValue = match.Success ? match.Groups[1].Value : null;
                 }
 
                 if (!string.IsNullOrEmpty(defaultValue) || !string.IsNullOrEmpty(computedValue))
