@@ -6,6 +6,9 @@
       "**/*",
       "!**/extra-projects/**"
     ],
+    "ignore-methods": [
+      "ConfigureAwait"
+    ],
     "reporters": [
       "progress",
       "html",

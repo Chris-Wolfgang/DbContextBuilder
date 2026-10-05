@@ -996,6 +996,28 @@ public class SqliteModelCustomizerTests
 
 
     /// <summary>
+    /// On a provider other than SQLite the customizer must leave the model alone: the schema and
+    /// the SQL Server default and computed SQL survive, even with overrides that would rewrite them.
+    /// </summary>
+    [Fact]
+    public void Customize_when_database_is_not_sqlite_leaves_schema_and_SQL_unchanged()
+    {
+        var options = new DbContextOptionsBuilder<SchemaContext>()
+            .UseInMemoryDatabase("customizer-not-sqlite")
+            .ReplaceService<IModelCustomizer, RewritingSqliteModelCustomizer>()
+            .Options;
+        using var context = new SchemaContext(options);
+
+        var entity = context.GetService<IDesignTimeModel>().Model.FindEntityType(typeof(Invoice))!;
+
+        Assert.Equal("sales", entity.GetSchema());
+        Assert.Equal("GETDATE()", entity.FindProperty(nameof(Invoice.CreatedAt))!.GetDefaultValueSql());
+        Assert.Equal("[Qty] * [Price]", entity.FindProperty(nameof(Invoice.Total))!.GetComputedColumnSql());
+    }
+
+
+
+    /// <summary>
     /// The rewritten SQL is valid SQLite, not just different text: a row inserted through the
     /// customized model gets the SQLite default for <c>CreatedAt</c> and the computed <c>Total</c>.
     /// </summary>
