@@ -96,21 +96,23 @@ jobs:
           # Strings, not numbers: 0 is falsy in an expression, so `&& 0 || 1` always yields 1.
           fetch-depth: ${{ github.event_name == 'pull_request' && '0' || '1' }}
 
-      - name: Use the base branch's stryker-config.json
-        # The break floor lives in this file. Running the PR's copy would let a PR lower
-        # the floor it is judged by.
+      - name: Use the base branch's floors (stryker-config.json, mutation-floors.json)
+        # The repository floor (break) and the per-project floors live in these files.
+        # Running the PR's copies would let a PR lower the floors it is judged by.
         if: github.event_name == 'pull_request'
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
-          if git cat-file -e "$BASE_SHA:stryker-config.json" 2>/dev/null; then
-            git checkout "$BASE_SHA" -- stryker-config.json
-            echo "Using stryker-config.json from the base commit $BASE_SHA."
-          else
-            echo "::notice::No stryker-config.json on the base commit - running with the PR's copy."
-          fi
+          for file in stryker-config.json mutation-floors.json; do
+            if git cat-file -e "$BASE_SHA:$file" 2>/dev/null; then
+              git checkout "$BASE_SHA" -- "$file"
+              echo "Using $file from the base commit $BASE_SHA."
+            else
+              echo "::notice::No $file on the base commit - running with the PR's copy."
+            fi
+          done
 
       - name: Setup .NET
         # Install every SDK in the canonical test matrix (.NET Core 3.1
@@ -171,7 +173,7 @@ jobs:
             Write-Host "Pull request: mutating only changes since $($env:SINCE_SHA)."
           }
 
-          function Test-StrykerRun([string]$Dir, [datetime]$Since) {
+          function Test-StrykerRun([string]$Dir, [datetime]$Since, [string]$FloorsFile) {
             $reports = @(Get-ChildItem -Path (Join-Path $Dir 'StrykerOutput') -Recurse -Filter 'mutation-report.json' -ErrorAction SilentlyContinue |
               Where-Object { $_.LastWriteTime -ge $Since })
             if ($reports.Count -eq 0) {
@@ -180,11 +182,18 @@ jobs:
             }
             $counts = @{}
             $outOfScope = 0
+            $perProject = @{}
             foreach ($report in $reports) {
               $json = Get-Content $report.FullName -Raw | ConvertFrom-Json
               foreach ($file in $json.files.PSObject.Properties) {
+                # src/<project>/...: keys are absolute and can climb through a linked project.
+                $rel = [IO.Path]::GetRelativePath($Dir, [IO.Path]::GetFullPath($file.Name)) -replace '\\', '/'
+                $parts = $rel -split '/'
+                $project = if ($parts.Count -ge 3 -and $parts[0] -eq 'src') { "src/$($parts[1])" } else { $null }
+                if ($project -and -not $perProject.ContainsKey($project)) { $perProject[$project] = @{} }
                 foreach ($mutant in $file.Value.mutants) {
                   $counts[$mutant.status] = 1 + [int]$counts[$mutant.status]
+                  if ($project) { $perProject[$project][$mutant.status] = 1 + [int]$perProject[$project][$mutant.status] }
                   # The reason Stryker 5 writes to the report for a mutant its since filter set aside
                   # (observed in a real --since run; the filter's internal message is overwritten).
                   if ($mutant.status -eq 'Ignored' -and $mutant.statusReason -eq 'Removed by since filter') { $outOfScope++ }
@@ -207,7 +216,38 @@ jobs:
               return $false
             }
             Write-Host ("Mutation score in {0}: {1:N2} % ({2} of {3} detected)" -f $Dir, (100.0 * $detected / $valid), $detected, $valid)
-            return $true
+
+            # Per-project floors (#300): a repository-wide score can clear `break` while one package
+            # sits far under it (2026-10-04: 90.65 % overall, src/Wolfgang.DbContextBuilder-EF6 at
+            # 69 %). Every src project with a tested mutant is judged against its own floor; one with
+            # no floor fails, so a new package cannot slip in ungated.
+            if (-not $FloorsFile) { return $true }
+            if (-not (Test-Path $FloorsFile)) {
+              Write-Host "::error::$FloorsFile is missing - per-project mutation floors cannot be enforced."
+              return $false
+            }
+            $floors = (Get-Content $FloorsFile -Raw | ConvertFrom-Json).floors
+            $belowFloor = 0
+            foreach ($project in ($perProject.Keys | Sort-Object)) {
+              $c = $perProject[$project]
+              $pDetected = [int]$c['Killed'] + [int]$c['Timeout']
+              $pValid = $pDetected + [int]$c['Survived'] + [int]$c['NoCoverage']
+              if ($pValid -eq 0) { continue }   # nothing of this project in scope (a PR run)
+              $pScore = 100.0 * $pDetected / $pValid
+              $floor = $floors.PSObject.Properties[$project].Value
+              if ($null -eq $floor) {
+                Write-Host ("::error::{0} scored {1:N2} % but has no floor in {2}. Add one a few points under its score." -f $project, $pScore, $FloorsFile)
+                $belowFloor++
+              }
+              elseif ($pScore -lt [double]$floor) {
+                Write-Host ("::error::{0}: {1:N2} % ({2} of {3} detected) is below its floor of {4} %." -f $project, $pScore, $pDetected, $pValid, $floor)
+                $belowFloor++
+              }
+              else {
+                Write-Host ("{0}: {1:N2} % ({2} of {3} detected), floor {4} %" -f $project, $pScore, $pDetected, $pValid, $floor)
+              }
+            }
+            return ($belowFloor -eq 0)
           }
 
           if (Test-Path 'stryker-config.json') {
@@ -222,7 +262,7 @@ jobs:
             $started = Get-Date
             dotnet stryker --config-file stryker-config.json @reporters @sinceArgs
             if ($LASTEXITCODE -ne 0) { $failed++ }
-            elseif (-not (Test-StrykerRun -Dir (Get-Location).Path -Since $started)) { $failed++ }
+            elseif (-not (Test-StrykerRun -Dir (Get-Location).Path -Since $started -FloorsFile 'mutation-floors.json')) { $failed++ }
             Write-Host "::endgroup::"
           }
           else {
