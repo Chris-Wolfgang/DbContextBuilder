@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791225766823,
+  "lastUpdate": 1791228845451,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "Mutation score": [
@@ -107,6 +107,33 @@ window.BENCHMARK_DATA = {
           {
             "name": "Mutation score",
             "value": 97.59,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "id": "33d9b767e8951a221dd8e6f4a8efef9dc9e3c026",
+          "message": "exp: coverage-analysis off for a measurement run (#544); not for merge",
+          "timestamp": "2026-10-05T18:44:26Z",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/33d9b767e8951a221dd8e6f4a8efef9dc9e3c026"
+        },
+        "date": 1791228843803,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score",
+            "value": 99.6,
             "unit": "%"
           }
         ]
