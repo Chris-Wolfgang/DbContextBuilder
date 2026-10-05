@@ -18,6 +18,16 @@
       "high": 90,
       "low": 88,
       "break": 85
+    },
+    "since": {
+      "enabled": false,
+      "ignore-changes-in": [
+        "**/.github/**",
+        "**/docs/**",
+        "**/changelog/**",
+        "**/*.md",
+        "**/PublicAPI.*.txt"
+      ]
     }
   }
 }
