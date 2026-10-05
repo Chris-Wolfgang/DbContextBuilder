@@ -44,6 +44,7 @@ on:
     paths:
       - 'src/**'
       - 'tests/**/*.cs'
+      - 'tests/**/*.csproj'
       - 'stryker-config.json'
       - '.github/workflows/stryker.yaml'
   workflow_dispatch:
@@ -87,7 +88,8 @@ jobs:
         with:
           persist-credentials: false
           # --since diffs against the base commit, so a PR needs the history.
-          fetch-depth: ${{ github.event_name == 'pull_request' && 0 || 1 }}
+          # Strings, not numbers: 0 is falsy in an expression, so `&& 0 || 1` always yields 1.
+          fetch-depth: ${{ github.event_name == 'pull_request' && '0' || '1' }}
 
       - name: Use the base branch's stryker-config.json
         # The break floor lives in this file. Running the PR's copy would let a PR lower
@@ -158,9 +160,9 @@ jobs:
           $reporters = @('--reporter', 'progress', '--reporter', 'html', '--reporter', 'json')
           # On a pull request, test only what the PR changed (see the header). An empty
           # scope is then a legitimate outcome, not a run that silently measured nothing.
-          $since = @()
+          $sinceArgs = @()
           if ($env:SINCE_SHA) {
-            $since = @("--since:$($env:SINCE_SHA)")
+            $sinceArgs = @("--since:$($env:SINCE_SHA)")
             Write-Host "Pull request: mutating only changes since $($env:SINCE_SHA)."
           }
 
@@ -172,10 +174,16 @@ jobs:
               return $false
             }
             $counts = @{}
+            $outOfScope = 0
             foreach ($report in $reports) {
               $json = Get-Content $report.FullName -Raw | ConvertFrom-Json
               foreach ($file in $json.files.PSObject.Properties) {
-                foreach ($mutant in $file.Value.mutants) { $counts[$mutant.status] = 1 + [int]$counts[$mutant.status] }
+                foreach ($mutant in $file.Value.mutants) {
+                  $counts[$mutant.status] = 1 + [int]$counts[$mutant.status]
+                  # The reason Stryker 5 writes to the report for a mutant its since filter set aside
+                  # (observed in a real --since run; the filter's internal message is overwritten).
+                  if ($mutant.status -eq 'Ignored' -and $mutant.statusReason -eq 'Removed by since filter') { $outOfScope++ }
+                }
               }
             }
             Write-Host "Mutant statuses in ${Dir}: $(($counts.GetEnumerator() | Sort-Object Name | ForEach-Object { "$($_.Name)=$($_.Value)" }) -join ', ')"
@@ -183,8 +191,11 @@ jobs:
             $detected = [int]$counts['Killed'] + [int]$counts['Timeout']
             $valid = $detected + [int]$counts['Survived'] + [int]$counts['NoCoverage']
             if ($valid -eq 0) {
-              if ($since.Count -gt 0) {
-                Write-Host "::notice::Stryker in $Dir found no mutant in this pull request's changes - nothing to gate."
+              # A pull request whose changes bring no mutant into scope is fine, but only when the
+              # since filter is why nothing was tested. A report of nothing but compile errors, or
+              # a scheduled run that tested nothing, still fails.
+              if ($env:SINCE_SHA -and $outOfScope -gt 0) {
+                Write-Host "::notice::Stryker in $Dir found no mutant in this pull request's changes ($outOfScope set aside by --since) - nothing to gate."
                 return $true
               }
               Write-Host "::error::Stryker in $Dir tested no mutants - there is no score to judge."
@@ -204,7 +215,7 @@ jobs:
             if ($solution) { dotnet restore $solution } else { dotnet restore }
             if ($LASTEXITCODE -ne 0) { Write-Host "::error::dotnet restore failed"; exit 1 }
             $started = Get-Date
-            dotnet stryker --config-file stryker-config.json @reporters @since
+            dotnet stryker --config-file stryker-config.json @reporters @sinceArgs
             if ($LASTEXITCODE -ne 0) { $failed++ }
             elseif (-not (Test-StrykerRun -Dir (Get-Location).Path -Since $started)) { $failed++ }
             Write-Host "::endgroup::"
@@ -231,7 +242,7 @@ jobs:
                 if ($LASTEXITCODE -ne 0) { $failed++ }
                 else {
                   $started = Get-Date
-                  dotnet stryker @reporters @since
+                  dotnet stryker @reporters @sinceArgs
                   if ($LASTEXITCODE -ne 0) { $failed++ }
                   elseif (-not (Test-StrykerRun -Dir $dir -Since $started)) { $failed++ }
                 }
