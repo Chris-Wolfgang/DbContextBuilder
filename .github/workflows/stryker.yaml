@@ -79,7 +79,12 @@ jobs:
     if: >-
       github.repository != 'Chris-Wolfgang/repo-template'
       && (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]')
-    timeout-minutes: 120
+    # A full run took 54 min on 2026-09-30, 76 min on 2026-10-04 and passed 120 min (cancelled)
+    # on 2026-10-05, as tests were added. About a third of detected mutants are timeouts, each of
+    # which waits out Stryker's per-mutant timeout, so the run grows with the suite. 240 leaves
+    # room under GitHub's 360-minute job limit; raising Stryker's concurrency instead would put
+    # more load on the runner and turn more mutants into load-sensitive timeouts.
+    timeout-minutes: 240
     outputs:
       score: ${{ steps.score.outputs.score }}
     steps:
