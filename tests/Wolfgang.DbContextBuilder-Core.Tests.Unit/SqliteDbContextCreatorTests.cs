@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
 using Xunit;
 
@@ -104,5 +105,56 @@ public class SqliteDbContextCreatorTests
 
         // Assert — the abandoned creator was disposed, not leaked
         Assert.True(firstCreator.IsDisposed);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that selecting SQLite replaces EF's default model customizer rather than
+    /// leaving it registered alongside the SQLite one.
+    /// </summary>
+    [Fact]
+    public void UseSqlite_registers_only_the_Sqlite_model_customizer()
+    {
+        // Arrange & Act
+        using var builder = new DbContextBuilder<BasicContext>().UseSqlite();
+
+        // Assert
+        var modelCustomizer = Assert.Single
+        (
+            builder.ServiceCollection,
+            sd => sd.ServiceType == typeof(IModelCustomizer)
+        );
+        Assert.Equal(typeof(SqliteModelCustomizer), modelCustomizer.ImplementationType);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that selecting SQLite a second time swaps the model customizer without adding
+    /// service registrations, so the builder ends up with exactly one model customizer.
+    /// </summary>
+    [Fact]
+    public void UseSqlite_when_Sqlite_already_selected_swaps_model_customizer_without_adding_services()
+    {
+        // Arrange — the first selection registers EF's SQLite services
+        using var builder = new DbContextBuilder<BasicContext>().UseSqliteForMsSqlServer();
+        var serviceCountAfterFirstSelection = builder.ServiceCollection.Count;
+
+        // Act
+        builder.UseSqlite();
+
+        // Assert — only the swapped customizer remains, and nothing was added
+        var modelCustomizer = Assert.Single
+        (
+            builder.ServiceCollection,
+            sd => sd.ServiceType == typeof(IModelCustomizer)
+        );
+        Assert.Equal(typeof(SqliteModelCustomizer), modelCustomizer.ImplementationType);
+        Assert.Equal
+        (
+            serviceCountAfterFirstSelection,
+            builder.ServiceCollection.Count
+        );
     }
 }
