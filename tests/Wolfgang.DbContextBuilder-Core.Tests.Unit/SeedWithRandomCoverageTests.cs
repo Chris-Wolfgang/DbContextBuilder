@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Xunit;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
@@ -129,7 +130,14 @@ public class SeedWithRandomCoverageTests
         using var sut = new DbContextBuilder<CoverageContext>().UseInMemory();
 
         var ex = Assert.Throws<InvalidOperationException>(() => sut.SeedWithRandom<CoverageManufacturer>(1));
-        Assert.Contains("UseAutoFixture", ex.Message, StringComparison.Ordinal);
+        Assert.Equal
+        (
+            "SeedWithRandom requires a random-entity provider, but none is configured. " +
+            "Call UseAutoFixture() (add the Wolfgang.DbContextBuilder.AutoFixture package), " +
+            "UseBogus() (add the Wolfgang.DbContextBuilder.Bogus package), or " +
+            "UseCustomRandomEntityCreator(...) before SeedWithRandom.",
+            ex.Message
+        );
     }
 
 
@@ -142,9 +150,12 @@ public class SeedWithRandomCoverageTests
     {
         using var sut = NewBuilder();
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<CoverageManufacturer>(0));
-        Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<CoverageManufacturer>(0, m => m));
-        Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<CoverageManufacturer>(0, (m, _) => m));
+        var plain = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<CoverageManufacturer>(0));
+        var func = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<CoverageManufacturer>(0, m => m));
+        var indexed = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<CoverageManufacturer>(0, (m, _) => m));
+
+        // The builder's own message, not one from the creator it would otherwise reach.
+        Assert.All(new[] { plain, func, indexed }, ex => Assert.StartsWith("Count must be greater than 0", ex.Message, StringComparison.Ordinal));
     }
 
 
@@ -174,9 +185,11 @@ public class SeedWithRandomCoverageTests
         using var sut = new DbContextBuilder<CoverageContext>();
 
         Assert.Throws<ArgumentNullException>(() => sut.SeedWith((IEnumerable<CoverageManufacturer>)null!));
-        Assert.Throws<ArgumentException>(() => sut.SeedWith(new[] { "not an entity" }.AsEnumerable()));
+        var stringType = Assert.Throws<ArgumentException>(() => sut.SeedWith(new[] { "not an entity" }.AsEnumerable()));
+        Assert.StartsWith("The type of TEntity cannot be string", stringType.Message, StringComparison.Ordinal);
         Assert.Throws<ArgumentNullException>(() => sut.SeedWith((CoverageManufacturer[])null!));
-        Assert.Throws<ArgumentException>(() => sut.SeedWith(new CoverageManufacturer { Id = 1 }, null!));
+        var nullItem = Assert.Throws<ArgumentException>(() => sut.SeedWith(new CoverageManufacturer { Id = 1 }, null!));
+        Assert.StartsWith("One of the entities is null", nullItem.Message, StringComparison.Ordinal);
     }
 
 
@@ -211,7 +224,8 @@ public class SeedWithRandomCoverageTests
 
         using var other = new DbContextBuilder<CoverageContext>();
         Assert.Throws<ArgumentNullException>(() => other.SeedWith((CoverageManufacturer)null!));
-        Assert.Throws<ArgumentException>(() => other.SeedWith<object>("a string"));
+        var singleString = Assert.Throws<ArgumentException>(() => other.SeedWith<object>("a string"));
+        Assert.StartsWith("One of the entities passed in is of type string", singleString.Message, StringComparison.Ordinal);
     }
 
 
@@ -246,6 +260,7 @@ public class SeedWithRandomCoverageTests
 
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(sequence));
         Assert.Equal("entity", ex.ParamName);
+        Assert.StartsWith("One of the entities passed in is of type string", ex.Message, StringComparison.Ordinal);
 
         await using var context = await sut.BuildAsync();
         Assert.Equal(0, context.Manufacturers.Count());
@@ -285,6 +300,7 @@ public class SeedWithRandomCoverageTests
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith<object>(new CoverageManufacturer { Id = 1 }, "not an entity"));
 
         Assert.Equal("entities", ex.ParamName);
+        Assert.StartsWith("One of the entities passed in is of type string", ex.Message, StringComparison.Ordinal);
     }
 
 
@@ -539,16 +555,180 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
+    /// UseCustomRandomEntityCreator rejects a null creator up front.
+    /// </summary>
+    [Fact]
+    public void UseCustomRandomEntityCreator_when_creator_is_null_throws_ArgumentNullException()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>();
+
+        var ex = Assert.Throws<ArgumentNullException>(() => sut.UseCustomRandomEntityCreator(null!));
+        Assert.Equal("creator", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Both transform overloads accept a count of exactly 1, the smallest valid count, and reject a
+    /// null transform.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_transform_overloads_accept_a_count_of_1_and_reject_a_null_transform()
+    {
+        using var sut = NewBuilder().UseInMemory();
+
+        Assert.Equal("func", Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom<CoverageManufacturer>(1, (Func<CoverageManufacturer, CoverageManufacturer>)null!)).ParamName);
+        Assert.Equal("func", Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom<CoverageManufacturer>(1, (Func<CoverageManufacturer, int, CoverageManufacturer>)null!)).ParamName);
+
+        await using var context = await sut
+            .SeedWithRandom<CoverageManufacturer>(1, m => m)
+            .SeedWithRandom<CoverageManufacturer>(1, (m, _) => m)
+            .BuildAsync();
+
+        Assert.Equal(2, context.Manufacturers.Count());
+    }
+
+
+
+    /// <summary>
+    /// #515: entities from the transform overloads are randomly seeded too, so their colliding keys
+    /// are made unique; untracked, both builds would throw the identity conflict.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_transform_overloads_make_colliding_keys_unique()
+    {
+        using var plain = new DbContextBuilder<CoverageContext>().UseInMemory().UseCustomRandomEntityCreator(new CollidingKeyRandomEntityCreator());
+        await using var fromFunc = await plain.SeedWithRandom<CoverageManufacturer>(3, m => m).BuildAsync();
+        Assert.Equal(3, fromFunc.Manufacturers.Select(m => m.Id).Distinct().Count());
+
+        using var indexed = new DbContextBuilder<CoverageContext>().UseInMemory().UseCustomRandomEntityCreator(new CollidingKeyRandomEntityCreator());
+        await using var fromIndexed = await indexed.SeedWithRandom<CoverageManufacturer>(3, (m, _) => m).BuildAsync();
+        Assert.Equal(3, fromIndexed.Manufacturers.Select(m => m.Id).Distinct().Count());
+    }
+
+
+
+    /// <summary>
+    /// Only a single-property integer key is renumbered. A composite key whose first part repeats
+    /// but whose parts together are unique is left exactly as the creator made it.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_leaves_a_composite_key_alone()
+    {
+        using var sut = new DbContextBuilder<CompositeKeyContext>().UseInMemory().UseCustomRandomEntityCreator(new CompositeKeyCreator());
+
+        await using var context = await sut.SeedWithRandom<CompositeKeyRow>(3).BuildAsync();
+
+        var rows = context.Set<CompositeKeyRow>().OrderBy(r => r.B).ToList();
+        Assert.All(rows, r => Assert.Equal(CompositeKeyCreator.FirstPart, r.A));
+        Assert.Equal(new[] { 1, 2, 3 }, rows.Select(r => r.B).ToArray());
+        Assert.All(rows, r => Assert.Equal("row", r.Name));
+    }
+
+
+
+    /// <summary>
+    /// A key that is not an integer (here a Guid) is not renumbered: building must not try to read
+    /// it as a number.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_leaves_a_non_integer_key_alone()
+    {
+        using var sut = new DbContextBuilder<GuidKeyContext>().UseInMemory().UseCustomRandomEntityCreator(new DeterministicRandomEntityCreator());
+
+        await using var context = await sut.SeedWithRandom<GuidKeyRow>(2).BuildAsync();
+
+        var rows = context.Set<GuidKeyRow>().ToList();
+        Assert.Equal(2, rows.Select(r => r.Id).Distinct().Count());
+        Assert.All(rows, r => Assert.StartsWith("value-", r.Name, StringComparison.Ordinal));
+    }
+
+
+
+    /// <summary>
+    /// Seeding a type that is not part of the model fails with EF's own error, not a
+    /// NullReferenceException from the foreign-key pass skipping its missing entity type.
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_when_a_random_entity_type_is_not_in_the_model_throws_InvalidOperationException()
+    {
+        using var sut = NewBuilder().UseInMemory();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.SeedWithRandom<UnmappedRow>(1).BuildAsync());
+    }
+
+
+
+    /// <summary>
+    /// A self-referencing optional foreign key with no other row of its type to point at is cleared,
+    /// not wired to the row itself.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_clears_a_self_reference_with_no_other_principal()
+    {
+        using var sut = new DbContextBuilder<SelfReferenceContext>().UseInMemory().UseCustomRandomEntityCreator(new DeterministicRandomEntityCreator());
+
+        await using var context = await sut.SeedWithRandom<SelfReferenceRow>(1).BuildAsync();
+
+        var row = Assert.Single(context.Set<SelfReferenceRow>().ToList());
+        Assert.NotEqual(0, row.Id);
+        Assert.Null(row.ParentId);
+        Assert.Null(row.Parent);
+    }
+
+
+
+    /// <summary>
+    /// Disposing the builder disposes the context creator it owns (here SQLite's, which holds an
+    /// open connection).
+    /// </summary>
+    [Fact]
+    public void Dispose_disposes_the_context_creator()
+    {
+        var sut = new DbContextBuilder<CoverageContext>().UseSqlite();
+        var creator = Assert.IsType<SqliteDbContextCreator>(sut.CreateDbContext);
+
+        sut.Dispose();
+
+        Assert.True(creator.IsDisposed);
+    }
+
+
+
+    /// <summary>
+    /// UseSqliteForMsSqlServer's model customizer is applied when the context is built: a SQL Server
+    /// default ((getdate()), as scaffolded) only works on SQLite once the customizer has rewritten it.
+    /// </summary>
+    [Fact]
+    public async Task UseSqliteForMsSqlServer_applies_its_model_customizer_when_building()
+    {
+        using var sut = new DbContextBuilder<SqlServerDefaultsContext>().UseSqliteForMsSqlServer();
+
+        await using var context = await sut.SeedWith(new SqlServerDefaultsRow { Id = 1, Name = "a" }).BuildAsync();
+
+        var row = Assert.Single(context.Set<SqlServerDefaultsRow>().ToList());
+        Assert.Equal("a", row.Name);
+        Assert.NotEqual(default, row.CreatedAt);
+    }
+
+
+
+    /// <summary>
     /// Verifies UseDbContextOptionsBuilder accepts a builder and rejects null.
     /// </summary>
     [Fact]
     public async Task UseDbContextOptionsBuilder_is_honored_and_rejects_null()
     {
-        var options = new DbContextOptionsBuilder<CoverageContext>().UseInMemoryDatabase("explicit-options");
+        var options = new DbContextOptionsBuilder<CoverageContext>()
+            .UseInMemoryDatabase("explicit-options")
+            .EnableSensitiveDataLogging();
         using var sut = new DbContextBuilder<CoverageContext>().UseDbContextOptionsBuilder(options);
 
         await using var context = await sut.SeedWith(new CoverageManufacturer { Id = 1 }).BuildAsync();
         Assert.Equal(1, context.Manufacturers.Count());
+
+        // Only the caller's builder turned sensitive-data logging on, so this proves it was the one used.
+        Assert.True(context.GetService<IDbContextOptions>().FindExtension<CoreOptionsExtension>()!.IsSensitiveDataLoggingEnabled);
 
         using var other = new DbContextBuilder<CoverageContext>();
         Assert.Throws<ArgumentNullException>(() => other.UseDbContextOptionsBuilder(null!));
@@ -859,6 +1039,112 @@ internal sealed class PositiveSentinelKeyContext(DbContextOptions<PositiveSentin
         modelBuilder.Entity<CoverageManufacturer>().Property(m => m.Id).HasSentinel(1);
 }
 #endif
+
+
+
+/// <summary>A row keyed by two integers (#531).</summary>
+internal sealed class CompositeKeyRow
+{
+    public int A { get; set; }
+
+    public int B { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+}
+
+
+
+/// <summary>Maps <see cref="CompositeKeyRow"/> with the composite key (A, B).</summary>
+internal sealed class CompositeKeyContext(DbContextOptions<CompositeKeyContext> options) : DbContext(options)
+{
+    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<CompositeKeyRow>().HasKey(r => new { r.A, r.B });
+}
+
+
+
+/// <summary>Gives every row the same first key part and a distinct second one.</summary>
+internal sealed class CompositeKeyCreator : ICreateRandomEntities
+{
+    internal const int FirstPart = 7;
+
+
+
+    public IEnumerable<TEntity> CreateRandomEntities<TEntity>(int count)
+        where TEntity : class =>
+        Enumerable.Range(1, count)
+            .Select(i => (TEntity)(object)new CompositeKeyRow { A = FirstPart, B = i, Name = "row" })
+            .ToList();
+}
+
+
+
+/// <summary>A row keyed by a <see cref="Guid"/> (#531).</summary>
+internal sealed class GuidKeyRow
+{
+    public Guid Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+}
+
+
+
+/// <summary>Maps <see cref="GuidKeyRow"/>.</summary>
+internal sealed class GuidKeyContext(DbContextOptions<GuidKeyContext> options) : DbContext(options)
+{
+    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<GuidKeyRow>();
+}
+
+
+
+/// <summary>A type no context maps (#531).</summary>
+internal sealed class UnmappedRow
+{
+    public int Id { get; set; }
+}
+
+
+
+/// <summary>A row with an optional foreign key to its own type (#531).</summary>
+internal class SelfReferenceRow
+{
+    public int Id { get; set; }
+
+    public int? ParentId { get; set; }
+
+    public virtual SelfReferenceRow? Parent { get; set; }
+}
+
+
+
+/// <summary>Maps <see cref="SelfReferenceRow"/> with ParentId as an optional self-reference.</summary>
+internal sealed class SelfReferenceContext(DbContextOptions<SelfReferenceContext> options) : DbContext(options)
+{
+    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<SelfReferenceRow>().HasOne(r => r.Parent).WithMany().HasForeignKey(r => r.ParentId);
+}
+
+
+
+/// <summary>A row whose CreatedAt has a SQL Server default (#531).</summary>
+internal sealed class SqlServerDefaultsRow
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+
+    public DateTime CreatedAt { get; set; }
+}
+
+
+
+/// <summary>Maps <see cref="SqlServerDefaultsRow"/> with a (getdate()) default, as a scaffolded SQL Server model has.</summary>
+internal sealed class SqlServerDefaultsContext(DbContextOptions<SqlServerDefaultsContext> options) : DbContext(options)
+{
+    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<SqlServerDefaultsRow>().Property(r => r.CreatedAt).HasDefaultValueSql("(getdate())");
+}
 
 
 
