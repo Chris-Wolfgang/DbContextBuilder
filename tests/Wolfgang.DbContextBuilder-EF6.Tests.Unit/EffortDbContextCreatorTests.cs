@@ -137,11 +137,9 @@ public class EffortDbContextCreatorTests
 
 /// <summary>
 /// A DbContext without a (DbConnection, bool) constructor for testing error paths.
+/// It declares no constructor at all: the creator never constructs it (it fails looking for
+/// the (DbConnection, bool) one first), so an explicit constructor would be a line no test runs.
 /// </summary>
-[ExcludeFromCodeCoverage]
 internal class NoConnectionConstructorContext : DbContext
 {
-    public NoConnectionConstructorContext() : base("name=NonExistent")
-    {
-    }
 }

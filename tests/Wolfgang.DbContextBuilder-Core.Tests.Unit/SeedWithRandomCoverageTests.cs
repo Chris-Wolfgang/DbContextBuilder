@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -589,6 +588,75 @@ public class SeedWithRandomCoverageTests
 
         await Assert.ThrowsAsync<ObjectDisposedException>(() => sut.BuildAsync());
     }
+
+
+
+    /// <summary>
+    /// Verifies a widget seeded with both of its principals round-trips through SQLite, which
+    /// enforces the foreign keys, and that both navigations load back to the seeded principals.
+    /// </summary>
+    [Fact]
+    public async Task SeedWith_a_widget_and_both_principals_round_trips_both_navigations()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>().UseSqlite();
+
+        await using var context = await sut
+            .SeedWith(new CoverageManufacturer { Id = 1, Name = "Acme" })
+            .SeedWith(new CoverageSupplier { Id = 2, Name = "Bolts Ltd" })
+            .SeedWith(new CoverageWidget { Id = 3, Name = "Cog", ManufacturerId = 1, SupplierId = 2 })
+            .BuildAsync();
+
+        var widget = context.Widgets
+            .Include(w => w.Manufacturer)
+            .Include(w => w.Supplier)
+            .Single();
+        var supplier = context.Suppliers.Single();
+
+        Assert.Equal("Acme", widget.Manufacturer?.Name);
+        Assert.Equal("Bolts Ltd", widget.Supplier?.Name);
+        Assert.Equal(2, supplier.Id);
+    }
+
+
+
+    /// <summary>
+    /// Verifies the deterministic creator honours the <see cref="ICreateRandomEntities"/> contract
+    /// by rejecting a count below one, as the real providers do.
+    /// </summary>
+    [Fact]
+    public void DeterministicRandomEntityCreator_when_count_is_less_than_one_throws_ArgumentOutOfRangeException()
+    {
+        var creator = new DeterministicRandomEntityCreator();
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => creator.CreateRandomEntities<CoverageManufacturer>(0));
+    }
+
+
+
+    /// <summary>
+    /// Verifies the deterministic creator fills every scalar type it supports with a non-default
+    /// value and leaves a non-string reference-type property unset.
+    /// </summary>
+    [Fact]
+    public void DeterministicRandomEntityCreator_fills_every_scalar_type_and_leaves_references_unset()
+    {
+        var creator = new DeterministicRandomEntityCreator();
+
+        var entity = creator.CreateRandomEntities<CoverageAllScalars>(1).Single();
+
+        Assert.NotEqual(0L, entity.Long);
+        Assert.NotEqual((short)0, entity.Short);
+        Assert.NotEqual((byte)0, entity.Byte);
+        Assert.NotEqual(0m, entity.Decimal);
+        Assert.NotEqual(0d, entity.Double);
+        Assert.NotEqual(0f, entity.Float);
+        Assert.True(entity.Bool);
+        Assert.NotEqual(Guid.Empty, entity.Guid);
+        Assert.True(entity.DateTime > new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+        Assert.Equal(CoverageColor.Green, entity.Color);
+        Assert.NotNull(entity.NullableInt);
+        Assert.Null(entity.Link);
+    }
 }
 
 
@@ -599,7 +667,6 @@ public class SeedWithRandomCoverageTests
 /// (navigation) and other reference-type members unset — mirroring what a real provider produces,
 /// without depending on AutoFixture.
 /// </summary>
-[ExcludeFromCodeCoverage(Justification = "Test double")]
 internal sealed class DeterministicRandomEntityCreator : ICreateRandomEntities
 {
     private int _seq;
@@ -671,7 +738,6 @@ internal sealed class DeterministicRandomEntityCreator : ICreateRandomEntities
 
 
 
-[ExcludeFromCodeCoverage(Justification = "Test model")]
 internal sealed class CoverageManufacturer
 {
     public int Id { get; set; }
@@ -681,7 +747,6 @@ internal sealed class CoverageManufacturer
 
 
 
-[ExcludeFromCodeCoverage(Justification = "Test model")]
 internal sealed class CoverageSupplier
 {
     public int Id { get; set; }
@@ -695,7 +760,6 @@ internal sealed class CoverageSupplier
 // creator via reflection. R# cannot see reflection consumers and reports the
 // scalar FK setters as unused.
 // ReSharper disable UnusedAutoPropertyAccessor.Global
-[ExcludeFromCodeCoverage(Justification = "Test model")]
 internal class CoverageWidget
 {
     public int Id { get; set; }
@@ -714,7 +778,6 @@ internal class CoverageWidget
 
 
 
-[ExcludeFromCodeCoverage(Justification = "Test model")]
 internal sealed class CoverageContext(DbContextOptions<CoverageContext> options) : DbContext(options)
 {
     public DbSet<CoverageManufacturer> Manufacturers => Set<CoverageManufacturer>();
@@ -722,6 +785,46 @@ internal sealed class CoverageContext(DbContextOptions<CoverageContext> options)
     public DbSet<CoverageSupplier> Suppliers => Set<CoverageSupplier>();
 
     public DbSet<CoverageWidget> Widgets => Set<CoverageWidget>();
+}
+
+
+
+// Not 0-based, so default(CoverageColor) is not a named value and an unset property is visible.
+internal enum CoverageColor
+{
+    Green = 1,
+    Red = 2,
+}
+
+
+
+// One property of every scalar type DeterministicRandomEntityCreator handles, plus a non-string
+// reference type it must leave unset. Used directly, not through EF.
+internal sealed class CoverageAllScalars
+{
+    public long Long { get; set; }
+
+    public short Short { get; set; }
+
+    public byte Byte { get; set; }
+
+    public decimal Decimal { get; set; }
+
+    public double Double { get; set; }
+
+    public float Float { get; set; }
+
+    public bool Bool { get; set; }
+
+    public Guid Guid { get; set; }
+
+    public DateTime DateTime { get; set; }
+
+    public CoverageColor Color { get; set; }
+
+    public int? NullableInt { get; set; }
+
+    public Uri? Link { get; set; }
 }
 
 
