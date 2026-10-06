@@ -61,4 +61,73 @@ public class AutoFixtureRandomEntityCreatorTests : ICreateRandomEntitiesTestsBas
 		// Assert
 		Assert.Equal(fixture, sut.Fixture);
 	}
+
+
+
+	/// <summary>
+	/// AutoFixture 4.x cannot create <see cref="DateOnly"/> or <see cref="TimeOnly"/> on its own; the
+	/// default constructor registers factories for both, so entities with such properties can be seeded.
+	/// </summary>
+	[Fact]
+	public void CreateRandomEntities_creates_DateOnly_and_TimeOnly_properties()
+	{
+		var sut = new AutoFixtureRandomEntityCreator();
+
+		var entity = Assert.Single(sut.CreateRandomEntities<DatedEntity>(1));
+
+		Assert.NotEqual(default, entity.Day);
+		Assert.NotEqual(default, entity.At);
+	}
+
+
+
+	/// <summary>
+	/// A type that references itself through a non-virtual property would make AutoFixture's default
+	/// ThrowingRecursionBehavior throw; the default constructor's customization omits the recursion.
+	/// </summary>
+	[Fact]
+	public void CreateRandomEntities_when_a_type_references_itself_omits_the_recursion()
+	{
+		var sut = new AutoFixtureRandomEntityCreator();
+
+		var node = Assert.Single(sut.CreateRandomEntities<SelfReferencingNode>(1));
+
+		Assert.NotEqual(0, node.Id);
+		Assert.Null(node.Parent?.Parent);
+	}
+
+
+
+	/// <summary>
+	/// A count below 1 is rejected with a message that says what the limit is.
+	/// </summary>
+	[Fact]
+	public void CreateRandomEntities_when_count_is_less_than_1_reports_the_limit()
+	{
+		var sut = new AutoFixtureRandomEntityCreator();
+
+		var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.CreateRandomEntities<SelfReferencingNode>(0));
+
+		Assert.StartsWith("Value cannot be less than 1", ex.Message, StringComparison.Ordinal);
+	}
+}
+
+
+
+/// <summary>A type with <see cref="DateOnly"/> and <see cref="TimeOnly"/> properties.</summary>
+public class DatedEntity
+{
+	public DateOnly Day { get; set; }
+
+	public TimeOnly At { get; set; }
+}
+
+
+
+/// <summary>A type whose non-virtual property refers to its own type.</summary>
+public class SelfReferencingNode
+{
+	public int Id { get; set; }
+
+	public SelfReferencingNode? Parent { get; set; }
 }
