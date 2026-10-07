@@ -44,8 +44,9 @@ its floor allows no further survivors.
 
 **Policy: ratchet the floors up, never down.** As survivors are killed and a score climbs,
 raise that floor to lock the gain in. Lowering a floor to turn a red run green defeats the
-point; close the test gap instead. The one exception so far was a correction, not a
-ratchet: the original floor of 85 % was set on an inflated score (below).
+point; close the test gap instead. The pull-request gate enforces this: a PR whose
+`mutation-floors.json` lowers or removes a floor fails. The one exception so far was a
+correction, not a ratchet: the original floor of 85 % was set on an inflated score (below).
 
 ## Measuring honestly
 
@@ -64,7 +65,7 @@ that survivors are being hidden.
 | Trigger | Scope | What it does |
 |---|---|---|
 | Weekly (Sunday 06:00 UTC) and `workflow_dispatch` | Every mutant | Enforces the floors, charts the score on the docs site under `/dev/stryker/`, and keeps one rolling `kind:mutation-survives` issue listing the surviving and uncovered mutants |
-| Pull requests to `main` that touch `src/**`, `tests/**/*.cs`, `tests/**/*.csproj`, `stryker-config.json` or the workflow | `--since:<base commit>` | Enforces the floors on the mutants the PR's changes bring into scope (a project's floor applies only when the PR brings some of its mutants into scope), using `stryker-config.json` and `mutation-floors.json` from the base branch so a PR cannot lower its own floors |
+| Pull requests to `main` that touch `src/**`, `tests/**/*.cs`, `tests/**/*.csproj`, `stryker-config.json`, `mutation-floors.json` or the workflow | `--since:<base commit>` | Enforces the floors on the mutants the PR's changes bring into scope (a project's floor applies only when the PR brings some of its mutants into scope), using `stryker-config.json` and `mutation-floors.json` from the base branch so a PR cannot lower its own floors; fails a PR that lowers or removes a floor in `mutation-floors.json` |
 
 A full run takes about 93 minutes on a Windows runner (Windows, so the .NET Framework
 targets compile), which is why pull requests use `--since`. What a PR run covers:
@@ -74,7 +75,7 @@ targets compile), which is why pull requests use `--since`. What a PR run covers
   file therefore brings in much of the suite.
 - **Every** mutant if the PR changes a non-`.cs` file that is not ignored, such as a
   `.csproj` or props file. Stryker cannot tell what such a change affects. Docs,
-  changelog fragments, `PublicAPI.*.txt` and `.github/` are ignored through
+  changelog fragments, `PublicAPI.*.txt`, `mutation-floors.json` and `.github/` are ignored through
   `since.ignore-changes-in` in `stryker-config.json`.
 - A PR whose changes leave no mutant in scope passes with a notice.
 

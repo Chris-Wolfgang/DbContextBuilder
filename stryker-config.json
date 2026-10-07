@@ -27,7 +27,8 @@
         "**/docs/**",
         "**/changelog/**",
         "**/*.md",
-        "**/PublicAPI.*.txt"
+        "**/PublicAPI.*.txt",
+        "**/mutation-floors.json"
       ]
     }
   }
