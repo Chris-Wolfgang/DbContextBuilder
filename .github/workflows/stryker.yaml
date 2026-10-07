@@ -46,6 +46,7 @@ on:
       - 'tests/**/*.cs'
       - 'tests/**/*.csproj'
       - 'stryker-config.json'
+      - 'mutation-floors.json'
       - '.github/workflows/stryker.yaml'
   workflow_dispatch:
   schedule:
@@ -95,6 +96,46 @@ jobs:
           # --since diffs against the base commit, so a PR needs the history.
           # Strings, not numbers: 0 is falsy in an expression, so `&& 0 || 1` always yields 1.
           fetch-depth: ${{ github.event_name == 'pull_request' && '0' || '1' }}
+
+      - name: Floors only ratchet up
+        # docs/MUTATION-TESTING.md: floors ratchet up, never down. The next step swaps in the base
+        # copies of the floor files, so without this check a PR that lowers or removes a floor
+        # would pass, and the lower floor would take effect on the next scheduled run unchecked.
+        if: github.event_name == 'pull_request'
+        shell: pwsh
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          function Get-BaseJson([string]$Path) {
+            $text = git show "$($env:BASE_SHA):$Path" 2>$null
+            if ($LASTEXITCODE -ne 0) { return $null }
+            return ($text | Out-String | ConvertFrom-Json)
+          }
+          $failures = @()
+
+          $baseBreak = (Get-BaseJson 'stryker-config.json').'stryker-config'.thresholds.break
+          if ($null -ne $baseBreak) {
+            $prBreak = if (Test-Path 'stryker-config.json') { (Get-Content 'stryker-config.json' -Raw | ConvertFrom-Json).'stryker-config'.thresholds.break } else { $null }
+            if ($null -eq $prBreak) { $failures += "stryker-config.json: the repository floor (thresholds.break, $baseBreak %) was removed" }
+            elseif ([double]$prBreak -lt [double]$baseBreak) { $failures += "stryker-config.json: the repository floor (thresholds.break) drops from $baseBreak % to $prBreak %" }
+          }
+
+          $baseFloors = (Get-BaseJson 'mutation-floors.json').floors
+          if ($null -ne $baseFloors) {
+            $prFloors = if (Test-Path 'mutation-floors.json') { (Get-Content 'mutation-floors.json' -Raw | ConvertFrom-Json).floors } else { $null }
+            foreach ($floor in $baseFloors.PSObject.Properties) {
+              $now = if ($null -ne $prFloors) { $prFloors.($floor.Name) } else { $null }
+              if ($null -eq $now) { $failures += "mutation-floors.json: the floor for $($floor.Name) ($($floor.Value) %) was removed" }
+              elseif ([double]$now -lt [double]$floor.Value) { $failures += "mutation-floors.json: the floor for $($floor.Name) drops from $($floor.Value) % to $now %" }
+            }
+          }
+
+          foreach ($failure in $failures) { Write-Host "::error::$failure. Floors only ratchet up (docs/MUTATION-TESTING.md)." }
+          if ($failures.Count -gt 0) { exit 1 }
+          Write-Host 'No floor is lowered or removed.'
+          # git show above leaves a non-zero $LASTEXITCODE when a base file is missing, and the
+          # Actions pwsh wrapper would exit with it.
+          exit 0
 
       - name: Use the base branch's floors (stryker-config.json, mutation-floors.json)
         # The repository floor (break) and the per-project floors live in these files.
