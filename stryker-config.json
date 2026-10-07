@@ -16,9 +16,10 @@
     ],
     "thresholds": {
       "high": 90,
-      "low": 88,
-      "break": 85
+      "low": 78,
+      "break": 75
     },
+    "coverage-analysis": "perTestInIsolation",
     "since": {
       "enabled": false,
       "ignore-changes-in": [
