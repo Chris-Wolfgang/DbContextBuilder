@@ -116,6 +116,10 @@ public class SqliteModelCustomizerTests
         var table4 = (SchemaName: "dbo", TableName: "dbo_Person");
         var renamedTable4 = sut.OverrideTableRenaming(table4);
         Assert.Equal("dbo_Person", renamedTable4);
+
+        // A name that only starts with the schema, or is the schema, is still prefixed
+        Assert.Equal("dbo_dboPerson", sut.OverrideTableRenaming((null, "dboPerson")));
+        Assert.Equal("dbo_dbo", sut.OverrideTableRenaming((null, "dbo")));
     }
 
 
@@ -989,8 +993,31 @@ public class SqliteModelCustomizerTests
         var entity = context.GetService<IDesignTimeModel>().Model.FindEntityType(typeof(Invoice))!;
 
         Assert.Null(entity.GetSchema());
+        Assert.Equal("sales_Invoice", entity.GetTableName());
         Assert.Equal("CURRENT_TIMESTAMP", entity.FindProperty(nameof(Invoice.CreatedAt))!.GetDefaultValueSql());
         Assert.Equal("\"Qty\" * \"Price\"", entity.FindProperty(nameof(Invoice.Total))!.GetComputedColumnSql());
+    }
+
+
+
+    /// <summary>
+    /// On a provider other than SQLite the customizer must leave the model alone: the schema and
+    /// the SQL Server default and computed SQL survive, even with overrides that would rewrite them.
+    /// </summary>
+    [Fact]
+    public void Customize_when_database_is_not_sqlite_leaves_schema_and_SQL_unchanged()
+    {
+        var options = new DbContextOptionsBuilder<SchemaContext>()
+            .UseInMemoryDatabase("customizer-not-sqlite")
+            .ReplaceService<IModelCustomizer, RewritingSqliteModelCustomizer>()
+            .Options;
+        using var context = new SchemaContext(options);
+
+        var entity = context.GetService<IDesignTimeModel>().Model.FindEntityType(typeof(Invoice))!;
+
+        Assert.Equal("sales", entity.GetSchema());
+        Assert.Equal("GETDATE()", entity.FindProperty(nameof(Invoice.CreatedAt))!.GetDefaultValueSql());
+        Assert.Equal("[Qty] * [Price]", entity.FindProperty(nameof(Invoice.Total))!.GetComputedColumnSql());
     }
 
 
@@ -1028,6 +1055,37 @@ public class SqliteModelCustomizerTests
 
 
     /// <summary>
+    /// <c>Customize</c> runs the many-to-many handling on a real model: a pure join entity (two
+    /// foreign keys, no navigations) is renamed after the two tables it joins, and a row round-trips
+    /// through the renamed table.
+    /// </summary>
+    [Fact]
+    public void Customize_renames_a_pure_join_entity_after_the_tables_it_joins()
+    {
+        using var connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
+        var options = new DbContextOptionsBuilder<JoinContext>()
+            .UseSqlite(connection)
+            .ReplaceService<IModelCustomizer, SqliteModelCustomizer>()
+            .Options;
+        using var context = new JoinContext(options);
+        context.Database.EnsureCreated();
+
+        var model = context.GetService<IDesignTimeModel>().Model;
+        Assert.Equal("dbo_JoinLeft_JoinRight", model.FindEntityType(typeof(JoinLink))!.GetTableName());
+
+        var left = new JoinLeft { Id = 1 };
+        var right = new JoinRight { Id = 2 };
+        context.AddRange(left, right, new JoinLink { Id = 3, LeftId = left.Id, RightId = right.Id });
+        context.SaveChanges();
+
+        var link = context.Set<JoinLink>().AsNoTracking().Single();
+        Assert.Equal((3, 1, 2), (link.Id, link.LeftId, link.RightId));
+    }
+
+
+
+    /// <summary>
     /// A customizer whose overrides change the SQL, as a SQL-Server-to-SQLite port would.
     /// </summary>
     private sealed class RewritingSqliteModelCustomizer : SqliteModelCustomizer
@@ -1053,6 +1111,47 @@ public class SqliteModelCustomizerTests
         public decimal Total { get; set; }
 
         public DateTime CreatedAt { get; set; }
+    }
+
+
+
+    private sealed class JoinLeft
+    {
+        public int Id { get; set; }
+    }
+
+
+
+    private sealed class JoinRight
+    {
+        public int Id { get; set; }
+    }
+
+
+
+    private sealed class JoinLink
+    {
+        public int Id { get; set; }
+
+        public int LeftId { get; set; }
+
+        public int RightId { get; set; }
+    }
+
+
+
+    private sealed class JoinContext(DbContextOptions<JoinContext> options) : DbContext(options)
+    {
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<JoinLeft>();
+            modelBuilder.Entity<JoinRight>();
+            modelBuilder.Entity<JoinLink>(link =>
+            {
+                link.HasOne<JoinLeft>().WithMany().HasForeignKey(l => l.LeftId);
+                link.HasOne<JoinRight>().WithMany().HasForeignKey(l => l.RightId);
+            });
+        }
     }
 
 

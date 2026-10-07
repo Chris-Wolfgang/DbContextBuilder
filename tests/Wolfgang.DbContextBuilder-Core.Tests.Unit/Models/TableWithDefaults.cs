@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
 
@@ -9,9 +8,8 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 //
 // Compiled here and linked (<Compile Link>) into the AutoFixture and EF6-EF10
-// variant test projects; those only ever set Id, so the instrumented test
-// assemblies score this POCO at 0-33%. No logic to cover - excluded.
-[ExcludeFromCodeCoverage]
+// variant test projects. TestModelRoundTripTests (linked alongside) exercises
+// every column in each of them, so the POCO is measured, not excluded.
 internal class TableWithDefaults
 {
     public int Id { get; set; }
