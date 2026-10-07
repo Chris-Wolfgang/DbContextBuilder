@@ -25,13 +25,41 @@
 # runs the repository's code, never holds a write token.
 name: Stryker (mutation testing)
 
+# Pull requests (#300): a full run takes about 55 minutes, so a PR runs Stryker with
+# --since:<base commit>. Only mutants in files the PR changed, plus mutants covered by
+# tests the PR changed, are tested, and stryker-config.json's break floor applies to
+# them. The config is taken from the base branch, so a PR cannot lower its own floor.
+# A changed test file brings in every mutant its tests cover, so a PR that edits a widely
+# used test file still runs much of the suite. Docs, workflow and changelog changes are kept
+# out of the diff by since.ignore-changes-in in stryker-config.json; any other non-.cs change
+# (a csproj, a props file) makes Stryker test every mutant.
+# A PR whose changes leave nothing in scope passes with a notice. Score history and
+# the survivors issue come from the weekly full run only.
+# NEVER make this a required status check: a path-filtered workflow that does not run
+# leaves a required check "Expected" forever.
 on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'tests/**/*.cs'
+      - 'tests/**/*.csproj'
+      - 'stryker-config.json'
+      - 'mutation-floors.json'
+      - '.github/workflows/stryker.yaml'
   workflow_dispatch:
   schedule:
     - cron: '0 6 * * 0' # weekly Sunday 06:00 UTC
 
 permissions:
   contents: read
+
+concurrency:
+  group: stryker-${{ github.ref }}
+  # Only PR runs are superseded by a newer push. Scheduled and dispatched runs publish a
+  # score data point and update the survivors issue, so they run to completion.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   stryker:
@@ -45,8 +73,19 @@ jobs:
     # workflow would just no-op every Sunday at 06:00 UTC, wasting a
     # Windows runner allocation. Matches the same-pattern guard used by
     # the .NET test-stage jobs in pr.yaml.
-    if: github.repository != 'Chris-Wolfgang/repo-template'
-    timeout-minutes: 120
+    #
+    # Dependabot's bumps touch src/*.csproj, and a non-.cs change makes --since test every
+    # mutant: about 55 minutes of Windows runner per bump. The weekly full run covers what a
+    # dependency change does to the score.
+    if: >-
+      github.repository != 'Chris-Wolfgang/repo-template'
+      && (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]')
+    # A full run took 54 min on 2026-09-30, 76 min on 2026-10-04 and passed 120 min (cancelled)
+    # on 2026-10-05, as tests were added. About a third of detected mutants are timeouts, each of
+    # which waits out Stryker's per-mutant timeout, so the run grows with the suite. 240 leaves
+    # room under GitHub's 360-minute job limit; raising Stryker's concurrency instead would put
+    # more load on the runner and turn more mutants into load-sensitive timeouts.
+    timeout-minutes: 240
     outputs:
       score: ${{ steps.score.outputs.score }}
     steps:
@@ -54,6 +93,67 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # --since diffs against the base commit, so a PR needs the history.
+          # Strings, not numbers: 0 is falsy in an expression, so `&& 0 || 1` always yields 1.
+          fetch-depth: ${{ github.event_name == 'pull_request' && '0' || '1' }}
+
+      - name: Floors only ratchet up
+        # docs/MUTATION-TESTING.md: floors ratchet up, never down. The next step swaps in the base
+        # copies of the floor files, so without this check a PR that lowers or removes a floor
+        # would pass, and the lower floor would take effect on the next scheduled run unchecked.
+        if: github.event_name == 'pull_request'
+        shell: pwsh
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          function Get-BaseJson([string]$Path) {
+            $text = git show "$($env:BASE_SHA):$Path" 2>$null
+            if ($LASTEXITCODE -ne 0) { return $null }
+            return ($text | Out-String | ConvertFrom-Json)
+          }
+          $failures = @()
+
+          $baseBreak = (Get-BaseJson 'stryker-config.json').'stryker-config'.thresholds.break
+          if ($null -ne $baseBreak) {
+            $prBreak = if (Test-Path 'stryker-config.json') { (Get-Content 'stryker-config.json' -Raw | ConvertFrom-Json).'stryker-config'.thresholds.break } else { $null }
+            if ($null -eq $prBreak) { $failures += "stryker-config.json: the repository floor (thresholds.break, $baseBreak %) was removed" }
+            elseif ([double]$prBreak -lt [double]$baseBreak) { $failures += "stryker-config.json: the repository floor (thresholds.break) drops from $baseBreak % to $prBreak %" }
+          }
+
+          $baseFloors = (Get-BaseJson 'mutation-floors.json').floors
+          if ($null -ne $baseFloors) {
+            $prFloors = if (Test-Path 'mutation-floors.json') { (Get-Content 'mutation-floors.json' -Raw | ConvertFrom-Json).floors } else { $null }
+            foreach ($floor in $baseFloors.PSObject.Properties) {
+              $now = if ($null -ne $prFloors) { $prFloors.($floor.Name) } else { $null }
+              if ($null -eq $now) { $failures += "mutation-floors.json: the floor for $($floor.Name) ($($floor.Value) %) was removed" }
+              elseif ([double]$now -lt [double]$floor.Value) { $failures += "mutation-floors.json: the floor for $($floor.Name) drops from $($floor.Value) % to $now %" }
+            }
+          }
+
+          foreach ($failure in $failures) { Write-Host "::error::$failure. Floors only ratchet up (docs/MUTATION-TESTING.md)." }
+          if ($failures.Count -gt 0) { exit 1 }
+          Write-Host 'No floor is lowered or removed.'
+          # git show above leaves a non-zero $LASTEXITCODE when a base file is missing, and the
+          # Actions pwsh wrapper would exit with it.
+          exit 0
+
+      - name: Use the base branch's floors (stryker-config.json, mutation-floors.json)
+        # The repository floor (break) and the per-project floors live in these files.
+        # Running the PR's copies would let a PR lower the floors it is judged by.
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          for file in stryker-config.json mutation-floors.json; do
+            if git cat-file -e "$BASE_SHA:$file" 2>/dev/null; then
+              git checkout "$BASE_SHA" -- "$file"
+              echo "Using $file from the base commit $BASE_SHA."
+            else
+              echo "::notice::No $file on the base commit - running with the PR's copy."
+            fi
+          done
 
       - name: Setup .NET
         # Install every SDK in the canonical test matrix (.NET Core 3.1
@@ -84,6 +184,8 @@ jobs:
 
       - name: Run Stryker
         shell: pwsh
+        env:
+          SINCE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           # Configuration mode resolution:
           #   1. If a root stryker-config.json exists, it is the umbrella -
@@ -104,8 +206,15 @@ jobs:
 
           $failed = 0
           $reporters = @('--reporter', 'progress', '--reporter', 'html', '--reporter', 'json')
+          # On a pull request, test only what the PR changed (see the header). An empty
+          # scope is then a legitimate outcome, not a run that silently measured nothing.
+          $sinceArgs = @()
+          if ($env:SINCE_SHA) {
+            $sinceArgs = @("--since:$($env:SINCE_SHA)")
+            Write-Host "Pull request: mutating only changes since $($env:SINCE_SHA)."
+          }
 
-          function Test-StrykerRun([string]$Dir, [datetime]$Since) {
+          function Test-StrykerRun([string]$Dir, [datetime]$Since, [string]$FloorsFile) {
             $reports = @(Get-ChildItem -Path (Join-Path $Dir 'StrykerOutput') -Recurse -Filter 'mutation-report.json' -ErrorAction SilentlyContinue |
               Where-Object { $_.LastWriteTime -ge $Since })
             if ($reports.Count -eq 0) {
@@ -113,10 +222,23 @@ jobs:
               return $false
             }
             $counts = @{}
+            $outOfScope = 0
+            $perProject = @{}
             foreach ($report in $reports) {
               $json = Get-Content $report.FullName -Raw | ConvertFrom-Json
               foreach ($file in $json.files.PSObject.Properties) {
-                foreach ($mutant in $file.Value.mutants) { $counts[$mutant.status] = 1 + [int]$counts[$mutant.status] }
+                # src/<project>/...: keys are absolute and can climb through a linked project.
+                $rel = [IO.Path]::GetRelativePath($Dir, [IO.Path]::GetFullPath($file.Name)) -replace '\\', '/'
+                $parts = $rel -split '/'
+                $project = if ($parts.Count -ge 3 -and $parts[0] -eq 'src') { "src/$($parts[1])" } else { $null }
+                if ($project -and -not $perProject.ContainsKey($project)) { $perProject[$project] = @{} }
+                foreach ($mutant in $file.Value.mutants) {
+                  $counts[$mutant.status] = 1 + [int]$counts[$mutant.status]
+                  if ($project) { $perProject[$project][$mutant.status] = 1 + [int]$perProject[$project][$mutant.status] }
+                  # The reason Stryker 5 writes to the report for a mutant its since filter set aside
+                  # (observed in a real --since run; the filter's internal message is overwritten).
+                  if ($mutant.status -eq 'Ignored' -and $mutant.statusReason -eq 'Removed by since filter') { $outOfScope++ }
+                }
               }
             }
             Write-Host "Mutant statuses in ${Dir}: $(($counts.GetEnumerator() | Sort-Object Name | ForEach-Object { "$($_.Name)=$($_.Value)" }) -join ', ')"
@@ -124,11 +246,49 @@ jobs:
             $detected = [int]$counts['Killed'] + [int]$counts['Timeout']
             $valid = $detected + [int]$counts['Survived'] + [int]$counts['NoCoverage']
             if ($valid -eq 0) {
+              # A pull request whose changes bring no mutant into scope is fine, but only when the
+              # since filter is why nothing was tested. A report of nothing but compile errors, or
+              # a scheduled run that tested nothing, still fails.
+              if ($env:SINCE_SHA -and $outOfScope -gt 0) {
+                Write-Host "::notice::Stryker in $Dir found no mutant in this pull request's changes ($outOfScope set aside by --since) - nothing to gate."
+                return $true
+              }
               Write-Host "::error::Stryker in $Dir tested no mutants - there is no score to judge."
               return $false
             }
             Write-Host ("Mutation score in {0}: {1:N2} % ({2} of {3} detected)" -f $Dir, (100.0 * $detected / $valid), $detected, $valid)
-            return $true
+
+            # Per-project floors (#300): a repository-wide score can clear `break` while one package
+            # sits far under it (2026-10-04: 90.65 % overall, src/Wolfgang.DbContextBuilder-EF6 at
+            # 69 %). Every src project with a tested mutant is judged against its own floor; one with
+            # no floor fails, so a new package cannot slip in ungated.
+            if (-not $FloorsFile) { return $true }
+            if (-not (Test-Path $FloorsFile)) {
+              Write-Host "::error::$FloorsFile is missing - per-project mutation floors cannot be enforced."
+              return $false
+            }
+            $floors = (Get-Content $FloorsFile -Raw | ConvertFrom-Json).floors
+            $belowFloor = 0
+            foreach ($project in ($perProject.Keys | Sort-Object)) {
+              $c = $perProject[$project]
+              $pDetected = [int]$c['Killed'] + [int]$c['Timeout']
+              $pValid = $pDetected + [int]$c['Survived'] + [int]$c['NoCoverage']
+              if ($pValid -eq 0) { continue }   # nothing of this project in scope (a PR run)
+              $pScore = 100.0 * $pDetected / $pValid
+              $floor = $floors.PSObject.Properties[$project].Value
+              if ($null -eq $floor) {
+                Write-Host ("::error::{0} scored {1:N2} % but has no floor in {2}. Add one a few points under its score." -f $project, $pScore, $FloorsFile)
+                $belowFloor++
+              }
+              elseif ($pScore -lt [double]$floor) {
+                Write-Host ("::error::{0}: {1:N2} % ({2} of {3} detected) is below its floor of {4} %." -f $project, $pScore, $pDetected, $pValid, $floor)
+                $belowFloor++
+              }
+              else {
+                Write-Host ("{0}: {1:N2} % ({2} of {3} detected), floor {4} %" -f $project, $pScore, $pDetected, $pValid, $floor)
+              }
+            }
+            return ($belowFloor -eq 0)
           }
 
           if (Test-Path 'stryker-config.json') {
@@ -141,9 +301,9 @@ jobs:
             if ($solution) { dotnet restore $solution } else { dotnet restore }
             if ($LASTEXITCODE -ne 0) { Write-Host "::error::dotnet restore failed"; exit 1 }
             $started = Get-Date
-            dotnet stryker --config-file stryker-config.json @reporters
+            dotnet stryker --config-file stryker-config.json @reporters @sinceArgs
             if ($LASTEXITCODE -ne 0) { $failed++ }
-            elseif (-not (Test-StrykerRun -Dir (Get-Location).Path -Since $started)) { $failed++ }
+            elseif (-not (Test-StrykerRun -Dir (Get-Location).Path -Since $started -FloorsFile 'mutation-floors.json')) { $failed++ }
             Write-Host "::endgroup::"
           }
           else {
@@ -168,7 +328,7 @@ jobs:
                 if ($LASTEXITCODE -ne 0) { $failed++ }
                 else {
                   $started = Get-Date
-                  dotnet stryker @reporters
+                  dotnet stryker @reporters @sinceArgs
                   if ($LASTEXITCODE -ne 0) { $failed++ }
                   elseif (-not (Test-StrykerRun -Dir $dir -Since $started)) { $failed++ }
                 }
@@ -278,7 +438,8 @@ jobs:
     name: Publish score history and survivors
     needs: stryker
     # Runs after a failed gate too: the score and the survivors are the point then.
-    if: always() && needs.stryker.outputs.score != ''
+    # Not on pull requests: their --since score covers only the PR's changes.
+    if: always() && needs.stryker.outputs.score != '' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
