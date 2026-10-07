@@ -63,6 +63,50 @@ public sealed class DbContextBuilderSeedFuzzTests
             await context.Database.EnsureDeletedAsync().ConfigureAwait(false);
         }
     }
+
+
+
+    /// <summary>
+    /// #515/#530: whatever integer keys a random creator hands back (colliding, negative, or 0,
+    /// which EF reads as "not set"), SeedWithRandom builds, and every entity gets its own key.
+    /// A 0 is always prepended, so every case covers the unset key and the count is never 0; it
+    /// counts toward <see cref="MagnitudeBound"/>, so a case seeds at most that many entities.
+    /// </summary>
+    [FuzzProperty(EndSize = MagnitudeBound)]
+    public async Task<bool> SeedWithRandom_gives_every_entity_a_distinct_key(int[] keys)
+    {
+        ArgumentNullException.ThrowIfNull(keys);
+
+        var ids = keys.Take(MagnitudeBound - 1).Prepend(0).ToArray();
+
+        using var builder = new DbContextBuilder<FuzzDbContext>();
+        await using var context = await builder
+            .UseInMemory()
+            .UseCustomRandomEntityCreator(new FixedKeyCreator(ids))
+            .SeedWithRandom<FuzzEntity>(ids.Length)
+            .BuildAsync()
+            .ConfigureAwait(false);
+        try
+        {
+            var saved = await context.Entities.AsNoTracking().Select(e => e.Id).ToListAsync().ConfigureAwait(false);
+
+            return saved.Count == ids.Length && saved.Distinct().Count() == ids.Length;
+        }
+        finally
+        {
+            await context.Database.EnsureDeletedAsync().ConfigureAwait(false);
+        }
+    }
+}
+
+
+
+/// <summary>Hands back one <see cref="FuzzEntity"/> per given key, in order.</summary>
+internal sealed class FixedKeyCreator(int[] ids) : ICreateRandomEntities
+{
+    public IEnumerable<TEntity> CreateRandomEntities<TEntity>(int count)
+        where TEntity : class
+        => ids.Take(count).Select(id => (TEntity)(object)new FuzzEntity { Id = id, Name = "fuzz" }).ToList();
 }
 
 

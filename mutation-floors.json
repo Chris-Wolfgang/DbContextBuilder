@@ -1,0 +1,9 @@
+{
+  "//": "Per-project mutation-score floors (#300), checked by .github/workflows/stryker.yaml. Measured honestly 2026-10-05 (run 37358220977, coverage-analysis perTestInIsolation): Core 78.48, EF6 94.79, AutoFixture 22.22, Bogus 57.14. Ratchet up as survivors are killed; never lower a floor to turn a run green. See docs/MUTATION-TESTING.md.",
+  "floors": {
+    "src/Wolfgang.DbContextBuilder-Core": 75,
+    "src/Wolfgang.DbContextBuilder-EF6": 90,
+    "src/Wolfgang.DbContextBuilder.AutoFixture": 20,
+    "src/Wolfgang.DbContextBuilder.Bogus": 50
+  }
+}
