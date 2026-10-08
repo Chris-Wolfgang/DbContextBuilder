@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791161950051,
+  "lastUpdate": 1791464069460,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -1638,6 +1638,84 @@ window.BENCHMARK_DATA = {
             "value": 1292383.1614583333,
             "unit": "ns",
             "range": "± 55705.00570033889"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2dde5fa486a767b1c00ab37eb5a6b6b584fd6d64",
+          "message": "fix(sqlite): register EF SQLite services once and keep a single model customizer (#549)\n\nThe guard around AddEntityFrameworkSqlite() looked for a ServiceType of\nSqliteOptionsExtension, which is an options extension and never a DI\nservice, so it was always true. It now looks for the\nIDatabaseProvider -> DatabaseProvider<SqliteOptionsExtension> descriptor\nthat AddEntityFrameworkSqlite registers (verified present on EF Core 6-10).\n\nOld IModelCustomizer registrations were removed before\nAddEntityFrameworkSqlite ran, so EF's default ModelCustomizer was\nTryAdd-ed back next to the SQLite one. Removal now runs after EF's\nregistration, leaving exactly one customizer.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-08T08:52:25-04:00",
+          "tree_id": "2421597827ac53a15604ea1164f29859cf6e3b34",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/2dde5fa486a767b1c00ab37eb5a6b6b584fd6d64"
+        },
+        "date": 1791464067494,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 40056.228495279945,
+            "unit": "ns",
+            "range": "± 1768.2938370296947"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 64759.12801106771,
+            "unit": "ns",
+            "range": "± 1526.6151511261144"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 258246.4052734375,
+            "unit": "ns",
+            "range": "± 22867.202388636062"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 38482.126892089844,
+            "unit": "ns",
+            "range": "± 1889.7457163153667"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 119328.68603515625,
+            "unit": "ns",
+            "range": "± 13712.838060967586"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 502564.8323567708,
+            "unit": "ns",
+            "range": "± 29182.65357566183"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 38440.2538655599,
+            "unit": "ns",
+            "range": "± 1736.2655396692"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 446797.8098958333,
+            "unit": "ns",
+            "range": "± 12897.896770376121"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 3625339.921875,
+            "unit": "ns",
+            "range": "± 1457654.0689239071"
           }
         ]
       }
