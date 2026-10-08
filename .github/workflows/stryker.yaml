@@ -14,6 +14,9 @@
 # project-reference graph. Two configuration modes are supported:
 # - Root stryker-config.json (umbrella): if present, runs Stryker once with
 #   the umbrella config and skips per-project runs (avoids duplicate work).
+#   A test project with its own stryker-config.json is then also run on its own,
+#   in project mode, for a package the umbrella's solution mode cannot measure
+#   (#552); the umbrella config's mutate list leaves that package out.
 # - Per-project stryker-config.json (or none): if no root config exists, runs
 #   Stryker once per test project; per-project configs override Stryker's
 #   defaults when present.
@@ -46,6 +49,7 @@ on:
       - 'tests/**/*.cs'
       - 'tests/**/*.csproj'
       - 'stryker-config.json'
+      - 'tests/**/stryker-config.json'
       - 'mutation-floors.json'
       - '.github/workflows/stryker.yaml'
   workflow_dispatch:
@@ -137,8 +141,9 @@ jobs:
           # Actions pwsh wrapper would exit with it.
           exit 0
 
-      - name: Use the base branch's floors (stryker-config.json, mutation-floors.json)
-        # The repository floor (break) and the per-project floors live in these files.
+      - name: Use the base branch's floors (stryker-config.json files, mutation-floors.json)
+        # The repository floor (break) and the per-project floors live in these files, and the
+        # per-package configs under tests/ (#552) decide what those packages' runs mutate.
         # Running the PR's copies would let a PR lower the floors it is judged by.
         if: github.event_name == 'pull_request'
         shell: bash
@@ -146,7 +151,10 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
-          for file in stryker-config.json mutation-floors.json; do
+          files=(stryker-config.json mutation-floors.json)
+          while IFS= read -r file; do files+=("$file"); done < <(
+            git ls-tree -r --name-only "$BASE_SHA" -- tests | grep -E '/stryker-config[.]json$' || true)
+          for file in "${files[@]}"; do
             if git cat-file -e "$BASE_SHA:$file" 2>/dev/null; then
               git checkout "$BASE_SHA" -- "$file"
               echo "Using $file from the base commit $BASE_SHA."
@@ -214,7 +222,9 @@ jobs:
             Write-Host "Pull request: mutating only changes since $($env:SINCE_SHA)."
           }
 
-          function Test-StrykerRun([string]$Dir, [datetime]$Since, [string]$FloorsFile) {
+          # $Root is what report paths are made relative to when grouping by src/<project>: the
+          # repository root, also for a project-mode run whose $Dir is a test project.
+          function Test-StrykerRun([string]$Dir, [datetime]$Since, [string]$FloorsFile, [string]$Root = $Dir) {
             $reports = @(Get-ChildItem -Path (Join-Path $Dir 'StrykerOutput') -Recurse -Filter 'mutation-report.json' -ErrorAction SilentlyContinue |
               Where-Object { $_.LastWriteTime -ge $Since })
             if ($reports.Count -eq 0) {
@@ -228,7 +238,7 @@ jobs:
               $json = Get-Content $report.FullName -Raw | ConvertFrom-Json
               foreach ($file in $json.files.PSObject.Properties) {
                 # src/<project>/...: keys are absolute and can climb through a linked project.
-                $rel = [IO.Path]::GetRelativePath($Dir, [IO.Path]::GetFullPath($file.Name)) -replace '\\', '/'
+                $rel = [IO.Path]::GetRelativePath($Root, [IO.Path]::GetFullPath($file.Name)) -replace '\\', '/'
                 $parts = $rel -split '/'
                 $project = if ($parts.Count -ge 3 -and $parts[0] -eq 'src') { "src/$($parts[1])" } else { $null }
                 if ($project -and -not $perProject.ContainsKey($project)) { $perProject[$project] = @{} }
@@ -305,6 +315,28 @@ jobs:
             if ($LASTEXITCODE -ne 0) { $failed++ }
             elseif (-not (Test-StrykerRun -Dir (Get-Location).Path -Since $started -FloorsFile 'mutation-floors.json')) { $failed++ }
             Write-Host "::endgroup::"
+
+            # A test project with its own stryker-config.json is measured on its own, in project
+            # mode (#552). Solution mode cannot measure a package whose test project targets
+            # several frameworks with a different reference per framework: it runs every
+            # framework's build of the tests but injects the mutant into one, so the kills are
+            # lost (coverage capture fails and they survive, or every mutant times out). The
+            # umbrella config's mutate list leaves those packages out.
+            $root = (Get-Location).Path
+            foreach ($config in @(Get-ChildItem -Path tests -Recurse -Filter 'stryker-config.json' -ErrorAction SilentlyContinue)) {
+              $dir = $config.DirectoryName
+              Write-Host "::group::Stryker in $dir (project mode)"
+              Push-Location $dir
+              try {
+                $started = Get-Date
+                dotnet stryker --config-file stryker-config.json @reporters @sinceArgs
+                if ($LASTEXITCODE -ne 0) { $failed++ }
+                elseif (-not (Test-StrykerRun -Dir $dir -Since $started -FloorsFile (Join-Path $root 'mutation-floors.json') -Root $root)) { $failed++ }
+              } finally {
+                Pop-Location
+              }
+              Write-Host "::endgroup::"
+            }
           }
           else {
             $tests = @(Get-ChildItem -Path tests -Recurse -Filter '*Test*.csproj' -ErrorAction SilentlyContinue)
