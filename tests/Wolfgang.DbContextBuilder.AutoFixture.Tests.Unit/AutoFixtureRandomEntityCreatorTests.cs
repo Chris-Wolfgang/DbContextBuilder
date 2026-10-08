@@ -65,18 +65,23 @@ public class AutoFixtureRandomEntityCreatorTests : ICreateRandomEntitiesTestsBas
 
 
 	/// <summary>
-	/// AutoFixture 4.x cannot create <see cref="DateOnly"/> or <see cref="TimeOnly"/> on its own; the
-	/// default constructor registers factories for both, so entities with such properties can be seeded.
+	/// AutoFixture 4.x cannot create <see cref="DateOnly"/> on its own: it calls the year/month/day
+	/// constructor with random integers, which throws. The default constructor registers a factory
+	/// built on a random <see cref="DateTime"/>, so entities with such properties can be seeded.
 	/// </summary>
+	/// <remarks>
+	/// <see cref="TimeOnly"/> is not tested here: AutoFixture builds it through its ticks constructor
+	/// even without the factory, so the factory changes how the value is made, not whether it is,
+	/// and any value, midnight included, is a valid result.
+	/// </remarks>
 	[Fact]
-	public void CreateRandomEntities_creates_DateOnly_and_TimeOnly_properties()
+	public void CreateRandomEntities_creates_DateOnly_properties()
 	{
 		var sut = new AutoFixtureRandomEntityCreator();
 
 		var entity = Assert.Single(sut.CreateRandomEntities<DatedEntity>(1));
 
 		Assert.NotEqual(default, entity.Day);
-		Assert.NotEqual(default, entity.At);
 	}
 
 
@@ -114,12 +119,10 @@ public class AutoFixtureRandomEntityCreatorTests : ICreateRandomEntitiesTestsBas
 
 
 
-/// <summary>A type with <see cref="DateOnly"/> and <see cref="TimeOnly"/> properties.</summary>
+/// <summary>A type with a <see cref="DateOnly"/> property.</summary>
 public class DatedEntity
 {
 	public DateOnly Day { get; set; }
-
-	public TimeOnly At { get; set; }
 }
 
 
