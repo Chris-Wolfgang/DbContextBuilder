@@ -1,5 +1,8 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
 using Xunit;
 
@@ -104,5 +107,71 @@ public class SqliteDbContextCreatorTests
 
         // Assert — the abandoned creator was disposed, not leaked
         Assert.True(firstCreator.IsDisposed);
+    }
+
+
+    /// <summary>
+    /// The creator's connection is an in-memory database, and disposing the creator closes it.
+    /// </summary>
+    [Fact]
+    public async Task Dispose_closes_the_in_memory_connection_the_contexts_use()
+    {
+        var sut = new SqliteDbContextCreator();
+        using var context = await sut.CreateDbContextAsync(new DbContextOptionsBuilder<BasicContext>());
+        var connection = context.Database.GetDbConnection();
+
+        Assert.Equal("DataSource=:memory:", connection.ConnectionString);
+        Assert.Equal(System.Data.ConnectionState.Open, connection.State);
+
+        sut.Dispose();
+
+        Assert.Equal(System.Data.ConnectionState.Closed, connection.State);
+    }
+
+
+
+    /// <summary>
+    /// <c>UseSqlite</c> rejects a null builder with <see cref="ArgumentNullException"/>.
+    /// </summary>
+    [Fact]
+    public void UseSqlite_when_builder_is_null_throws_ArgumentNullException()
+    {
+        var ex = Assert.Throws<ArgumentNullException>(() => ((DbContextBuilder<BasicContext>)null!).UseSqlite());
+
+        Assert.Equal("builder", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// <c>UseSqliteForMsSqlServer</c> rejects a null builder with <see cref="ArgumentNullException"/>.
+    /// </summary>
+    [Fact]
+    public void UseSqliteForMsSqlServer_when_builder_is_null_throws_ArgumentNullException()
+    {
+        var ex = Assert.Throws<ArgumentNullException>(() => ((DbContextBuilder<BasicContext>)null!).UseSqliteForMsSqlServer());
+
+        Assert.Equal("builder", ex.ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Re-selecting a SQLite flavor removes the earlier flavor's model customizer registration, so
+    /// the customizer EF resolves is the one selected last.
+    /// </summary>
+    [Fact]
+    public void Reselecting_a_Sqlite_flavor_removes_the_previous_model_customizer()
+    {
+        using var builder = new DbContextBuilder<BasicContext>().UseSqliteForMsSqlServer();
+
+        builder.UseSqlite();
+
+        var customizers = builder.ServiceCollection
+            .Where(sd => sd.ServiceType == typeof(IModelCustomizer))
+            .Select(sd => sd.ImplementationType)
+            .ToList();
+        Assert.DoesNotContain(typeof(SqliteForMsSqlServerModelCustomizer), customizers);
+        Assert.Equal(typeof(SqliteModelCustomizer), customizers.Last());
     }
 }

@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -58,11 +57,38 @@ public class ForeignKeyAutoWireTests
         Assert.Equal(100, stored.ManufacturerId);
         Assert.Equal(55, stored.SupplierId);
     }
+
+
+
+    /// <summary>
+    /// Verifies a widget seeded with both of its principals round-trips through SQLite, which
+    /// enforces the foreign keys, and that both navigations load back to the seeded principals.
+    /// </summary>
+    [Fact]
+    public async Task SeedWith_a_widget_and_both_principals_round_trips_both_navigations()
+    {
+        using var sut = new DbContextBuilder<FactoryContext>().UseSqlite();
+
+        await using var context = await sut
+            .SeedWith(new Manufacturer { Id = 1, Name = "Acme" })
+            .SeedWith(new Supplier { Id = 2, Name = "Bolts Ltd" })
+            .SeedWith(new Widget { Id = 3, Name = "Cog", ManufacturerId = 1, SupplierId = 2 })
+            .BuildAsync();
+
+        var widget = context.Widgets
+            .Include(w => w.Manufacturer)
+            .Include(w => w.Supplier)
+            .Single();
+        var supplier = context.Suppliers.Single();
+
+        Assert.Equal("Acme", widget.Manufacturer?.Name);
+        Assert.Equal("Bolts Ltd", widget.Supplier?.Name);
+        Assert.Equal(2, supplier.Id);
+    }
 }
 
 
 
-[ExcludeFromCodeCoverage(Justification = "Test model")]
 internal class Manufacturer
 {
     public int Id { get; set; }
@@ -72,7 +98,6 @@ internal class Manufacturer
 
 
 
-[ExcludeFromCodeCoverage(Justification = "Test model")]
 internal class Supplier
 {
     public int Id { get; set; }
@@ -82,7 +107,6 @@ internal class Supplier
 
 
 
-[ExcludeFromCodeCoverage(Justification = "Test model")]
 internal class Widget
 {
     public int Id { get; set; }
@@ -101,7 +125,6 @@ internal class Widget
 
 
 
-[ExcludeFromCodeCoverage(Justification = "Test model")]
 internal class FactoryContext(DbContextOptions<FactoryContext> options) : DbContext(options)
 {
     public DbSet<Manufacturer> Manufacturers => Set<Manufacturer>();

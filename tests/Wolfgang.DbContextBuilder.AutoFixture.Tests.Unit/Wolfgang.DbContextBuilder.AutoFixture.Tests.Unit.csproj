@@ -57,6 +57,7 @@
 	<ItemGroup>
 		<Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\Models\BasicContext.cs" Link="Models\BasicContext.cs" />
 		<Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\Models\TableWithDefaults.cs" Link="Models\TableWithDefaults.cs" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestModelRoundTripTests.cs" Link="TestModelRoundTripTests.cs" />
 	</ItemGroup>
 
 	<!-- The AutoFixture provider package under test. Its per-TFM build pulls in the matching

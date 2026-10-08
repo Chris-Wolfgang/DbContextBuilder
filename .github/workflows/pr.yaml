@@ -222,11 +222,18 @@ jobs:
           # edit. -i: Windows (and ReSharper on it) resolve names case-insensitively, so
           # foo.dotsettings is as live as foo.DotSettings.
           # The checkout is shallow (depth 1); the PR's own history is needed to find the
-          # merge base. Deepen until one exists, then diff against it. Fail closed: a guard
-          # that cannot compute the diff must not report "nothing changed".
-          for _ in 1 2 3 4 5 6; do
+          # merge base. Fetch the checked-out commit itself, deeper each time, until one
+          # exists, then diff against it. Fail closed: a guard that cannot compute the diff
+          # must not report "nothing changed".
+          # Fetch by SHA, not refs/pull/N/head: HEAD is GitHub's test merge commit, which
+          # GitHub regenerates, and once refs/pull/N/merge has moved on, deepening the PR
+          # head never reaches the parents of the orphaned merge this run checked out (and a
+          # re-run replays the same SHA). --depth rather than --deepen: a --deepen fetch of
+          # a commit that is already present fetches nothing.
+          head_sha=$(git rev-parse HEAD)
+          for depth in 50 100 200 400 800 1600; do
             git merge-base main-branch HEAD >/dev/null 2>&1 && break
-            git fetch --quiet --deepen=50 "$TRUSTED_MAIN_URL" "refs/pull/$PR_NUMBER/head" 2>/dev/null || true
+            git fetch --quiet --depth="$depth" "$TRUSTED_MAIN_URL" "$head_sha" || echo "::warning::Fetching $head_sha at depth $depth failed"
           done
           if ! base=$(git merge-base main-branch HEAD 2>/dev/null); then
             echo "::error::Cannot find the merge base between main and the PR head - refusing to classify the change."
@@ -1279,6 +1286,26 @@ jobs:
               continue
             }
             
+            # *.Tests.Integration.* projects do not run on this stage, as on Stage 3 (macOS).
+            # Windows runners cannot run the Linux containers those suites need, so every
+            # integration test would be Skipped and the assembly would report near-0% coverage
+            # against CODECOV_TEST_MINIMUM. Stage 1 (Linux, Docker available) runs them and
+            # gates their coverage. Skipped here, they never enter this stage's ran-assemblies
+            # ledger, so the row check below does not expect them either.
+            # The skip comes AFTER TFM discovery so a TFM Stage 1 cannot run (its allowlist is
+            # net5.0-net10.0 + netcoreapp3.1; e.g. net48 or net8.0-windows) is still reported
+            # as running nowhere, instead of vanishing with the project.
+            if ($testProj.Name -like '*.Tests.Integration.*') {
+              $allFrameworks = @($tfmMatch.Groups[1].Value -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+              $notOnStage1 = @($allFrameworks | Where-Object { $_ -notmatch '^(net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0)|netcoreapp3\.1)$' })
+              if ($notOnStage1.Count -gt 0) {
+                Write-Host "::warning file=$($testProj.FullName)::TFM(s) not covered by any CI stage: $($notOnStage1 -join ', ') — integration projects run only on Stage 1 (Linux), which does not run these TFMs."
+              }
+              Write-Host "::notice file=$($testProj.FullName)::Integration test project skipped on Stage 2 (Windows cannot run Linux containers); it runs and is coverage-gated in Stage 1."
+              Write-Host ""
+              continue
+            }
+
             # Split by semicolon for multi-targeting projects
             $frameworks = $tfmMatch.Groups[1].Value -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0|462|47|471|472|48|481|coreapp3\.1)$' }
             
