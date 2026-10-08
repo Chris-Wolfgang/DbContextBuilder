@@ -106,5 +106,6 @@ public class BogusRandomEntityCreatorTests
 
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.CreateRandomEntities<Sample>(0));
         Assert.Equal("count", ex.ParamName);
+        Assert.StartsWith("Count must be greater than 0", ex.Message, StringComparison.Ordinal);
     }
 }
