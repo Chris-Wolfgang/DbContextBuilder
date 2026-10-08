@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Sqlite.Infrastructure.Internal;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Wolfgang.DbContextBuilderCore;
@@ -68,27 +69,34 @@ public static class DbContextBuilderSqliteExtensions
     ) where TDbContext : DbContext
     {
 
-        // Remove any existing IModelCustomizer registrations to avoid duplicates/competing implementations
+        // Avoid registering EF services multiple times. AddEntityFrameworkSqlite registers
+        // DatabaseProvider<SqliteOptionsExtension> as an IDatabaseProvider, so that descriptor
+        // marks the SQLite services as already present. Match it with typeof rather than a
+        // FullName string (which silently breaks if EF renames or moves the type).
+        //
+        // SqliteOptionsExtension lives in EF Core's internal namespace
+        // (Microsoft.EntityFrameworkCore.Sqlite.Infrastructure.Internal) — the typeof
+        // check on it is deliberate for the reason above, so EF1001 is expected here.
+#pragma warning disable EF1001 // Internal EF Core API usage
+        if (!builder.ServiceCollection.Any
+            (
+                sd => sd.ServiceType == typeof(IDatabaseProvider) &&
+                      sd.ImplementationType == typeof(DatabaseProvider<SqliteOptionsExtension>)
+            ))
+#pragma warning restore EF1001
+        {
+            builder.ServiceCollection.AddEntityFrameworkSqlite();
+        }
+
+        // Remove any existing IModelCustomizer registrations to avoid duplicates/competing implementations.
+        // This runs after AddEntityFrameworkSqlite so it also removes the default ModelCustomizer
+        // that EF registers, leaving modelCustomizerType as the only one.
         var modelCustomizerDescriptors = builder.ServiceCollection
             .Where(sd => sd.ServiceType == typeof(IModelCustomizer))
             .ToList();
         foreach (var descriptor in modelCustomizerDescriptors)
         {
             builder.ServiceCollection.Remove(descriptor);
-        }
-
-        // Avoid registering EF services multiple times. Use a typeof check on the
-        // SQLite options extension type rather than matching its FullName as a string
-        // (which silently breaks if EF renames or moves the type).
-        //
-        // SqliteOptionsExtension lives in EF Core's internal namespace
-        // (Microsoft.EntityFrameworkCore.Sqlite.Infrastructure.Internal) — the typeof
-        // check on it is deliberate for the reason above, so EF1001 is expected here.
-#pragma warning disable EF1001 // Internal EF Core API usage
-        if (!builder.ServiceCollection.Any(sd => sd.ServiceType == typeof(SqliteOptionsExtension)))
-#pragma warning restore EF1001
-        {
-            builder.ServiceCollection.AddEntityFrameworkSqlite();
         }
 
         builder.ServiceCollection.AddSingleton(typeof(IModelCustomizer), modelCustomizerType);

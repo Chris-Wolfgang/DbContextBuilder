@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -110,6 +109,58 @@ public class SqliteDbContextCreatorTests
     }
 
 
+
+    /// <summary>
+    /// Verifies that selecting SQLite replaces EF's default model customizer rather than
+    /// leaving it registered alongside the SQLite one.
+    /// </summary>
+    [Fact]
+    public void UseSqlite_registers_only_the_Sqlite_model_customizer()
+    {
+        // Arrange & Act
+        using var builder = new DbContextBuilder<BasicContext>().UseSqlite();
+
+        // Assert
+        var modelCustomizer = Assert.Single
+        (
+            builder.ServiceCollection,
+            sd => sd.ServiceType == typeof(IModelCustomizer)
+        );
+        Assert.Equal(typeof(SqliteModelCustomizer), modelCustomizer.ImplementationType);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that selecting SQLite a second time swaps the model customizer without adding
+    /// service registrations, so the builder ends up with exactly one model customizer.
+    /// </summary>
+    [Fact]
+    public void UseSqlite_when_Sqlite_already_selected_swaps_model_customizer_without_adding_services()
+    {
+        // Arrange — the first selection registers EF's SQLite services
+        using var builder = new DbContextBuilder<BasicContext>().UseSqliteForMsSqlServer();
+        var serviceCountAfterFirstSelection = builder.ServiceCollection.Count;
+
+        // Act
+        builder.UseSqlite();
+
+        // Assert — only the swapped customizer remains, and nothing was added
+        var modelCustomizer = Assert.Single
+        (
+            builder.ServiceCollection,
+            sd => sd.ServiceType == typeof(IModelCustomizer)
+        );
+        Assert.Equal(typeof(SqliteModelCustomizer), modelCustomizer.ImplementationType);
+        Assert.Equal
+        (
+            serviceCountAfterFirstSelection,
+            builder.ServiceCollection.Count
+        );
+    }
+
+
+
     /// <summary>
     /// The creator's connection is an in-memory database, and disposing the creator closes it.
     /// </summary>
@@ -152,26 +203,5 @@ public class SqliteDbContextCreatorTests
         var ex = Assert.Throws<ArgumentNullException>(() => ((DbContextBuilder<BasicContext>)null!).UseSqliteForMsSqlServer());
 
         Assert.Equal("builder", ex.ParamName);
-    }
-
-
-
-    /// <summary>
-    /// Re-selecting a SQLite flavor removes the earlier flavor's model customizer registration, so
-    /// the customizer EF resolves is the one selected last.
-    /// </summary>
-    [Fact]
-    public void Reselecting_a_Sqlite_flavor_removes_the_previous_model_customizer()
-    {
-        using var builder = new DbContextBuilder<BasicContext>().UseSqliteForMsSqlServer();
-
-        builder.UseSqlite();
-
-        var customizers = builder.ServiceCollection
-            .Where(sd => sd.ServiceType == typeof(IModelCustomizer))
-            .Select(sd => sd.ImplementationType)
-            .ToList();
-        Assert.DoesNotContain(typeof(SqliteForMsSqlServerModelCustomizer), customizers);
-        Assert.Equal(typeof(SqliteModelCustomizer), customizers.Last());
     }
 }
