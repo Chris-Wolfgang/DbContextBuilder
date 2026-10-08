@@ -1,18 +1,11 @@
 
-using System.Diagnostics.CodeAnalysis;
 using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
 
-[ExcludeFromCodeCoverage(Justification = "These are test models created by scaffolding the database and should not be tested")]
 internal class BasicContext : DbContext
 {
-    public BasicContext()
-    {
-
-    }
-
     public BasicContext(DbContextOptions<BasicContext> options) : base(options)
     {
     }
