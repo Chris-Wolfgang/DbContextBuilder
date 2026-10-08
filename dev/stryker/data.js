@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791228845451,
+  "lastUpdate": 1791472494746,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "Mutation score": [
@@ -134,6 +134,33 @@ window.BENCHMARK_DATA = {
           {
             "name": "Mutation score",
             "value": 99.6,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "2dde5fa486a767b1c00ab37eb5a6b6b584fd6d64",
+          "message": "fix(sqlite): register EF SQLite services once and keep a single model customizer (#549)\n\nThe guard around AddEntityFrameworkSqlite() looked for a ServiceType of\nSqliteOptionsExtension, which is an options extension and never a DI\nservice, so it was always true. It now looks for the\nIDatabaseProvider -> DatabaseProvider<SqliteOptionsExtension> descriptor\nthat AddEntityFrameworkSqlite registers (verified present on EF Core 6-10).\n\nOld IModelCustomizer registrations were removed before\nAddEntityFrameworkSqlite ran, so EF's default ModelCustomizer was\nTryAdd-ed back next to the SQLite one. Removal now runs after EF's\nregistration, leaving exactly one customizer.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-08T12:52:25Z",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/2dde5fa486a767b1c00ab37eb5a6b6b584fd6d64"
+        },
+        "date": 1791472493309,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score",
+            "value": 91.71,
             "unit": "%"
           }
         ]
