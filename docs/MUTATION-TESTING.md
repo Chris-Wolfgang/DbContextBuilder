@@ -21,18 +21,23 @@ Two floors apply, and a run fails if either is missed:
   `src/` project with tested mutants but no entry in the file fails the run, so a new package
   cannot slip in unchecked.
 
-The scores below are from the honest measurement (see "Measuring honestly" below), CI run
-37358220977 on 2026-10-05, Stryker 5.0.0:
+The scores below are from the latest full run (see "Measuring honestly" below), CI run
+37784524025 on 2026-10-08, Stryker 5.0.0:
 
 | Project | Valid mutants | Score | Floor |
 |---|---|---|---|
-| `src/Wolfgang.DbContextBuilder-Core` | 1115 | 78.48 % | 75 % |
-| `src/Wolfgang.DbContextBuilder-EF6` | 96 | 94.79 % | 90 % |
+| `src/Wolfgang.DbContextBuilder-Core` | 1125 | 93.33 % | 90 % |
+| `src/Wolfgang.DbContextBuilder-EF6` | 96 | 94.79 % | 92 % |
 | `src/Wolfgang.DbContextBuilder.AutoFixture` | 27 | 22.22 % | 20 % |
 | `src/Wolfgang.DbContextBuilder.Bogus` | 7 | 57.14 % | 50 % |
-| **Repository (`break`)** | 1245 | **78.39 %** | **75 %** |
+| **Repository (`break`)** | 1255 | **91.71 %** | **88 %** |
 
-`low` / `high` in `stryker-config.json` (78 % / 90 %) only color the report.
+The AutoFixture and Bogus scores are too low: the full solution run does not credit those
+packages' own unit tests with the mutants they kill (#552). Their floors stay where they are
+until that is fixed, then are re-based on the corrected scores.
+
+`low` / `high` in `stryker-config.json` (90 % / 95 %) only color the report. Stryker requires
+`low` to be at least `break`.
 
 Each floor sits a few points under its measured score so small run-to-run variation does not
 fail a run, while a real regression (a deleted assertion, untested new behavior) does. For
@@ -67,7 +72,7 @@ that survivors are being hidden.
 | Weekly (Sunday 06:00 UTC) and `workflow_dispatch` | Every mutant | Enforces the floors, charts the score on the docs site under `/dev/stryker/`, and keeps one rolling `kind:mutation-survives` issue listing the surviving and uncovered mutants |
 | Pull requests to `main` that touch `src/**`, `tests/**/*.cs`, `tests/**/*.csproj`, `stryker-config.json`, `mutation-floors.json` or the workflow | `--since:<base commit>` | Enforces the floors on the mutants the PR's changes bring into scope (a project's floor applies only when the PR brings some of its mutants into scope), using `stryker-config.json` and `mutation-floors.json` from the base branch so a PR cannot lower its own floors; fails a PR that lowers or removes a floor in `mutation-floors.json` |
 
-A full run takes about 93 minutes on a Windows runner (Windows, so the .NET Framework
+A full run takes about 105 minutes on a Windows runner (Windows, so the .NET Framework
 targets compile), which is why pull requests use `--since`. What a PR run covers:
 
 - Mutants in the `.cs` files the PR changed.

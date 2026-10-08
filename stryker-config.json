@@ -15,9 +15,9 @@
       "json"
     ],
     "thresholds": {
-      "high": 90,
-      "low": 78,
-      "break": 75
+      "high": 95,
+      "low": 90,
+      "break": 88
     },
     "coverage-analysis": "perTestInIsolation",
     "since": {
