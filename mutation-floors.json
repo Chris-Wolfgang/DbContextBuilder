@@ -1,9 +1,9 @@
 {
-  "//": "Per-project mutation-score floors (#300), checked by .github/workflows/stryker.yaml. Latest full run 2026-10-08 (run 37784524025, coverage-analysis perTestInIsolation): Core 93.33, EF6 94.79, AutoFixture 22.22, Bogus 57.14. AutoFixture and Bogus are under-measured in CI (#552); re-base them when that is fixed. Ratchet up as survivors are killed; never lower a floor to turn a run green. See docs/MUTATION-TESTING.md.",
+  "//": "Per-project mutation-score floors (#300), checked by .github/workflows/stryker.yaml. Core and EF6 from the full run 2026-10-08 (run 37784524025, coverage-analysis perTestInIsolation): Core 93.33, EF6 94.79. AutoFixture and Bogus are measured in project mode (#552), 2026-10-08: AutoFixture 96.30, Bogus 100. Ratchet up as survivors are killed; never lower a floor to turn a run green. See docs/MUTATION-TESTING.md.",
   "floors": {
     "src/Wolfgang.DbContextBuilder-Core": 90,
     "src/Wolfgang.DbContextBuilder-EF6": 92,
-    "src/Wolfgang.DbContextBuilder.AutoFixture": 20,
-    "src/Wolfgang.DbContextBuilder.Bogus": 50
+    "src/Wolfgang.DbContextBuilder.AutoFixture": 92,
+    "src/Wolfgang.DbContextBuilder.Bogus": 100
   }
 }

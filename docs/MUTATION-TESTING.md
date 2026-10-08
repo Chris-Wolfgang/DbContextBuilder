@@ -28,13 +28,15 @@ The scores below are from the latest full run (see "Measuring honestly" below), 
 |---|---|---|---|
 | `src/Wolfgang.DbContextBuilder-Core` | 1125 | 93.33 % | 90 % |
 | `src/Wolfgang.DbContextBuilder-EF6` | 96 | 94.79 % | 92 % |
-| `src/Wolfgang.DbContextBuilder.AutoFixture` | 27 | 22.22 % | 20 % |
-| `src/Wolfgang.DbContextBuilder.Bogus` | 7 | 57.14 % | 50 % |
-| **Repository (`break`)** | 1255 | **91.71 %** | **88 %** |
+| `src/Wolfgang.DbContextBuilder.AutoFixture` | 27 | 96.30 % ¹ | 92 % |
+| `src/Wolfgang.DbContextBuilder.Bogus` | 7 | 100.00 % ¹ | 100 % |
+| **Repository (`break`)** | 1255 | **91.71 %** ² | **88 %** |
 
-The AutoFixture and Bogus scores are too low: the full solution run does not credit those
-packages' own unit tests with the mutants they kill (#552). Their floors stay where they are
-until that is fixed, then are re-based on the corrected scores.
+¹ Measured in project mode (see "Packages measured in project mode" below), locally with the
+same configuration, 2026-10-08. That run's solution mode under-measured them at 22.22 % and
+57.14 % (#552).
+² That run still mutated AutoFixture and Bogus in solution mode. `break` now applies to the
+umbrella run alone, which leaves them out: Core and EF6 together scored 93.45 % in it.
 
 `low` / `high` in `stryker-config.json` (90 % / 95 %) only color the report. Stryker requires
 `low` to be at least `break`.
@@ -52,6 +54,17 @@ raise that floor to lock the gain in. Lowering a floor to turn a red run green d
 point; close the test gap instead. The pull-request gate enforces this: a PR whose
 `mutation-floors.json` lowers or removes a floor fails. The one exception so far was a
 correction, not a ratchet: the original floor of 85 % was set on an inflated score (below).
+
+## Packages measured in project mode
+
+`AutoFixture.Tests.Unit` and `Bogus.Tests.Unit` target net6.0 to net10.0 and reference a
+different `-Core-EF*` project for each framework. Stryker's solution mode cannot measure the
+packages they test: it runs every framework's build of those tests but puts the mutated
+package into the net10.0 build only, so the kills are lost (#552). Those two packages are
+left out of the root config's `mutate` list, and each test project has its own
+`stryker-config.json`; the workflow runs Stryker in that directory, in project mode, after the
+umbrella run, and judges the report against the same `mutation-floors.json`. A package with a
+test project like that needs the same treatment.
 
 ## Measuring honestly
 
