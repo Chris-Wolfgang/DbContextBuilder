@@ -1028,6 +1028,76 @@ public class DbContextBuilderTests
         Assert.Equal(2, creator.Created);
         Assert.Same(creator, sut.CreateDbContext);
     }
+
+
+
+    /// <summary>
+    /// Build saves only when there is seed data, so a build without any does not run the
+    /// context's SaveChanges override (auditing, timestamps) (#531).
+    /// </summary>
+    [Fact]
+    public void Build_without_seed_data_does_not_call_SaveChanges()
+    {
+        SaveCountingContext.Saves = 0;
+        var sut = new DbContextBuilder<SaveCountingContext>();
+
+        using var context = sut.Build();
+
+        Assert.Equal(0, SaveCountingContext.Saves);
+    }
+
+
+
+    /// <summary>
+    /// The counterpart of <see cref="Build_without_seed_data_does_not_call_SaveChanges"/>: with
+    /// seed data, Build saves once, through the context's override.
+    /// </summary>
+    [Fact]
+    public void Build_with_seed_data_calls_SaveChanges_once()
+    {
+        SaveCountingContext.Saves = 0;
+        var sut = new DbContextBuilder<SaveCountingContext>().SeedWith(new Category { Name = "seeded" });
+
+        using var context = sut.Build();
+
+        Assert.Equal(1, SaveCountingContext.Saves);
+        Assert.Equal("seeded", Assert.Single(context.Categories).Name);
+    }
+
+
+
+    /// <summary>
+    /// BuildAsync saves only when there is seed data, so a build without any does not run the
+    /// context's SaveChangesAsync override (#531).
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_without_seed_data_does_not_call_SaveChangesAsync()
+    {
+        SaveCountingContext.Saves = 0;
+        var sut = new DbContextBuilder<SaveCountingContext>();
+
+        using var context = await sut.BuildAsync();
+
+        Assert.Equal(0, SaveCountingContext.Saves);
+    }
+
+
+
+    /// <summary>
+    /// The counterpart of <see cref="BuildAsync_without_seed_data_does_not_call_SaveChangesAsync"/>:
+    /// with seed data, BuildAsync saves once, through the context's override.
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_with_seed_data_calls_SaveChangesAsync_once()
+    {
+        SaveCountingContext.Saves = 0;
+        var sut = new DbContextBuilder<SaveCountingContext>().SeedWith(new Category { Name = "seeded" });
+
+        using var context = await sut.BuildAsync();
+
+        Assert.Equal(1, SaveCountingContext.Saves);
+        Assert.Equal("seeded", Assert.Single(context.Categories).Name);
+    }
 }
 
 
