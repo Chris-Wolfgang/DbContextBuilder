@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791472494746,
+  "lastUpdate": 1791512587097,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "Mutation score": [
@@ -161,6 +161,33 @@ window.BENCHMARK_DATA = {
           {
             "name": "Mutation score",
             "value": 91.71,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "473552758938ac7d8b7bb134c4ce577edc0fc94a",
+          "message": "ci(stryker): measure AutoFixture and Bogus in project mode; re-base their floors (#552) (#555)\n\n* ci(stryker): ratchet the Core, EF6 and repository mutation floors up\n\nThe full run on main @ 2dde5fa (run 37784524025, 2026-10-08) measured\nCore 93.33 %, EF6 94.79 % and the repository 91.71 %. Lock that in:\nCore 75 -> 90, EF6 90 -> 92, break 75 -> 88 (each about 3 points under\nits score), with low/high moved to 90/95 since Stryker needs low >= break.\n\nAutoFixture (22.22 %) and Bogus (57.14 %) keep their floors: CI does not\ncredit their own unit tests with kills (#552), so those scores are\nunder-measured and get re-based once that is fixed.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* ci(stryker): measure AutoFixture and Bogus in project mode; re-base their floors (#552)\n\nGives AutoFixture.Tests.Unit and Bogus.Tests.Unit their own\nstryker-config.json (project mode, run by the workflow after the umbrella\nrun once #554 is in) and leaves both packages out of the root config's\nmutate list. Solution mode lost their kills (#552); project mode, run\nlocally with the same settings on 2026-10-08, measures AutoFixture 96.30 %\n(26 of 27) and Bogus 100 % (7 of 7).\n\nFloors re-based on those scores, a correction like #544's: AutoFixture\n20 -> 92 (allows one more survivor), Bogus 50 -> 100 (no survivor, as the\ndocs already say for a 7-mutant package). The docs explain the mode and\nmark which scores came from where.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-09T00:35:06Z",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/473552758938ac7d8b7bb134c4ce577edc0fc94a"
+        },
+        "date": 1791512586255,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score",
+            "value": 93.55,
             "unit": "%"
           }
         ]
