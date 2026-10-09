@@ -70,9 +70,10 @@ public class AutoFixtureRandomEntityCreatorTests : ICreateRandomEntitiesTestsBas
 	/// built on a random <see cref="DateTime"/>, so entities with such properties can be seeded.
 	/// </summary>
 	/// <remarks>
-	/// <see cref="TimeOnly"/> is not tested here: AutoFixture builds it through its ticks constructor
-	/// even without the factory, so the factory changes how the value is made, not whether it is,
-	/// and any value, midnight included, is a valid result.
+	/// <see cref="TimeOnly"/> is covered by
+	/// <see cref="CreateRandomEntities_spreads_TimeOnly_properties_across_the_day"/>: AutoFixture
+	/// builds it even without the factory, so the factory changes what the values look like, not
+	/// whether there is one.
 	/// </remarks>
 	[Fact]
 	public void CreateRandomEntities_creates_DateOnly_properties()
@@ -82,6 +83,29 @@ public class AutoFixtureRandomEntityCreatorTests : ICreateRandomEntitiesTestsBas
 		var entity = Assert.Single(sut.CreateRandomEntities<DatedEntity>(1));
 
 		Assert.NotEqual(default, entity.Day);
+	}
+
+
+
+	/// <summary>
+	/// The default constructor's <see cref="TimeOnly"/> factory spreads times across the day.
+	/// AutoFixture can build <see cref="TimeOnly"/> on its own, but only through the ticks
+	/// constructor with one of its small integers, so every value would fall within a fraction of
+	/// a second after midnight (#531).
+	/// </summary>
+	/// <remarks>
+	/// With the factory each time comes from a random <see cref="DateTime"/>, so all 20 falling in
+	/// the first hour has a probability of about (1/24)^20. No single value is asserted: midnight
+	/// is a valid result.
+	/// </remarks>
+	[Fact]
+	public void CreateRandomEntities_spreads_TimeOnly_properties_across_the_day()
+	{
+		var sut = new AutoFixtureRandomEntityCreator();
+
+		var entities = sut.CreateRandomEntities<TimedEntity>(20);
+
+		Assert.Contains(entities, entity => entity.At.Hour > 0);
 	}
 
 
@@ -123,6 +147,14 @@ public class AutoFixtureRandomEntityCreatorTests : ICreateRandomEntitiesTestsBas
 public class DatedEntity
 {
 	public DateOnly Day { get; set; }
+}
+
+
+
+/// <summary>A type with a <see cref="TimeOnly"/> property.</summary>
+public class TimedEntity
+{
+	public TimeOnly At { get; set; }
 }
 
 
