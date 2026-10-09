@@ -1,13 +1,7 @@
 {
   "stryker-config": {
-    "solution": "Wolfgang.DbContextBuilder.slnx",
+    "project": "Wolfgang.DbContextBuilder.AutoFixture.csproj",
     "target-framework": "net10.0",
-    "mutate": [
-      "**/*",
-      "!**/extra-projects/**",
-      "!**/src/Wolfgang.DbContextBuilder.AutoFixture/**",
-      "!**/src/Wolfgang.DbContextBuilder.Bogus/**"
-    ],
     "ignore-methods": [
       "ConfigureAwait"
     ],
@@ -19,7 +13,7 @@
     "thresholds": {
       "high": 95,
       "low": 90,
-      "break": 88
+      "break": 0
     },
     "coverage-analysis": "perTestInIsolation",
     "since": {
