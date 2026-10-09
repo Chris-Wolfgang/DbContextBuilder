@@ -19,6 +19,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.9.0] - 2026-10-09
+
+### Breaking changes
+
+- `Wolfgang.DbContextBuilder-Core` is no longer published. Versions up to 0.8.1 stay on NuGet and keep resolving; move to `Wolfgang.DbContextBuilder-Core-EF6` for EF Core 6 or `Wolfgang.DbContextBuilder-Core-EF10` for net10.0 — the types and namespaces are unchanged, so it is a package-reference swap. (#432)
+
+### Added
+
+- Every package now carries a `THIRD-PARTY-NOTICES.md` at its root that lists the name, version, licence, copyright and project URL of each NuGet dependency it pulls in. The file is generated at release time from that package's own dependency closure. (#473)
+
+### Fixed
+
+- `-Core-EF8`, `-Core-EF9` and `-Core-EF10` now require at least EF Core 8.0.31, 9.0.20 and 10.0.12 (up from 8.0.25, 9.0.14 and 10.0.5). A project that doesn't reference EF Core directly now restores the latest servicing patch. Upper bounds are unchanged, so each package still stays on its own EF Core major. (#476)
+- `SeedWithRandom` no longer throws "another instance with the same key value is already being tracked" when the random entity creator leaves a store-generated primary key at its default (0), as most creators do. The unique-key handling from the previous fix kept 0 for one entity and numbered the rest from 1, and EF then generated 1 for the entity at 0. On a key EF generates, every seeded entity left unset (at the property's sentinel: 0, or the value set with `HasSentinel` on EF Core 8+) now gets the lowest unused value, as EF would have given it; on a key EF never generates, 0 stays an ordinary value. (#530)
+- `SeedWithRandom` no longer fails intermittently with "another instance with the same key value is already being tracked". A random entity creator fills integer primary keys like any other integer, so two entities could share a key; the chance grew with the count, to about 5% at 100 entities. Randomly seeded entities now keep their random key only while it is unique; a colliding one gets the lowest unused value. Keys given via `SeedWith` are never changed, and foreign keys follow the final keys. (#515)
+- `UseSqlite()` and `UseSqliteForMsSqlServer()` now leave exactly one `IModelCustomizer` registered, instead of also keeping EF Core's default one, and selecting SQLite again no longer re-registers EF Core's SQLite services. (#549)
+
+### Internal
+
+- The classic EF6 package's AutoFixture random-entity creator now sets up recursion handling once, through its `NoCircularReferencesCustomization`, instead of also repeating the same two behavior changes by hand. Behavior is unchanged. (#531)
+- Multi-target projects no longer use implicit or global usings; every source file now declares the `using` directives it needs on every target framework. No behaviour or public API change. (#441)
+
 ## [0.8.1] - 2026-08-22
 
 Maintenance release — patch-safe dependency bumps, Code Scanning noise-floor
@@ -351,7 +373,9 @@ No public API change vs `0.3.3`.
 - Support for Entity Framework 6 (classic) on .NET Framework 4.6.2--4.8.1
 - `Wolfgang.DbContextBuilder-EF6` package for Entity Framework 6
 
-[Unreleased]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.8.1...v0.9.0
+[0.8.1]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.6.1...v0.6.2
