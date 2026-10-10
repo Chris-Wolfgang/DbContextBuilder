@@ -364,8 +364,9 @@ dotnet_diagnostic.MA0004.severity = suggestion  # Meziantou: Use ConfigureAwait
 dotnet_diagnostic.S3216.severity = suggestion   # SonarAnalyzer: ConfigureAwait
 
 # Security-category rules (CA2100, CA3xxx, CA5xxx: SQL injection, insecure XML, weak
-# crypto, ...) are off by default in NetAnalyzers. Shipped library code fails the build on
-# any of them (#593).
+# crypto, ...): shipped library code fails the build on any of them (#593). Many are off by
+# default, and a category severity only re-grades rules that are already on, so
+# src/Directory.Build.props turns the whole category on with AnalysisModeSecurity=All.
 dotnet_analyzer_diagnostic.category-Security.severity = error
 
 # Test projects - relaxed naming, no doc requirements
