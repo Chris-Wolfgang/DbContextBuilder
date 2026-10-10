@@ -79,6 +79,13 @@ jobs:
             -c Release \
             -- ./current.json "$ITERATIONS"
 
+      - name: Clean build outputs before the baseline run
+        # The baseline run builds the same project with -p:UseBaselinePackage=true. bin/obj from
+        # the source build must not leak into it: MSBuild's incremental build is timestamp-based
+        # and could mix the two outputs (#617), as pr-benchmarks.yaml guards against too.
+        # Keeps the current run's report.
+        run: git clean -xdf -e current.json
+
       - name: Run against baseline package
         id: baseline
         env:
