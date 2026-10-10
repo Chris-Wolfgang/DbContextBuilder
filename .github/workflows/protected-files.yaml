@@ -30,9 +30,10 @@ jobs:
   guard:
     name: "Protected Files Guard"
     runs-on: ubuntu-latest
-    # Dependabot's bumps to protected files (e.g. Directory.Build.props) are legitimate;
-    # its identity is GitHub-controlled and not spoofable.
-    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    # Dependabot's bumps to protected files (e.g. Directory.Build.props) are legitimate.
+    # Exempt only when Dependabot opened the PR AND triggered this run: a collaborator's push
+    # to a dependabot/** branch keeps the PR author but not the actor (#592).
+    if: github.event.pull_request.user.login != 'dependabot[bot]' || github.actor != 'dependabot[bot]'
     timeout-minutes: 5
     steps:
       - name: Classify the PR's changed files
@@ -51,11 +52,13 @@ jobs:
           # paginated `gh api` would leave all_changed empty and this guard would cheerfully
           # report "no protected files changed". A guard that cannot list the diff must fail
           # closed, not open.
-          if ! changed_raw=$(gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/files" --jq '.[] | .filename, (.previous_filename // empty)'); then
+          # Tagged F (current name) / P (previous name of a rename): both are classified, but
+          # only F entries count toward the completeness check below (#592).
+          if ! changed_raw=$(gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/files" --jq '.[] | ("F\t" + .filename), (.previous_filename // empty | "P\t" + .)'); then
             echo "::error::Could not list this PR's changed files - refusing to classify the change."
             exit 1
           fi
-          mapfile -t all_changed < <(printf '%s' "$changed_raw")
+          mapfile -t all_changed < <(printf '%s\n' "$changed_raw" | cut -f2- | grep -v '^$')
           # The pull-request files endpoint is capped at 3000 files. Past that the listing is
           # silently short, and a protected file could sit outside it while the guard reports
           # only what it saw. Compare against the PR's own changed_files count and refuse.
@@ -63,7 +66,9 @@ jobs:
             echo "::error::Could not read the PR's changed_files count - refusing to classify."
             exit 1
           }
-          seen=$(printf '%s\n' "${all_changed[@]}" | sort -u | grep -c . || true)
+          # Count unique current filenames only: previous_filename entries are not files the PR
+          # declares, so counting them let a rename-heavy, truncated listing pass (#592).
+          seen=$(printf '%s\n' "$changed_raw" | grep $'^F\t' | cut -f2- | sort -u | grep -c . || true)
           if [ "$declared" -gt "$seen" ]; then
             echo "::error::The API listed $seen changed file(s) but the PR declares $declared (endpoint caps at 3000) - refusing to classify an incomplete diff."
             exit 1
