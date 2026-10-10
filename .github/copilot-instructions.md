@@ -82,7 +82,10 @@ pwsh ./scripts/build-pr.ps1                               # pr.yaml's Windows st
 - **Mutation testing:** Stryker floors in `mutation-floors.json` (repository `break` in
   `stryker-config.json`); PRs are measured on the mutants they bring into scope.
 - **Analyzers:** the .NET analyzers, SonarAnalyzer, Meziantou, Roslynator, AsyncFixer,
-  VS Threading and BannedApiAnalyzers on every project, plus PublicApiAnalyzers on `src/`.
+  VS Threading and BannedApiAnalyzers on every project that inherits the root
+  `Directory.Build.props`, plus PublicApiAnalyzers on `src/`. `examples/` and `extra-projects/`
+  deliberately do not inherit it (their own `Directory.Build.props` stops the search), so these
+  analyzers do not run there.
   `BannedSymbols.txt` bans synchronous I/O and blocking waits in `src/` — use the async APIs.
 - **DevSkim and gitleaks** must report nothing.
 
