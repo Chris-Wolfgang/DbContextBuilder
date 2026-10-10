@@ -29,7 +29,7 @@ still includes it so external links / scripts can resolve it.
 
 ### 1. `docfx_project/public/version-picker.js`
 
-Browser-side picker (~160 lines). On `DOMContentLoaded`:
+Browser-side picker (~190 lines). On `DOMContentLoaded` (or at once, if the page has already loaded):
 
 - Detects whether the host is `*.github.io` and computes the repo
   prefix accordingly — same file works on github.io, on
@@ -50,36 +50,42 @@ Falls back silently (no broken page, no empty dropdown) if
 `versions.json` is missing, malformed, or contains only a `latest`
 alias after filtering.
 
-### 2. `docfx_project/docfx.json`
+### 2. `docfx_project/docfx.json` and `docfx_project/public/main.js`
 
-Two changes from a stock DocFX project:
+Two changes from a stock DocFX project.
+
+`docfx.json` renders with the **modern** template and copies `public/**` into the site:
 
 ```jsonc
+"template": [ "default", "modern" ],   // later entries win: "modern" must come last (#622)
 "resource": [
   {
     "files": [
       "logo.svg",
       "images/**",
-      "public/**",         // ← copies version-picker.js into _site/public/
+      "public/**",         // ← copies main.js and version-picker.js into _site/public/
       "versions.json"      // ← stub for local dev; workflow overwrites on deploy
     ]
   }
-],
-
-"globalMetadata": {
-  // ...
-  "_appFooter": "Made with DocFX <script>...</script>"
-  //                              ^ tiny inline bootstrap that computes
-  //                                the site root and lazy-loads
-  //                                /<repo>/public/version-picker.js
-  //                                into document.head. Inline (not
-  //                                external) because _appFooter is a
-  //                                plain string field, not a Liquid
-  //                                template — page-relative paths
-  //                                wouldn't resolve from nested pages
-  //                                like /api/Foo.html.
-}
+]
 ```
+
+`public/main.js` is the bootstrap. The modern template imports `public/main.js` as an ES module on
+every page (reading its default export for options such as `defaultTheme`), so the module's
+top-level code runs on every page. It appends a `<script>` for `version-picker.js`, resolved with
+`new URL('version-picker.js', import.meta.url)` so the path is right from nested pages such as
+`/api/Foo.html` and on github.io, a CNAME or localhost (#606):
+
+```js
+const versionPicker = document.createElement('script');
+versionPicker.src = new URL('version-picker.js', import.meta.url).href;
+document.head.appendChild(versionPicker);
+
+export default {};
+```
+
+An earlier revision documented an `_appFooter` inline-script bootstrap that was never added to
+`docfx.json`, so the picker shipped but did not load; `main.js` replaces it.
 
 ### 3. `docfx_project/versions.json` (stub)
 
@@ -144,9 +150,9 @@ Path 2 — manual: a maintainer runs docfx.yaml from the Actions tab
        └─ docfx.yaml runs the deploy steps below
 
 The deploy steps that docfx.yaml runs in both cases:
-  ├─ docfx build  → _site/  (includes public/version-picker.js,
-  │                          inline bootstrap in every page's
-  │                          footer via _appFooter)
+  ├─ docfx build  → _site/  (includes public/version-picker.js and
+  │                          the public/main.js bootstrap the modern
+  │                          template imports on every page)
   ├─ Generate versions.json from v* tags → _site/versions.json
   ├─ Deploy _site/ to gh-pages /versions/<v>/  (always)
   │
