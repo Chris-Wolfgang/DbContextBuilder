@@ -20,14 +20,6 @@
     
     <!-- Treat warnings as errors in Release builds -->
     <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
-
-    <!-- The net6.0/net7.0 slots are deliberate (the EF Core 6/7 packages and their tests).
-         SuppressTfmSupportBuildWarnings silences the MSBuild-level "<package> doesn't support
-         net6.0/net7.0" messages from build-time-only packages (System.IO.Hashing via SourceLink,
-         #578); CheckEolTargetFramework=false silences NETSDK1138. Neither is a compiler warning,
-         so TreatWarningsAsErrors would not catch them; they were 29 lines of noise per build. -->
-    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
-    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <!-- Third-party attribution: scripts/third-party-notices.ps1 renders each package's
