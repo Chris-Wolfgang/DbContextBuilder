@@ -75,9 +75,13 @@ jobs:
         env:
           # persist-credentials:false on the checkout leaves nothing in .git/config, so the fetch
           # needs the job token. Used on this one command; never written to config.
-          TRUSTED_BASE_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
+          TRUSTED_BASE_URL: https://github.com/${{ github.repository }}
+          FETCH_TOKEN: ${{ github.token }}
           BASE_REF: ${{ github.event.pull_request.base.ref || github.event.repository.default_branch }}
         run: |
+          # The job token goes in a per-command http.extraheader, never in the URL, so it cannot
+          # show up in git error output or a remote (#592), the same pattern as docfx.yaml.
+          fetch_auth="http.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$FETCH_TOKEN" | base64 | tr -d '\n')"
           set -euo pipefail
           # `dotnet tool restore` installs and then RUNS whatever .config/dotnet-tools.json names.
           # On a pull_request that file is the PR's copy, so without this a PR could point the
@@ -86,7 +90,7 @@ jobs:
           # blocks the MERGE, not the run - see docs/WORKFLOW_SECURITY.md. Same fix as the
           # privileged scanners take for .github/requirements.
           if [ "${GITHUB_EVENT_NAME:-}" = "pull_request" ]; then
-            if ! git fetch --quiet --depth=1 "$TRUSTED_BASE_URL" "$BASE_REF:refs/remotes/origin/trusted-base"; then
+            if ! git -c "$fetch_auth" fetch --quiet --depth=1 "$TRUSTED_BASE_URL" "$BASE_REF:refs/remotes/origin/trusted-base"; then
               echo "::error::Could not fetch $BASE_REF - refusing to restore a PR-controlled tool manifest."
               exit 1
             fi

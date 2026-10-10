@@ -212,8 +212,12 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           # persist-credentials:false on the checkout, so the deepening fetch below needs the
           # job token for a private repository. Used on this one command only; never stored.
-          TRUSTED_MAIN_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
+          TRUSTED_MAIN_URL: https://github.com/${{ github.repository }}
+          FETCH_TOKEN: ${{ github.token }}
         run: |
+          # The job token goes in a per-command http.extraheader, never in the URL, so it cannot
+          # show up in git error output or a remote (#592), the same pattern as docfx.yaml.
+          fetch_auth="http.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$FETCH_TOKEN" | base64 | tr -d '\n')"
           echo "Checking for changes to protected configuration files in this PR..."
           
           # Verify main-branch ref is available (it was fetched in the previous step)
@@ -240,7 +244,7 @@ jobs:
           head_sha=$(git rev-parse HEAD)
           for depth in 50 100 200 400 800 1600; do
             git merge-base main-branch HEAD >/dev/null 2>&1 && break
-            git fetch --quiet --depth="$depth" "$TRUSTED_MAIN_URL" "$head_sha" || echo "::warning::Fetching $head_sha at depth $depth failed"
+            git -c "$fetch_auth" fetch --quiet --depth="$depth" "$TRUSTED_MAIN_URL" "$head_sha" || echo "::warning::Fetching $head_sha at depth $depth failed"
           done
           if ! base=$(git merge-base main-branch HEAD 2>/dev/null); then
             echo "::error::Cannot find the merge base between main and the PR head - refusing to classify the change."
@@ -328,9 +332,13 @@ jobs:
           # PR-controlled build steps to read), so a bare `git fetch origin` has no
           # auth and fails on a private repository. Pass the job token on this one
           # command only; it is never written to git config.
-          TRUSTED_MAIN_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
+          TRUSTED_MAIN_URL: https://github.com/${{ github.repository }}
+          FETCH_TOKEN: ${{ github.token }}
         run: |
-          if ! git fetch "$TRUSTED_MAIN_URL" main:refs/remotes/origin/main --depth=1; then
+          # The job token goes in a per-command http.extraheader, never in the URL, so it cannot
+          # show up in git error output or a remote (#592), the same pattern as docfx.yaml.
+          fetch_auth="http.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$FETCH_TOKEN" | base64 | tr -d '\n')"
+          if ! git -c "$fetch_auth" fetch "$TRUSTED_MAIN_URL" main:refs/remotes/origin/main --depth=1; then
             echo "::error::Failed to fetch origin/main — aborting before changelog check."
             exit 1
           fi
@@ -355,9 +363,13 @@ jobs:
           # PR-controlled build steps to read), so a bare `git fetch origin` has no
           # auth and fails on a private repository. Pass the job token on this one
           # command only; it is never written to git config.
-          TRUSTED_MAIN_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
+          TRUSTED_MAIN_URL: https://github.com/${{ github.repository }}
+          FETCH_TOKEN: ${{ github.token }}
         run: |
-          git fetch "$env:TRUSTED_MAIN_URL" $env:BASE_SHA --depth=1
+          # The job token goes in a per-command http.extraheader, never in the URL, so it cannot
+          # show up in git error output or a remote (#592), the same pattern as docfx.yaml.
+          $fetchAuth = "http.extraheader=AUTHORIZATION: basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:FETCH_TOKEN"))
+          git -c $fetchAuth fetch "$env:TRUSTED_MAIN_URL" $env:BASE_SHA --depth=1
           pwsh ./scripts/changelog.ps1 check -BaseRef $env:BASE_SHA -Labels $env:PR_LABELS
 
   # ============================================================================
@@ -1247,9 +1259,13 @@ jobs:
           # PR-controlled build steps to read), so a bare `git fetch origin` has no
           # auth and fails on a private repository. Pass the job token on this one
           # command only; it is never written to git config.
-          TRUSTED_MAIN_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
+          TRUSTED_MAIN_URL: https://github.com/${{ github.repository }}
+          FETCH_TOKEN: ${{ github.token }}
         run: |
-          git fetch "$env:TRUSTED_MAIN_URL" main:refs/remotes/origin/main --depth=1
+          # The job token goes in a per-command http.extraheader, never in the URL, so it cannot
+          # show up in git error output or a remote (#592), the same pattern as docfx.yaml.
+          $fetchAuth = "http.extraheader=AUTHORIZATION: basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:FETCH_TOKEN"))
+          git -c $fetchAuth fetch "$env:TRUSTED_MAIN_URL" main:refs/remotes/origin/main --depth=1
           if ($LASTEXITCODE -ne 0) { Write-Host "::error::Failed to fetch origin/main"; exit 1 }
           git cat-file -e origin/main:scripts/tfm-parity.ps1 2>$null
           if ($LASTEXITCODE -ne 0) {
