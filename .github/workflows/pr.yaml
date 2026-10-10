@@ -131,8 +131,9 @@ jobs:
       - name: Fetch trusted configuration files from main branch
         # Skip for Dependabot — its package-version bumps to protected files (e.g.
         # Directory.Build.props) are legitimate and should not be overwritten by main's
-        # older versions. Dependabot's identity is GitHub-controlled and not spoofable.
-        if: github.event.pull_request.user.login != 'dependabot[bot]'
+        # older versions. Exempt only when Dependabot opened the PR AND triggered this run: a
+        # collaborator's push to a dependabot/** branch keeps the PR author but not the actor (#592).
+        if: github.event.pull_request.user.login != 'dependabot[bot]' || github.actor != 'dependabot[bot]'
         run: |
           echo "Fetching configuration files from main branch to prevent malicious overrides..."
           
@@ -207,7 +208,7 @@ jobs:
         # are legitimate. The guard's threat model is human PR authors disabling analyzers
         # in their own PRs; it does not apply to a trusted GitHub-controlled bot whose
         # only action is package-version updates.
-        if: github.event.pull_request.user.login != 'dependabot[bot]'
+        if: github.event.pull_request.user.login != 'dependabot[bot]' || github.actor != 'dependabot[bot]'
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           # persist-credentials:false on the checkout, so the deepening fetch below needs the
@@ -317,7 +318,7 @@ jobs:
   changelog-check:
     name: "Changelog Fragment Check"
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    if: github.event.pull_request.user.login != 'dependabot[bot]' || github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -424,7 +425,7 @@ jobs:
       - name: Fetch trusted configuration files from main branch
         # Skip for Dependabot — its package-version bumps to protected files are
         # legitimate and should not be overwritten by main's older versions.
-        if: github.event.pull_request.user.login != 'dependabot[bot]'
+        if: github.event.pull_request.user.login != 'dependabot[bot]' || github.actor != 'dependabot[bot]'
         run: |
           echo "Fetching configuration files from main branch to prevent malicious overrides..."
 
@@ -584,8 +585,8 @@ jobs:
 
   # ============================================================================
   # INSPECTCODE UPLOAD: the only job with security-events: write. It never checks
-  # out PR code — the checkout below is the trusted base ref (pull_request_target
-  # default), which upload-sarif needs only to resolve the workspace — and it
+  # out PR code — the checkout below is pinned to the trusted base SHA, which
+  # upload-sarif needs only to resolve the workspace — and it
   # uploads the SARIF the job above produced. Runs after a gate failure too (the
   # warnings are the point) but not when the analysis never ran.
   # ============================================================================
@@ -595,12 +596,12 @@ jobs:
     needs: inspectcode
     # Under pull_request a fork's token - and Dependabot's - is read-only and cannot write Code
     # Scanning, so this job would run and then FAIL on upload rather than skip. Those PRs still
-    # get the InspectCode gate; they just do not publish SARIF. Unnecessary under
-    # pull_request_target, where the token always came from the base repository.
+    # get the InspectCode gate; they just do not publish SARIF. Dependabot's token is the one
+    # issued when Dependabot triggered the run, so the check is on the actor (#592).
     if: >-
       always() && (needs.inspectcode.result == 'success' || needs.inspectcode.result == 'failure')
       && github.event.pull_request.head.repo.full_name == github.repository
-      && github.event.pull_request.user.login != 'dependabot[bot]'
+      && github.actor != 'dependabot[bot]'
     timeout-minutes: 10
     permissions:
       contents: read
@@ -611,10 +612,9 @@ jobs:
       - name: Checkout trusted base ref
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          # Pinned explicitly. Under pull_request_target an unpinned checkout defaulted to the
-          # BASE ref, which is what this step's name promises; under pull_request it would
-          # default to the PR MERGE ref and put untrusted content into the only job in this
-          # file holding security-events: write.
+          # Pinned explicitly: under pull_request an unpinned checkout defaults to the PR MERGE
+          # ref, which would put untrusted content into the only job in this file holding
+          # security-events: write.
           ref: ${{ github.event.pull_request.base.sha }}
           persist-credentials: false
 
@@ -636,9 +636,9 @@ jobs:
   # ============================================================================
   # STAGE 1: Linux - .NET Core/5+ Tests with Coverage Gate
   # ============================================================================
-  test-linux-core: 
+  test-linux-core:
     name: "Stage 1: Linux Tests (.NET 5.0-10.0) + Coverage Gate"
-    runs-on:  ubuntu-latest
+    runs-on: ubuntu-latest
     needs: detect-projects
     if: github.repository != 'Chris-Wolfgang/repo-template' && needs.detect-projects.outputs.has-projects == 'true'
     
@@ -651,8 +651,9 @@ jobs:
       - name: Fetch trusted configuration files from main branch
         # Skip for Dependabot — its package-version bumps to protected files (e.g.
         # Directory.Build.props) are legitimate and should not be overwritten by main's
-        # older versions. Dependabot's identity is GitHub-controlled and not spoofable.
-        if: github.event.pull_request.user.login != 'dependabot[bot]'
+        # older versions. Exempt only when Dependabot opened the PR AND triggered this run: a
+        # collaborator's push to a dependabot/** branch keeps the PR author but not the actor (#592).
+        if: github.event.pull_request.user.login != 'dependabot[bot]' || github.actor != 'dependabot[bot]'
         run: |
           echo "Fetching configuration files from main branch to prevent malicious overrides..."
           
@@ -1157,8 +1158,9 @@ jobs:
       - name: Fetch trusted configuration files from main branch
         # Skip for Dependabot — its package-version bumps to protected files (e.g.
         # Directory.Build.props) are legitimate and should not be overwritten by main's
-        # older versions. Dependabot's identity is GitHub-controlled and not spoofable.
-        if: github.event.pull_request.user.login != 'dependabot[bot]'
+        # older versions. Exempt only when Dependabot opened the PR AND triggered this run: a
+        # collaborator's push to a dependabot/** branch keeps the PR author but not the actor (#592).
+        if: github.event.pull_request.user.login != 'dependabot[bot]' || github.actor != 'dependabot[bot]'
         shell: pwsh
         run: |
           Write-Host "Fetching configuration files from main branch to prevent malicious overrides..."
@@ -1667,8 +1669,9 @@ jobs:
       - name: Fetch trusted configuration files from main branch
         # Skip for Dependabot — its package-version bumps to protected files (e.g.
         # Directory.Build.props) are legitimate and should not be overwritten by main's
-        # older versions. Dependabot's identity is GitHub-controlled and not spoofable.
-        if: github.event.pull_request.user.login != 'dependabot[bot]'
+        # older versions. Exempt only when Dependabot opened the PR AND triggered this run: a
+        # collaborator's push to a dependabot/** branch keeps the PR author but not the actor (#592).
+        if: github.event.pull_request.user.login != 'dependabot[bot]' || github.actor != 'dependabot[bot]'
         run: |
           echo "Fetching configuration files from main branch to prevent malicious overrides..."
           
@@ -1854,7 +1857,7 @@ jobs:
           echo ""
           echo "✅ All compatible projects built successfully"
 
-      - name:  Run tests (.NET 6.0 - 10.0 only - ARM64 compatible)
+      - name: Run tests (.NET 6.0 - 10.0 only - ARM64 compatible)
         run: |
           # Find all test projects (C#, VB.NET, F#).
           # Gracefully skip if there is no ./tests directory (e.g. template-publishing
@@ -1931,6 +1934,9 @@ jobs:
                 --settings coverlet.runsettings \
                 --results-directory "./TestResults" \
                 --logger "console;verbosity=normal" || exit 1
+              # Ledger of what ran, so the coverage gate below can tell "nothing to cover"
+              # from "coverage collection broke" (#592), as Stage 1 and 2 do.
+              echo "$test_proj ($fw)" >> "$RUNNER_TEMP/stage3-ran-tests.txt"
             done <<< "$frameworks"
             echo ""
           done
@@ -1958,7 +1964,14 @@ jobs:
           # actually collected — instead of failing with "Coverage report
           # not generated!" on jobs that legitimately had nothing to cover.
           if ! find ./TestResults -name "coverage.cobertura.xml" -print -quit 2>/dev/null | grep -q .; then
-            echo "ℹ️  No coverage files produced — skipping coverage gate (consistent with the prior 'skipping report generation' notice)."
+            if [ -s "$RUNNER_TEMP/stage3-ran-tests.txt" ]; then
+              # Tests ran, so no coverage means collection broke (e.g. a dropped
+              # coverlet.collector). Skipping here would report green without a gate (#592).
+              echo "❌ Tests ran but produced no coverage files - the coverage gate cannot be evaluated. Test runs:"
+              cat "$RUNNER_TEMP/stage3-ran-tests.txt"
+              exit 1
+            fi
+            echo "ℹ️  No coverage files produced and no tests ran — skipping coverage gate."
             exit 0
           fi
           if [ ! -f "CoverageReport/Summary.txt" ]; then
@@ -2095,8 +2108,9 @@ jobs:
       - name: Fetch trusted configuration files from main branch
         # Skip for Dependabot — its package-version bumps to protected files (e.g.
         # Directory.Build.props) are legitimate and should not be overwritten by main's
-        # older versions. Dependabot's identity is GitHub-controlled and not spoofable.
-        if: github.event.pull_request.user.login != 'dependabot[bot]'
+        # older versions. Exempt only when Dependabot opened the PR AND triggered this run: a
+        # collaborator's push to a dependabot/** branch keeps the PR author but not the actor (#592).
+        if: github.event.pull_request.user.login != 'dependabot[bot]' || github.actor != 'dependabot[bot]'
         run: |
           echo "Fetching configuration files from main branch to prevent malicious overrides..."
           
