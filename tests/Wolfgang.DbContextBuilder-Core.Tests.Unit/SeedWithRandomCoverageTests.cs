@@ -181,19 +181,57 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
-    /// Verifies SeedWith rejects null, a string element type, and (params) a null item.
+    /// Verifies SeedWith(IEnumerable) rejects a null sequence.
     /// </summary>
     [Fact]
-    public void SeedWith_rejects_null_string_type_and_null_items()
+    public void SeedWith_IEnumerable_when_null_throws_ArgumentNullException()
     {
         using var sut = new DbContextBuilder<CoverageContext>();
 
         Assert.Throws<ArgumentNullException>(() => sut.SeedWith((IEnumerable<CoverageManufacturer>)null!));
-        var stringType = Assert.Throws<ArgumentException>(() => sut.SeedWith(new[] { "not an entity" }.AsEnumerable()));
-        Assert.StartsWith("The type of TEntity cannot be string", stringType.Message, StringComparison.Ordinal);
+    }
+
+
+
+    /// <summary>
+    /// Verifies SeedWith(IEnumerable) rejects a string element type.
+    /// </summary>
+    [Fact]
+    public void SeedWith_IEnumerable_when_TEntity_is_string_throws_ArgumentException()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>();
+
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(new[] { "not an entity" }.AsEnumerable()));
+
+        Assert.StartsWith("The type of TEntity cannot be string", ex.Message, StringComparison.Ordinal);
+    }
+
+
+
+    /// <summary>
+    /// Verifies SeedWith(params) rejects a null array.
+    /// </summary>
+    [Fact]
+    public void SeedWith_params_when_null_throws_ArgumentNullException()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>();
+
         Assert.Throws<ArgumentNullException>(() => sut.SeedWith((CoverageManufacturer[])null!));
-        var nullItem = Assert.Throws<ArgumentException>(() => sut.SeedWith(new CoverageManufacturer { Id = 1 }, null!));
-        Assert.StartsWith("One of the entities is null", nullItem.Message, StringComparison.Ordinal);
+    }
+
+
+
+    /// <summary>
+    /// Verifies SeedWith(params) rejects a null item.
+    /// </summary>
+    [Fact]
+    public void SeedWith_params_when_an_item_is_null_throws_ArgumentException()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>();
+
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(new CoverageManufacturer { Id = 1 }, null!));
+
+        Assert.StartsWith("One of the entities is null", ex.Message, StringComparison.Ordinal);
     }
 
 
@@ -216,20 +254,44 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
-    /// Verifies the singleton overload seeds one row and rejects null and string instances.
+    /// Verifies the singleton overload seeds one row.
     /// </summary>
     [Fact]
-    public async Task SeedWith_singleton_seeds_one_row_and_validates()
+    public async Task SeedWith_singleton_seeds_one_row()
     {
         using var sut = new DbContextBuilder<CoverageContext>().UseInMemory();
 
         await using var context = await sut.SeedWith(new CoverageManufacturer { Id = 1, Name = "a" }).BuildAsync();
-        Assert.Equal(1, context.Manufacturers.Count());
 
-        using var other = new DbContextBuilder<CoverageContext>();
-        Assert.Throws<ArgumentNullException>(() => other.SeedWith((CoverageManufacturer)null!));
-        var singleString = Assert.Throws<ArgumentException>(() => other.SeedWith<object>("a string"));
-        Assert.StartsWith("One of the entities passed in is of type string", singleString.Message, StringComparison.Ordinal);
+        Assert.Equal(1, context.Manufacturers.Count());
+    }
+
+
+
+    /// <summary>
+    /// Verifies the singleton overload rejects a null entity.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_when_null_throws_ArgumentNullException()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>();
+
+        Assert.Throws<ArgumentNullException>(() => sut.SeedWith((CoverageManufacturer)null!));
+    }
+
+
+
+    /// <summary>
+    /// Verifies the singleton overload rejects a string even when TEntity is widened to object.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_when_TEntity_is_widened_to_object_rejects_a_string()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>();
+
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith<object>("a string"));
+
+        Assert.StartsWith("One of the entities passed in is of type string", ex.Message, StringComparison.Ordinal);
     }
 
 
@@ -698,16 +760,26 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
-    /// Both transform overloads accept a count of exactly 1, the smallest valid count, and reject a
-    /// null transform.
+    /// Both transform overloads reject a null transform, even at the smallest valid count.
     /// </summary>
     [Fact]
-    public async Task SeedWithRandom_transform_overloads_accept_a_count_of_1_and_reject_a_null_transform()
+    public void SeedWithRandom_transform_overloads_when_func_is_null_throws_ArgumentNullException()
     {
         using var sut = NewBuilder().UseInMemory();
 
         Assert.Equal("func", Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom<CoverageManufacturer>(1, (Func<CoverageManufacturer, CoverageManufacturer>)null!)).ParamName);
         Assert.Equal("func", Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom<CoverageManufacturer>(1, (Func<CoverageManufacturer, int, CoverageManufacturer>)null!)).ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Both transform overloads accept a count of exactly 1, the smallest valid count.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_transform_overloads_accept_a_count_of_1()
+    {
+        using var sut = NewBuilder().UseInMemory();
 
         await using var context = await sut
             .SeedWithRandom<CoverageManufacturer>(1, m => m)
@@ -898,10 +970,10 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
-    /// Verifies UseDbContextOptionsBuilder accepts a builder and rejects null.
+    /// Verifies UseDbContextOptionsBuilder's builder is the one BuildAsync uses.
     /// </summary>
     [Fact]
-    public async Task UseDbContextOptionsBuilder_is_honored_and_rejects_null()
+    public async Task UseDbContextOptionsBuilder_is_honored()
     {
         var options = new DbContextOptionsBuilder<CoverageContext>()
             .UseInMemoryDatabase("explicit-options")
@@ -913,9 +985,19 @@ public class SeedWithRandomCoverageTests
 
         // Only the caller's builder turned sensitive-data logging on, so this proves it was the one used.
         Assert.True(context.GetService<IDbContextOptions>().FindExtension<CoreOptionsExtension>()!.IsSensitiveDataLoggingEnabled);
+    }
 
-        using var other = new DbContextBuilder<CoverageContext>();
-        Assert.Throws<ArgumentNullException>(() => other.UseDbContextOptionsBuilder(null!));
+
+
+    /// <summary>
+    /// Verifies UseDbContextOptionsBuilder rejects null.
+    /// </summary>
+    [Fact]
+    public void UseDbContextOptionsBuilder_when_null_throws_ArgumentNullException()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>();
+
+        Assert.Throws<ArgumentNullException>(() => sut.UseDbContextOptionsBuilder(null!));
     }
 
 
@@ -1082,73 +1164,69 @@ internal sealed class DeterministicRandomEntityCreator : ICreateRandomEntities
         var t = Nullable.GetUnderlyingType(type) ?? type;
         var n = ++_seq;
 
-        if (t == typeof(string)) return $"value-{n}";
-        if (t == typeof(int)) return n;
-        if (t == typeof(long)) return (long)n;
-        if (t == typeof(short)) return (short)n;
-        if (t == typeof(byte)) return (byte)(n % 256);
-        if (t == typeof(decimal)) return (decimal)n;
-        if (t == typeof(double)) return (double)n;
-        if (t == typeof(float)) return (float)n;
-        if (t == typeof(bool)) return true;
-        if (t == typeof(Guid)) return new Guid(n, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-        if (t == typeof(DateTime)) return new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddDays(n);
-        if (t.IsEnum) return Enum.GetValues(t).GetValue(0);
+        if (t == typeof(string))
+        {
+            return $"value-{n}";
+        }
+
+        if (t == typeof(int))
+        {
+            return n;
+        }
+
+        if (t == typeof(long))
+        {
+            return (long)n;
+        }
+
+        if (t == typeof(short))
+        {
+            return (short)n;
+        }
+
+        if (t == typeof(byte))
+        {
+            return (byte)(n % 256);
+        }
+
+        if (t == typeof(decimal))
+        {
+            return (decimal)n;
+        }
+
+        if (t == typeof(double))
+        {
+            return (double)n;
+        }
+
+        if (t == typeof(float))
+        {
+            return (float)n;
+        }
+
+        if (t == typeof(bool))
+        {
+            return true;
+        }
+
+        if (t == typeof(Guid))
+        {
+            return new Guid(n, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        }
+
+        if (t == typeof(DateTime))
+        {
+            return new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddDays(n);
+        }
+
+        if (t.IsEnum)
+        {
+            return Enum.GetValues(t).GetValue(0);
+        }
 
         // Reference/complex types (navigation properties) are left unset.
         return null;
     }
-}
-
-
-
-internal sealed class CoverageManufacturer
-{
-    public int Id { get; set; }
-
-    public string Name { get; set; } = string.Empty;
-}
-
-
-
-internal sealed class CoverageSupplier
-{
-    public int Id { get; set; }
-
-    public string Name { get; set; } = string.Empty;
-}
-
-
-
-// Test-only EF entity POCO — properties are populated by the random-entity
-// creator via reflection. R# cannot see reflection consumers and reports the
-// scalar FK setters as unused.
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-internal class CoverageWidget
-{
-    public int Id { get; set; }
-
-    public string Name { get; set; } = string.Empty;
-
-    public int ManufacturerId { get; set; }
-
-    // Virtual so the random-entity double leaves it unset (only the scalar FK is populated).
-    public virtual CoverageManufacturer? Manufacturer { get; set; }
-
-    public int? SupplierId { get; set; }
-
-    public virtual CoverageSupplier? Supplier { get; set; }
-}
-
-
-
-internal sealed class CoverageContext(DbContextOptions<CoverageContext> options) : DbContext(options)
-{
-    public DbSet<CoverageManufacturer> Manufacturers => Set<CoverageManufacturer>();
-
-    public DbSet<CoverageSupplier> Suppliers => Set<CoverageSupplier>();
-
-    public DbSet<CoverageWidget> Widgets => Set<CoverageWidget>();
 }
 
 

@@ -139,7 +139,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
         // Arrange
         using var sut = CreateDbContextBuilder();
 
-        var buffer = new StringBuilder(10_240);
+        var buffer = new StringBuilder();
         var sw = new StringWriter(buffer);
 
         var optionsBuilder = new DbContextOptionsBuilder<AdventureWorksDbContext>()
@@ -491,7 +491,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
         // Arrange — capture all EF log output via .LogTo
         using var sut = CreateDbContextBuilder();
 
-        var buffer = new StringBuilder(10_240);
+        var buffer = new StringBuilder();
         var sw = new StringWriter(buffer);
 
         var optionsBuilder = new DbContextOptionsBuilder<AdventureWorksDbContext>()

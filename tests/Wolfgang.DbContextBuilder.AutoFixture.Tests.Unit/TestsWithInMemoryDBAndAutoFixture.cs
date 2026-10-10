@@ -74,11 +74,11 @@ public class TestsWithInMemoryDbAndAutoFixture : DbContextBuilderTestsBase
     public async Task BuildAsync_without_a_provider_returns_an_InMemory_context()
     {
         // Arrange
-        using var builder = new DbContextBuilder<AdventureWorksDbContext>();
-        await using var sut = await builder.BuildAsync();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        await using var context = await sut.BuildAsync();
 
         // Act & Assert
-        Assert.True(sut.Database.IsInMemory());
+        Assert.True(context.Database.IsInMemory());
     }
 
 
