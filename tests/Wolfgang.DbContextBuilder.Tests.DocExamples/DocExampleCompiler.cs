@@ -7,8 +7,7 @@ namespace Wolfgang.DbContextBuilder.Tests.DocExamples;
 
 /// <summary>
 /// Compiles an extracted doc <see cref="DocExample"/> against the real
-/// <c>Wolfgang.DbContextBuilder-Core</c> (and, where an example uses it,
-/// <c>Wolfgang.DbContextBuilder.Bogus</c>) assemblies. The snippet is wrapped in a synthetic
+/// <c>Wolfgang.DbContextBuilder-Core-EF10</c>, <c>.AutoFixture</c> and <c>.Bogus</c> assemblies. The snippet is wrapped in a synthetic
 /// harness that supplies the imports and the placeholder identifiers the illustrative
 /// snippets reference (<c>ShopDbContext</c>, <c>Product</c>, …) while the actual API calls
 /// (<c>UseInMemory</c>/<c>SeedWith</c>/<c>SeedWithRandom</c>/<c>UseBogus</c>/<c>UseSeedProfile</c>/
@@ -23,6 +22,14 @@ public static class DocExampleCompiler
     // not folded into the wrapper method body - a class cannot be declared inside a method.
     private static readonly Regex TypeDeclarationStart = new(
         @"^\s*(?:public\s+|internal\s+|private\s+)?(?:sealed\s+|abstract\s+|static\s+|partial\s+)*(?:class|interface|struct|record)\b",
+        RegexOptions.Compiled | RegexOptions.ExplicitCapture,
+        TimeSpan.FromSeconds(1));
+
+    // A using DIRECTIVE (`using Some.Namespace;`), not a using declaration (`using var x = ...`).
+    // Markdown samples start with the directives a consumer writes; they belong at the top of the
+    // generated file, not inside the wrapper method (#600).
+    private static readonly Regex UsingDirective = new(
+        @"^\s*using\s+(?!var\b)[A-Za-z_][\w.]*\s*;\s*$",
         RegexOptions.Compiled | RegexOptions.ExplicitCapture,
         TimeSpan.FromSeconds(1));
 
@@ -57,7 +64,19 @@ public static class DocExampleCompiler
 
     private static string BuildSource(DocExample example)
     {
-        var (headerLines, bodyLines, bodyStartLine) = SplitHeaderAndBody(example.Code, example.Line);
+        // Lift using directives to the top of the file; blank their lines so #line mapping holds.
+        var usings = new List<string>();
+        var codeLines = example.Code.Split('\n');
+        for (var i = 0; i < codeLines.Length; i++)
+        {
+            if (UsingDirective.IsMatch(codeLines[i]))
+            {
+                usings.Add(codeLines[i].Trim());
+                codeLines[i] = string.Empty;
+            }
+        }
+
+        var (headerLines, bodyLines, bodyStartLine) = SplitHeaderAndBody(string.Join('\n', codeLines), example.Line);
         var (signature, closer) = WrapperSignature(string.Join('\n', bodyLines));
         var location = example.File; // repository-relative, already forward-slashed
 
@@ -79,6 +98,8 @@ public static class DocExampleCompiler
             using System.Collections.Generic;
             using Microsoft.EntityFrameworkCore;
             using Wolfgang.DbContextBuilderCore;
+            using Xunit;
+            {{string.Join('\n', usings)}}
 
             namespace DocExamples.Generated
             {
@@ -97,6 +118,53 @@ public static class DocExampleCompiler
                 public sealed class Product
                 {
                     public string Name { get; set; } = string.Empty;
+                }
+
+                // The placeholder names the README and docfx pages use (#600).
+                public sealed class YourDbContext : DbContext
+                {
+                }
+
+                public sealed class MyDbContext : DbContext
+                {
+                }
+
+                public sealed class YourEntity
+                {
+                    public int Id { get; set; }
+
+                    public string Name { get; set; } = string.Empty;
+                }
+
+                public sealed class User
+                {
+                    public int Id { get; set; }
+
+                    public string Name { get; set; } = string.Empty;
+                }
+
+                public sealed class Customer
+                {
+                    public int Id { get; set; }
+
+                    public string Name { get; set; } = string.Empty;
+                }
+
+                public sealed class Order
+                {
+                    public int Id { get; set; }
+                }
+
+                public sealed class YourService(DbContext context)
+                {
+                    public DbContext Context { get; } = context;
+                }
+
+                public sealed class UserService(DbContext context)
+                {
+                    public DbContext Context { get; } = context;
+
+                    public Task<User> GetByIdAsync(int id) => Task.FromResult(new User { Id = id });
                 }
 
             {{header}}
@@ -233,6 +301,7 @@ public static class DocExampleCompiler
         // ever loaded from outside the TPA closure.
         AddIfUnseen(references, seen, typeof(DbContextBuilder<>).Assembly.Location);
         AddIfUnseen(references, seen, typeof(BogusRandomEntityCreator).Assembly.Location);
+        AddIfUnseen(references, seen, typeof(AutoFixtureRandomEntityCreator).Assembly.Location);
 
         return references;
     }

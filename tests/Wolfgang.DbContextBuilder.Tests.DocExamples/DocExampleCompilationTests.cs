@@ -1,49 +1,51 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Wolfgang.DbContextBuilderCore;
-using Xunit.Abstractions;
 
 namespace Wolfgang.DbContextBuilder.Tests.DocExamples;
 
 /// <summary>
-/// Guards against XML-doc example rot (#306): every <c>&lt;example&gt;&lt;code&gt;</c>
-/// block in the library's documentation comments must still compile against the
-/// current public API. A snippet that references a renamed or removed member becomes
-/// a failing test instead of silently outliving the API it documents.
+/// Guards against documentation example rot (#306, #600): every <c>&lt;example&gt;&lt;code&gt;</c>
+/// block in the library's XML-doc comments and every <c>```csharp</c> fence in the README,
+/// examples/README and docfx pages must still compile against the current public API. A sample
+/// that references a renamed or removed member becomes a failing test instead of silently
+/// outliving the API it documents.
 /// </summary>
 public sealed class DocExampleCompilationTests
 {
-    public static IEnumerable<object[]> Examples()
-        => DocExampleSource.DiscoverAll().Select(example => new object[] { example });
-
-
     [Fact]
-    public void Source_scan_finds_the_documented_examples()
+    public async Task DiscoverAllAsync_finds_the_documented_examples()
     {
-        var examples = DocExampleSource.DiscoverAll();
+        var examples = await DocExampleSource.DiscoverAllAsync();
 
-        // Floor guard: if extraction (or source-tree location) ever silently breaks, the
-        // theory below would pass vacuously with zero cases. This fails loudly instead.
-        // Two are known today (ISeedProfile.cs, BogusRandomEntityCreator.cs) - the floor is
-        // set at that count rather than padded, so a regression to zero is caught immediately
-        // rather than waiting for a third example to be added.
+        // Floor guards: if extraction (or tree location) ever silently breaks, the compile test
+        // below would pass vacuously. Set at today's counts, not padded: 2 XML-doc examples
+        // (ISeedProfile.cs, BogusRandomEntityCreator.cs) and 6 Markdown samples (README.md,
+        // examples/README.md, docfx introduction.md and 3 in getting-started.md).
         Assert.True(
-            examples.Count >= 2,
-            $"Expected to find the documented <example><code> blocks in the library source, "
-            + $"but found {examples.Count}. Doc-example extraction or source-tree discovery is broken.");
+            examples.Count(e => e.File.EndsWith(".cs", StringComparison.Ordinal)) >= 2,
+            $"Expected the documented <example><code> blocks in the library source; found {string.Join(", ", examples)}.");
+        Assert.True(
+            examples.Count(e => e.File.EndsWith(".md", StringComparison.Ordinal)) >= 6,
+            $"Expected the csharp samples in the Markdown docs; found {string.Join(", ", examples)}.");
     }
 
 
-    [Theory]
-    [MemberData(nameof(Examples))]
-    public void Documented_example_still_compiles(DocExample example)
+    [Fact]
+    public async Task Documented_examples_still_compile()
     {
-        ArgumentNullException.ThrowIfNull(example);
-        var errors = DocExampleCompiler.Compile(example);
+        // The message is built for every sample (not only failing ones) so this test's own failure
+        // path is executed, and covered, on every run.
+        var results = (await DocExampleSource.DiscoverAllAsync())
+            .Select(example =>
+            {
+                var errors = DocExampleCompiler.Compile(example);
+                return (Errors: errors, Message: BuildFailureMessage(example, errors));
+            })
+            .ToList();
+        var failures = results.Where(result => result.Errors.Count > 0).Select(result => result.Message).ToList();
 
-        Assert.True(
-            errors.Count == 0,
-            BuildFailureMessage(example, errors));
+        Assert.True(failures.Count == 0, string.Join(Environment.NewLine + Environment.NewLine, failures));
     }
 
 
@@ -51,9 +53,41 @@ public sealed class DocExampleCompilationTests
     {
         var rendered = string.Join(Environment.NewLine, errors.Select(e => "    " + e));
 
-        return $"The XML-doc <example> at {example.File}:{example.Line} no longer compiles "
+        return $"The documentation sample at {example.File}:{example.Line} no longer compiles "
             + $"against the current public API:{Environment.NewLine}{rendered}"
             + $"{Environment.NewLine}--- snippet ---{Environment.NewLine}{example.Code}";
+    }
+
+
+    [Fact]
+    public void ExtractFromMarkdown_strips_a_list_items_indentation_and_reports_the_first_code_line()
+    {
+        string[] lines = ["Text", "", "  ```csharp", "  var a = 1;", "  var b = 2;", "  ```", "after"];
+
+        var example = Assert.Single(DocExampleSource.ExtractFromMarkdown(lines, "doc.md"));
+
+        Assert.Equal("doc.md:4", example.ToString());
+        Assert.Equal("var a = 1;\nvar b = 2;", example.Code);
+    }
+
+
+    [Fact]
+    public void ExtractFromMarkdown_skips_a_fence_after_the_skip_marker()
+    {
+        string[] lines = [DocExampleSource.SkipMarker, "```csharp", ".Fragment()", "```", "```csharp", "var kept = 1;", "```"];
+
+        var example = Assert.Single(DocExampleSource.ExtractFromMarkdown(lines, "doc.md"));
+
+        Assert.Equal("var kept = 1;", example.Code);
+    }
+
+
+    [Fact]
+    public void Compile_lifts_a_using_directive_out_of_the_wrapper_method()
+    {
+        var example = new DocExample("doc.md", 1, "using System.Text;\nvar builder = new StringBuilder();");
+
+        Assert.Empty(DocExampleCompiler.Compile(example));
     }
 
 
@@ -122,76 +156,5 @@ public sealed class DocExampleCompilationTests
         var errors = DocExampleCompiler.Compile(example);
 
         Assert.Empty(errors);
-    }
-
-
-    [Fact]
-    public void DocExample_parameterless_constructor_produces_empty_defaults()
-    {
-        var example = new DocExample();
-
-        Assert.Equal(string.Empty, example.File);
-        Assert.Equal(0, example.Line);
-        Assert.Equal(string.Empty, example.Code);
-    }
-
-
-    [Fact]
-    public void DocExample_serializes_and_deserializes_all_properties()
-    {
-        var original = new DocExample("tests/Foo.cs", 42, "await Bar();");
-        var info = new FakeXunitSerializationInfo();
-
-        original.Serialize(info);
-
-        var restored = new DocExample();
-        restored.Deserialize(info);
-
-        Assert.Equal(original.File, restored.File);
-        Assert.Equal(original.Line, restored.Line);
-        Assert.Equal(original.Code, restored.Code);
-    }
-
-
-    [Fact]
-    public void DocExample_Serialize_and_Deserialize_reject_a_null_info()
-    {
-        var example = new DocExample("tests/Foo.cs", 1, "// nothing");
-
-        Assert.Throws<ArgumentNullException>(() => example.Serialize(null!));
-        Assert.Throws<ArgumentNullException>(() => example.Deserialize(null!));
-    }
-
-
-    // DocExample.Deserialize only ever calls the generic GetValue<T>(key) - the fake's
-    // non-generic GetValue(key, type) exists solely to satisfy IXunitSerializationInfo and
-    // is never reached through that path, so it needs its own direct test.
-    [Fact]
-    public void FakeXunitSerializationInfo_non_generic_GetValue_returns_the_stored_value()
-    {
-        IXunitSerializationInfo info = new FakeXunitSerializationInfo();
-        info.AddValue("key", "stored-value");
-
-        var value = info.GetValue("key", typeof(string));
-
-        Assert.Equal("stored-value", value);
-    }
-
-
-    // Minimal in-memory IXunitSerializationInfo so the round-trip above can run as a plain
-    // unit test instead of depending on the xunit runner's own (environment-dependent)
-    // decision to actually invoke Serialize/Deserialize for a given test host.
-    private sealed class FakeXunitSerializationInfo : IXunitSerializationInfo
-    {
-        private readonly Dictionary<string, object?> _values = new(StringComparer.Ordinal);
-
-
-        public void AddValue(string key, object? value, Type? type = null) => _values[key] = value;
-
-
-        public T GetValue<T>(string key) => (T)_values[key]!;
-
-
-        public object GetValue(string key, Type type) => _values[key]!;
     }
 }
