@@ -74,6 +74,11 @@ jobs:
         env:
           # workflow_dispatch input wins; scheduled runs fall back to the default.
           COYOTE_ITERATIONS: ${{ github.event.inputs.iterations || '5000' }}
+          # The step above rewrote the assemblies, so the suite must find them rewritten: without
+          # this, a rewrite that `dotnet test --no-build` does not load makes the run pass while
+          # exploring nothing (#618). Read by ConcurrentBuilderIsolationTests once a later,
+          # non-protected PR of this stack adds that assertion; until then it has no effect.
+          COYOTE_REQUIRE_REWRITTEN: '1'
         run: |
           dotnet test tests/Wolfgang.DbContextBuilder.Tests.Concurrency/Wolfgang.DbContextBuilder.Tests.Concurrency.csproj \
             -c Release --no-build \

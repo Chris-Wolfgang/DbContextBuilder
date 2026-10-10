@@ -33,8 +33,16 @@ on:
       - 'src/**'
       - 'benchmarks/**'
 
+# A label event other than perf-impact-acknowledged runs nothing (perf-delta skips it), so it
+# gets a group of its own: sharing the PR's group let adding ANY label (e.g. no-changelog)
+# cancel the in-flight benchmark run and leave the check cancelled. Pushes and the override
+# label still share the PR's group, so a newer one cancels an older one.
 concurrency:
-  group: pr-benchmarks-${{ github.event.pull_request.number }}
+  group: >-
+    pr-benchmarks-${{ github.event.pull_request.number }}${{
+    (github.event.action == 'labeled' || github.event.action == 'unlabeled')
+    && github.event.label.name != 'perf-impact-acknowledged'
+    && format('-ignored-{0}', github.run_id) || '' }}
   cancel-in-progress: true
 
 env:
@@ -65,9 +73,17 @@ jobs:
       || github.event.label.name == 'perf-impact-acknowledged'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Read-only: this job checks out and RUNS the PR's code (dotnet run of the benchmark
+    # project), so it must not hold a write token. The sticky comment is posted by the
+    # separate `comment` job below, which only reads this job's outputs (#592).
     permissions:
       contents: read
-      pull-requests: write   # marocchino/sticky-pull-request-comment posts/updates the delta-table comment
+    outputs:
+      mergebase: ${{ steps.mergebase.outputs.sha }}
+      table: ${{ steps.delta.outputs.table }}
+      regressed: ${{ steps.delta.outputs.regressed }}
+      acknowledged: ${{ steps.delta.outputs.acknowledged }}
+      baseline: ${{ steps.delta.outputs.baseline }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -123,6 +139,15 @@ jobs:
         run: |
           set -euo pipefail
           git checkout "$MERGE_BASE_SHA"
+          # A merge-base older than the benchmark project has nothing to run. Skip it, so
+          # "Compute delta" finds no base report and reports "no baseline" instead of this
+          # step failing on a missing project (#616).
+          if [ ! -f "$BENCH_PROJECT" ]; then
+            echo "::notice::The merge-base has no $BENCH_PROJECT - no baseline to run."
+            # The delta step runs `find` on this directory under pipefail; it must exist.
+            mkdir -p ./bdn-artifacts-base
+            exit 0
+          fi
           dotnet run \
             --project "$BENCH_PROJECT" \
             --configuration Release \
@@ -142,10 +167,26 @@ jobs:
 
           head_report="$(find ./bdn-artifacts-head -path '*/results/*BuildAsyncBenchmarks-report-full*.json' | head -1)"
           base_report="$(find ./bdn-artifacts-base -path '*/results/*BuildAsyncBenchmarks-report-full*.json' | head -1)"
-          if [ -z "$head_report" ] || [ -z "$base_report" ]; then
-            echo "::error::Missing a BDN report (head='$head_report' base='$base_report')"
+          if [ -z "$head_report" ]; then
+            echo "::error::The PR head produced no BDN report (bdn-artifacts-head) - the benchmark run broke."
             exit 1
           fi
+          if [ -z "$base_report" ]; then
+            # A merge-base without the benchmark class (renamed, or older than the project) is
+            # "no baseline", not a regression: report it and pass (#616).
+            echo "::notice::The merge-base produced no BuildAsyncBenchmarks report - no baseline to compare against."
+            {
+              echo "baseline=missing"
+              echo "regressed=0"
+              echo "acknowledged=true"
+              echo "table<<BENCHDELTA"
+              echo "No baseline: the merge-base has no \`BuildAsyncBenchmarks\` report (class renamed or newer than the merge-base), so there is nothing to compare."
+              echo "BENCHDELTA"
+            } >> "$GITHUB_OUTPUT"
+            echo '[]' > ./delta.json
+            exit 0
+          fi
+          echo "baseline=present" >> "$GITHUB_OUTPUT"
 
           rows="$(jq -n \
             --slurpfile head "$head_report" \
@@ -154,24 +195,41 @@ jobs:
             --argjson allocThreshold "$ALLOC_THRESHOLD_PCT" \
             --argjson timeAbsFloorNs "$TIME_ABS_FLOOR_NS" \
             '
-            ($base[0].Benchmarks | map({(.FullName): .}) | add) as $baseByName |
+            (($base[0].Benchmarks // []) | map({(.FullName): .}) | add // {}) as $baseByName |
             [$head[0].Benchmarks[] |
               . as $h |
               $baseByName[$h.FullName] as $b |
-              select($b != null) |
-              ($h.Statistics.Mean - $b.Statistics.Mean) as $timeDeltaNs |
-              ($timeDeltaNs / $b.Statistics.Mean * 100) as $timePct |
-              (($h.Memory.BytesAllocatedPerOperation - $b.Memory.BytesAllocatedPerOperation) / $b.Memory.BytesAllocatedPerOperation * 100) as $allocPct |
-              {
-                name: $h.FullName,
-                baseMeanNs: $b.Statistics.Mean, headMeanNs: $h.Statistics.Mean, timePct: ($timePct | round),
-                baseAllocBytes: $b.Memory.BytesAllocatedPerOperation, headAllocBytes: $h.Memory.BytesAllocatedPerOperation, allocPct: ($allocPct | round),
-                # Percentage alone flags the fastest benchmarks hardest -- also require the
-                # absolute time delta to clear a floor, so runner-jitter noise on a small
-                # baseline (big % of a tiny number) cannot trip the gate on its own.
-                regressed: ((($timePct > $timeThreshold) and ($timeDeltaNs > $timeAbsFloorNs)) or ($allocPct > $allocThreshold))
-              }
-            ] | sort_by(-.timePct)
+              # A missing Memory measurement stays null: it is unknown, not 0 B.
+              ($h.Memory.BytesAllocatedPerOperation // null) as $hAlloc |
+              if $b == null then
+                # Added or renamed in the PR: listed as new, never a regression (#616).
+                { name: $h.FullName, isNew: true,
+                  baseMeanNs: null, headMeanNs: $h.Statistics.Mean, timePct: null,
+                  baseAllocBytes: null, headAllocBytes: $hAlloc, allocPct: null, regressed: false }
+              else
+                ($b.Memory.BytesAllocatedPerOperation // null) as $bAlloc |
+                ($h.Statistics.Mean - $b.Statistics.Mean) as $timeDeltaNs |
+                (if $b.Statistics.Mean > 0 then $timeDeltaNs / $b.Statistics.Mean * 100 else null end) as $timePct |
+                # No percentage unless both sides were measured. With both present, a 0 B base
+                # has no percentage (#616): 0 -> 0 is 0%, 0 -> N is n/a rather than dividing by zero.
+                (if $bAlloc == null or $hAlloc == null then null
+                 elif $bAlloc > 0 then ($hAlloc - $bAlloc) / $bAlloc * 100
+                 elif $hAlloc == 0 then 0
+                 else null end) as $allocPct |
+                {
+                  name: $h.FullName, isNew: false,
+                  baseMeanNs: $b.Statistics.Mean, headMeanNs: $h.Statistics.Mean,
+                  timePct: (if $timePct == null then null else ($timePct | round) end),
+                  baseAllocBytes: $bAlloc, headAllocBytes: $hAlloc,
+                  allocPct: (if $allocPct == null then null else ($allocPct | round) end),
+                  # Percentage alone flags the fastest benchmarks hardest -- also require the
+                  # absolute time delta to clear a floor, so runner-jitter noise on a small
+                  # baseline (big % of a tiny number) cannot trip the gate on its own.
+                  regressed: ((($timePct != null) and ($timePct > $timeThreshold) and ($timeDeltaNs > $timeAbsFloorNs))
+                              or (($allocPct != null) and ($allocPct > $allocThreshold)))
+                }
+              end
+            ] | sort_by(-(.timePct // 0))
             ')"
 
           echo "$rows" > ./delta.json
@@ -182,7 +240,11 @@ jobs:
             echo "table<<BENCHDELTA"
             echo "| Benchmark | Base mean | Head mean | Δ time | Base alloc | Head alloc | Δ alloc |"
             echo "|---|---:|---:|---:|---:|---:|---:|"
-            echo "$rows" | jq -r '.[] | "| \(.name) | \(.baseMeanNs/1000|round) us | \(.headMeanNs/1000|round) us | \(if .regressed then "**" else "" end)\(.timePct)%\(if .regressed then "**" else "" end) | \(.baseAllocBytes) B | \(.headAllocBytes) B | \(if .regressed then "**" else "" end)\(.allocPct)%\(if .regressed then "**" else "" end) |"'
+            echo "$rows" | jq -r '
+              def b: if .regressed then "**" else "" end;
+              def pct(v): if v == null then "n/a" else "\(v)%" end;
+              def bytes(v): if v == null then "n/a" else "\(v) B" end;
+              .[] | "| \(.name)\(if .isNew then " (new)" else "" end) | \(if .baseMeanNs == null then "-" else "\(.baseMeanNs/1000|round) us" end) | \(.headMeanNs/1000|round) us | \(b)\(pct(.timePct))\(b) | \(if .isNew then "-" else bytes(.baseAllocBytes) end) | \(bytes(.headAllocBytes)) | \(b)\(pct(.allocPct))\(b) |"'
             echo "BENCHDELTA"
           } >> "$GITHUB_OUTPUT"
 
@@ -191,19 +253,6 @@ jobs:
           else
             echo "acknowledged=true" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Comment delta table on PR
-        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
-        with:
-          header: perf-delta
-          message: |
-            ### Benchmark delta vs base (`${{ steps.mergebase.outputs.sha }}`)
-
-            Time threshold: ${{ env.TIME_THRESHOLD_PCT }}% (and >${{ env.TIME_ABS_FLOOR_NS }}ns absolute) · Allocation threshold: ${{ env.ALLOC_THRESHOLD_PCT }}%. Bold = over threshold.
-
-            ${{ steps.delta.outputs.table }}
-
-            ${{ steps.delta.outputs.regressed != '0' && (steps.delta.outputs.acknowledged == 'true' && '⚠️ Regression(s) found, but the PR carries `perf-impact-acknowledged` -- not blocking.' || '🔴 Regression(s) found beyond threshold. Add the `perf-impact-acknowledged` label to override, or address the regression.') || '✅ No regressions beyond threshold.' }}
 
       - name: Fail on unacknowledged regression
         if: steps.delta.outputs.acknowledged == 'false'
@@ -220,3 +269,34 @@ jobs:
           name: pr-benchmark-delta
           path: ./delta.json
           if-no-files-found: warn
+
+  # Posts the delta table. The only job with pull-requests: write, and it never checks out or
+  # runs PR code: it reads perf-delta's outputs, the same split pr.yaml uses for
+  # inspectcode-upload (#592). Runs after a failed gate too - the table is the point then.
+  comment:
+    name: Post the benchmark delta comment
+    needs: perf-delta
+    # Under pull_request a fork's token - and Dependabot's - is read-only, so the comment
+    # would fail with a permissions error even when the gate passed. Same guard as pr.yaml's
+    # inspectcode-upload; those PRs still get the gate, just not the comment.
+    if: >-
+      always() && needs.perf-delta.outputs.table != ''
+      && github.event.pull_request.head.repo.full_name == github.repository
+      && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write   # marocchino/sticky-pull-request-comment posts/updates the delta-table comment
+    steps:
+      - name: Comment delta table on PR
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          header: perf-delta
+          message: |
+            ### Benchmark delta vs base (`${{ needs.perf-delta.outputs.mergebase }}`)
+
+            Time threshold: ${{ env.TIME_THRESHOLD_PCT }}% (and >${{ env.TIME_ABS_FLOOR_NS }}ns absolute) · Allocation threshold: ${{ env.ALLOC_THRESHOLD_PCT }}%. Bold = over threshold.
+
+            ${{ needs.perf-delta.outputs.table }}
+
+            ${{ needs.perf-delta.outputs.baseline == 'missing' && 'ℹ️ No baseline to compare against - not blocking.' || (needs.perf-delta.outputs.regressed != '0' && (needs.perf-delta.outputs.acknowledged == 'true' && '⚠️ Regression(s) found, but the PR carries `perf-impact-acknowledged` -- not blocking.' || '🔴 Regression(s) found beyond threshold. Add the `perf-impact-acknowledged` label to override, or address the regression.') || '✅ No regressions beyond threshold.') }}
