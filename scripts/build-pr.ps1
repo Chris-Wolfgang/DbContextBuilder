@@ -7,9 +7,9 @@
     Replicates the PR workflow's Windows stage locally so you can verify
     your changes will pass before pushing. Runs in order:
       1. Restore and build (Release)
-      2. Run all tests across all target frameworks
+      2. TFM parity guard, then all tests across all target frameworks
       3. Generate coverage report and enforce threshold
-      4. Run DevSkim security scan
+      4. Run DevSkim security scan (any finding fails, as in pr.yaml)
       5. Run gitleaks secrets scan
 
 .PARAMETER SkipTests
@@ -121,7 +121,15 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
     $ranAssemblies = @()
 
     if ($testProjects.Count -eq 0) {
-        Write-Host "No test projects found in ./tests — skipping"
+        # Same rule as pr.yaml: no tests is only acceptable when there is nothing to test.
+        $srcProjects = @(Get-ChildItem -Path './src' -Recurse -File -Include '*.csproj', '*.vbproj', '*.fsproj' -ErrorAction SilentlyContinue)
+        if ($srcProjects.Count -gt 0) {
+            Write-Fail "No test projects found in ./tests but ./src contains projects — refusing to skip the coverage gate"
+            $failed += "Tests"
+        }
+        else {
+            Write-Host "No test projects found in ./tests and no ./src projects — skipping"
+        }
     }
     else {
         foreach ($testProj in $testProjects) {
@@ -182,6 +190,11 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
                         $testArgs += 'coverlet.runsettings'
                     }
                     $collectedCoverage = $true
+                }
+                else {
+                    # Neither collector applies (e.g. netcoreapp3.1 in a project that also targets
+                    # net5+); say so instead of silently running without coverage (#626).
+                    Write-Host "  $fw runs without coverage collection" -ForegroundColor Yellow
                 }
 
                 dotnet test @testArgs
@@ -247,12 +260,19 @@ if (-not $SkipTests -and -not $SkipCoverage -and $failed.Count -eq 0) {
         $failed += "Coverage"
     }
     else {
+        # A Summary.txt left by an earlier local run must never be judged as this run's (#590).
+        if (Test-Path "CoverageReport") { Remove-Item "CoverageReport" -Recurse -Force }
         dotnet reportgenerator `
             -reports:"TestResults/**/coverage.cobertura.xml" `
             -targetdir:"CoverageReport" `
             -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
+        $reportGeneratorExit = $LASTEXITCODE
 
-        if (Test-Path "CoverageReport/Summary.txt") {
+        if ($reportGeneratorExit -ne 0) {
+            Write-Fail "reportgenerator failed (exit code $reportGeneratorExit) — the coverage gate cannot be evaluated"
+            $failed += "Coverage"
+        }
+        elseif (Test-Path "CoverageReport/Summary.txt") {
             Write-Host ""
             Get-Content "CoverageReport/Summary.txt"
             Write-Host ""
@@ -285,8 +305,12 @@ if (-not $SkipTests -and -not $SkipCoverage -and $failed.Count -eq 0) {
             })
 
             $failedProjects = @()
+            $matchedModules = 0
             foreach ($line in (Get-Content "CoverageReport/Summary.txt")) {
-                if ($line -match '^\s*(\S+)\s+(\d+(?:\.\d+)?)%\s*$' -and $line -notmatch '^\s*Summary') {
+                # Module rows only, as pr.yaml Stage 2 matches them: they start in column 1.
+                # The old leading \s* also admitted ReportGenerator's indented per-class rows (#590).
+                if ($line -match '^(\S+).*\s(\d+(?:\.\d+)?)%\s*$' -and $line -notmatch '^Summary') {
+                    $matchedModules++
                     $module = $Matches[1]
                     $percent = [int][math]::Floor([double]$Matches[2])
                     $applies = if ($testAssemblies -contains $module) { $TestCoverageThreshold } else { $CoverageThreshold }
@@ -301,7 +325,12 @@ if (-not $SkipTests -and -not $SkipCoverage -and $failed.Count -eq 0) {
                 }
             }
 
-            if ($failedProjects.Count -gt 0) {
+            if ($matchedModules -eq 0) {
+                # Nothing parsed means nothing was judged: fail loudly, as pr.yaml does.
+                Write-Fail "No module rows could be parsed from CoverageReport/Summary.txt — the coverage gate cannot be evaluated"
+                $failed += "Coverage"
+            }
+            elseif ($failedProjects.Count -gt 0) {
                 Write-Fail "Coverage threshold FAILED: $($failedProjects -join ', ')"
                 $failed += "Coverage"
             }
@@ -334,7 +363,7 @@ if (-not $SkipSecurity) {
             --file-format text `
             --output-file devskim-results.txt `
             --ignore-rule-ids DS176209 `
-            --ignore-globs "**/api/**,**/CoverageReport/**,**/TestResults/**"
+            --ignore-globs "**/api/**,**/CoverageReport/**,**/TestResults/**,**/.github/license-audit/url-license-mappings.json"
         # Mirror pr.yaml, where a non-zero exit fails the DevSkim step.
         $devskimExit = $LASTEXITCODE
         $devskimRan = ($devskimExit -eq 0)
@@ -347,14 +376,20 @@ if (-not $SkipSecurity) {
         Remove-Item "devskim-results.txt" -ErrorAction SilentlyContinue
     }
     elseif (Test-Path "devskim-results.txt") {
-        $results = Get-Content "devskim-results.txt" -Raw
-        if ($results -and $results -match '(?i)(error|critical|high)') {
-            Write-Host $results
-            Write-Fail "DevSkim found security issues"
+        # ANY finding fails, as in pr.yaml: match the finding-line shape, not severity words.
+        # DevSkim's severities are Critical/Important/Moderate/BestPractice/ManualReview, so the
+        # old "error|critical|high" match let Important and Moderate findings pass (#590).
+        $findingPattern = '^.+:[0-9]+:[0-9]+:[0-9]+:[0-9]+ \[[A-Za-z]+\] DS[0-9]+'
+        $findings = @(Get-Content "devskim-results.txt" | Where-Object { $_ -match $findingPattern })
+        if ($findings.Count -gt 0) {
+            $findings | ForEach-Object { Write-Host $_ }
+            $findings | ForEach-Object { [regex]::Match($_, '\[[A-Za-z]+\]').Value } |
+                Group-Object | ForEach-Object { Write-Host "  $($_.Count) $($_.Name)" }
+            Write-Fail "DevSkim reported $($findings.Count) finding(s) — every finding fails the scan"
             $failed += "DevSkim"
         }
         else {
-            Write-Pass "No critical security issues found"
+            Write-Pass "No DevSkim findings"
         }
         Remove-Item "devskim-results.txt" -ErrorAction SilentlyContinue
     }
@@ -372,32 +407,56 @@ if (-not $SkipSecurity) {
     $gitleaks = Get-Command gitleaks -ErrorAction SilentlyContinue
     if (-not $gitleaks) {
         Write-Host "gitleaks not found — installing..."
+        # Same version as pr.yaml, verified against the release's published checksums
+        # (gitleaks_8.24.0_checksums.txt; the linux_x64 entry equals pr.yaml's pin) before
+        # anything is extracted or run (#590).
         $version = "8.24.0"
-        if ($IsWindows -or $env:OS -match 'Windows') {
-            $archive = "gitleaks_${version}_windows_x64.zip"
-            $url = "https://github.com/gitleaks/gitleaks/releases/download/v${version}/$archive"
-            $dest = Join-Path $env:LOCALAPPDATA "gitleaks"
-            New-Item -ItemType Directory -Force -Path $dest | Out-Null
-            $zip = Join-Path $env:TEMP $archive
-            Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
-            Expand-Archive -Path $zip -DestinationPath $dest -Force
-            Remove-Item $zip -ErrorAction SilentlyContinue
-            $env:PATH = "$dest;$env:PATH"
+        $sha256 = @{
+            'windows_x64.zip'     = 'dab91070b01feec49bd157375085c93a16fe85e13b3bff6916aaaa0a3b3b5fac' # DevSkim: ignore DS173237 - a release checksum, not a secret
+            'linux_x64.tar.gz'    = 'cb49b7de5ee986510fe8666ca0273a6cc15eb82571f2f14832c9e8920751f3a4' # DevSkim: ignore DS173237 - a release checksum, not a secret
+            'darwin_arm64.tar.gz' = 'a3d281867df087ded8c2f9afd35d61ff923a25e64caa127b720991ee433d763b' # DevSkim: ignore DS173237 - a release checksum, not a secret
+            'darwin_x64.tar.gz'   = 'bd9ed3294c086f10dcc5fc25de57d44ba940c19c1a5a3d5f1cfeb10b9dff005e' # DevSkim: ignore DS173237 - a release checksum, not a secret
+        }
+        $platform = if ($IsWindows -or $env:OS -match 'Windows') { 'windows_x64.zip' }
+                    elseif ($IsMacOS) { if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'darwin_arm64.tar.gz' } else { 'darwin_x64.tar.gz' } }
+                    else { 'linux_x64.tar.gz' }
+        $archive = "gitleaks_${version}_$platform"
+        $url = "https://github.com/gitleaks/gitleaks/releases/download/v${version}/$archive"
+        $download = Join-Path ([System.IO.Path]::GetTempPath()) $archive
+        Invoke-WebRequest -Uri $url -OutFile $download -UseBasicParsing
+        $actual = (Get-FileHash -Path $download -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($actual -ne $sha256[$platform]) {
+            Remove-Item $download -ErrorAction SilentlyContinue
+            Write-Fail "gitleaks checksum mismatch for $archive (expected $($sha256[$platform]), got $actual) — not running it"
+            $failed += "Gitleaks"
         }
         else {
-            $archive = "gitleaks_${version}_linux_x64.tar.gz"
-            $url = "https://github.com/gitleaks/gitleaks/releases/download/v${version}/$archive"
-            curl -sSfL $url | tar xz -C /usr/local/bin gitleaks
+            if ($platform -eq 'windows_x64.zip') {
+                $dest = Join-Path $env:LOCALAPPDATA "gitleaks"
+                New-Item -ItemType Directory -Force -Path $dest | Out-Null
+                Expand-Archive -Path $download -DestinationPath $dest -Force
+                $env:PATH = "$dest;$env:PATH"
+            }
+            else {
+                # A user-owned directory, as pr.yaml uses: /usr/local/bin needed root.
+                $dest = Join-Path $HOME ".local/bin"
+                New-Item -ItemType Directory -Force -Path $dest | Out-Null
+                tar xzf $download -C $dest gitleaks
+                $env:PATH = "${dest}:$env:PATH"
+            }
+            Remove-Item $download -ErrorAction SilentlyContinue
         }
     }
 
-    gitleaks detect --source . --verbose --redact
-    if ($LASTEXITCODE -ne 0) {
-        Write-Fail "Gitleaks found secrets"
-        $failed += "Gitleaks"
-    }
-    else {
-        Write-Pass "No secrets detected"
+    if ($failed -notcontains "Gitleaks") {
+        gitleaks detect --source . --verbose --redact
+        if ($LASTEXITCODE -ne 0) {
+            Write-Fail "Gitleaks found secrets"
+            $failed += "Gitleaks"
+        }
+        else {
+            Write-Pass "No secrets detected"
+        }
     }
 }
 

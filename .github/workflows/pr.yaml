@@ -101,7 +101,7 @@ jobs:
         # Pinned to a specific version with SHA256 checksum verification for supply-chain safety
         run: |
           GITLEAKS_VERSION="8.24.0"
-          GITLEAKS_SHA256="cb49b7de5ee986510fe8666ca0273a6cc15eb82571f2f14832c9e8920751f3a4"
+          GITLEAKS_SHA256="cb49b7de5ee986510fe8666ca0273a6cc15eb82571f2f14832c9e8920751f3a4"  # DevSkim: ignore DS173237 - a release checksum, not a secret
           mkdir -p "$HOME/.local/bin"
           TARBALL="$(mktemp)"
           curl -sSfL -o "$TARBALL" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
@@ -2144,13 +2144,16 @@ jobs:
         run: dotnet tool restore
 
       - name: Run DevSkim security scan
+        # url-license-mappings.json is ignored as a whole: its http:// key is the license URL a
+        # package declares (DS137138 "Insecure URL"), matched verbatim, so it cannot change.
+        # scripts/build-pr.ps1 carries the identical flags (#590).
         run: |
           dotnet devskim analyze \
             --source-code . \
             --file-format text \
             --output-file devskim-results.txt \
             --ignore-rule-ids DS176209 \
-            --ignore-globs "**/api/**,**/CoverageReport/**,**/TestResults/**"
+            --ignore-globs "**/api/**,**/CoverageReport/**,**/TestResults/**,**/.github/license-audit/url-license-mappings.json"
 
       - name: Display security scan results
         if: always()
@@ -2162,11 +2165,18 @@ jobs:
             cat devskim-results.txt
             echo ""
             
-            if grep -qi "error\|critical\|high" devskim-results.txt; then
-              echo "❌ Security issues detected - review required"
+            # ANY finding fails, whatever its severity (Critical, Important, Moderate,
+            # BestPractice, ManualReview). Match the finding-line shape, not severity words:
+            # the old "error|critical|high" grep let Important and Moderate findings pass (#590).
+            # Exclude a false positive narrowly (rule id, glob, or an inline DevSkim ignore).
+            finding='^.+:[0-9]+:[0-9]+:[0-9]+:[0-9]+ \[[A-Za-z]+\] DS[0-9]+'
+            if grep -qE "$finding" devskim-results.txt; then
+              echo "Findings by severity:"
+              grep -E "$finding" devskim-results.txt | grep -oE '\[[A-Za-z]+\]' | sort | uniq -c
+              echo "❌ DevSkim reported findings - every finding fails the scan"
               exit 1
             else
-              echo "✅ No critical security issues found"
+              echo "✅ No DevSkim findings"
             fi
           else
             echo "✅ No security issues found"
