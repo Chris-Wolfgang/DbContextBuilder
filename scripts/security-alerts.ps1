@@ -248,7 +248,9 @@ function Confirm-Label
     if ($label -notin $existing)
     {
         if ($DryRun) { Write-Host "DRY-RUN create label $label"; return }
-        $out = & gh label create $label -R $Repository --color 'd93f0b' --description 'Security-related' 2>&1
+        # Same color and description as scripts/Setup-Labels.ps1, so a fresh repository gets one
+        # definition whichever script creates the label first.
+        $out = & gh label create $label -R $Repository --color '1d76db' --description 'Security alert tracked by security-alerts.yml' 2>&1
         if ($LASTEXITCODE -ne 0) { throw "gh label create $label failed: $out" }
     }
 }
