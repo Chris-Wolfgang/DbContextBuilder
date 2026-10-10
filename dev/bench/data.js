@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791464069460,
+  "lastUpdate": 1791597862961,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -1716,6 +1716,84 @@ window.BENCHMARK_DATA = {
             "value": 3625339.921875,
             "unit": "ns",
             "range": "± 1457654.0689239071"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4216b69465944a71fd049efed88cc0d6dcb412eb",
+          "message": "release: v0.9.0 (#629)\n\nBumps every src project from 0.8.1 to 0.9.0 and assembles the eight changelog\nfragments into CHANGELOG.md (scripts/changelog.ps1 assemble). MINOR under the\n0.x rule because of one breaking change: Wolfgang.DbContextBuilder-Core is no\nlonger published (#432; IsPackable=false). Also: THIRD-PARTY-NOTICES.md in every\npackage (#473), the SeedWithRandom key fixes (#515, #530), the SQLite single\nmodel customizer (#549) and the EF Core 8/9/10 floors (#476). Fixes the\nCHANGELOG compare-link footer ([Unreleased] still pointed at v0.8.0, no 0.8.1\nlink). AssemblyVersion stays pinned at 1.0.0.0; PackageValidationBaselineVersion\nstays 0.8.1 until 0.9.0 is on the NuGet CDN.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-09T22:02:32-04:00",
+          "tree_id": "352a82e58a9aa9194d78b2b919a1f29db45f4f0f",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/4216b69465944a71fd049efed88cc0d6dcb412eb"
+        },
+        "date": 1791597861724,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 19521.89882405599,
+            "unit": "ns",
+            "range": "± 2127.9654654158217"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 24672.338155110676,
+            "unit": "ns",
+            "range": "± 342.76986974446766"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 86047.57552083333,
+            "unit": "ns",
+            "range": "± 15068.41839112627"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 18398.86479695638,
+            "unit": "ns",
+            "range": "± 79.20884591938315"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 49275.961263020836,
+            "unit": "ns",
+            "range": "± 1169.5631880234862"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 210012.3779296875,
+            "unit": "ns",
+            "range": "± 16144.18917517842"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 17867.489756266277,
+            "unit": "ns",
+            "range": "± 135.9112776357112"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 180509.48706054688,
+            "unit": "ns",
+            "range": "± 2985.9453753797893"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 1326143.6171875,
+            "unit": "ns",
+            "range": "± 65176.79449196893"
           }
         ]
       }
