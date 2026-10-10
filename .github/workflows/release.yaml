@@ -55,7 +55,12 @@ jobs:
             exit 1
           }
 
-          [xml]$props = Get-Content $propsPath -Raw
+          try {
+            [xml]$props = Get-Content $propsPath -Raw
+          } catch {
+            Write-Error "Cannot parse $propsPath as XML: $($_.Exception.Message)"
+            exit 1
+          }
           $versions = @($props.SelectNodes('/Project/PropertyGroup/Version') | ForEach-Object { $_.InnerText.Trim() } | Where-Object { $_ } | Sort-Object -Unique)
           if ($versions.Count -ne 1) {
             Write-Error "Expected exactly one <Version> in $propsPath, found $($versions.Count): $($versions -join ', ')"
@@ -67,9 +72,19 @@ jobs:
 
           # A csproj that sets its own <Version> would override the shared one and ship a
           # mismatched package, so none may.
-          $overrides = @(Get-ChildItem -Path './src' -Recurse -Filter '*.csproj' | Where-Object {
-            ([xml](Get-Content $_.FullName -Raw)).SelectNodes('/Project/PropertyGroup/Version | /Project/PropertyGroup/PackageVersion').Count -gt 0
-          })
+          # Parsed one by one so a malformed csproj fails with its own path, not a generic error.
+          $overrides = @()
+          foreach ($proj in Get-ChildItem -Path './src' -Recurse -Filter '*.csproj') {
+            try {
+              [xml]$xml = Get-Content $proj.FullName -Raw
+            } catch {
+              Write-Error "Cannot parse $($proj.FullName) as XML: $($_.Exception.Message)"
+              exit 1
+            }
+            if ($xml.SelectNodes('/Project/PropertyGroup/Version | /Project/PropertyGroup/PackageVersion').Count -gt 0) {
+              $overrides += $proj
+            }
+          }
           if ($overrides.Count -gt 0) {
             Write-Error "These src csprojs set their own <Version>/<PackageVersion>; remove it so $propsPath is the only source: $(($overrides | ForEach-Object Name) -join ', ')"
             exit 1
