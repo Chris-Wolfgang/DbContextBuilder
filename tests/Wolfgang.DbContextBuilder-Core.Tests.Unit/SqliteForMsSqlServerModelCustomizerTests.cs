@@ -41,7 +41,7 @@ public class SqliteForMsSqlServerModelCustomizerTests
     /// Verifies that setting OverrideTableRenaming property to null throws ArgumentNullException
     /// </summary>
     [Fact]
-    public void OverrideTableRenameRenaming_when_set_to_null_throws_ArgumentNullException()
+    public void OverrideTableRenaming_when_set_to_null_throws_ArgumentNullException()
     {
         // Arrange
 #if EF_CORE_6

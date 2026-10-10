@@ -47,7 +47,7 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit
         /// Verifies that passing count less than 1, throws an ArgumentOutOfRangeException
         /// </summary>
         [Fact]
-        public void Calling_CreateRandomEntities_with_value_less_than_1_throws_ArgumentOutOfRangeException()
+        public void CreateRandomEntities_when_count_is_less_than_1_throws_ArgumentOutOfRangeException()
         {
 
             // Arrange

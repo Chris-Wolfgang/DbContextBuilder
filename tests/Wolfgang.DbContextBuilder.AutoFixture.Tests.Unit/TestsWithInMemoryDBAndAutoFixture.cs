@@ -25,7 +25,7 @@ public class TestsWithInMemoryDbAndAutoFixture : DbContextBuilderTestsBase
     /// Verifies that UseInMemory returns a DbContext{T} for chaining additional calls
     /// </summary>
     [Fact]
-    public void UseInMemory_returns_DbContextBuilder()
+    public void UseInMemory_on_a_new_builder_returns_the_builder()
     {
         // Arrange
         using var sut = new DbContextBuilder<AdventureWorksDbContext>();
@@ -40,7 +40,7 @@ public class TestsWithInMemoryDbAndAutoFixture : DbContextBuilderTestsBase
     /// Verifies that UseAutoFixture returns a DbContext{T} for chaining additional calls
     /// </summary>
     [Fact]
-    public void UseAutoFixture_returns_DbContextBuilder()
+    public void UseAutoFixture_on_a_new_builder_returns_the_builder()
     {
         // Arrange
         using var sut = new DbContextBuilder<AdventureWorksDbContext>();
@@ -55,7 +55,7 @@ public class TestsWithInMemoryDbAndAutoFixture : DbContextBuilderTestsBase
     /// Verifies that the RandomEntityCreator used is an instance of AutoFixtureRandomEntityCreator
     /// </summary>
     [Fact]
-    public void RandomEntityCreator_is_AutoFixture()
+    public void UseAutoFixture_when_called_sets_an_AutoFixture_RandomEntityCreator()
     {
         // Arrange
         using var sut = new DbContextBuilder<AdventureWorksDbContext>().UseAutoFixture();
@@ -71,7 +71,7 @@ public class TestsWithInMemoryDbAndAutoFixture : DbContextBuilderTestsBase
     /// Verifies that the database used Microsoft's InMemory database
     /// </summary>
     [Fact]
-    public async Task Database_is_InMemory()
+    public async Task BuildAsync_without_a_provider_returns_an_InMemory_context()
     {
         // Arrange
         await using var sut = await new DbContextBuilder<AdventureWorksDbContext>().BuildAsync();
