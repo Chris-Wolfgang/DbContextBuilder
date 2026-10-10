@@ -54,10 +54,20 @@ jobs:
           # closed, not open.
           # Tagged F (current name) / P (previous name of a rename): both are classified, but
           # only F entries count toward the completeness check below (#592).
-          if ! changed_raw=$(gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/files" --jq '.[] | ("F\t" + .filename), (.previous_filename // empty | "P\t" + .)'); then
+          # Each API record is kept as one JSON line (@json escapes control characters), so a
+          # filename cannot split into extra records here.
+          if ! changed_json=$(gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/files" --jq '.[] | {f: .filename, p: .previous_filename} | @json'); then
             echo "::error::Could not list this PR's changed files - refusing to classify the change."
             exit 1
           fi
+          # A Git filename may legally contain a line break. Every step below reads one name per
+          # line, so such a name would split into extra entries - and extra F entries could pad
+          # the completeness count and hide a protected file past the 3000-file cap. Refuse.
+          if printf '%s\n' "$changed_json" | jq -e -s 'any(.[]; (.f + "/" + (.p // "")) | test("[\r\n]"))' > /dev/null; then
+            echo "::error::A changed filename contains a line break - refusing to classify. Rename the file."
+            exit 1
+          fi
+          changed_raw=$(printf '%s\n' "$changed_json" | jq -r '("F\t" + .f), (.p // empty | "P\t" + .)')
           mapfile -t all_changed < <(printf '%s\n' "$changed_raw" | cut -f2- | grep -v '^$')
           # The pull-request files endpoint is capped at 3000 files. Past that the listing is
           # silently short, and a protected file could sit outside it while the guard reports
