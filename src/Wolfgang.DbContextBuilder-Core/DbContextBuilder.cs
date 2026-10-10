@@ -77,7 +77,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Instructs the builder to use InMemory as the database provider.
     /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     /// <remarks>
     /// Provider selection is last-write-wins — calling <see cref="UseInMemory"/> after a
@@ -157,7 +157,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// for creating random entities.
     /// </summary>
     /// <param name="creator">The creator to use</param>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="creator"/> is null.</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> UseCustomRandomEntityCreator(ICreateRandomEntities creator)
     {
@@ -174,7 +175,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Specifies a specific <see cref="DbContextOptionsBuilder{TContext}"/> instance to use when creating the DbContext.
     /// </summary>
     /// <param name="dbContextOptionsBuilder">The options builder to use when creating the DbContext.</param>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="dbContextOptionsBuilder"/> is null.</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> UseDbContextOptionsBuilder(DbContextOptionsBuilder<T> dbContextOptionsBuilder)
@@ -196,7 +197,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// a single call. Multiple profiles can be applied; their seed data accumulates.
     /// </summary>
     /// <param name="profile">The seed profile to apply.</param>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="profile"/> is null.</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> UseSeedProfile(ISeedProfile<T> profile)
@@ -220,7 +221,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// visible in the test log when an assertion fails.
     /// </summary>
     /// <param name="writeLine">Receives each diagnostic line.</param>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="writeLine"/> is null.</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> UseDiagnosticOutput(Action<string> writeLine)
@@ -239,8 +240,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
+    /// <typeparam name="TEntity">The type of the entities to seed.</typeparam>
     /// <param name="entities">The entities to populate the database with</param>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
@@ -280,8 +282,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
+    /// <typeparam name="TEntity">The type of the entities to seed.</typeparam>
     /// <param name="entities">The entities to populate the database with</param>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
@@ -305,7 +308,14 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <c>params</c>-array overload with one element, but avoids the per-call allocation
     /// of a one-element array — useful in tests that seed many single rows.
     /// </summary>
-    /// <param name="entity">The entity to populate the database with.</param>
+    /// <remarks>
+    /// A <see cref="List{T}"/> or array argument binds to this overload, not to
+    /// <see cref="SeedWith{TEntity}(IEnumerable{TEntity})"/>, because <typeparamref name="TEntity"/>
+    /// is inferred as the collection type. When <paramref name="entity"/> is a sequence of
+    /// objects, each of its items is seeded instead of the sequence itself.
+    /// </remarks>
+    /// <typeparam name="TEntity">The type of the entity to seed.</typeparam>
+    /// <param name="entity">The entity, or sequence of entities, to populate the database with.</param>
     /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="entity"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="entity"/> is a <see cref="string"/> instance (matches the
@@ -399,7 +409,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
-    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
+    /// <exception cref="InvalidOperationException">No random-entity provider is configured (call <c>UseAutoFixture()</c>, <c>UseBogus()</c> or <see cref="UseCustomRandomEntityCreator"/> first), or a previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <remarks>
     /// Foreign keys on the generated entities are reconciled against the model when the
     /// context is built: a required FK is wired to a seeded principal of its type (so seed the
@@ -415,7 +425,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// </remarks>
     /// <param name="count">The number of items to create</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count) where TEntity : class
     {
@@ -430,7 +440,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         var entities = GetRandomEntityCreator()
             .CreateRandomEntities<TEntity>(count);
 
-        // Materialise once (the func overloads use a lazy Select) and record the entities
+        // Materialise once (a creator may return a lazy sequence) and record the entities
         // as randomly seeded so their foreign keys are reconciled at build time.
         var materialized = entities as IReadOnlyList<TEntity> ?? entities.ToList();
         _seedData.AddRange(materialized);
@@ -448,7 +458,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
-    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
+    /// <exception cref="InvalidOperationException">No random-entity provider is configured (call <c>UseAutoFixture()</c>, <c>UseBogus()</c> or <see cref="UseCustomRandomEntityCreator"/> first), or a previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <remarks>
     /// Foreign keys on the generated entities are reconciled against the model when the
     /// context is built: a required FK is wired to a seeded principal of its type (so seed the
@@ -465,8 +475,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="func"/> is null.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, TEntity> func) where TEntity : class
     {
         ThrowIfDisposed();
@@ -501,7 +512,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
-    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
+    /// <exception cref="InvalidOperationException">No random-entity provider is configured (call <c>UseAutoFixture()</c>, <c>UseBogus()</c> or <see cref="UseCustomRandomEntityCreator"/> first), or a previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <remarks>
     /// Foreign keys on the generated entities are reconciled against the model when the
     /// context is built: a required FK is wired to a seeded principal of its type (so seed the
@@ -518,8 +529,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and the index number of the entity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="func"/> is null.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, int, TEntity> func) where TEntity : class
     {
         ThrowIfDisposed();
@@ -755,6 +767,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// </remarks>
     /// <returns>A new instance of <typeparamref name="T"/>.</returns>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">The database could not be created for the configured
+    /// provider; EF Core's failure is the <see cref="Exception.InnerException"/>.</exception>
     public async Task<T> BuildAsync()
     {
         ThrowIfDisposed();
@@ -861,9 +875,11 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
     /// <summary>
-    /// Releases unmanaged and optionally managed resources.
+    /// Releases the context creator and the EF Core service provider the builder holds. A derived
+    /// class that adds resources overrides this and calls the base implementation.
     /// </summary>
-    /// <param name="disposing">true to release both managed and unmanaged resources.</param>
+    /// <param name="disposing"><see langword="true"/> when called from <see cref="Dispose()"/>;
+    /// <see langword="false"/> from a finalizer, when only unmanaged resources may be released.</param>
     protected virtual void Dispose(bool disposing)
     {
         if (_disposed)
