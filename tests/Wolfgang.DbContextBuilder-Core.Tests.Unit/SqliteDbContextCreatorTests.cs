@@ -28,12 +28,11 @@ public class SqliteDbContextCreatorTests
         var optionsBuilder = new DbContextOptionsBuilder<BasicContext>();
 
         // Act
-        var context = await sut.CreateDbContextAsync(optionsBuilder);
+        await using var context = await sut.CreateDbContextAsync(optionsBuilder);
 
         // Assert
         Assert.NotNull(context);
         Assert.True(context.Database.IsSqlite());
-        context.Dispose();
     }
 
 

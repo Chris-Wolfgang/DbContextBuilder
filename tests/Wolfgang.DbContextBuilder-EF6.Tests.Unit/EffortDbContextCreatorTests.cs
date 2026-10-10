@@ -19,7 +19,7 @@ public class EffortDbContextCreatorTests
         using var sut = new EffortDbContextCreator();
 
         // Act
-        var context = sut.CreateDbContext<TestDbContext>();
+        using var context = sut.CreateDbContext<TestDbContext>();
 
         // Assert
         Assert.NotNull(context);
@@ -38,8 +38,8 @@ public class EffortDbContextCreatorTests
         using var sut = new EffortDbContextCreator();
 
         // Act
-        var context1 = sut.CreateDbContext<TestDbContext>();
-        var context2 = sut.CreateDbContext<TestDbContext>();
+        using var context1 = sut.CreateDbContext<TestDbContext>();
+        using var context2 = sut.CreateDbContext<TestDbContext>();
 
         // Assert
         Assert.NotSame(context1, context2);

@@ -35,7 +35,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     public void UseSqlite_returns_DbContextBuilder()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseSqlite());
@@ -50,7 +50,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     public void UseSqliteForMsSqlServer_returns_DbContextBuilder()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseSqliteForMsSqlServer());
@@ -65,10 +65,10 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     public async Task UseSqliteForMsSqlServer_causes_BuildAsync_to_use_Sqlite_with_customizations_for_Sql_Server()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act
-        var context = await sut
+        await using var context = await sut
             .UseSqliteForMsSqlServer()
             .BuildAsync();
 
@@ -85,7 +85,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     public void UseAutoFixture_returns_DbContextBuilder()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseAutoFixture());
@@ -100,7 +100,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     public void RandomEntityCreator_is_AutoFixture()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>().UseAutoFixture();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>().UseAutoFixture();
 
         // Act & Assert
         Assert.IsType<AutoFixtureRandomEntityCreator>(sut.RandomEntityCreator);
@@ -116,10 +116,10 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     public async Task Database_is_Sqlite()
     {
         // Arrange
-        var sut = new DbContextBuilder<BasicContext>();
+        using var sut = new DbContextBuilder<BasicContext>();
 
         // Act
-        var context = await sut
+        await using var context = await sut
             .UseSqlite()
             .BuildAsync();
 
@@ -137,7 +137,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     {
 
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         var buffer = new StringBuilder(10_240);
         var sw = new StringWriter(buffer);
@@ -148,7 +148,9 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
         sut.UseDbContextOptionsBuilder(optionsBuilder);
 
         // Act
-        await sut.BuildAsync();
+        await using (await sut.BuildAsync())
+        {
+        }
 
         // Assert
         Assert.Contains("CREATE TABLE \"Person_Person\"", buffer.ToString(), StringComparison.Ordinal);
@@ -165,12 +167,12 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     {
 
         // Arrange
-        var sut = new DbContextBuilder<BasicContext>()
+        using var sut = new DbContextBuilder<BasicContext>()
                 .UseSqlite()
                 .UseAutoFixture();
 
         // Act
-        var context = await sut
+        await using var context = await sut
             .BuildAsync();
 
         // Assert
@@ -189,12 +191,12 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     {
 
         // Arrange
-        var sut = new DbContextBuilder<BasicContext>()
+        using var sut = new DbContextBuilder<BasicContext>()
             .UseSqlite()
             .UseAutoFixture();
 
         // Act
-        var context = await sut
+        await using var context = await sut
             .BuildAsync();
 
         // Assert
@@ -218,12 +220,12 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     {
 
         // Arrange
-        var sut = new DbContextBuilder<BasicContext>()
+        using var sut = new DbContextBuilder<BasicContext>()
             .UseSqlite()
             .UseAutoFixture();
 
         // Act
-        var context = await sut
+        await using var context = await sut
             .BuildAsync();
 
         // Assert
