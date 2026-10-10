@@ -52,7 +52,7 @@ public class IgnoreVirtualMembersCustomizationTests
     /// if it already exists
     /// </summary>
     [Fact]
-    public void Customize_when_Customizations_does_contain_IgnoreVirtualMembers_does_not_adds_it_again()
+    public void Customize_when_Customizations_does_contain_IgnoreVirtualMembers_does_not_add_it_again()
     {
         // Arrange
         var sut = new IgnoreVirtualMembersCustomization();

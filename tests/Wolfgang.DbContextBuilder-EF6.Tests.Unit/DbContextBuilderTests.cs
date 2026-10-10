@@ -21,7 +21,7 @@ public class DbContextBuilderTests
     /// Verifies that calling Build returns an instance of the specified DbContext type.
     /// </summary>
     [Fact]
-    public void Calling_Build_returns_instance_of_specified_context()
+    public void Build_when_called_returns_an_instance_of_the_context_type()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -40,7 +40,7 @@ public class DbContextBuilderTests
     /// Verifies that calling BuildAsync returns an instance of the specified DbContext type.
     /// </summary>
     [Fact]
-    public async Task Calling_BuildAsync_returns_instance_of_specified_context()
+    public async Task BuildAsync_when_called_returns_an_instance_of_the_context_type()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -59,7 +59,7 @@ public class DbContextBuilderTests
     /// Verifies that calling UseEffort returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseEffort_returns_DbContextBuilder()
+    public void UseEffort_when_called_returns_the_builder()
     {
         // Arrange
         var sut = new DbContextBuilder<TestDbContext>();
@@ -77,7 +77,7 @@ public class DbContextBuilderTests
     /// Verifies that calling UseAutoFixture returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseAutoFixture_returns_DbContextBuilder()
+    public void UseAutoFixture_when_called_returns_the_builder()
     {
         // Arrange
         var sut = new DbContextBuilder<TestDbContext>();
@@ -95,7 +95,7 @@ public class DbContextBuilderTests
     /// Verifies that the RandomEntityCreator used is an instance of AutoFixtureRandomEntityCreator.
     /// </summary>
     [Fact]
-    public void RandomEntityCreator_is_AutoFixture()
+    public void Ctor_when_called_defaults_RandomEntityCreator_to_AutoFixture()
     {
         // Arrange
         var sut = new DbContextBuilder<TestDbContext>();
@@ -111,7 +111,7 @@ public class DbContextBuilderTests
     /// DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseCustomRandomEntityCreator_returns_DbContextBuilder()
+    public void UseCustomRandomEntityCreator_when_called_returns_the_builder()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -131,7 +131,7 @@ public class DbContextBuilderTests
     /// throws ArgumentNullException.
     /// </summary>
     [Fact]
-    public void Calling_UseCustomEntityCreator_and_passing_in_null_throws_ArgumentNullException()
+    public void UseCustomRandomEntityCreator_when_creator_is_null_throws_ArgumentNullException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -147,7 +147,7 @@ public class DbContextBuilderTests
     /// Verifies that calling UseCustomRandomEntityCreator sets the RandomEntityCreator property.
     /// </summary>
     [Fact]
-    public void Calling_UseCustomRandomEntityCreator_sets_the_RandomEntityCreator_property()
+    public void UseCustomRandomEntityCreator_when_called_sets_the_RandomEntityCreator_property()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -167,7 +167,7 @@ public class DbContextBuilderTests
     /// but the sets are empty as no data has been seeded.
     /// </summary>
     [Fact]
-    public void A_newly_created_DbContext_contains_the_mapped_entities_but_the_sets_are_empty()
+    public void Build_when_no_seeds_are_provided_returns_a_context_with_mapped_but_empty_sets()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -187,7 +187,7 @@ public class DbContextBuilderTests
     /// Verifies that a newly created DbContext does not have any tracked changes.
     /// </summary>
     [Fact]
-    public void A_newly_created_DbContext_does_not_have_any_tracked_changes()
+    public void Build_when_called_returns_a_context_with_no_tracked_changes()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -259,7 +259,7 @@ public class DbContextBuilderTests
     /// Verifies that calling SeedWith(IEnumerable{T}) with strings throws ArgumentException.
     /// </summary>
     [Fact]
-    public void SeedWith_IEnumerable_when_passed_an_list_of_strings_throws_ArgumentException()
+    public void SeedWith_IEnumerable_when_passed_a_list_of_strings_throws_ArgumentException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -448,7 +448,7 @@ public class DbContextBuilderTests
     /// Verifies that calling SeedWithRandom{T}(int) throws when passed a value less than 1.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_when_passed_value_less_than_1_throws_ArgumentException()
+    public void SeedWithRandom_int_when_passed_value_less_than_1_throws_ArgumentOutOfRangeException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -513,7 +513,7 @@ public class DbContextBuilderTests
     /// Verifies that calling SeedWithRandom{T}(int, Func) throws when passed a value less than 1.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_value_less_than_1_throws_ArgumentException()
+    public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_value_less_than_1_throws_ArgumentOutOfRangeException()
     {
         // Arrange
         Func<Product, Product> func = null!;
@@ -531,7 +531,7 @@ public class DbContextBuilderTests
     /// Verifies that calling SeedWithRandom{T}(int, Func) throws when func is null.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_null_for_func_throws_ArgumentException()
+    public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_null_for_func_throws_ArgumentNullException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -604,7 +604,7 @@ public class DbContextBuilderTests
     /// Verifies that calling SeedWithRandom{T}(int, Func) with index throws when passed a value less than 1.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_value_less_than_1_throws_ArgumentException()
+    public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_value_less_than_1_throws_ArgumentOutOfRangeException()
     {
         // Arrange
         Func<Product, int, Product> func = null!;
@@ -622,7 +622,7 @@ public class DbContextBuilderTests
     /// Verifies that calling SeedWithRandom{T}(int, Func) with index throws when func is null.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_null_for_func_throws_ArgumentException()
+    public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_null_for_func_throws_ArgumentNullException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -877,7 +877,7 @@ public class DbContextBuilderTests
     /// Verifies that calling UseEffort multiple times doesn't cause issues.
     /// </summary>
     [Fact]
-    public void Calling_UseEffort_multiple_times_still_works()
+    public void UseEffort_when_called_multiple_times_still_builds_a_context()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -898,7 +898,7 @@ public class DbContextBuilderTests
     /// Verifies that seeding with multiple entity types works.
     /// </summary>
     [Fact]
-    public void Can_seed_with_multiple_entity_types()
+    public void SeedWith_when_called_with_different_entity_types_seeds_each_set()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
