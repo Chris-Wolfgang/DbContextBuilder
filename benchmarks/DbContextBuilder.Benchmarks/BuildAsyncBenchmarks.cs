@@ -3,7 +3,7 @@ using BenchmarkDotNet.Attributes;
 namespace Wolfgang.DbContextBuilderCore.Benchmarks;
 
 /// <summary>
-/// Baseline microbenchmarks for <see cref="DbContextBuilder{T}.BuildAsync"/>
+/// Baseline microbenchmarks for <see cref="DbContextBuilder{T}.BuildAsync()"/>
 /// across the most common usage shapes. Scenarios:
 ///
 /// <list type="bullet">
@@ -66,7 +66,7 @@ public class BuildAsyncBenchmarks
 
     /// <summary>
     /// Baseline: builder with default options (InMemory provider), no seed.
-    /// Measures the irreducible cost of <see cref="DbContextBuilder{T}.BuildAsync"/>.
+    /// Measures the irreducible cost of <see cref="DbContextBuilder{T}.BuildAsync()"/>.
     /// It ignores <c>SeedCount</c>, yet runs once per <c>[Params]</c> value: BenchmarkDotNet
     /// computes the Ratio column within each parameter group, so every group needs its own
     /// baseline row (#616).
