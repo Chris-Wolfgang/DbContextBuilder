@@ -182,19 +182,21 @@ jobs:
             [$head[0].Benchmarks[] |
               . as $h |
               $baseByName[$h.FullName] as $b |
-              ($h.Memory.BytesAllocatedPerOperation // 0) as $hAlloc |
+              # A missing Memory measurement stays null: it is unknown, not 0 B.
+              ($h.Memory.BytesAllocatedPerOperation // null) as $hAlloc |
               if $b == null then
                 # Added or renamed in the PR: listed as new, never a regression (#616).
                 { name: $h.FullName, isNew: true,
                   baseMeanNs: null, headMeanNs: $h.Statistics.Mean, timePct: null,
                   baseAllocBytes: null, headAllocBytes: $hAlloc, allocPct: null, regressed: false }
               else
-                ($b.Memory.BytesAllocatedPerOperation // 0) as $bAlloc |
+                ($b.Memory.BytesAllocatedPerOperation // null) as $bAlloc |
                 ($h.Statistics.Mean - $b.Statistics.Mean) as $timeDeltaNs |
                 (if $b.Statistics.Mean > 0 then $timeDeltaNs / $b.Statistics.Mean * 100 else null end) as $timePct |
-                # A missing or 0 B base allocation has no percentage (#616): 0 -> 0 is 0%,
-                # 0 -> N is reported as n/a rather than dividing by zero.
-                (if $bAlloc > 0 then ($hAlloc - $bAlloc) / $bAlloc * 100
+                # No percentage unless both sides were measured. With both present, a 0 B base
+                # has no percentage (#616): 0 -> 0 is 0%, 0 -> N is n/a rather than dividing by zero.
+                (if $bAlloc == null or $hAlloc == null then null
+                 elif $bAlloc > 0 then ($hAlloc - $bAlloc) / $bAlloc * 100
                  elif $hAlloc == 0 then 0
                  else null end) as $allocPct |
                 {
@@ -224,7 +226,8 @@ jobs:
             echo "$rows" | jq -r '
               def b: if .regressed then "**" else "" end;
               def pct(v): if v == null then "n/a" else "\(v)%" end;
-              .[] | "| \(.name)\(if .isNew then " (new)" else "" end) | \(if .baseMeanNs == null then "-" else "\(.baseMeanNs/1000|round) us" end) | \(.headMeanNs/1000|round) us | \(b)\(pct(.timePct))\(b) | \(if .baseAllocBytes == null then "-" else "\(.baseAllocBytes) B" end) | \(.headAllocBytes) B | \(b)\(pct(.allocPct))\(b) |"'
+              def bytes(v): if v == null then "n/a" else "\(v) B" end;
+              .[] | "| \(.name)\(if .isNew then " (new)" else "" end) | \(if .baseMeanNs == null then "-" else "\(.baseMeanNs/1000|round) us" end) | \(.headMeanNs/1000|round) us | \(b)\(pct(.timePct))\(b) | \(if .isNew then "-" else bytes(.baseAllocBytes) end) | \(bytes(.headAllocBytes)) | \(b)\(pct(.allocPct))\(b) |"'
             echo "BENCHDELTA"
           } >> "$GITHUB_OUTPUT"
 
