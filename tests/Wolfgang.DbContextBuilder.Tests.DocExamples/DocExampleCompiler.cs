@@ -65,16 +65,20 @@ public static class DocExampleCompiler
     private static string BuildSource(DocExample example)
     {
         // Lift using directives to the top of the file; blank their lines so #line mapping holds.
+        // Each lifted directive keeps its own #line, so an error in it (a misspelled namespace)
+        // is reported at its line in the documentation file, not in the generated harness.
         var usings = new List<string>();
         var codeLines = example.Code.Split('\n');
         for (var i = 0; i < codeLines.Length; i++)
         {
             if (UsingDirective.IsMatch(codeLines[i]))
             {
-                usings.Add(codeLines[i].Trim());
+                usings.Add($"#line {example.Line + i} \"{example.File}\"\n{codeLines[i].Trim()}");
                 codeLines[i] = string.Empty;
             }
         }
+
+        var liftedUsings = usings.Count == 0 ? string.Empty : string.Join('\n', usings) + "\n#line default";
 
         var (headerLines, bodyLines, bodyStartLine) = SplitHeaderAndBody(string.Join('\n', codeLines), example.Line);
         var (signature, closer) = WrapperSignature(string.Join('\n', bodyLines));
@@ -99,7 +103,7 @@ public static class DocExampleCompiler
             using Microsoft.EntityFrameworkCore;
             using Wolfgang.DbContextBuilderCore;
             using Xunit;
-            {{string.Join('\n', usings)}}
+            {{liftedUsings}}
 
             namespace DocExamples.Generated
             {

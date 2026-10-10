@@ -20,6 +20,8 @@
     The version that should have been deployed (as it appears in versions.json,
     e.g. v0.9.0). Without it the script only checks the branch is self-consistent,
     which a deploy that silently failed to add the new release also is (#624).
+    It must be a v-prefixed SemVer tag: it becomes a folder name under versions/,
+    so a value with a path separator or '..' is rejected before any path is built.
 
 .EXAMPLE
     pwsh ./scripts/Validate-DocsDeploy.ps1
@@ -33,6 +35,7 @@
 
 [CmdletBinding()]
 param(
+    [ValidatePattern('^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$')]
     [string]$ExpectedVersion
 )
 
