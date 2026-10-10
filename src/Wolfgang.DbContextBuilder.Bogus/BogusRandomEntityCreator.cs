@@ -104,8 +104,9 @@ public class BogusRandomEntityCreator : ICreateRandomEntities
             .RuleForType(typeof(TimeOnly?), f => (TimeOnly?)TimeOnly.FromDateTime(f.Date.Past()));
 
         // Enums cannot be matched by RuleForType (each is its own type): add a rule per settable
-        // enum-typed property, picking one of the enum's defined values.
-        foreach (var property in typeof(TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.SetMethod?.IsPublic == true))
+        // enum-typed property, picking one of the enum's defined values. Indexers are skipped: Bogus
+        // sets a rule's member as a plain property, and an indexer's setter needs its index too.
+        foreach (var property in typeof(TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.SetMethod?.IsPublic == true && p.GetIndexParameters().Length == 0))
         {
             var enumType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
             if (enumType.IsEnum)

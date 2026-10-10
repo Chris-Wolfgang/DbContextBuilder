@@ -45,7 +45,9 @@ You can contribute in several ways:
 7. **PR Checks:**  
    Once you create a pull request (PR), several Continuous Integration (CI) steps will run automatically. These may include:
    - Building the project
-   - Running automated tests, with per-assembly coverage gates (95% for src, 100% for test assemblies)
+   - Running automated tests, with per-assembly coverage gates (at the time of writing 95% for src and
+     100% for test assemblies; `CODECOV_MINIMUM` and the coverage-gate steps in
+     `.github/workflows/pr.yaml` are the source of truth)
    - Running static analysis with multiple static analyzers (see list below), plus security scans
    - Checking for a changelog fragment and for a protected-file mix (see *Pull Requests*)
 
@@ -219,7 +221,8 @@ Key style rules enforced:
 - **Final newline:** Yes
 - **Braces:** New line style (Allman)
 - **Naming:** PascalCase for public members, camelCase for parameters/locals
-- **File-scoped namespaces:** the project convention (`.editorconfig` reports block-scoped ones as a suggestion, not an error)
+- **File-scoped namespaces:** preferred. Block-scoped namespaces still build; `.editorconfig` only
+  raises a suggestion-level style hint for them, never a build error
 - **`var` preferences:** Use for built-in types and when type is obvious
 - **Null checks:** Prefer pattern matching (`is null`, `is not null`)
 
@@ -247,7 +250,7 @@ View the complete configuration in [.editorconfig](.editorconfig).
   user-facing description; see [changelog/unreleased/README.md](changelog/unreleased/README.md)),
   or carry the `no-changelog` label. The *Changelog Fragment Check* job fails otherwise.
 - **Protected files go in their own PR.** A PR may change protected configuration files
-  (`.editorconfig`, `Directory.Build.props/targets`, `BannedSymbols.txt`, workflows,
+  (`.editorconfig`, `Directory.Build.props`, `Directory.Build.targets`, `BannedSymbols.txt`, workflows,
   `coverlet.runsettings`, `.config/dotnet-tools.json`, ... — the full list is in
   [docs/WORKFLOW_SECURITY.md](docs/WORKFLOW_SECURITY.md)) **or** other files, never both; the
   *Protected Files Guard* fails a mixed PR. Split the configuration change into a separate PR.

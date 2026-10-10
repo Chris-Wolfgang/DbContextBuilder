@@ -84,6 +84,27 @@ public class BogusRandomEntityCreatorTests
 
 
 
+    // An entity with a public enum-typed indexer next to a plain enum property. Bogus can only set
+    // a plain property, so the creator must leave the indexer alone (#571 review).
+    private sealed class IndexedSample
+    {
+        private readonly Dictionary<int, Shade> _byIndex = [];
+
+
+
+        public Shade Shade { get; set; }
+
+
+
+        public Shade this[int index]
+        {
+            get => _byIndex.TryGetValue(index, out var shade) ? shade : Shade.Unset;
+            set => _byIndex[index] = value;
+        }
+    }
+
+
+
     // Unset is 0 and never generated, so an unpopulated property is visible.
     private enum Shade
     {
@@ -202,6 +223,25 @@ public class BogusRandomEntityCreatorTests
         Assert.All(items, item => Assert.True(Enum.IsDefined(item.Shade)));
         Assert.All(items, item => Assert.NotNull(item.NullableShade));
         Assert.All(items, item => Assert.Equal(Shade.Unset, item.FixedShade));
+    }
+
+
+
+    /// <summary>
+    /// Verifies that a public enum-typed indexer is left alone: Bogus cannot set an indexer, so
+    /// adding a rule for it would make generation throw (#571 review).
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_when_entity_has_an_enum_indexer_leaves_it_alone()
+    {
+        var sut = new BogusRandomEntityCreator();
+
+        var items = sut.CreateRandomEntities<IndexedSample>(8).ToList();
+
+        Assert.Contains(items, item => item.Shade != Shade.Unset);
+        Assert.All(items, item => Assert.Equal(Shade.Unset, item[0]));
+        items[0][0] = Shade.Dark;
+        Assert.Equal(Shade.Dark, items[0][0]);
     }
 
 
