@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -1027,23 +1028,23 @@ public class SqliteModelCustomizerTests
     /// customized model gets the SQLite default for <c>CreatedAt</c> and the computed <c>Total</c>.
     /// </summary>
     [Fact]
-    public void Customize_rewritten_default_and_computed_SQL_runs_on_SQLite()
+    public async Task Customize_rewritten_default_and_computed_SQL_runs_on_SQLite()
     {
-        using var connection = new SqliteConnection("DataSource=:memory:");
-        connection.Open();
+        await using var connection = new SqliteConnection("DataSource=:memory:");
+        await connection.OpenAsync();
         var options = new DbContextOptionsBuilder<SchemaContext>()
             .UseSqlite(connection)
             .ReplaceService<IModelCustomizer, RewritingSqliteModelCustomizer>()
             .Options;
-        using (var context = new SchemaContext(options))
+        await using (var context = new SchemaContext(options))
         {
-            context.Database.EnsureCreated();
+            await context.Database.EnsureCreatedAsync();
             context.Add(new Invoice { Qty = 2, Price = 3.5m });
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
 
-        using var readBack = new SchemaContext(options);
-        var invoice = readBack.Set<Invoice>().Single();
+        await using var readBack = new SchemaContext(options);
+        var invoice = await readBack.Set<Invoice>().SingleAsync();
 
         Assert.Equal(1, invoice.Id);
         Assert.Equal(2, invoice.Qty);
@@ -1060,16 +1061,16 @@ public class SqliteModelCustomizerTests
     /// through the renamed table.
     /// </summary>
     [Fact]
-    public void Customize_renames_a_pure_join_entity_after_the_tables_it_joins()
+    public async Task Customize_renames_a_pure_join_entity_after_the_tables_it_joins()
     {
-        using var connection = new SqliteConnection("DataSource=:memory:");
-        connection.Open();
+        await using var connection = new SqliteConnection("DataSource=:memory:");
+        await connection.OpenAsync();
         var options = new DbContextOptionsBuilder<JoinContext>()
             .UseSqlite(connection)
             .ReplaceService<IModelCustomizer, SqliteModelCustomizer>()
             .Options;
-        using var context = new JoinContext(options);
-        context.Database.EnsureCreated();
+        await using var context = new JoinContext(options);
+        await context.Database.EnsureCreatedAsync();
 
         var model = context.GetService<IDesignTimeModel>().Model;
         Assert.Equal("dbo_JoinLeft_JoinRight", model.FindEntityType(typeof(JoinLink))!.GetTableName());
@@ -1077,9 +1078,9 @@ public class SqliteModelCustomizerTests
         var left = new JoinLeft { Id = 1 };
         var right = new JoinRight { Id = 2 };
         context.AddRange(left, right, new JoinLink { Id = 3, LeftId = left.Id, RightId = right.Id });
-        context.SaveChanges();
+        await context.SaveChangesAsync();
 
-        var link = context.Set<JoinLink>().AsNoTracking().Single();
+        var link = await context.Set<JoinLink>().AsNoTracking().SingleAsync();
         Assert.Equal((3, 1, 2), (link.Id, link.LeftId, link.RightId));
     }
 
