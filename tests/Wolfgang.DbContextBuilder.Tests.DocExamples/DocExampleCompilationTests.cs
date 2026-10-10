@@ -83,11 +83,36 @@ public sealed class DocExampleCompilationTests
 
 
     [Fact]
+    public void ExtractFromMarkdown_when_a_blank_line_separates_the_skip_marker_compiles_the_fence()
+    {
+        string[] lines = [DocExampleSource.SkipMarker, "", "```csharp", "var kept = 1;", "```"];
+
+        var example = Assert.Single(DocExampleSource.ExtractFromMarkdown(lines, "doc.md"));
+
+        Assert.Equal("var kept = 1;", example.Code);
+    }
+
+
+    [Fact]
     public void Compile_lifts_a_using_directive_out_of_the_wrapper_method()
     {
         var example = new DocExample("doc.md", 1, "using System.Text;\nvar builder = new StringBuilder();");
 
         Assert.Empty(DocExampleCompiler.Compile(example));
+    }
+
+
+    [Fact]
+    public void Compile_when_a_lifted_using_is_invalid_reports_the_error_at_its_doc_line()
+    {
+        // Line 10 of doc.md holds the first code line, so the using on the second line is line 11.
+        var example = new DocExample("doc.md", 10, "var x = 1;\nusing Not.A.Real.Namespace;");
+
+        var error = Assert.Single(DocExampleCompiler.Compile(example));
+        var location = error.Location.GetMappedLineSpan();
+
+        Assert.Equal("doc.md", location.Path);
+        Assert.Equal(10, location.StartLinePosition.Line); // 0-based
     }
 
 

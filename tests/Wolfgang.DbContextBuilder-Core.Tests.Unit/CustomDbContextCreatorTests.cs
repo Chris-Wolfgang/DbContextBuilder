@@ -17,7 +17,7 @@ public class CustomDbContextCreatorTests
     /// Verifies that the builder creates and seeds its contexts through the custom creator.
     /// </summary>
     [Fact]
-    public async Task UseCustomDbContextCreator_builds_and_seeds_through_the_creator()
+    public async Task UseCustomDbContextCreator_when_configured_builds_and_seeds_through_the_creator()
     {
         var creator = new RecordingDbContextCreator();
         using var sut = new DbContextBuilder<BasicContext>().UseCustomDbContextCreator(creator);
@@ -51,7 +51,7 @@ public class CustomDbContextCreatorTests
     /// build uses the creator's provider (as UseInMemory does, #558).
     /// </summary>
     [Fact]
-    public async Task UseCustomDbContextCreator_after_UseSqlite_drops_the_SQLite_services()
+    public async Task UseCustomDbContextCreator_when_called_after_UseSqlite_drops_the_SQLite_services()
     {
         using var sut = new DbContextBuilder<BasicContext>().UseSqlite();
 
@@ -69,7 +69,7 @@ public class CustomDbContextCreatorTests
     /// builder is disposed.
     /// </summary>
     [Fact]
-    public void UseCustomDbContextCreator_takes_ownership_of_a_disposable_creator()
+    public void UseCustomDbContextCreator_when_creator_is_disposable_takes_ownership_of_it()
     {
         var replaced = new RecordingDbContextCreator();
         var current = new RecordingDbContextCreator();
@@ -89,7 +89,7 @@ public class CustomDbContextCreatorTests
     /// Verifies that a disposed builder rejects a custom creator.
     /// </summary>
     [Fact]
-    public void UseCustomDbContextCreator_after_Dispose_throws_ObjectDisposedException()
+    public void UseCustomDbContextCreator_when_builder_is_disposed_throws_ObjectDisposedException()
     {
         var sut = new DbContextBuilder<BasicContext>();
         sut.Dispose();

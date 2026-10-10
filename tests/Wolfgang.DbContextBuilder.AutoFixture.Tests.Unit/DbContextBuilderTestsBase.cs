@@ -443,11 +443,12 @@ public abstract class DbContextBuilderTestsBase
             SalesTerritories = [],
             CountryRegionCurrencies = [],
         };
-        var seedCountry = expectedCountry with { };
+        var seedCountries = new List<CountryRegion> { expectedCountry with { } };
 
-        // Act
+        // Act — a static IEnumerable<T> selects SeedWith(IEnumerable<TEntity>); a lone entity
+        // would select SeedWith(TEntity), which SeedWith_singleton_overload_seeds_the_entity covers.
         await using var context = await sut
-            .SeedWith(seedCountry)
+            .SeedWith(seedCountries.AsEnumerable())
             .BuildAsync();
 
 
@@ -727,11 +728,12 @@ public abstract class DbContextBuilderTestsBase
                 CountryRegionCurrencies = [],
             }
         };
-        var seedCountry = expectedCountry.Select(c => c with { });
+        var seedCountries = expectedCountry.Select(c => c with { }).ToArray();
 
-        // Act
+        // Act — a TEntity[] selects SeedWith(params TEntity[]) in its normal form; AsEnumerable()
+        // would select SeedWith(IEnumerable<TEntity>) instead.
         await using var context = await sut
-            .SeedWith(seedCountry.AsEnumerable())
+            .SeedWith(seedCountries)
             .BuildAsync();
 
 
