@@ -150,6 +150,13 @@ public class DbContextBuilder<T> where T : DbContext
             var buffer = new List<object>();
             foreach (var item in sequence)
             {
+                // Same per-item arms as the params overload: a null item used to be stored and
+                // fail later, inside EF, with an unhelpful ArgumentNullException (#560).
+                if (item is null)
+                {
+                    throw new ArgumentException("One of the entities is null", nameof(entity));
+                }
+
                 if (item is string)
                 {
                     throw new ArgumentException("One of the entities passed in is of type string", nameof(entity));
