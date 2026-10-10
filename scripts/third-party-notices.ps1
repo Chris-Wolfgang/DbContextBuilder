@@ -104,7 +104,7 @@ function Get-BuildOnlyPackages([string]$Path) {
     return $ids
 }
 
-function Escape-Cell([string]$Text) {
+function ConvertTo-MarkdownCell([string]$Text) {
     return (("$Text" -replace '\|', '\|') -replace '\s+', ' ').Trim()
 }
 
@@ -117,18 +117,32 @@ foreach ($proj in $projects) {
 
     $buildOnly = Get-BuildOnlyPackages $proj.FullName
 
-    $json = & dotnet nuget-license -i $proj.FullName -t `
-        -a (Join-Path $PolicyDirectory 'allowed-licenses.json') `
-        -ignore (Join-Path $PolicyDirectory 'ignored-packages.json') `
-        -mapping (Join-Path $PolicyDirectory 'url-license-mappings.json') `
-        -override (Join-Path $PolicyDirectory 'package-overrides.json') `
-        -o JsonPretty 2>&1
-    if ($LASTEXITCODE -ne 0) {
+    # stderr goes to a file, never into the JSON: one stderr warning on an otherwise
+    # successful run used to corrupt ConvertFrom-Json and fail the release (#625).
+    $stderrFile = [System.IO.Path]::GetTempFileName()
+    try {
+        $json = & dotnet nuget-license -i $proj.FullName -t `
+            -a (Join-Path $PolicyDirectory 'allowed-licenses.json') `
+            -ignore (Join-Path $PolicyDirectory 'ignored-packages.json') `
+            -mapping (Join-Path $PolicyDirectory 'url-license-mappings.json') `
+            -override (Join-Path $PolicyDirectory 'package-overrides.json') `
+            -o JsonPretty 2> $stderrFile
+        $exitCode = $LASTEXITCODE
+        $stderrText = (Get-Content -Raw -LiteralPath $stderrFile -ErrorAction SilentlyContinue)
+    }
+    finally {
+        Remove-Item -LiteralPath $stderrFile -ErrorAction SilentlyContinue
+    }
+    if ($exitCode -ne 0) {
         $level = if ($Strict) { 'error' } else { 'warning' }
-        Write-Host "::${level} file=$($proj.FullName)::nuget-license failed for $name (exit $LASTEXITCODE) - no THIRD-PARTY-NOTICES.md for this project; see the License audit workflow for the licence gate."
+        Write-Host "::${level} file=$($proj.FullName)::nuget-license failed for $name (exit $exitCode) - no THIRD-PARTY-NOTICES.md for this project; see the License audit workflow for the licence gate."
         Write-Host ($json -join "`n")
+        if ($stderrText) { Write-Host $stderrText }
         $failed++
         continue
+    }
+    if ($stderrText -and $stderrText.Trim()) {
+        Write-Host "   nuget-license wrote to stderr (exit 0, kept out of the JSON): $($stderrText.Trim())"
     }
     $entries = @(($json | Out-String) | ConvertFrom-Json)
 
@@ -167,8 +181,9 @@ foreach ($proj in $projects) {
         $lines.Add('| Package | Version(s) | License | Copyright | Project |')
         $lines.Add('|---|---|---|---|---|')
         foreach ($r in ($rows.Values | Sort-Object { $_.Package }, { $_.License })) {
-            $url = if ($r.Url) { "<$($r.Url)>" } else { '' }
-            $lines.Add("| $(Escape-Cell $r.Package) | $(($r.Versions | ForEach-Object { Escape-Cell $_ }) -join ', ') | $(Escape-Cell $r.License) | $(Escape-Cell $r.Copyright) | $url |")
+            # The URL is escaped like every other cell: a | in a PackageProjectUrl broke the row (#593).
+            $url = if ($r.Url) { "<$(ConvertTo-MarkdownCell $r.Url)>" } else { '' }
+            $lines.Add("| $(ConvertTo-MarkdownCell $r.Package) | $(($r.Versions | ForEach-Object { ConvertTo-MarkdownCell $_ }) -join ', ') | $(ConvertTo-MarkdownCell $r.License) | $(ConvertTo-MarkdownCell $r.Copyright) | $url |")
         }
     }
     $lines.Add('')
