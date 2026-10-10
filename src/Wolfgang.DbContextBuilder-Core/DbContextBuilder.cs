@@ -309,7 +309,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="entity"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="entity"/> is a <see cref="string"/> instance (matches the
-    /// <c>params</c> overload's rejection regardless of how <typeparamref name="TEntity"/> was inferred).</exception>
+    /// <c>params</c> overload's rejection regardless of how <typeparamref name="TEntity"/> was inferred), or
+    /// <paramref name="entity"/> is a sequence that contains a null or a <see cref="string"/> item.</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(TEntity entity)
@@ -336,6 +337,13 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             var buffer = new List<object>();
             foreach (var item in sequence)
             {
+                // Same per-item arms as AddSeedItems: a null item used to be stored and fail
+                // later, inside EF, with an unhelpful ArgumentNullException (#560).
+                if (item is null)
+                {
+                    throw new ArgumentException("One of the entities is null", nameof(entity));
+                }
+
                 if (item is string)
                 {
                     throw new ArgumentException("One of the entities passed in is of type string", nameof(entity));

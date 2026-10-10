@@ -961,6 +961,26 @@ public class DbContextBuilderTests
 
 
     /// <summary>
+    /// Regression (#560): a list containing a null binds to the singleton overload; the null is
+    /// rejected at seed time, atomically, instead of failing later inside EF.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_overload_when_passed_a_List_with_a_null_item_throws_and_seeds_nothing()
+    {
+        var sut = CreateDbContextBuilder();
+        var products = new List<Product> { new Product { Name = "Widget", Price = 9.99m, CreatedDate = DateTime.UtcNow }, null! };
+
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(products));
+        Assert.StartsWith("One of the entities is null", ex.Message, StringComparison.Ordinal);
+        Assert.Equal("entity", ex.ParamName);
+
+        using var context = sut.Build();
+        Assert.Empty(context.Products);
+    }
+
+
+
+    /// <summary>
     /// Regression: when the caller widens TEntity to <see cref="object"/> the
     /// static `typeof(TEntity) == typeof(string)` check (the original guard) would
     /// pass through. The runtime <c>entity is string</c> check must still reject.
