@@ -46,7 +46,9 @@ DDL. Include rollback notes.
 ## Recommended upgrade order
 
 1. Bump the package version(s) — the nine packages ship in lockstep, so move every
-   `Wolfgang.DbContextBuilder*` reference you have to the same version.
+   `Wolfgang.DbContextBuilder*` reference you have to the same version. The retired
+   `Wolfgang.DbContextBuilder-Core` package has no new versions: replace it with the
+   `-Core-EF{N}` package for your EF Core major.
 2. Fix compile errors using the before/after table above.
 3. Apply any database migration.
 4. Run your test suite.
