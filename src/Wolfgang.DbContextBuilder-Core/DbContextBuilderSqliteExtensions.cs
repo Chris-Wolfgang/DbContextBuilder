@@ -17,7 +17,11 @@ public static class DbContextBuilderSqliteExtensions
     /// <summary>
     /// Instructs the builder to use SQLite as the database provider.
     /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <typeparam name="TDbContext">The <see cref="DbContext"/> type the builder creates.</typeparam>
+    /// <param name="builder">The builder to configure.</param>
+    /// <returns>The builder, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+    /// <exception cref="ObjectDisposedException"><paramref name="builder"/> has been disposed.</exception>
     /// <remarks>
     /// Provider selection is last-write-wins — calling <c>UseSqlite</c> after a previous
     /// <c>UseInMemory</c>, <c>UseSqlite</c>, or <c>UseSqliteForMsSqlServer</c> call
@@ -40,7 +44,11 @@ public static class DbContextBuilderSqliteExtensions
     /// Configures the builder to use SQLite as the database provider with SQL Server-specific adjustments,
     /// such as default value mappings, to better mimic SQL Server behavior for testing or compatibility.
     /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <typeparam name="TDbContext">The <see cref="DbContext"/> type the builder creates.</typeparam>
+    /// <param name="builder">The builder to configure.</param>
+    /// <returns>The builder, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+    /// <exception cref="ObjectDisposedException"><paramref name="builder"/> has been disposed.</exception>
     /// <remarks>
     /// Provider selection is last-write-wins — calling <c>UseSqliteForMsSqlServer</c> after a
     /// previous <c>UseInMemory</c>, <c>UseSqlite</c>, or <c>UseSqliteForMsSqlServer</c> call
@@ -61,7 +69,7 @@ public static class DbContextBuilderSqliteExtensions
     /// <summary>
     /// Instructs the builder to use SQLite as the database provider.
     /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     private static DbContextBuilder<TDbContext> UseSqlite<TDbContext>
     (
         this DbContextBuilder<TDbContext> builder,
