@@ -6,21 +6,38 @@
 .DESCRIPTION
     Checks that the root of origin/gh-pages contains index.html, versions.json and
     .nojekyll, that versions.json is correctly structured, that every referenced
-    version folder exists with an index.html, and that no known stale DocFX root
-    artifacts remain.
+    version folder exists with an index.html, and that the root's public/ folder
+    (the latest site copied to the root) carries the version picker.
+
+    With -ExpectedVersion it also checks that the release just deployed is there:
+    a versions.json entry, its folder's index.html, and a 'latest' alias whose
+    index.html is that version's.
 
     Inspects a detached temporary worktree of origin/gh-pages so it validates what
     is actually deployed, not a stale local branch.
 
+.PARAMETER ExpectedVersion
+    The version that should have been deployed (as it appears in versions.json,
+    e.g. v0.9.0). Without it the script only checks the branch is self-consistent,
+    which a deploy that silently failed to add the new release also is (#624).
+    It must be a v-prefixed SemVer tag: it becomes a folder name under versions/,
+    so a value with a path separator or '..' is rejected before any path is built.
+
 .EXAMPLE
     pwsh ./scripts/Validate-DocsDeploy.ps1
+
+.EXAMPLE
+    pwsh ./scripts/Validate-DocsDeploy.ps1 -ExpectedVersion v0.9.0
 
 .NOTES
     Requirements: git. Exit code 1 when any check fails.
 #>
 
 [CmdletBinding()]
-param()
+param(
+    [ValidatePattern('^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$')]
+    [string]$ExpectedVersion
+)
 
 $ErrorActionPreference = 'Stop'
 
@@ -221,7 +238,9 @@ try {
         Write-Skip "Skipped - versions.json failed validation in step 3"
     }
     else {
-        $realRoot = [System.IO.Path]::GetFullPath($workDir)
+        # Resolved like each folder below: a temp dir that is itself reached through a symlink
+        # (macOS /var/folders -> /private/var) would otherwise put every folder "outside" it (#624).
+        $realRoot = Resolve-RealPath $workDir
         $missing = @()
         foreach ($v in $versions) {
             $ver = Get-ExactProperty $v 'version'
@@ -274,23 +293,59 @@ try {
     }
 
     # ------------------------------------------------------------------
-    # 5. Check for known stale DocFX root artifacts
+    # 5. The root copy of the latest site carries the version picker
     # ------------------------------------------------------------------
     Write-Host ""
-    Write-Host "5. Checking for stale DocFX root artifacts..."
+    Write-Host "5. Checking the root public/ folder..."
 
-    # 'public/' is a DocFX build artifact that should never appear at the
-    # gh-pages root; its presence means a previous deploy did not clean up.
-    $stalePatterns = @('public')
-    $foundStale = $false
-    foreach ($p in $stalePatterns) {
-        if (Test-Path (Join-Path $workDir $p)) {
-            Write-Warn "Potentially stale artifact found at root: '$p'"
-            $foundStale = $true
-        }
+    # docfx.yaml copies the whole latest site, public/ included, to the gh-pages root on every
+    # latest deploy, so a root public/ is expected (#624). It is stale only when it lacks the
+    # picker the current site ships.
+    $rootPublic = Join-Path $workDir 'public'
+    if (-not (Test-Path -LiteralPath $rootPublic -PathType Container)) {
+        Write-Warn "No public/ folder at root - the root copy of the latest site is incomplete"
     }
-    if (-not $foundStale) {
-        Write-Pass "No known stale DocFX artifacts found at root"
+    elseif (-not (Test-Path -LiteralPath (Join-Path $rootPublic 'version-picker.js') -PathType Leaf)) {
+        Write-Warn "public/ at root has no version-picker.js - it looks stale (from a deploy before the picker)"
+    }
+    else {
+        Write-Pass "public/ at root carries version-picker.js"
+    }
+
+    # ------------------------------------------------------------------
+    # 6. The expected release is deployed (only with -ExpectedVersion)
+    # ------------------------------------------------------------------
+    Write-Host ""
+    Write-Host "6. Checking the expected version..."
+
+    if (-not $ExpectedVersion) {
+        Write-Skip "Skipped - no -ExpectedVersion given"
+    }
+    elseif (-not $step3Ok) {
+        Write-Fail "Cannot check $ExpectedVersion - versions.json is missing or invalid"
+    }
+    else {
+        $entry = $versions | Where-Object { (Get-ExactProperty $_ 'version') -ceq $ExpectedVersion } | Select-Object -First 1
+        $expectedIndex = Join-Path (Join-Path (Join-Path $workDir 'versions') $ExpectedVersion) 'index.html'
+        if (-not $entry) {
+            Write-Fail "versions.json has no entry for $ExpectedVersion"
+        }
+        elseif (-not (Test-Path -LiteralPath $expectedIndex -PathType Leaf)) {
+            Write-Fail "versions/$ExpectedVersion/index.html is missing"
+        }
+        else {
+            Write-Pass "$ExpectedVersion is listed and versions/$ExpectedVersion/index.html exists"
+            $latestIndex = Join-Path (Join-Path (Join-Path $workDir 'versions') 'latest') 'index.html'
+            if (-not (Test-Path -LiteralPath $latestIndex -PathType Leaf)) {
+                Write-Warn "versions/latest/index.html is missing - cannot check that latest points at $ExpectedVersion"
+            }
+            elseif ((Get-FileHash -LiteralPath $latestIndex).Hash -ne (Get-FileHash -LiteralPath $expectedIndex).Hash) {
+                Write-Fail "versions/latest/index.html differs from versions/$ExpectedVersion/index.html - latest was not updated"
+            }
+            else {
+                Write-Pass "versions/latest/ serves $ExpectedVersion"
+            }
+        }
     }
 }
 finally {
