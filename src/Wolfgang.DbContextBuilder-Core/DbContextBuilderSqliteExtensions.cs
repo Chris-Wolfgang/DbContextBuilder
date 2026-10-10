@@ -24,6 +24,7 @@ public static class DbContextBuilderSqliteExtensions
     /// overrides the earlier choice.
     /// Choose one provider per builder.
     /// </remarks>
+    /// <exception cref="ObjectDisposedException"><paramref name="builder"/> has been disposed.</exception>
     public static DbContextBuilder<TDbContext> UseSqlite<TDbContext>
     (
         this DbContextBuilder<TDbContext> builder
@@ -46,6 +47,7 @@ public static class DbContextBuilderSqliteExtensions
     /// previous <c>UseInMemory</c>, <c>UseSqlite</c>, or <c>UseSqliteForMsSqlServer</c> call
     /// overrides the earlier choice.
     /// </remarks>
+    /// <exception cref="ObjectDisposedException"><paramref name="builder"/> has been disposed.</exception>
     public static DbContextBuilder<TDbContext> UseSqliteForMsSqlServer<TDbContext>
     (
         this DbContextBuilder<TDbContext> builder
@@ -68,6 +70,9 @@ public static class DbContextBuilderSqliteExtensions
         Type modelCustomizerType
     ) where TDbContext : DbContext
     {
+        // Before anything is registered or created: a disposed builder must not gain SQLite
+        // services or an open in-memory connection that nothing can release (#563).
+        builder.ThrowIfDisposed();
 
         // Avoid registering EF services multiple times. AddEntityFrameworkSqlite registers
         // DatabaseProvider<SqliteOptionsExtension> as an IDatabaseProvider, so that descriptor
