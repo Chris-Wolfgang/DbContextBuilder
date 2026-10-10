@@ -467,7 +467,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
         if (count < 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
+            throw new ArgumentOutOfRangeException(nameof(count), count, "Count must be greater than 0");
         }
 
         return AddRandomlySeeded
@@ -510,7 +510,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
         if (count < 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
+            throw new ArgumentOutOfRangeException(nameof(count), count, "Count must be greater than 0");
         }
 
         ArgumentNullException.ThrowIfNull(func);
@@ -556,7 +556,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
         if (count < 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
+            throw new ArgumentOutOfRangeException(nameof(count), count, "Count must be greater than 0");
         }
 
         ArgumentNullException.ThrowIfNull(func);
