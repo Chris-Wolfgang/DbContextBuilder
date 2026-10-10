@@ -28,7 +28,7 @@ public class TestsWithInMemoryDbAndAutoFixture : DbContextBuilderTestsBase
     public void UseInMemory_returns_DbContextBuilder()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseInMemory());
@@ -43,7 +43,7 @@ public class TestsWithInMemoryDbAndAutoFixture : DbContextBuilderTestsBase
     public void UseAutoFixture_returns_DbContextBuilder()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseAutoFixture());
@@ -58,7 +58,7 @@ public class TestsWithInMemoryDbAndAutoFixture : DbContextBuilderTestsBase
     public void RandomEntityCreator_is_AutoFixture()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>().UseAutoFixture();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>().UseAutoFixture();
 
         // Act & Assert
         Assert.IsType<AutoFixtureRandomEntityCreator>(sut.RandomEntityCreator);
