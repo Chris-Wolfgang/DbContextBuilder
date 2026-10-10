@@ -33,7 +33,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Validate release tag matches csproj version
+      - name: Validate release tag matches src/Version.props
         shell: pwsh
         env:
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
@@ -45,47 +45,57 @@ jobs:
           Write-Host "Expected version: $tagVersion" -ForegroundColor Cyan
           Write-Host ""
 
-          $srcCsprojs = @(Get-ChildItem -Path './src' -Recurse -Filter '*.csproj' -ErrorAction SilentlyContinue)
-          if ($srcCsprojs.Count -eq 0) {
-            Write-Warning "No src csprojs found - skipping version validation"
-            exit 0
+          # The packages ship in lockstep, so the version has one home: src/Version.props, which
+          # every src csproj imports. It is deliberately not Directory.Build.props: that file is
+          # protected, so a version bump there would need an admin bypass and pr.yaml would build
+          # the PR with main's copy instead of the bumped one.
+          $propsPath = './src/Version.props'
+          if (-not (Test-Path $propsPath)) {
+            Write-Error "$propsPath not found - cannot resolve the package version"
+            exit 1
           }
 
-          # Collect <Version> and <PackageVersion> values from every src csproj
-          $found = @()
-          foreach ($proj in $srcCsprojs) {
+          try {
+            [xml]$props = Get-Content $propsPath -Raw
+          } catch {
+            Write-Error "Cannot parse $propsPath as XML: $($_.Exception.Message)"
+            exit 1
+          }
+          $versions = @($props.SelectNodes('/Project/PropertyGroup/Version') | ForEach-Object { $_.InnerText.Trim() } | Where-Object { $_ } | Sort-Object -Unique)
+          if ($versions.Count -ne 1) {
+            Write-Error "Expected exactly one <Version> in $propsPath, found $($versions.Count): $($versions -join ', ')"
+            exit 1
+          }
+
+          $version = $versions[0]
+          Write-Host "Repository version ($propsPath): $version" -ForegroundColor Cyan
+
+          # A csproj that sets its own <Version> would override the shared one and ship a
+          # mismatched package, so none may.
+          # Parsed one by one so a malformed csproj fails with its own path, not a generic error.
+          $overrides = @()
+          foreach ($proj in Get-ChildItem -Path './src' -Recurse -Filter '*.csproj') {
             try {
               [xml]$xml = Get-Content $proj.FullName -Raw
-              $nodes = $xml.SelectNodes('//Version | //PackageVersion')
-              foreach ($node in $nodes) {
-                $v = $node.InnerText.Trim()
-                if ($v) {
-                  $found += [pscustomobject]@{ Project = $proj.Name; Version = $v }
-                }
-              }
             } catch {
-              Write-Warning "Failed to parse $($proj.Name): $($_.Exception.Message)"
+              Write-Error "Cannot parse $($proj.FullName) as XML: $($_.Exception.Message)"
+              exit 1
+            }
+            if ($xml.SelectNodes('/Project/PropertyGroup/Version | /Project/PropertyGroup/PackageVersion').Count -gt 0) {
+              $overrides += $proj
             }
           }
-
-          Write-Host "Versions found in src csprojs:" -ForegroundColor Cyan
-          foreach ($f in $found) {
-            Write-Host "  $($f.Project): $($f.Version)" -ForegroundColor DarkGray
-          }
-          Write-Host ""
-
-          if ($found.Count -eq 0) {
-            Write-Error "No <Version> or <PackageVersion> found in any src csproj"
+          if ($overrides.Count -gt 0) {
+            Write-Error "These src csprojs set their own <Version>/<PackageVersion>; remove it so $propsPath is the only source: $(($overrides | ForEach-Object Name) -join ', ')"
             exit 1
           }
 
-          if ($found.Version -contains $tagVersion) {
-            Write-Host "Release tag matches at least one src csproj version" -ForegroundColor Green
-          } else {
-            $allVersions = ($found.Version | Sort-Object -Unique) -join ', '
-            Write-Error "Release tag '$tagName' (version '$tagVersion') does not match any src csproj version. Found: $allVersions. Bump the csproj <Version> or correct the release tag before re-running."
+          if ($version -ne $tagVersion) {
+            Write-Error "Release tag '$tagName' (version '$tagVersion') does not match the repository version '$version'. Bump <Version> in $propsPath or correct the release tag before re-running."
             exit 1
           }
+
+          Write-Host "Release tag matches $propsPath" -ForegroundColor Green
 
       - name: Setup .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
