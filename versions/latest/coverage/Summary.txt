@@ -1,88 +1,386 @@
 Summary
-  Generated on: 8/22/2026 - 7:46:24 PM
-  Coverage date: 8/22/2026 - 7:45:57 PM - 8/22/2026 - 7:46:20 PM
-  Parser: MultiReport (8x Cobertura)
-  Assemblies: 7
-  Classes: 54
-  Files: 14
-  Line coverage: 96.5%
-  Covered lines: 1750
-  Uncovered lines: 63
-  Coverable lines: 1813
-  Total lines: 1740
-  Branch coverage: 88.5% (744 of 840)
-  Covered branches: 744
-  Total branches: 840
-  Method coverage: 100% (330 of 330)
-  Full method coverage: 90.9% (300 of 330)
-  Covered methods: 330
-  Fully covered methods: 300
-  Total methods: 330
+  Generated on: 10/10/2026 - 2:30:31 AM
+  Coverage date: 10/10/2026 - 2:29:41 AM - 10/10/2026 - 2:30:18 AM
+  Parser: MultiReport (11x Cobertura)
+  Assemblies: 18
+  Classes: 330
+  Files: 50
+  Line coverage: 100%
+  Covered lines: 11475
+  Uncovered lines: 0
+  Coverable lines: 11475
+  Total lines: 9786
+  Branch coverage: 92.9% (1587 of 1708)
+  Covered branches: 1587
+  Total branches: 1708
+  Method coverage: 100% (2016 of 2016)
+  Full method coverage: 100% (2016 of 2016)
+  Covered methods: 2016
+  Fully covered methods: 2016
+  Total methods: 2016
 
-Wolfgang.DbContextBuilder-Core-EF10                                        99.1%
-  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
-  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
-  Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
-  Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        98.6%
-  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
-  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
-  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%
-  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer         100%
-  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                       100%
+Wolfgang.DbContextBuilder-Core-EF10                                                    100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException                 100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions               100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>                          100%
+  Wolfgang.DbContextBuilderCore.DbContextActivator<T>                                  100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                                    100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions                       100%
+  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                               100%
+  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                                 100%
+  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer                    100%
+  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                                  100%
 
-Wolfgang.DbContextBuilder-Core-EF6                                         95.7%
-  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
-  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
-  Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
-  Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.7%
-  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
-  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
-  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%
-  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer         100%
-  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                      96.2%
+Wolfgang.DbContextBuilder-Core-EF6                                                     100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException                 100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions               100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>                          100%
+  Wolfgang.DbContextBuilderCore.DbContextActivator<T>                                  100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                                    100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions                       100%
+  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                               100%
+  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                                 100%
+  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer                    100%
+  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                                  100%
 
-Wolfgang.DbContextBuilder-Core-EF7                                         95.7%
-  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
-  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
-  Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
-  Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.7%
-  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
-  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
-  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%
-  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer         100%
-  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                      96.2%
+Wolfgang.DbContextBuilder-Core-EF7                                                     100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException                 100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions               100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>                          100%
+  Wolfgang.DbContextBuilderCore.DbContextActivator<T>                                  100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                                    100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions                       100%
+  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                               100%
+  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                                 100%
+  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer                    100%
+  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                                  100%
 
-Wolfgang.DbContextBuilder-Core-EF8                                         95.7%
-  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
-  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
-  Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
-  Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.7%
-  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
-  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
-  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%
-  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer         100%
-  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                      96.2%
+Wolfgang.DbContextBuilder-Core-EF8                                                     100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException                 100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions               100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>                          100%
+  Wolfgang.DbContextBuilderCore.DbContextActivator<T>                                  100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                                    100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions                       100%
+  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                               100%
+  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                                 100%
+  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer                    100%
+  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                                  100%
 
-Wolfgang.DbContextBuilder-Core-EF9                                         95.7%
-  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException      100%
-  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions    100%
-  Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>               100%
-  Wolfgang.DbContextBuilderCore.DbContextActivator<T>                      93.3%
-  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                        92.7%
-  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions            100%
-  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                    100%
-  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                      100%
-  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer         100%
-  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                      96.2%
+Wolfgang.DbContextBuilder-Core-EF9                                                     100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionException                 100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbContextAssertionsExtensions               100%
+  Wolfgang.DbContextBuilderCore.Assertions.DbSetAssertions<T>                          100%
+  Wolfgang.DbContextBuilderCore.DbContextActivator<T>                                  100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilder<T>                                    100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderSqliteExtensions                       100%
+  Wolfgang.DbContextBuilderCore.InMemoryDbContextCreator                               100%
+  Wolfgang.DbContextBuilderCore.SqliteDbContextCreator                                 100%
+  Wolfgang.DbContextBuilderCore.SqliteForMsSqlServerModelCustomizer                    100%
+  Wolfgang.DbContextBuilderCore.SqliteModelCustomizer                                  100%
 
-Wolfgang.DbContextBuilder.AutoFixture                                       100%
-  Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator              100%
-  Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions       100%
+Wolfgang.DbContextBuilder-Core.Tests.Unit                                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CollidingKeyRandomEntityCreator             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyCreator                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageAllScalars                          100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageContext                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageManufacturer                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageSupplier                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageWidget                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DbContextActivatorTests                     100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DbSetAssertionsTests                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DeterministicRandomEntityCreator            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DiagnosticOutputTests                       100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.FixedKeyGenerator                           100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GeneratedKeyContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GeneratedKeyRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GuidKeyContext                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GuidKeyRow                                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyAnimal                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyContext                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyDog                                100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.KeylessContext                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.ManualKeyContext                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Models.BasicContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Models.TableWithDefaults                    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SaveCountingContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SaveCountingRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SeedProfileTests                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SeedWithRandomCoverageTests                 100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SelfReferenceContext                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SelfReferenceRow                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteDbContextCreatorTests                 100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteForMsSqlServerModelCustomizerTests    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteModelCustomizerTests                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqlServerDefaultsContext                    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqlServerDefaultsRow                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.TestModelRoundTripTests                     100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.UnmappedRow                                 100%
 
-Wolfgang.DbContextBuilder.Bogus                                             100%
-  Wolfgang.DbContextBuilderCore.BogusRandomEntityCreator                    100%
-  Wolfgang.DbContextBuilderCore.DbContextBuilderBogusExtensions             100%
+Wolfgang.DbContextBuilder-Core.Tests.Unit-EF10                                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CollidingKeyRandomEntityCreator             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyCreator                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageAllScalars                          100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageContext                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageManufacturer                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageSupplier                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageWidget                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DbContextActivatorTests                     100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DbSetAssertionsTests                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DeterministicRandomEntityCreator            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DiagnosticOutputTests                       100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.FixedKeyGenerator                           100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GeneratedKeyContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GeneratedKeyRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GuidKeyContext                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GuidKeyRow                                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyAnimal                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyContext                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyDog                                100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.KeylessContext                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.ManualKeyContext                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Models.BasicContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Models.TableWithDefaults                    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.PositiveSentinelKeyContext                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SaveCountingContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SaveCountingRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SeedProfileTests                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SeedWithRandomCoverageTests                 100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SelfReferenceContext                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SelfReferenceRow                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SentinelKeyContext                          100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteDbContextCreatorTests                 100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteForMsSqlServerModelCustomizerTests    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteModelCustomizerTests                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqlServerDefaultsContext                    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqlServerDefaultsRow                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.TestModelRoundTripTests                     100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.UnmappedRow                                 100%
+
+Wolfgang.DbContextBuilder-Core.Tests.Unit-EF6                                          100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CollidingKeyRandomEntityCreator             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyCreator                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageAllScalars                          100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageContext                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageManufacturer                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageSupplier                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageWidget                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DbContextActivatorTests                     100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DbSetAssertionsTests                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DeterministicRandomEntityCreator            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DiagnosticOutputTests                       100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.FixedKeyGenerator                           100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GeneratedKeyContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GeneratedKeyRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GuidKeyContext                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GuidKeyRow                                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyAnimal                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyContext                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyDog                                100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.KeylessContext                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.ManualKeyContext                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Models.BasicContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Models.TableWithDefaults                    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SaveCountingContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SaveCountingRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SeedProfileTests                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SeedWithRandomCoverageTests                 100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SelfReferenceContext                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SelfReferenceRow                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteDbContextCreatorTests                 100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteForMsSqlServerModelCustomizerTests    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteModelCustomizerTests                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqlServerDefaultsContext                    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqlServerDefaultsRow                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.TestModelRoundTripTests                     100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.UnmappedRow                                 100%
+
+Wolfgang.DbContextBuilder-Core.Tests.Unit-EF7                                          100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CollidingKeyRandomEntityCreator             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyCreator                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageAllScalars                          100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageContext                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageManufacturer                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageSupplier                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageWidget                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DbContextActivatorTests                     100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DbSetAssertionsTests                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DeterministicRandomEntityCreator            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DiagnosticOutputTests                       100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.FixedKeyGenerator                           100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GeneratedKeyContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GeneratedKeyRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GuidKeyContext                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GuidKeyRow                                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyAnimal                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyContext                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyDog                                100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.KeylessContext                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.ManualKeyContext                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Models.BasicContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Models.TableWithDefaults                    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SaveCountingContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SaveCountingRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SeedProfileTests                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SeedWithRandomCoverageTests                 100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SelfReferenceContext                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SelfReferenceRow                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteDbContextCreatorTests                 100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteForMsSqlServerModelCustomizerTests    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteModelCustomizerTests                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqlServerDefaultsContext                    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqlServerDefaultsRow                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.TestModelRoundTripTests                     100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.UnmappedRow                                 100%
+
+Wolfgang.DbContextBuilder-Core.Tests.Unit-EF8                                          100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CollidingKeyRandomEntityCreator             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyCreator                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageAllScalars                          100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageContext                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageManufacturer                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageSupplier                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageWidget                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DbContextActivatorTests                     100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DbSetAssertionsTests                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DeterministicRandomEntityCreator            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DiagnosticOutputTests                       100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.FixedKeyGenerator                           100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GeneratedKeyContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GeneratedKeyRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GuidKeyContext                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GuidKeyRow                                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyAnimal                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyContext                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyDog                                100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.KeylessContext                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.ManualKeyContext                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Models.BasicContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Models.TableWithDefaults                    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.PositiveSentinelKeyContext                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SaveCountingContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SaveCountingRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SeedProfileTests                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SeedWithRandomCoverageTests                 100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SelfReferenceContext                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SelfReferenceRow                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SentinelKeyContext                          100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteDbContextCreatorTests                 100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteForMsSqlServerModelCustomizerTests    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteModelCustomizerTests                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqlServerDefaultsContext                    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqlServerDefaultsRow                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.TestModelRoundTripTests                     100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.UnmappedRow                                 100%
+
+Wolfgang.DbContextBuilder-Core.Tests.Unit-EF9                                          100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CollidingKeyRandomEntityCreator             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyCreator                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CompositeKeyRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageAllScalars                          100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageContext                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageManufacturer                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageSupplier                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.CoverageWidget                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DbContextActivatorTests                     100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DbSetAssertionsTests                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DeterministicRandomEntityCreator            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DiagnosticOutputTests                       100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.FixedKeyGenerator                           100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GeneratedKeyContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GeneratedKeyRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GuidKeyContext                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.GuidKeyRow                                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyAnimal                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyContext                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.HierarchyDog                                100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.KeylessContext                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.ManualKeyContext                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Models.BasicContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Models.TableWithDefaults                    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.PositiveSentinelKeyContext                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SaveCountingContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SaveCountingRow                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SeedProfileTests                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SeedWithRandomCoverageTests                 100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SelfReferenceContext                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SelfReferenceRow                            100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SentinelKeyContext                          100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteDbContextCreatorTests                 100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteForMsSqlServerModelCustomizerTests    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqliteModelCustomizerTests                  100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqlServerDefaultsContext                    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SqlServerDefaultsRow                        100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.TestModelRoundTripTests                     100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.UnmappedRow                                 100%
+
+Wolfgang.DbContextBuilder.AutoFixture                                                  100%
+  Wolfgang.DbContextBuilderCore.AutoFixtureRandomEntityCreator                         100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderAutoFixtureExtensions                  100%
+
+Wolfgang.DbContextBuilder.AutoFixture.Tests.Unit                                       100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.AutoFixtureRandomEntityCreatorTests         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DatedEntity                                 100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.DbContextBuilderTestsBase                   100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.FactoryContext                              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.ForeignKeyAutoWireTests                     100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.ICreateRandomEntitiesTestsBase              100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.IgnoreVirtualMembersCustomizationTests      100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.IgnoreVirtualMembersTests                   100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Manufacturer                                100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Models.BasicContext                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Models.TableWithDefaults                    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.NoCircularReferencesCustomizationTests      100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SampleDbContext                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SampleEntity                                100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.SelfReferencingNode                         100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Supplier                                    100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.TestModelRoundTripTests                     100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.TestsWithDefaults                           100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.TestsWithInMemoryDbAndAutoFixture           100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.TestsWithSqliteAndAutoFixture               100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.TimedEntity                                 100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.UseAutoFixtureExtensionsTests               100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.Widget                                      100%
+
+Wolfgang.DbContextBuilder.Bogus                                                        100%
+  Wolfgang.DbContextBuilderCore.BogusRandomEntityCreator                               100%
+  Wolfgang.DbContextBuilderCore.DbContextBuilderBogusExtensions                        100%
+
+Wolfgang.DbContextBuilder.Bogus.Tests.Unit                                             100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.BogusRandomEntityCreatorTests               100%
+  Wolfgang.DbContextBuilderCore.Tests.Unit.UseBogusExtensionsTests                     100%
+
+Wolfgang.DbContextBuilder.Tests.Concurrency                                            100%
+  Wolfgang.DbContextBuilder.Tests.Concurrency.ConcurrencyEntity                        100%
+  Wolfgang.DbContextBuilder.Tests.Concurrency.ConcurrencyTestContext                   100%
+  Wolfgang.DbContextBuilder.Tests.Concurrency.ConcurrentBuilderIsolationTests          100%
+
+Wolfgang.DbContextBuilder.Tests.DocExamples                                            100%
+  Wolfgang.DbContextBuilder.Tests.DocExamples.DocExample                               100%
+  Wolfgang.DbContextBuilder.Tests.DocExamples.DocExampleCompilationTests               100%
+  Wolfgang.DbContextBuilder.Tests.DocExamples.DocExampleCompiler                       100%
+  Wolfgang.DbContextBuilder.Tests.DocExamples.DocExampleSource                         100%
+
+Wolfgang.DbContextBuilder.Tests.Fuzz                                                   100%
+  Wolfgang.DbContextBuilder.Tests.Fuzz.AutoFixtureRandomEntityCreatorFuzzTests         100%
+  Wolfgang.DbContextBuilder.Tests.Fuzz.BogusRandomEntityCreatorFuzzTests               100%
+  Wolfgang.DbContextBuilder.Tests.Fuzz.DbContextBuilderSeedFuzzTests                   100%
+  Wolfgang.DbContextBuilder.Tests.Fuzz.FixedKeyCreator                                 100%
+  Wolfgang.DbContextBuilder.Tests.Fuzz.FuzzDbContext                                   100%
+  Wolfgang.DbContextBuilder.Tests.Fuzz.FuzzEntity                                      100%
+  Wolfgang.DbContextBuilder.Tests.Fuzz.FuzzPropertyAttribute                           100%
+  Wolfgang.DbContextBuilder.Tests.Fuzz.FuzzSettings                                    100%
+  Wolfgang.DbContextBuilder.Tests.Fuzz.RandomEntityCreatorProperties                   100%
+  Wolfgang.DbContextBuilder.Tests.Fuzz.RandomEntityCreatorPropertiesTests              100%
