@@ -3,16 +3,8 @@
 		<RootNamespace>Wolfgang.DbContextBuilderEF6.Tests.Unit</RootNamespace>
 		<TargetFrameworks>net462;net47;net471;net472;net48;net481</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.1.0</Version>
-		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-		<Title>$(AssemblyName)</Title>
-		<Authors>Chris Wolfgang</Authors>
-		<Description>Unit tests for Wolfgang.DbContextBuilder-EF6</Description>
-		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
-		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<SignAssembly>False</SignAssembly>
+		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
 	</PropertyGroup>
 
@@ -21,9 +13,9 @@
 		     .NET Framework test host, and this project targets only net4x. pr.yaml Stage 2 and
 		     build-pr.ps1 measure it with Microsoft's collector (Microsoft.NET.Test.Sdk) instead (#523). -->
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
-		<PackageReference Include="Moq" Version="4.20.72" />
 		<PackageReference Include="xunit" Version="2.9.3" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+		<!-- Capped: xunit.runner.visualstudio 3.x drops .NET Framework (#581). -->
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" allowedVersions="(,3.0.0)" />
 	</ItemGroup>
 
 	<ItemGroup>
