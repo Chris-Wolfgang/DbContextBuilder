@@ -229,6 +229,7 @@ View the complete configuration in [.editorconfig](.editorconfig).
 - Ensure all analyzer warnings are addressed (they're treated as errors in Release builds).
 - Use async/await patterns - no blocking calls allowed.
 - Include `CancellationToken` parameters in async methods where appropriate.
+- Add every new project to `Wolfgang.DbContextBuilder.slnx`. The solution-wide gates (Stage 2 build, CodeQL, InspectCode, release validation, Stryker) only see projects listed there.
 
 ---
 

@@ -8,12 +8,15 @@
     <Project Path="benchmarks/DbContextBuilder.Benchmarks/DbContextBuilder.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/ExtraProjects/">
-    <File Path=".editorconfig" />
+    <File Path="extra-projects/.editorconfig" />
     <Project Path="extra-projects/AdventureWorks-EF6/AdventureWorks-EF6.csproj" />
     <Project Path="extra-projects/AdventureWorks-EF7/AdventureWorks-EF7.csproj" />
     <Project Path="extra-projects/AdventureWorks-EF8/AdventureWorks-EF8.csproj" />
     <Project Path="extra-projects/AdventureWorks-EF9/AdventureWorks-EF9.csproj" />
     <Project Path="extra-projects/AdventureWorks-EF10/AdventureWorks-EF10.csproj" />
+  </Folder>
+  <Folder Name="/Samples/">
+    <Project Path="samples/Wolfgang.DbContextBuilder.Samples.ShadowWorkload/Wolfgang.DbContextBuilder.Samples.ShadowWorkload.csproj" />
   </Folder>
   <Folder Name="/Source/">
     <Project Path="src/Wolfgang.DbContextBuilder.Abstractions/Wolfgang.DbContextBuilder.Abstractions.csproj" />
