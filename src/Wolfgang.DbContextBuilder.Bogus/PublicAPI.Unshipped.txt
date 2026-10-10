@@ -1,1 +1,2 @@
 #nullable enable
+Wolfgang.DbContextBuilderCore.BogusRandomEntityCreator.BogusRandomEntityCreator(int seed) -> void
