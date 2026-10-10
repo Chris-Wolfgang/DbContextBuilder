@@ -49,7 +49,7 @@ public class TestsWithDefaults : DbContextBuilderTestsBase
     public async Task Default_database_is_InMemory()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         await using var context = await sut.BuildAsync();
 
@@ -66,7 +66,7 @@ public class TestsWithDefaults : DbContextBuilderTestsBase
     public void Dispose_when_called_does_not_throw()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
         sut.Dispose();
@@ -81,7 +81,7 @@ public class TestsWithDefaults : DbContextBuilderTestsBase
     public void Dispose_when_called_multiple_times_does_not_throw()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
         sut.Dispose();
@@ -97,7 +97,7 @@ public class TestsWithDefaults : DbContextBuilderTestsBase
     public async Task BuildAsync_when_disposed_throws_ObjectDisposedException()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
         sut.Dispose();
 
         // Act & Assert
@@ -116,7 +116,7 @@ public class TestsWithDefaults : DbContextBuilderTestsBase
     public void Dispose_when_using_Sqlite_disposes_creator()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>().UseSqlite();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>().UseSqlite();
 
         // Act
         sut.Dispose();
