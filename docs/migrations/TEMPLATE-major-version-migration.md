@@ -45,8 +45,8 @@ DDL. Include rollback notes.
 
 ## Recommended upgrade order
 
-1. Bump the package version(s) — remember the `-Core-EF{6,7,8,9,10}` siblings ship
-   in lockstep with `-Core`.
+1. Bump the package version(s) — the nine packages ship in lockstep, so move every
+   `Wolfgang.DbContextBuilder*` reference you have to the same version.
 2. Fix compile errors using the before/after table above.
 3. Apply any database migration.
 4. Run your test suite.

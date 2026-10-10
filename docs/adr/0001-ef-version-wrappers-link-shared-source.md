@@ -48,7 +48,8 @@ copies or depend on a shared library package.** Each sibling project:
 - Defines `EF_CORE_{N}` / `EF_CORE_{N}_OR_GREATER` constants for the rare lines
   that need to branch on EF Core major version.
 - Pins its own `Microsoft.EntityFrameworkCore*` `PackageReference` range (e.g.
-  `[8.0.25,9.0.0)` for `-Core-EF8`) so a consumer gets a working, version-locked
+  `[8.0.25,9.0.0)` for `-Core-EF8` when this record was written; the lower bound moves with
+  EF Core patch releases) so a consumer gets a working, version-locked
   combination rather than a floating range that could resolve to an
   incompatible EF Core minor.
 
@@ -58,7 +59,7 @@ copies or depend on a shared library package.** Each sibling project:
   bug found in `-Core`'s `DbContextBuilder.cs` is fixed in one file and every
   sibling picks it up on its next build, with no manual propagation step.
 - `PublicAPI.Shipped.txt` for every `-Core-EF{N}` sibling is required to stay
-  byte-identical to `-Core`'s (see `sessions/project_dbcontextbuilder.md`) —
+  byte-identical to `-Core`'s (a maintainer rule, recorded in the maintainer's notes outside this repository) —
   file linking makes that an automatic consequence of the approach rather than
   a rule that has to be separately enforced.
 - A shared-library package would have solved code reuse but not the

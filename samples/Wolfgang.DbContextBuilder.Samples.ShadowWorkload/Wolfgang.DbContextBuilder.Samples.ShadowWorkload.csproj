@@ -19,8 +19,8 @@
       -p:BaselineVersion=X.Y.Z to switch to the published package instead.
 
       Baselines against -Core-EF10, not -Core: -Core.csproj pins EF Core to a
-      range that predates its own net10.0 TargetFramework (see docs/adr/0001),
-      and -Core stopped publishing entirely as of #362 - there is no current
+      range that predates its own net10.0 TargetFramework, and -Core stopped
+      publishing entirely as of #362 (docs/adr/0003) - there is no current
       -Core package version to baseline against. -Core-EF10 links the identical
       source and ships every release -Core did before.
 
