@@ -48,7 +48,10 @@ jobs:
         run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
 
       - name: Run actionlint
-        run: actionlint -color
+        # benchmarks.yaml and build-all-versions.yaml use `concurrency.queue: max`, which GitHub
+        # supports but no released actionlint knows yet (rhysd/actionlint#654). Ignore exactly
+        # that message; drop the -ignore once a release that supports `queue` is pinned above.
+        run: actionlint -color -ignore 'unexpected key "queue" for "concurrency" section'
 
   zizmor:
     name: zizmor
