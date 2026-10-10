@@ -8,7 +8,7 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
-		<DefineConstants>$(DefineConstants);EF_CORE_7;EF_CORE_7_OR_GREATER</DefineConstants>
+		<DefineConstants>$(DefineConstants);EF_CORE_7;EF_CORE_6_OR_GREATER;EF_CORE_7_OR_GREATER</DefineConstants>
 
 	</PropertyGroup>
 
