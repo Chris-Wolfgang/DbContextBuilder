@@ -15,6 +15,13 @@ on:
 permissions:
   contents: read  # Default to read-only; the build-and-deploy job overrides with write
 
+# Four workflows push to gh-pages (benchmarks, build-all-versions, docfx via release, stryker
+# publish). Share the gh-pages group with benchmarks.yaml so this one queues behind another
+# writer instead of racing it and losing its push (#589). Never cancel: the deploy is the point.
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+
 jobs:
   build-and-deploy:
     name: Build & Deploy All Versioned Docs
@@ -259,7 +266,7 @@ jobs:
 
       - name: Generate versions.json for every version
         # Writes a versions.json (consumed by the version-switcher dropdown) into
-        # each version's output directory.  All URLs are rooted under versions/.
+        # each version's output directory and the site root.  All URLs are rooted under versions/.
         shell: pwsh
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -276,18 +283,58 @@ jobs:
             if ($t -match $semverRe) {
               $stable = if ([string]::IsNullOrEmpty($Matches['prerelease'])) { 1 } else { 0 }
               [PSCustomObject]@{
-                Tag    = $t
-                Major  = [int]$Matches['major']
-                Minor  = [int]$Matches['minor']
-                Patch  = [int]$Matches['patch']
-                Stable = $stable
+                Tag        = $t
+                Major      = [int]$Matches['major']
+                Minor      = [int]$Matches['minor']
+                Patch      = [int]$Matches['patch']
+                Stable     = $stable
+                PreRelease = $Matches['prerelease']
               }
             }
           }
 
-          $orderedTags = $taggedVersions |
-            Sort-Object -Property Major, Minor, Patch, Stable -Descending |
-            Select-Object -ExpandProperty Tag
+          # Full SemVer precedence, descending, including prerelease identifiers: the same
+          # comparator as docfx.yaml, so both workflows emit the list in the same order (#621).
+          # Kept inline rather than in a shared script: a new script would not be a protected
+          # file, and this workflow has to stay a protected-only change.
+          $tagList = [System.Collections.Generic.List[object]]::new()
+          foreach ($item in $taggedVersions) { [void]$tagList.Add($item) }
+          $comparison = [System.Comparison[object]]{
+            param($a, $b)
+            if ($a.Major -ne $b.Major) { return [Math]::Sign($b.Major - $a.Major) }
+            if ($a.Minor -ne $b.Minor) { return [Math]::Sign($b.Minor - $a.Minor) }
+            if ($a.Patch -ne $b.Patch) { return [Math]::Sign($b.Patch - $a.Patch) }
+            if ($a.Stable -ne $b.Stable) { return [Math]::Sign($b.Stable - $a.Stable) }
+            $aPre = [string]$a.PreRelease
+            $bPre = [string]$b.PreRelease
+            if ([string]::IsNullOrEmpty($aPre) -and [string]::IsNullOrEmpty($bPre)) { return 0 }
+            if ([string]::IsNullOrEmpty($aPre)) { return -1 }
+            if ([string]::IsNullOrEmpty($bPre)) { return 1 }
+            $aIds = $aPre -split '\.'
+            $bIds = $bPre -split '\.'
+            $maxLen = [Math]::Max($aIds.Length, $bIds.Length)
+            for ($i = 0; $i -lt $maxLen; $i++) {
+              # SemVer 11.4.4: fewer identifiers = lower precedence = later in descending order.
+              if ($i -ge $aIds.Length) { return 1 }
+              if ($i -ge $bIds.Length) { return -1 }
+              $aId = $aIds[$i]; $bId = $bIds[$i]
+              $aOut = 0; $bOut = 0
+              $aIsNum = [int]::TryParse($aId, [ref]$aOut)
+              $bIsNum = [int]::TryParse($bId, [ref]$bOut)
+              if ($aIsNum -and $bIsNum) {
+                if ($aOut -ne $bOut) { return [Math]::Sign($bOut - $aOut) }
+              }
+              elseif ($aIsNum) { return 1 }      # numeric identifiers rank below alphanumeric
+              elseif ($bIsNum) { return -1 }
+              else {
+                $cmp = [string]::CompareOrdinal($aId, $bId)
+                if ($cmp -ne 0) { return -$cmp }
+              }
+            }
+            return 0
+          }
+          $tagList.Sort($comparison)
+          $orderedTags = $tagList | Select-Object -ExpandProperty Tag
 
           # Only emit version-picker entries for tags whose docs were actually
           # built and copied under $outDir/versions/<tag>/. Skipped tags (worktree
@@ -313,6 +360,12 @@ jobs:
             $versionsJson | Set-Content -Path (Join-Path $_.FullName 'versions.json') -Encoding utf8NoBOM
             Write-Host "Wrote versions.json to $($_.Name)/"
           }
+
+          # version-picker.js reads ONLY the site-root /<repo>/versions.json. Without a root
+          # copy, a build-all-versions deploy left the picker on a stale root file (keep_files)
+          # or a 404 (#621). The deploy below publishes $outDir to the gh-pages root.
+          $versionsJson | Set-Content -Path (Join-Path $outDir 'versions.json') -Encoding utf8NoBOM
+          Write-Host "Wrote versions.json to the site root"
 
           Write-Host "Generated versions.json with $($versions.Count) entries: $($versions | ForEach-Object { $_.version })"
 
