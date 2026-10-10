@@ -1,3 +1,12 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))" />
+
+  <PropertyGroup>
+    <!-- Turn on every rule in the Security category (CA2100, CA3xxx, CA5xxx) for shipped code
+         (#593). Many are disabled by default, and the category severity in .editorconfig only
+         re-grades rules that are already enabled; it cannot switch one on. Scoped to src/ like
+         that [src/**/*.cs] severity. The rules this turns on come in at warning, which
+         TreatWarningsAsErrors makes an error in Release. -->
+    <AnalysisModeSecurity>All</AnalysisModeSecurity>
+  </PropertyGroup>
 </Project>
