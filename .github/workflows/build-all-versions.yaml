@@ -18,9 +18,12 @@ permissions:
 # Four workflows push to gh-pages (benchmarks, build-all-versions, docfx via release, stryker
 # publish). Share the gh-pages group with benchmarks.yaml so this one queues behind another
 # writer instead of racing it and losing its push (#589). Never cancel: the deploy is the point.
+# cancel-in-progress: false only protects the RUNNING run; queue: max also keeps every PENDING
+# one (by default a newer pending run cancels the older one).
 concurrency:
   group: gh-pages
   cancel-in-progress: false
+  queue: max
 
 jobs:
   build-and-deploy:
@@ -318,11 +321,13 @@ jobs:
               if ($i -ge $aIds.Length) { return 1 }
               if ($i -ge $bIds.Length) { return -1 }
               $aId = $aIds[$i]; $bId = $bIds[$i]
-              $aOut = 0; $bOut = 0
-              $aIsNum = [int]::TryParse($aId, [ref]$aOut)
-              $bIsNum = [int]::TryParse($bId, [ref]$bOut)
+              # A SemVer numeric identifier is digits only, of any size: [int]::TryParse would
+              # call 10000000000 alphanumeric and accept "-1" as a number.
+              $aIsNum = $aId -match '^\d+$'
+              $bIsNum = $bId -match '^\d+$'
               if ($aIsNum -and $bIsNum) {
-                if ($aOut -ne $bOut) { return [Math]::Sign($bOut - $aOut) }
+                $numCmp = ([bigint]::Parse($aId)).CompareTo([bigint]::Parse($bId))
+                if ($numCmp -ne 0) { return -$numCmp }
               }
               elseif ($aIsNum) { return 1 }      # numeric identifiers rank below alphanumeric
               elseif ($bIsNum) { return -1 }
