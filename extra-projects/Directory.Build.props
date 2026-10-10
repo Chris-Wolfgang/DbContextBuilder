@@ -6,10 +6,5 @@
   <PropertyGroup>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
-
-    <!-- Same reasons as the root props (#578): the net6.0/net7.0 projects (AdventureWorks-EF6/EF7)
-         are deliberate, so silence the MSBuild-level TFM-support and EOL (NETSDK1138) warnings. -->
-    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
-    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 </Project>
