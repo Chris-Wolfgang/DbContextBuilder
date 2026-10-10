@@ -64,9 +64,10 @@ package into the net10.0 build only, so the kills are lost (#552). Those two pac
 left out of the root config's `mutate` list, and each test project has its own
 `stryker-config.json`; the workflow runs Stryker in that directory, in project mode, after the
 umbrella run, and judges the report against the same `mutation-floors.json`. Those configs set
-`"break": 0`, so the per-project floor in `mutation-floors.json` is the only gate for those
-packages. A package with a
-test project like that needs the same treatment.
+`"break": 0`, so the per-project floor in `mutation-floors.json` is the only mutation-score
+threshold for those packages. The run still fails on its own if `dotnet stryker` exits non-zero
+or `Test-StrykerRun` finds no valid report or no mutants. A package with a test project like that
+needs the same treatment.
 
 ## Measuring honestly
 
