@@ -24,9 +24,6 @@ namespace Wolfgang.DbContextBuilderCore;
 /// </remarks>
 public class SqliteModelCustomizer : ModelCustomizer
 {
-
-
-
     // Backing fields are initialized in the ctor (not lazily in the getter) so that
     // concurrent EF model customization — which can happen when multiple threads race
     // on the EF model-cache release path — sees the same delegate instance. The
@@ -172,6 +169,28 @@ public class SqliteModelCustomizer : ModelCustomizer
 
 
 
+    private Action<IMutableEntityType> _overrideManyToManyTableHandling;
+
+
+
+    /// <summary>
+    /// This action is called for each entity type to handle many-to-many join table renaming.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">The setter received a <c>null</c> <c>value</c>.</exception>
+    /// <remarks>
+    /// The default implementation uses a heuristic to detect many-to-many join tables:
+    /// an entity type with exactly two foreign keys and no navigations is assumed to be a join table.
+    /// When detected, the table is renamed to "{LeftTable}_{RightTable}". You can override this
+    /// behavior by assigning a custom implementation to this property.
+    /// </remarks>
+    public Action<IMutableEntityType> OverrideManyToManyTableHandling
+    {
+        get => _overrideManyToManyTableHandling;
+        set => _overrideManyToManyTableHandling = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
+
+
     /// <summary>
     /// Overrides the default model creation process of a <see cref="DbContext"/> with configurations suitable for SQLite.
     /// </summary>
@@ -215,6 +234,7 @@ public class SqliteModelCustomizer : ModelCustomizer
     }
 
 
+
     private static void RenameTable
     (
         IMutableEntityType entityType,
@@ -255,6 +275,7 @@ public class SqliteModelCustomizer : ModelCustomizer
     }
 
 
+
     private void OverrideComputedValue(IMutableProperty property)
     {
         var originalComputedValueSql = property.GetComputedColumnSql();
@@ -263,27 +284,6 @@ public class SqliteModelCustomizer : ModelCustomizer
         {
             property.SetComputedColumnSql(newComputedValueSql);
         }
-
-    }
-
-
-
-    private Action<IMutableEntityType> _overrideManyToManyTableHandling;
-
-    /// <summary>
-    /// This action is called for each entity type to handle many-to-many join table renaming.
-    /// </summary>
-    /// <exception cref="ArgumentNullException">The setter received a <c>null</c> <c>value</c>.</exception>
-    /// <remarks>
-    /// The default implementation uses a heuristic to detect many-to-many join tables:
-    /// an entity type with exactly two foreign keys and no navigations is assumed to be a join table.
-    /// When detected, the table is renamed to "{LeftTable}_{RightTable}". You can override this
-    /// behavior by assigning a custom implementation to this property.
-    /// </remarks>
-    public Action<IMutableEntityType> OverrideManyToManyTableHandling
-    {
-        get => _overrideManyToManyTableHandling;
-        set => _overrideManyToManyTableHandling = value ?? throw new ArgumentNullException(nameof(value));
     }
 
 
