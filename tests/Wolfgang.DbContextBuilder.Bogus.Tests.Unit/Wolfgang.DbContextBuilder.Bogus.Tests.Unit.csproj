@@ -30,6 +30,11 @@
 		</PackageReference>
 	</ItemGroup>
 
+	<!-- Sample models shared with the AutoFixture unit-test project (#602). -->
+	<ItemGroup>
+		<Compile Include="..\Wolfgang.DbContextBuilder.AutoFixture.Tests.Unit\SampleModels.cs" Link="SampleModels.cs" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder.Bogus\Wolfgang.DbContextBuilder.Bogus.csproj" />
 	</ItemGroup>

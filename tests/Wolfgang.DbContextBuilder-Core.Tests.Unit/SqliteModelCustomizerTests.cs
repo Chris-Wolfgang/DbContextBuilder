@@ -26,6 +26,15 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 /// </summary>
 public class SqliteModelCustomizerTests
 {
+    // The one place that knows EF Core 6's ModelCustomizerDependencies needs an IDbSetFinder (#602).
+    private static ModelCustomizerDependencies CreateDependencies() =>
+#if EF_CORE_6
+        new(new Mock<IDbSetFinder>().Object);
+#else
+        new();
+#endif
+
+
 
     /// <summary>
     /// Verifies that passing null to the constructor throws ArgumentNullException
@@ -49,12 +58,7 @@ public class SqliteModelCustomizerTests
     public void OverrideTableRenaming_when_set_to_null_throws_ArgumentNullException()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
 
@@ -71,12 +75,7 @@ public class SqliteModelCustomizerTests
     public void OverrideTableRenaming_can_rename_table_with_default_implementation()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
 
@@ -112,12 +111,7 @@ public class SqliteModelCustomizerTests
     public void OverrideTableRenaming_can_rename_table_with_custom_implementation()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
 
         var sut = new SqliteModelCustomizer(dependencies) {
@@ -159,12 +153,7 @@ public class SqliteModelCustomizerTests
     public void OverrideDefaultValueHandling_when_set_to_null_throws_ArgumentNullException()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
 
@@ -181,12 +170,7 @@ public class SqliteModelCustomizerTests
     public void OverrideDefaultValueHandling_default_implementation_leaves_default_value_as_is()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
 
@@ -206,12 +190,7 @@ public class SqliteModelCustomizerTests
     public void OverrideDefaultValueHandling_uses_custom_method_when_provided()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
 
         var sut = new SqliteModelCustomizer(dependencies)
@@ -237,12 +216,7 @@ public class SqliteModelCustomizerTests
     public void OverrideComputedValueHandling_when_set_to_null_throws_ArgumentNullException()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
 
@@ -259,12 +233,7 @@ public class SqliteModelCustomizerTests
     public void OverrideComputedValueHandling_default_implementation_set_default_to_null()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
 
@@ -284,12 +253,7 @@ public class SqliteModelCustomizerTests
     public void OverrideComputedValueHandling_uses_custom_method_when_provided()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
 
         var sut = new SqliteModelCustomizer(dependencies)
@@ -313,12 +277,7 @@ public class SqliteModelCustomizerTests
     public void Customize_when_modelBuilder_is_null_throws_ArgumentNullException()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
         using var context = new BasicContext
@@ -342,12 +301,7 @@ public class SqliteModelCustomizerTests
     public void Customize_when_context_is_null_throws_ArgumentNullException()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
 
@@ -365,12 +319,7 @@ public class SqliteModelCustomizerTests
     public void Customize_when_entity_has_no_table_name_throws_InvalidOperationException()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
         using var context = new BasicContext
@@ -403,12 +352,7 @@ public class SqliteModelCustomizerTests
     public void OverrideManyToManyTableHandling_when_set_to_null_throws_ArgumentNullException()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
 
@@ -426,12 +370,7 @@ public class SqliteModelCustomizerTests
     public void OverrideManyToManyTableHandling_uses_custom_action_when_provided()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var invoked = false;
         var sut = new SqliteModelCustomizer(dependencies)
@@ -456,50 +395,11 @@ public class SqliteModelCustomizerTests
     public void OverrideManyToManyTableHandling_default_implementation_renames_join_table()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
 
-        // Build a real model with a many-to-many join entity
-        var modelBuilder = new ModelBuilder();
-
-        modelBuilder.Entity("Left", b =>
-        {
-            b.Property<int>("Id");
-            b.HasKey("Id");
-            b.ToTable("Orders");
-        });
-
-        modelBuilder.Entity("Right", b =>
-        {
-            b.Property<int>("Id");
-            b.HasKey("Id");
-            b.ToTable("Products");
-        });
-
-        modelBuilder.Entity("JoinTable", b =>
-        {
-            b.Property<int>("LeftId");
-            b.Property<int>("RightId");
-            b.HasKey("LeftId", "RightId");
-            b.ToTable("JoinTable");
-            b.HasOne("Left").WithMany().HasForeignKey("LeftId");
-            b.HasOne("Right").WithMany().HasForeignKey("RightId");
-        });
-
-        var model = modelBuilder.FinalizeModel();
-        var joinEntityType = model.FindEntityType("JoinTable")!;
-
-        // Verify preconditions: 2 FKs, 0 navigations
-        Assert.Equal(2, joinEntityType.GetForeignKeys().Count());
-        Assert.Empty(joinEntityType.GetNavigations());
-
-        // Act — use a mutable copy so SetTableName works
+        // A mutable many-to-many join entity: exactly 2 FKs, no navigations
         var mutableModelBuilder = new ModelBuilder();
 
         mutableModelBuilder.Entity("Left", b =>
@@ -527,6 +427,10 @@ public class SqliteModelCustomizerTests
         });
 
         var mutableJoinEntity = mutableModelBuilder.Model.FindEntityType("JoinTable")!;
+        Assert.Equal(2, mutableJoinEntity.GetForeignKeys().Count());
+        Assert.Empty(mutableJoinEntity.GetNavigations());
+
+        // Act
         sut.OverrideManyToManyTableHandling(mutableJoinEntity);
 
         // Assert
@@ -544,12 +448,7 @@ public class SqliteModelCustomizerTests
     public void DefaultValueMap_is_empty_on_construction()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         // Act
         var sut = new SqliteModelCustomizer(dependencies);
@@ -568,12 +467,7 @@ public class SqliteModelCustomizerTests
     public void DefaultValueMap_key_lookup_is_case_insensitive()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
         sut.DefaultValueMap["(GETDATE())"] = "datetime('now')";
@@ -596,12 +490,7 @@ public class SqliteModelCustomizerTests
     public void OverrideDefaultValueHandling_default_impl_uses_DefaultValueMap_when_value_is_mapped()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
         sut.DefaultValueMap["(my_custom_sproc())"] = "datetime('now', '+1 day')";
@@ -624,12 +513,7 @@ public class SqliteModelCustomizerTests
     public void OverrideDefaultValueHandling_default_impl_matches_DefaultValueMap_case_insensitively()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
         sut.DefaultValueMap["(GETDATE())"] = "datetime('now')";
@@ -651,12 +535,7 @@ public class SqliteModelCustomizerTests
     public void DefaultValueMap_additions_take_effect_immediately()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
 
@@ -683,12 +562,7 @@ public class SqliteModelCustomizerTests
     public void OverrideManyToManyTableHandling_default_implementation_does_not_rename_entity_with_three_foreign_keys()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
 
@@ -751,12 +625,7 @@ public class SqliteModelCustomizerTests
     public void OverrideManyToManyTableHandling_default_implementation_does_not_rename_entity_with_navigations()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
 
@@ -818,12 +687,7 @@ public class SqliteModelCustomizerTests
     public void OverrideManyToManyTableHandling_default_implementation_handles_self_referencing_join()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteModelCustomizer(dependencies);
 
@@ -863,67 +727,6 @@ public class SqliteModelCustomizerTests
         // (Employee_Subordinate, EmployeeHierarchy, etc.) should assign a custom
         // OverrideManyToManyTableHandling delegate.
         Assert.Equal("Employees_Employees", entity.GetTableName());
-    }
-
-
-
-    /// <summary>
-    /// Documents the happy path explicitly under the "exactly 2 FKs, 0 navigations" precondition
-    /// using the new XML doc convention (the original
-    /// <c>OverrideManyToManyTableHandling_default_implementation_renames_join_table</c> test
-    /// covers the same scenario; this duplication is intentional for documentation value and
-    /// will survive any rename of the original).
-    /// </summary>
-    [Fact]
-    public void OverrideManyToManyTableHandling_default_implementation_renames_pure_join_with_two_fks_and_no_navigations()
-    {
-        // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
-
-        var sut = new SqliteModelCustomizer(dependencies);
-
-        var modelBuilder = new ModelBuilder();
-
-        modelBuilder.Entity("Tag", b =>
-        {
-            b.Property<int>("Id");
-            b.HasKey("Id");
-            b.ToTable("Tags");
-        });
-
-        modelBuilder.Entity("Post", b =>
-        {
-            b.Property<int>("Id");
-            b.HasKey("Id");
-            b.ToTable("Posts");
-        });
-
-        modelBuilder.Entity("PostTag", b =>
-        {
-            b.Property<int>("PostId");
-            b.Property<int>("TagId");
-            b.HasKey("PostId", "TagId");
-            b.ToTable("PostTags");
-            b.HasOne("Post").WithMany().HasForeignKey("PostId");
-            b.HasOne("Tag").WithMany().HasForeignKey("TagId");
-        });
-
-        var entity = modelBuilder.Model.FindEntityType("PostTag")!;
-
-        // Precondition — heuristic match
-        Assert.Equal(2, entity.GetForeignKeys().Count());
-        Assert.Empty(entity.GetNavigations());
-
-        // Act
-        sut.OverrideManyToManyTableHandling(entity);
-
-        // Assert — renamed to {LeftPrincipalTable}_{RightPrincipalTable}
-        Assert.Equal("Posts_Tags", entity.GetTableName());
     }
 
 
