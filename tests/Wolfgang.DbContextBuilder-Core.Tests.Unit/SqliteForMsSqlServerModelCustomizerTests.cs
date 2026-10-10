@@ -280,15 +280,40 @@ public class SqliteForMsSqlServerModelCustomizerTests
         var dependencies = new ModelCustomizerDependencies();
 #endif
 
-        // Act & Assert
+        // Act — a handler that differs from the default, so the assignment is observable
         var sut = new SqliteForMsSqlServerModelCustomizer(dependencies)
         {
-            OverrideComputedValueHandling = _ => null
+            OverrideComputedValueHandling = sql => sql is null ? null : "custom:" + sql
         };
 
+        // Assert
+        Assert.Equal("custom:([OrganizationNode].[GetLevel]())", sut.OverrideComputedValueHandling("([OrganizationNode].[GetLevel]())"));
+        Assert.Null(sut.OverrideComputedValueHandling(null));
+    }
+
+
+
+    /// <summary>
+    /// #599: without any assignment, the default handler drops every computed-column SQL (SQL
+    /// Server functions in it would not run on SQLite). A regression to pass-through must fail here.
+    /// </summary>
+    [Fact]
+    public void OverrideComputedValueHandling_by_default_drops_computed_SQL()
+    {
+        // Arrange
+#if EF_CORE_6
+        var finder = new Mock<IDbSetFinder>().Object;
+        var dependencies = new ModelCustomizerDependencies(finder);
+#else
+        var dependencies = new ModelCustomizerDependencies();
+#endif
+
+        // Act
+        var sut = new SqliteForMsSqlServerModelCustomizer(dependencies);
+
+        // Assert
         Assert.Null(sut.OverrideComputedValueHandling("(isnull('AW'+[dbo].[ufnLeadingZeros]([CustomerID]),''))"));
         Assert.Null(sut.OverrideComputedValueHandling("([OrganizationNode].[GetLevel]())"));
-        Assert.Null(sut.OverrideComputedValueHandling(""));
         Assert.Null(sut.OverrideComputedValueHandling(null));
     }
 }

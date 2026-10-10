@@ -441,6 +441,81 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
+    /// #599: a REQUIRED foreign key whose principal type was never seeded is left at the value the
+    /// creator (here, the transform) produced, as documented; an optional one is cleared.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_when_a_required_principal_is_not_seeded_leaves_the_FK_untouched()
+    {
+        using var sut = NewBuilder().UseInMemory();
+
+        await using var context = await sut
+            .SeedWithRandom<CoverageWidget>(3, widget => { widget.ManufacturerId = 4242; return widget; })
+            .BuildAsync();
+
+        var widgets = context.Widgets.ToList();
+        Assert.Equal(3, widgets.Count);
+        Assert.All(widgets, widget => Assert.Equal(4242, widget.ManufacturerId));
+        Assert.All(widgets, widget => Assert.Null(widget.SupplierId));
+    }
+
+
+
+    /// <summary>
+    /// #599: reconciliation skips a SHADOW foreign key (no CLR property to write), as documented,
+    /// even when a principal is seeded: the build succeeds and the shadow FK stays unset.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_leaves_a_shadow_foreign_key_untouched()
+    {
+        using var sut = new DbContextBuilder<ShadowForeignKeyContext>()
+            .UseCustomRandomEntityCreator(new DeterministicRandomEntityCreator())
+            .UseInMemory();
+
+        await using var context = await sut
+            .SeedWith(new ShadowOwner { Id = 1, Name = "owner" })
+            .SeedWithRandom<ShadowChild>(2)
+            .BuildAsync();
+
+        var children = context.Set<ShadowChild>().ToList();
+        Assert.Equal(2, children.Count);
+        Assert.All(children, child => Assert.Null(context.Entry(child).Property<int?>("ShadowOwnerId").CurrentValue));
+        Assert.All(children, child => Assert.Null(child.Owner));
+    }
+
+
+
+    /// <summary>
+    /// #599: long, short and byte primary keys are made unique like int keys: colliding random
+    /// keys are renumbered through Convert.ChangeType into the key's own type.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_makes_long_short_and_byte_primary_keys_unique()
+    {
+        using var sut = new DbContextBuilder<NarrowKeyContext>()
+            .UseCustomRandomEntityCreator(new CollidingTypedKeyRandomEntityCreator())
+            .UseInMemory();
+
+        await using var context = await sut
+            .SeedWithRandom<LongKeyRow>(3)
+            .SeedWithRandom<ShortKeyRow>(3)
+            .SeedWithRandom<ByteKeyRow>(3)
+            .BuildAsync();
+
+        var longIds = context.Set<LongKeyRow>().Select(row => row.Id).ToList();
+        var shortIds = context.Set<ShortKeyRow>().Select(row => row.Id).ToList();
+        var byteIds = context.Set<ByteKeyRow>().Select(row => row.Id).ToList();
+        Assert.Equal(3, longIds.Distinct().Count());
+        Assert.Equal(3, shortIds.Distinct().Count());
+        Assert.Equal(3, byteIds.Distinct().Count());
+        Assert.Contains(7L, longIds);
+        Assert.Contains((short)7, shortIds);
+        Assert.Contains((byte)7, byteIds);
+    }
+
+
+
+    /// <summary>
     /// #569: a required FK whose principal is an inheritance base is wired to a seeded instance
     /// of a derived type. Matching principals by exact runtime type missed it and left the FK
     /// random, which SQLite's foreign-key check then rejected.
@@ -1286,6 +1361,111 @@ internal sealed class HierarchyContext(DbContextOptions<HierarchyContext> option
     {
         modelBuilder.Entity<HierarchyAnimal>();
         modelBuilder.Entity<HierarchyDog>();
+    }
+}
+
+
+
+/// <summary>Principal of <see cref="ShadowChild"/>'s shadow foreign key (#599).</summary>
+internal sealed class ShadowOwner
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+}
+
+
+
+/// <summary>Has a navigation to <see cref="ShadowOwner"/> but no CLR foreign-key property (#599).</summary>
+internal class ShadowChild
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+
+    // Virtual so the random-entity double leaves it unset.
+    public virtual ShadowOwner? Owner { get; set; }
+}
+
+
+
+/// <summary>Maps <see cref="ShadowChild"/>'s optional relationship through a shadow FK (#599).</summary>
+internal sealed class ShadowForeignKeyContext(DbContextOptions<ShadowForeignKeyContext> options) : DbContext(options)
+{
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ShadowOwner>();
+        modelBuilder.Entity<ShadowChild>()
+            .HasOne(child => child.Owner)
+            .WithMany()
+            .HasForeignKey("ShadowOwnerId")
+            .IsRequired(false);
+    }
+}
+
+
+
+/// <summary>Keyed by <see cref="long"/> (#599).</summary>
+internal sealed class LongKeyRow
+{
+    public long Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+}
+
+
+
+/// <summary>Keyed by <see cref="short"/> (#599).</summary>
+internal sealed class ShortKeyRow
+{
+    public short Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+}
+
+
+
+/// <summary>Keyed by <see cref="byte"/> (#599).</summary>
+internal sealed class ByteKeyRow
+{
+    public byte Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+}
+
+
+
+/// <summary>Maps the three narrow-key rows (#599).</summary>
+internal sealed class NarrowKeyContext(DbContextOptions<NarrowKeyContext> options) : DbContext(options)
+{
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<LongKeyRow>();
+        modelBuilder.Entity<ShortKeyRow>();
+        modelBuilder.Entity<ByteKeyRow>();
+    }
+}
+
+
+
+/// <summary>
+/// Wraps <see cref="DeterministicRandomEntityCreator"/> and sets every generated entity's <c>Id</c>
+/// to 7 converted to the key's own type, so long/short/byte keys collide like the int ones (#599).
+/// </summary>
+internal sealed class CollidingTypedKeyRandomEntityCreator : ICreateRandomEntities
+{
+    private readonly DeterministicRandomEntityCreator _inner = new();
+
+
+
+    public IEnumerable<TEntity> CreateRandomEntities<TEntity>(int count)
+        where TEntity : class
+    {
+        var entities = _inner.CreateRandomEntities<TEntity>(count).ToList();
+        var id = typeof(TEntity).GetProperty("Id", BindingFlags.Public | BindingFlags.Instance)!;
+        var key = Convert.ChangeType(CollidingKeyRandomEntityCreator.Key, id.PropertyType, System.Globalization.CultureInfo.InvariantCulture);
+        entities.ForEach(entity => id.SetValue(entity, key));
+        return entities;
     }
 }
 
