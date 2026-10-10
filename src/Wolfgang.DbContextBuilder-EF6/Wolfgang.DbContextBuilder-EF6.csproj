@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<!-- Version, AssemblyVersion and the PackageValidation baseline: one shared copy for the lockstep packages. -->
-	<Import Project="..\Version.props" />
+	<Import Project="../Version.props" />
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderEF6</RootNamespace>
 		<TargetFrameworks>net462;net47;net471;net472;net48;net481</TargetFrameworks>
