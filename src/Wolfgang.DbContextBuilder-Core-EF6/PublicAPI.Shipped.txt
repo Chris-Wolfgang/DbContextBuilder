@@ -18,7 +18,6 @@ Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.Dispose() -> void
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(System.Collections.Generic.IEnumerable<TEntity!>! entities) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(TEntity! entity) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(params TEntity![]! entities) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
-Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWith<TEntity>(params TEntity[] entities) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T>
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int count) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int count, System.Func<TEntity!, TEntity!>! func) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
 Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.SeedWithRandom<TEntity>(int count, System.Func<TEntity!, int, TEntity!>! func) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!
