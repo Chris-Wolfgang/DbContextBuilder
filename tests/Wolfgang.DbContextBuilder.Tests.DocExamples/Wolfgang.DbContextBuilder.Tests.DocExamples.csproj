@@ -52,6 +52,8 @@
          (-Core's own doc example) and BogusRandomEntityCreator.cs (.Bogus's). -->
     <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core-EF10\Wolfgang.DbContextBuilder-Core-EF10.csproj" />
     <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder.Bogus\Wolfgang.DbContextBuilder.Bogus.csproj" />
+    <!-- The README and docfx samples call UseAutoFixture() (#600). -->
+    <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder.AutoFixture\Wolfgang.DbContextBuilder.AutoFixture.csproj" />
   </ItemGroup>
 
   <ItemGroup>
