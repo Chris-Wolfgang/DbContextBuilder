@@ -283,8 +283,7 @@ public class DbContextBuilder<T> where T : DbContext
     /// </exception>
     public T Build()
     {
-        var contextCreator = CreateDbContext ?? new EffortDbContextCreator();
-        CreateDbContext = contextCreator;
+        var contextCreator = ResolveContextCreator();
 
         // Create a temporary context to initialize the database (via Effort's shared
         // connection) and persist seed data. Dispose it before returning the caller's
@@ -293,14 +292,8 @@ public class DbContextBuilder<T> where T : DbContext
         // independent of any one context.
         using (var seedContext = contextCreator.CreateDbContext<T>())
         {
-            InitializeDatabase(seedContext);
-
-            if (_seedData.Count > 0)
+            if (PrepareSeedContext(seedContext))
             {
-                foreach (var entity in _seedData)
-                {
-                    seedContext.Set(entity.GetType()).Add(entity);
-                }
                 seedContext.SaveChanges();
             }
         }
@@ -330,27 +323,50 @@ public class DbContextBuilder<T> where T : DbContext
     /// </exception>
     public async Task<T> BuildAsync()
     {
-        var contextCreator = CreateDbContext ?? new EffortDbContextCreator();
-        CreateDbContext = contextCreator;
+        var contextCreator = ResolveContextCreator();
 
-        // Create a temporary context to initialize the database (via Effort's shared
-        // connection) and persist seed data. Dispose it before returning the caller's
-        // context — otherwise it leaks for the lifetime of the builder.
+        // Same temporary seed context as Build; only the save is asynchronous.
         using (var seedContext = contextCreator.CreateDbContext<T>())
         {
-            InitializeDatabase(seedContext);
-
-            if (_seedData.Count > 0)
+            if (PrepareSeedContext(seedContext))
             {
-                foreach (var entity in _seedData)
-                {
-                    seedContext.Set(entity.GetType()).Add(entity);
-                }
                 await seedContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
         return contextCreator.CreateDbContext<T>();
+    }
+
+
+
+    // Shared by Build and BuildAsync (#573): the configured creator, or Effort by default,
+    // remembered so every later context shares its connection.
+    private ICreateDbContext ResolveContextCreator()
+    {
+        var contextCreator = CreateDbContext ?? new EffortDbContextCreator();
+        CreateDbContext = contextCreator;
+        return contextCreator;
+    }
+
+
+
+    // Shared by Build and BuildAsync (#573): creates the database and adds the seed data to
+    // seedContext. Returns whether there is anything for the caller to save.
+    private bool PrepareSeedContext(T seedContext)
+    {
+        InitializeDatabase(seedContext);
+
+        if (_seedData.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (var entity in _seedData)
+        {
+            seedContext.Set(entity.GetType()).Add(entity);
+        }
+
+        return true;
     }
 
 
