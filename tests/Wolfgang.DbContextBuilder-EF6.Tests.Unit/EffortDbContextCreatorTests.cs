@@ -52,13 +52,13 @@ public class EffortDbContextCreatorTests
     /// does not have a (DbConnection, bool) constructor.
     /// </summary>
     [Fact]
-    public void CreateDbContext_when_context_has_no_matching_constructor_throws()
+    public void CreateDbContext_when_context_has_no_matching_constructor_throws_MissingMethodException()
     {
         // Arrange
         using var sut = new EffortDbContextCreator();
 
-        // Act & Assert
-        Assert.ThrowsAny<Exception>(() => sut.CreateDbContext<NoConnectionConstructorContext>());
+        // Act & Assert — the documented exception, not any exception
+        Assert.Throws<MissingMethodException>(() => sut.CreateDbContext<NoConnectionConstructorContext>());
     }
 
 
