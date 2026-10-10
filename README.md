@@ -79,14 +79,14 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 - **CHANGELOG:** [CHANGELOG.md](CHANGELOG.md)
 - **Contributing Guide:** [CONTRIBUTING.md](CONTRIBUTING.md)
 - **DocFX Version Picker Troubleshooting:** [docs/DOCFX-VERSION-PICKER.md](docs/DOCFX-VERSION-PICKER.md)
-- **Benchmarks (every push to `main`):** https://Chris-Wolfgang.github.io/DbContextBuilder/dev/bench/
+- **Benchmark trends (pushes to `main` that change `src/` or `benchmarks/`):** https://Chris-Wolfgang.github.io/DbContextBuilder/dev/bench/
 - **Mutation-testing report:** https://Chris-Wolfgang.github.io/DbContextBuilder/dev/stryker/
 
 ---
 
 ## ✨ Features
 
-- **In-memory `DbContext` for tests.** By default, DbContextBuilder uses the EF Core InMemory provider. Switch to SQLite in-memory, which enforces relational constraints, with `.UseSqlite()` or `.UseSqliteForMsSqlServer()`, or pass your own `DbContextOptionsBuilder` with `.UseDbContextOptionsBuilder(...)` for any other provider.
+- **In-memory `DbContext` for tests.** By default, DbContextBuilder uses the EF Core InMemory provider. Switch to SQLite in-memory, which enforces relational constraints, with `.UseSqlite()` or `.UseSqliteForMsSqlServer()`. To add provider-independent options, such as `.EnableSensitiveDataLogging()` or interceptors, pass your own `DbContextOptionsBuilder` with `.UseDbContextOptionsBuilder(...)`. The builder still applies the provider selected above, so a builder already configured for another provider is rejected by EF Core.
 
 - **Seed with your own data** using `.SeedWith(...)` — accepts a single entity, a `params T[]`, or an `IEnumerable<T>`.
 
@@ -149,7 +149,7 @@ The Core package exposes a small, focused surface. The full reference is on the 
 | `.UseBogus()` | Plug Bogus in as the random-entity generator (realistic fake values). Requires the `Wolfgang.DbContextBuilder.Bogus` package. |
 | `.UseCustomRandomEntityCreator(creator)` | Plug in any `ICreateRandomEntities` implementation. |
 | `.UseCustomDbContextCreator(creator)` | Plug in any `ICreateDbContext` implementation, for a provider the builder does not ship. The builder takes ownership of it. |
-| `.UseDbContextOptionsBuilder(opts)` | Bring your own `DbContextOptionsBuilder<T>` to override the provider entirely. |
+| `.UseDbContextOptionsBuilder(opts)` | Bring your own `DbContextOptionsBuilder<T>` for provider-independent options (sensitive-data logging, interceptors). The selected provider (InMemory, SQLite or a custom creator's) is still applied on top. |
 | `.UseSeedProfile(profile)` | Apply a reusable `ISeedProfile<T>` — a named bundle of seed data shareable across tests. Multiple profiles accumulate. |
 | `.UseDiagnosticOutput(writeLine)` | Route EF Core logs (and a one-line seed summary) to a sink such as `testOutputHelper.WriteLine`. |
 | `.SeedWith<TEntity>(...)` | Seed specific rows. Accepts a single entity, `params T[]`, or `IEnumerable<T>`. |

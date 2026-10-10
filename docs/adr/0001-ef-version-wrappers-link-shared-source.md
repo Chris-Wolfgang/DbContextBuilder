@@ -59,7 +59,7 @@ copies or depend on a shared library package.** Each sibling project:
   bug found in `-Core`'s `DbContextBuilder.cs` is fixed in one file and every
   sibling picks it up on its next build, with no manual propagation step.
 - `PublicAPI.Shipped.txt` for every `-Core-EF{N}` sibling is required to stay
-  byte-identical to `-Core`'s (a maintainer rule, recorded in the maintainer's notes outside this repository) —
+  byte-identical to `-Core`'s —
   file linking makes that an automatic consequence of the approach rather than
   a rule that has to be separately enforced.
 - A shared-library package would have solved code reuse but not the

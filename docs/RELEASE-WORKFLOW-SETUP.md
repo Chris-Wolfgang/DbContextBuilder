@@ -27,7 +27,11 @@ needed (or read).
 1. **Repository owner / repository:** this repository (`Chris-Wolfgang/DbContextBuilder`).
 2. **Workflow file:** `release.yaml`.
 3. **Environment:** leave empty (the job does not use a GitHub environment).
-4. **Packages:** the package IDs the release publishes — all nine `Wolfgang.DbContextBuilder*` IDs.
+4. **Policy owner:** the nuget.org account (or organization) that owns the packages. A policy
+   applies to every package that owner owns.
+5. **Scopes (optional):** a scope's glob pattern can narrow the policy to specific packages, e.g.
+   `Wolfgang.DbContextBuilder*` for the nine IDs this release publishes. There is no per-package
+   ID list.
 
 The `user:` input of the `NuGet/login` step in `release.yaml` must be the nuget.org account that
 owns the policy.
@@ -38,7 +42,9 @@ owns the policy.
 `GITHUB_TOKEN` cannot read secret-scanning alerts (and Dependabot readability varies by account),
 so add a repository secret **`SECURITY_ALERTS_TOKEN`**: a fine-grained personal access token with
 only **Secret scanning alerts: read**, **Dependabot alerts: read** and **Metadata: read**. One
-token may cover all your repositories. Without it, those alert kinds are skipped with a notice.
+token may cover all your repositories. Without it, those reads fall back to `GITHUB_TOKEN`, and a
+kind is skipped with a notice only when that fallback is denied: always for secret-scanning,
+depending on the account for Dependabot.
 The workflow file's header comment has the details.
 
 ### Verify Branch Protection Rules
@@ -60,10 +66,10 @@ Ensure the following settings are enabled:
     - "Stage 1: Linux Tests (.NET 5.0-10.0) + Coverage Gate"
     - "Stage 2: Windows Tests (.NET 5.0-10.0, Framework 4.6.2-4.8.1)"
     - "Stage 3: macOS Tests (.NET 6.0-10.0)"
-  - The "5.0" in the Stage 1/2 names is historical (the jobs no longer install the .NET 5 SDK).
-    The names are required-check contexts, so renaming a job and the ruleset must happen together.
     - "Security Scan (DevSkim)"
     - "Security Scan (CodeQL)"
+  - The "5.0" in the Stage 1/2 names is historical (the jobs no longer install the .NET 5 SDK).
+    The names are required-check contexts, so renaming a job and the ruleset must happen together.
 - ✅ **Require branches to be up to date before merging**
 - ✅ **Require conversation resolution before merging**
 - ✅ **Do not allow bypassing the above settings** (recommended, even for admins)
@@ -89,7 +95,7 @@ The workflow triggers automatically when the release is published.
 
 Six jobs run (see *Workflow Architecture* below for the order):
 
-1. **validate-release** — checks the tag matches every csproj `<Version>`, runs every test project
+1. **validate-release** — checks the tag matches at least one src csproj `<Version>`, runs every test project
    on every target framework with coverage, and enforces 95 % per src assembly and 100 % per test
    assembly (each assembly that ran must have a coverage row).
 2. **pack-and-validate** — generates the third-party notices, packs, smoke-tests installing each
@@ -117,8 +123,8 @@ Six jobs run (see *Workflow Architecture* below for the order):
 **Solution:**
 1. **401:** nuget.org has no Trusted Publishing policy matching this repository and `release.yaml`
    (or the `user:` in the login step is not the policy owner's account). Add or fix the policy.
-2. **403:** the policy exists but does not cover the package being pushed. Add that package ID to
-   the policy.
+2. **403:** the policy exists but does not cover the package being pushed: the package's owner is
+   not the policy owner, or a scope's glob pattern excludes it. Fix the owner or the pattern.
 3. Re-run the failed job from the Actions tab (do not re-publish the release).
 
 ### Tests Fail on Specific Framework
