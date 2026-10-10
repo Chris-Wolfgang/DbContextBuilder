@@ -113,7 +113,13 @@ jobs:
             exit 1
           }
           
+          # Ledger of the test assemblies that ran WITH coverage collection, checked against the
+          # report's rows in the next step (as pr.yaml Stage 1/2 and build-pr.ps1 do, #587):
+          # without it a dropped coverlet.collector would pass the release gate.
+          $ranAssemblies = @()
+
           foreach ($testProj in $testProjects) {
+            $collectedCoverage = $false
             Write-Host "==========================================" -ForegroundColor Cyan
             Write-Host "Testing project: $($testProj.Name)" -ForegroundColor Cyan
             Write-Host "==========================================" -ForegroundColor Cyan
@@ -232,7 +238,8 @@ jobs:
                   Write-Error "❌ Tests failed (no explicit TargetFramework) in $($testProj.Name)"
                   exit $LASTEXITCODE
                 }
-                
+                $collectedCoverage = $true
+
                 continue
               }
               
@@ -240,6 +247,7 @@ jobs:
               
               # Collect coverage only for .NET 5.0+ TFMs; still run tests for all frameworks
               if ($fw -match '^net([5-9]|[1-9][0-9]+)\.') {
+                $collectedCoverage = $true
                 dotnet test $testProj.FullName `
                   --configuration Release `
                   --framework $fw `
@@ -269,8 +277,15 @@ jobs:
                 exit $LASTEXITCODE
               }
             }
+            if ($collectedCoverage) {
+              $asmMatch = [regex]::Match((Get-Content $testProj.FullName -Raw), '<AssemblyName>([^<]+)</AssemblyName>')
+              $ranAssemblies += if ($asmMatch.Success) { $asmMatch.Groups[1].Value.Trim() } else { $testProj.BaseName }
+            }
             Write-Host ""
           }
+          $ranFile = Join-Path $env:RUNNER_TEMP 'release-ran-test-assemblies.txt'
+          Set-Content -Path $ranFile -Value $ranAssemblies
+          Write-Host "Recorded $($ranAssemblies.Count) test assembly/assemblies with coverage: $($ranAssemblies -join ', ')"
           Write-Host "✅ All framework tests passed" -ForegroundColor Green
 
       - name: Verify coverage threshold
@@ -300,6 +315,32 @@ jobs:
           Get-Content CoverageReport/Summary.txt
           Write-Host ""
           
+          # Every test assembly that ran with coverage must have a row in the report (#587).
+          # Module rows start in column 1; every other line in Summary.txt is indented.
+          # -notcontains is an exact (case-insensitive) match, so X.Tests is never taken for X.Tests.Unit.
+          $ranFile = Join-Path $env:RUNNER_TEMP 'release-ran-test-assemblies.txt'
+          if (-not (Test-Path $ranFile)) {
+            Write-Error "❌ The ran-assemblies ledger is missing, so the row check cannot run."
+            exit 1
+          }
+          $ran = @(Get-Content $ranFile | Where-Object { $_.Trim() } | Sort-Object -Unique)
+          if ($ran.Count -eq 0) {
+            Write-Error "❌ No test assembly was recorded as having collected coverage - refusing to pass a gate that measured nothing."
+            exit 1
+          }
+          $rows = @(Get-Content 'CoverageReport/Summary.txt' |
+            Where-Object { $_ -match '^\S' } |
+            ForEach-Object { ($_ -split '\s+')[0] })
+          $missing = @($ran | Where-Object { $rows -notcontains $_ })
+          foreach ($asm in $ran) {
+            if ($missing -contains $asm) { Write-Host "  FAIL $asm ran but recorded no coverage" -ForegroundColor Red }
+            else { Write-Host "  OK   $asm has a coverage row" }
+          }
+          if ($missing.Count -gt 0) {
+            Write-Error "❌ These test assemblies ran but produced no coverage row: $($missing -join ', '). Is coverlet.collector still referenced?"
+            exit 1
+          }
+
           # Parse coverage and enforce threshold per module (matching pr.yaml)
           $summaryContent = Get-Content CoverageReport/Summary.txt
           $threshold     = if ($env:CODECOV_MINIMUM) { [int]$env:CODECOV_MINIMUM } else { 95 }
@@ -353,13 +394,14 @@ jobs:
             Write-Host "==========================================" -ForegroundColor Red
             Write-Host "❌ COVERAGE GATE FAILED" -ForegroundColor Red
             Write-Host "==========================================" -ForegroundColor Red
-            Write-Host "Modules below ${threshold}% coverage: $($failedModules -join ', ')" -ForegroundColor Red
+            # Each entry already says which threshold it missed: src ${threshold}%, test ${testThreshold}% (#587).
+            Write-Host "Modules below their coverage threshold: $($failedModules -join ', ')" -ForegroundColor Red
             exit 1
           }
           
           Write-Host ""
           Write-Host "==========================================" -ForegroundColor Green
-          Write-Host "✅ All modules meet ${threshold}% coverage threshold" -ForegroundColor Green
+          Write-Host "✅ All modules meet their coverage threshold (src ${threshold}%, test ${testThreshold}%)" -ForegroundColor Green
           Write-Host "==========================================" -ForegroundColor Green
 
       - name: Upload coverage report
@@ -821,7 +863,9 @@ jobs:
   # Note: reusable workflow jobs called via `uses:` do not require `runs-on` in the caller
   trigger-docs:
     name: Build & Deploy Documentation
-    needs: validate-release
+    # After publish-nuget, not just validation: a tag whose pack or publish fails must not
+    # deploy its docs as `latest` (#587).
+    needs: [validate-release, publish-nuget]
     permissions:
       contents: write  # Required by docfx.yaml to push to gh-pages branch
     # GitHub's `$/` self-repository syntax is preferred here, but actionlint
