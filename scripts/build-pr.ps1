@@ -417,9 +417,20 @@ if (-not $SkipSecurity) {
             'darwin_arm64.tar.gz' = 'a3d281867df087ded8c2f9afd35d61ff923a25e64caa127b720991ee433d763b' # DevSkim: ignore DS173237 - a release checksum, not a secret
             'darwin_x64.tar.gz'   = 'bd9ed3294c086f10dcc5fc25de57d44ba940c19c1a5a3d5f1cfeb10b9dff005e' # DevSkim: ignore DS173237 - a release checksum, not a secret
         }
+        $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+        # Windows on Arm runs the x64 build under emulation. Linux gets only the build that
+        # matches its architecture: a pinned x64 archive on an Arm64 host would install and
+        # then fail with an executable-format error, so any other architecture is refused.
         $platform = if ($IsWindows -or $env:OS -match 'Windows') { 'windows_x64.zip' }
-                    elseif ($IsMacOS) { if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'darwin_arm64.tar.gz' } else { 'darwin_x64.tar.gz' } }
-                    else { 'linux_x64.tar.gz' }
+                    elseif ($IsMacOS) { if ($arch -eq 'Arm64') { 'darwin_arm64.tar.gz' } else { 'darwin_x64.tar.gz' } }
+                    elseif ($arch -eq 'X64') { 'linux_x64.tar.gz' }
+                    else { $null }
+    }
+    if (-not $gitleaks -and -not $platform) {
+        Write-Fail "No pinned gitleaks $version download for Linux $arch - install gitleaks on PATH and re-run"
+        $failed += "Gitleaks"
+    }
+    elseif (-not $gitleaks) {
         $archive = "gitleaks_${version}_$platform"
         $url = "https://github.com/gitleaks/gitleaks/releases/download/v${version}/$archive"
         $download = Join-Path ([System.IO.Path]::GetTempPath()) $archive
