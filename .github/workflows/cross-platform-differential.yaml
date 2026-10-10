@@ -12,8 +12,9 @@ name: Cross-Platform Differential
 #
 # Scope: the deterministic Core Tests.Unit suite only (InMemory/SQLite-backed,
 # no external services) -- the EFx-pinned sibling suites compile the same
-# linked source as Core (see Directory.Build.props), so diffing them too would
-# just re-verify identical source under a different TFM. Tests that are
+# source, linked from src/Wolfgang.DbContextBuilder-Core/ by each wrapper csproj
+# (docs/adr/0001), so diffing them too would just re-verify identical source
+# under a different TFM. Tests that are
 # *intentionally* platform-specific opt out via
 # `[Trait("Category", "PlatformSpecific")]`; none exist today, but the
 # convention is wired in from the start.

@@ -8,10 +8,11 @@ name: Build reproducibility
 # differences, if any, surface here for investigation).
 #
 # Covers one representative project per shared-source group rather than all 10
-# src projects: -Core-EF6/7/8/9/10 compile the same linked source files as
-# -Core (see Directory.Build.props), so only -Core (net10.0, flagship) and
-# -Core-EF8 (net8.0, a pinned-EF sample) are built — the other three EF-pinned
-# wrappers would just re-verify the same source under a different TFM.
+# src projects: -Core-EF6/7/8/9/10 compile the same source files, linked from
+# src/Wolfgang.DbContextBuilder-Core/ by each wrapper's own csproj (see
+# docs/adr/0001), so only -Core-EF10 (net10.0, the newest shipped package) and
+# -Core-EF8 (net8.0) are built — the other EF-pinned wrappers would just re-verify
+# the same source under a different TFM. -Core itself no longer ships (ADR-0003).
 
 on:
   workflow_dispatch:
@@ -45,7 +46,7 @@ jobs:
       - name: Build src (Release, deterministic)
         shell: bash
         run: |
-          dotnet build src/Wolfgang.DbContextBuilder-Core/Wolfgang.DbContextBuilder-Core.csproj \
+          dotnet build src/Wolfgang.DbContextBuilder-Core-EF10/Wolfgang.DbContextBuilder-Core-EF10.csproj \
             -c Release -f net10.0 -p:ContinuousIntegrationBuild=true
           dotnet build src/Wolfgang.DbContextBuilder-Core-EF8/Wolfgang.DbContextBuilder-Core-EF8.csproj \
             -c Release -f net8.0 -p:ContinuousIntegrationBuild=true
@@ -56,7 +57,7 @@ jobs:
         shell: bash
         run: |
           sha256sum \
-            src/Wolfgang.DbContextBuilder-Core/bin/Release/net10.0/Wolfgang.DbContextBuilder-Core.dll \
+            src/Wolfgang.DbContextBuilder-Core-EF10/bin/Release/net10.0/Wolfgang.DbContextBuilder-Core-EF10.dll \
             src/Wolfgang.DbContextBuilder-Core-EF8/bin/Release/net8.0/Wolfgang.DbContextBuilder-Core-EF8.dll \
             src/Wolfgang.DbContextBuilder.Abstractions/bin/Release/netstandard2.0/Wolfgang.DbContextBuilder.Abstractions.dll \
             | awk '{ n = split($2, parts, "/"); print $1 "  " parts[n] }' \
