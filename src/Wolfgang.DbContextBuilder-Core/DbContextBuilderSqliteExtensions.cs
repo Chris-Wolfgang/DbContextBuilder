@@ -68,6 +68,9 @@ public static class DbContextBuilderSqliteExtensions
         Type modelCustomizerType
     ) where TDbContext : DbContext
     {
+        // Before anything is registered or created: a disposed builder must not gain SQLite
+        // services or an open in-memory connection that nothing can release (#563).
+        builder.ThrowIfDisposed();
 
         // Avoid registering EF services multiple times. AddEntityFrameworkSqlite registers
         // DatabaseProvider<SqliteOptionsExtension> as an IDatabaseProvider, so that descriptor
