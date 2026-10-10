@@ -32,9 +32,22 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "Microsoft.EntityFrameworkCore.Design"
         update-types: ["version-update:semver-major"]
-      # xunit.runner.visualstudio 3.x is incompatible with xunit 2.x
+      # Runner 3.x runs xunit 2.x tests fine, but it drops .NET Framework and net6.0/net7.0, and
+      # this repo pins the runner to 2.8.2 on every slot (#581; the net4x/net6/net7 references
+      # also carry allowedVersions="(,3.0.0)"). Dependabot cannot bump one TFM slot and not
+      # another, so hold the whole line at 2.x until the net8.0+ slots move to 3.x.
       - dependency-name: "xunit.runner.visualstudio"
         versions: [">=3.0.0"]
+
+  # Hash-pinned Python requirements for the zizmor and semgrep scanners that
+  # actions-audit.yaml and semgrep.yaml install (#592).
+  - package-ecosystem: "pip"
+    directory: "/.github/requirements"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
 
   # Keep third-party GitHub Actions pinned in workflows up to date.
   - package-ecosystem: "github-actions"

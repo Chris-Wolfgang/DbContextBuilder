@@ -5,23 +5,8 @@
 		<TargetFrameworks>net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
 		<CheckEolTargetFramework>false</CheckEolTargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Version>0.4.0</Version>
-		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-		<Title>$(AssemblyName)</Title>
-		<Authors>Chris Wolfgang</Authors>
-		<Description>Unit tests for Wolfgang.DbContextBuilder-Core-EF7</Description>
-		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
-		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<PackageIcon></PackageIcon>
-		<ApplicationIcon></ApplicationIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<SignAssembly>False</SignAssembly>
-		<PackageTags></PackageTags>
-
+		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
 		<DefineConstants>$(DefineConstants);EF_CORE_7;EF_CORE_7_OR_GREATER</DefineConstants>
 
@@ -71,10 +56,6 @@
 	      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	    </PackageReference>
 	  </ItemGroup>
-
-	<ItemGroup>
-		<Folder Include="Models\Generated\" />
-	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core-EF7\Wolfgang.DbContextBuilder-Core-EF7.csproj" />

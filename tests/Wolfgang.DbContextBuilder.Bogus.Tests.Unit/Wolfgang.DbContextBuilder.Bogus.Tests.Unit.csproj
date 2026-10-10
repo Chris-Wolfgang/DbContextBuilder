@@ -9,7 +9,9 @@
 		<!-- CA1707 (underscores) is intentional: test names follow MethodUnderTest_when_condition_expected_result.
 		     NU1901/NU1902 suppressed: the net6.0/net7.0 slices reference the maintenance/EOL EF Core 6/7
 		     packages, whose transitive Azure.Identity / Microsoft.Identity.Client carry known advisories
-		     with no in-range fix. Same rationale as the AutoFixture and Core-EF7 test projects. -->
+		     with no in-range fix. Same rationale as the AutoFixture and Core-EF7 test projects.
+		     The suppression cannot be scoped to those TFMs: NuGet Audit reports once per project
+		     restore, not per TFM, so a TargetFramework-conditioned NoWarn is ignored (#582). -->
 		<NoWarn>$(NoWarn);CA1707;NU1901;NU1902</NoWarn>
 	</PropertyGroup>
 

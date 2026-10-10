@@ -4,23 +4,8 @@
 		<RootNamespace>Wolfgang.DbContextBuilderCore.Tests.Unit</RootNamespace>
 		<TargetFramework>net10.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Version>0.4.0</Version>
-		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-		<Title>$(AssemblyName)</Title>
-		<Authors>Chris Wolfgang</Authors>
-		<Description>Unit tests for Wolfgang.DbContextBuilder-Core-EF10</Description>
-		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
-		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<PackageIcon></PackageIcon>
-		<ApplicationIcon></ApplicationIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<SignAssembly>False</SignAssembly>
-		<PackageTags></PackageTags>
-
+		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
 		<DefineConstants>$(DefineConstants);EF_CORE_10;EF_CORE_10_OR_GREATER</DefineConstants>
 
