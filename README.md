@@ -38,7 +38,7 @@ Random-data and shared add-on packages (install alongside your EF Core package):
 |---|---|
 | [`Wolfgang.DbContextBuilder.AutoFixture`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder.AutoFixture) | AutoFixture-backed random data. Adds `.UseAutoFixture()` for `SeedWithRandom`. |
 | [`Wolfgang.DbContextBuilder.Bogus`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder.Bogus) | Bogus-backed random data (realistic fake values). Adds `.UseBogus()`. |
-| [`Wolfgang.DbContextBuilder.Abstractions`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder.Abstractions) | Shared `ICreateRandomEntities` abstraction, EF-Core-version-independent. Referenced transitively by the provider packages. |
+| [`Wolfgang.DbContextBuilder.Abstractions`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder.Abstractions) | Shared `ICreateRandomEntities` abstraction, EF-Core-version-independent. Every `-Core-EF*` package and both random-data packages reference it, so you rarely install it yourself. |
 
 ```bash
 # Pick whichever matches your project's EF version, plus a random-data provider
@@ -77,26 +77,34 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 - **CHANGELOG:** [CHANGELOG.md](CHANGELOG.md)
 - **Contributing Guide:** [CONTRIBUTING.md](CONTRIBUTING.md)
 - **DocFX Version Picker Troubleshooting:** [docs/DOCFX-VERSION-PICKER.md](docs/DOCFX-VERSION-PICKER.md)
+- **Benchmarks (every push to `main`):** https://Chris-Wolfgang.github.io/DbContextBuilder/dev/bench/
+- **Mutation-testing report:** https://Chris-Wolfgang.github.io/DbContextBuilder/dev/stryker/
 
 ---
 
 ## ✨ Features
 
-- **In-memory `DbContext` for tests.** By default, DbContextBuilder uses the EF Core InMemory provider. Pass your own `DbContextOptionsBuilder` to switch to SQLite in-memory or any other provider.
+- **In-memory `DbContext` for tests.** By default, DbContextBuilder uses the EF Core InMemory provider. Switch to SQLite in-memory, which enforces relational constraints, with `.UseSqlite()` or `.UseSqliteForMsSqlServer()`, or pass your own `DbContextOptionsBuilder` with `.UseDbContextOptionsBuilder(...)` for any other provider.
 
-- **Seed with your own data** using `.SeedWith<T>(...)` — accepts an `IEnumerable<T>` or a `params T[]`.
+- **Seed with your own data** using `.SeedWith(...)` — accepts a single entity, a `params T[]`, or an `IEnumerable<T>`.
 
 - **Seed with random data** using `.SeedWithRandom<T>(count)` to simulate real-world databases where additional rows beyond your test fixtures exist. Choose a random-data provider — `.UseAutoFixture()` (the `Wolfgang.DbContextBuilder.AutoFixture` package) or `.UseBogus()` (`Wolfgang.DbContextBuilder.Bogus`) — or plug in your own `ICreateRandomEntities` via `.UseCustomRandomEntityCreator(...)`.
 
 - **Composable.** Chain `SeedWith`, `SeedWithRandom`, and provider options in any order, then call `.BuildAsync()` to materialize the `DbContext`.
+
+- **Fluent assertions on seeded data.** `using Wolfgang.DbContextBuilderCore.Assertions;` adds `context.Products.Should()` (on a `DbSet<T>` or a filtered `IQueryable<T>`) with `HaveCount`, `BeEmpty`, `NotBeEmpty`, `Contain`, `NotContain` and `AllSatisfy`; a failure throws `DbContextAssertionException`.
 
 ---
 
 ## 🚀 Usage
 
 ```csharp
-// Create a DbContext with seeded random data and your test data
-var context = await new DbContextBuilder<YourDbContext>()
+using Wolfgang.DbContextBuilderCore;
+
+// Create a DbContext with seeded random data and your test data. Dispose the builder after the
+// last context it built: it owns the provider resources (for SQLite, the in-memory connection).
+using var builder = new DbContextBuilder<YourDbContext>();
+await using var context = await builder
     // Pick a random-data provider (or .UseBogus()) so SeedWithRandom has a generator
     .UseAutoFixture()
 
@@ -141,10 +149,12 @@ The Core package exposes a small, focused surface. The full reference is on the 
 | `.UseDbContextOptionsBuilder(opts)` | Bring your own `DbContextOptionsBuilder<T>` to override the provider entirely. |
 | `.UseSeedProfile(profile)` | Apply a reusable `ISeedProfile<T>` — a named bundle of seed data shareable across tests. Multiple profiles accumulate. |
 | `.UseDiagnosticOutput(writeLine)` | Route EF Core logs (and a one-line seed summary) to a sink such as `testOutputHelper.WriteLine`. |
-| `.SeedWith<TEntity>(...)` | Seed specific rows. Accepts `IEnumerable<T>` or `params T[]`. |
+| `.SeedWith<TEntity>(...)` | Seed specific rows. Accepts a single entity, `params T[]`, or `IEnumerable<T>`. |
 | `.SeedWithRandom<TEntity>(count, [func])` | Seed N random rows (requires a random-data provider). Optional `func` mutates each generated entity. |
-| `.BuildAsync()` | Materialize the `DbContext`. The builder owns the underlying connection; dispose the context with `await using`. |
-| `SqliteModelCustomizer` | Customization hooks for the SQLite-for-SQL-Server mode: `OverrideTableRenaming`, `OverrideDefaultValueHandling`, `OverrideComputedValueHandling`, `OverrideManyToManyTableHandling`, `DefaultValueMap`. |
+| `.BuildAsync()` | Materialize the `DbContext` (dispose it with `await using`). The first call creates and seeds the database; later calls return new contexts over it. The builder owns the provider resources — for SQLite, the in-memory connection — so dispose the builder after the last context is done. |
+| `SqliteModelCustomizer` | The model customizer `UseSqlite()` installs, with hooks: `OverrideTableRenaming`, `OverrideDefaultValueHandling`, `OverrideComputedValueHandling`, `OverrideManyToManyTableHandling`, `DefaultValueMap`. |
+| `SqliteForMsSqlServerModelCustomizer` | The customizer `UseSqliteForMsSqlServer()` installs: derives from `SqliteModelCustomizer`, maps `(getdate())` / `(newid())` defaults to SQLite and drops other SQL Server default and computed SQL. |
+| `.Should()` (namespace `Wolfgang.DbContextBuilderCore.Assertions`) | Fluent assertions on a `DbSet<T>` or `IQueryable<T>` (`DbSetAssertions<T>`): `HaveCount`, `BeEmpty`, `NotBeEmpty`, `Contain`, `NotContain`, `AllSatisfy`. Failures throw `DbContextAssertionException`. |
 | `ICreateDbContext` / `ICreateRandomEntities` | Extension points for plugging in your own provider or random-entity generator. |
 
 
