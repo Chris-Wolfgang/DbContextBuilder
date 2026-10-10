@@ -65,18 +65,30 @@ public class BogusRandomEntityCreatorTests
 
 
     /// <summary>
-    /// Verifies that common scalar properties are populated with fake values.
+    /// Verifies that every type rule fills its property. Rules whose range includes the default
+    /// (bool, byte, float, double, decimal) are checked across a batch, where an all-default
+    /// result is vanishingly unlikely; the others must be non-default on every entity.
     /// </summary>
     [Fact]
-    public void CreateRandomEntities_populates_scalar_properties_with_fake_values()
+    public void CreateRandomEntities_populates_every_rule_typed_property()
     {
         var sut = new BogusRandomEntityCreator();
 
-        var item = sut.CreateRandomEntities<Sample>(1).Single();
+        var items = sut.CreateRandomEntities<Sample>(64).ToList();
 
-        Assert.False(string.IsNullOrEmpty(item.Name));
-        Assert.NotEqual(default, item.CreatedOn);
-        Assert.NotEqual(Guid.Empty, item.Reference);
+        Assert.All(items, item => Assert.False(string.IsNullOrEmpty(item.Name)));
+        Assert.All(items, item => Assert.True(item.ShortValue >= 1));
+        Assert.All(items, item => Assert.InRange(item.Id, 1, 100_000));
+        Assert.All(items, item => Assert.True(item.LongValue >= 1));
+        Assert.All(items, item => Assert.NotEqual(Guid.Empty, item.Reference));
+        Assert.All(items, item => Assert.NotEqual(default, item.CreatedOn));
+        Assert.All(items, item => Assert.NotEqual(default, item.UpdatedOn));
+        Assert.Contains(items, item => item.IsActive);
+        Assert.Contains(items, item => !item.IsActive);
+        Assert.Contains(items, item => item.ByteValue != 0);
+        Assert.Contains(items, item => item.FloatValue != 0f);
+        Assert.Contains(items, item => item.DoubleValue != 0d);
+        Assert.Contains(items, item => item.Price != 0m);
     }
 
 

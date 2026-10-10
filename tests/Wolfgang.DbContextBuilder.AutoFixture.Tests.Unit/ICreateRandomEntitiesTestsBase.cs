@@ -58,7 +58,6 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() => sut.CreateRandomEntities<SampleEntity>(count));
 
             // Assert
-            Assert.NotNull(exception);
             var argumentOutOfRangeException = Assert.IsType<ArgumentOutOfRangeException>(exception);
             Assert.Equal("count", argumentOutOfRangeException.ParamName);
             Assert.Equal(count, argumentOutOfRangeException.ActualValue);

@@ -157,7 +157,7 @@ public class DbContextBuilderTests
         sut.UseCustomRandomEntityCreator(creator);
 
         // Assert
-        Assert.Equal(creator, sut.RandomEntityCreator);
+        Assert.Same(creator, sut.RandomEntityCreator);
     }
 
 
@@ -500,7 +500,6 @@ public class DbContextBuilderTests
         var actual = context.Categories.ToList();
 
         // Assert
-        Assert.NotNull(actual);
         Assert.Equal(count, actual.Count);
     }
 
@@ -591,9 +590,8 @@ public class DbContextBuilderTests
         var actual = context.Products.ToList();
 
         // Assert
-        Assert.NotNull(actual);
         Assert.Equal(count, actual.Count);
-        Assert.All(actual, p => Assert.StartsWith("Modified_", p.Name));
+        Assert.All(actual, p => Assert.StartsWith("Modified_", p.Name, StringComparison.Ordinal));
     }
 
     #endregion
@@ -682,9 +680,12 @@ public class DbContextBuilderTests
         // Act
         var actual = context.Products.ToList();
 
-        // Assert
-        Assert.NotNull(actual);
-        Assert.Equal(count, actual.Count);
+        // Assert — every entity went through the transform with its own index
+        Assert.Equal
+        (
+            Enumerable.Range(0, count).Select(i => $"Product_{i}"),
+            actual.Select(p => p.Name).OrderBy(n => int.Parse(n.Substring("Product_".Length), System.Globalization.CultureInfo.InvariantCulture))
+        );
     }
 
     #endregion
