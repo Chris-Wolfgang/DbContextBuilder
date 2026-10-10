@@ -582,10 +582,16 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             return;
         }
 
+        // Resolve each CLR type's key once, not once per seeded row (#572).
+        var keyByType = _seedData
+            .Select(entity => entity.GetType())
+            .Distinct()
+            .ToDictionary(type => type, type => FindIntegralPrimaryKey(context, type));
+
         // FindPrimaryKey on a derived type returns the root's key, so grouping by its property
         // puts a whole hierarchy in one group: EF tracks identity per root, not per CLR type.
         var keyedGroups = _seedData
-            .Select(entity => (Entity: entity, Key: FindIntegralPrimaryKey(context, entity.GetType())))
+            .Select(entity => (Entity: entity, Key: keyByType[entity.GetType()]))
             .Where(item => item.Key is not null)
             .GroupBy(item => item.Key!, item => item.Entity);
 
@@ -688,9 +694,15 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             list.Add(entity);
         }
 
+        // Resolve each CLR type's entity type once, not once per random row (#572).
+        var entityTypeByType = _randomlySeeded
+            .Select(entity => entity.GetType())
+            .Distinct()
+            .ToDictionary(type => type, type => context.Model.FindEntityType(type));
+
         foreach (var dependent in _randomlySeeded)
         {
-            var entityType = context.Model.FindEntityType(dependent.GetType());
+            var entityType = entityTypeByType[dependent.GetType()];
             if (entityType is null)
             {
                 continue;
