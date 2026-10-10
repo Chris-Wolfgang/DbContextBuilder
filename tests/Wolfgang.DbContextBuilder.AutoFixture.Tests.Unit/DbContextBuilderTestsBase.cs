@@ -16,6 +16,12 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 /// </summary>
 public abstract class DbContextBuilderTestsBase
 {
+    /// <summary>
+    /// The entity counts the SeedWithRandom theories run with (#602).
+    /// </summary>
+    public static TheoryData<int> SeedCounts => new() { 7, 17 };
+
+
 
     /// <summary>
     /// Creates an instance of DbContextBuilder with specific database
@@ -782,8 +788,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that a newly created DbContext contains the specified number of randomly created entities.
     /// </summary>
     [Theory]
-    [InlineData(7)]
-    [InlineData(17)]
+    [MemberData(nameof(SeedCounts))]
     public async Task SeedWithRandom_int_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         // Arrange
@@ -864,8 +869,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that a newly created DbContext contains the specified number of randomly created entities.
     /// </summary>
     [Theory]
-    [InlineData(7)]
-    [InlineData(17)]
+    [MemberData(nameof(SeedCounts))]
     public async Task SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         var startingId = 1000;
@@ -904,8 +908,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that a newly created DbContext contains the specified number of randomly created entities.
     /// </summary>
     [Theory]
-    [InlineData(7)]
-    [InlineData(17)]
+    [MemberData(nameof(SeedCounts))]
     public async Task SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_values(int count)
     {
         // Arrange
@@ -1011,8 +1014,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that a newly created DbContext contains the specified number of randomly created entities.
     /// </summary>
     [Theory]
-    [InlineData(7)]
-    [InlineData(17)]
+    [MemberData(nameof(SeedCounts))]
     public async Task SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         const int startingId = 1001;
@@ -1092,7 +1094,7 @@ public abstract class DbContextBuilderTestsBase
         // Arrange
         using var sut = CreateDbContextBuilder();
 
-        var buffer = new StringBuilder(10_240);
+        var buffer = new StringBuilder();
         var sw = new StringWriter(buffer);
 
         var optionsBuilder = new DbContextOptionsBuilder<AdventureWorksDbContext>()

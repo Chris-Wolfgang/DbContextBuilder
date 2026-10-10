@@ -9,7 +9,7 @@ namespace Wolfgang.DbContextBuilder.Tests.Concurrency;
 /// <summary>
 /// Systematic exploration of concurrent <see cref="DbContextBuilder{T}"/> usage (#302) — the
 /// realistic scenario is a parallel test run where many test classes build their own
-/// InMemory-backed context at the same time. <see cref="InMemoryDbContextCreator"/> isolates
+/// InMemory-backed context at the same time. <c>InMemoryDbContextCreator</c> (internal) isolates
 /// each builder with a fresh <see cref="Guid"/>-named database, and this suite proves that
 /// isolation holds under adversarial interleaving of the async build/seed path, not just under
 /// the ordinary uncontrolled scheduling a plain concurrent unit test would exercise.

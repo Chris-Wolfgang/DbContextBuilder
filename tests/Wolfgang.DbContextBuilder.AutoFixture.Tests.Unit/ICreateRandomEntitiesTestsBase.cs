@@ -3,64 +3,63 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Xunit;
 
-namespace Wolfgang.DbContextBuilderCore.Tests.Unit
+namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
+
+/// <summary>
+/// Provides a base class for tests related to the ICreateRandomEntities interface.
+/// </summary>
+// ReSharper disable once InconsistentNaming
+[SuppressMessage("Naming", "S101:Types should be named in PascalCase", Justification = "Deliberate: name mirrors the interface under test (ICreateRandomEntities).")]
+public abstract class ICreateRandomEntitiesTestsBase
 {
+
     /// <summary>
-    /// Provides a base class for tests related to the ICreateRandomEntities interface.
+    /// Creates an instance of the specific implementation of ICreateRandomEntities to be tested.
     /// </summary>
-    // ReSharper disable once InconsistentNaming
-    [SuppressMessage("Naming", "S101:Types should be named in PascalCase", Justification = "Deliberate: name mirrors the interface under test (ICreateRandomEntities).")]
-    public abstract class ICreateRandomEntitiesTestsBase
+    /// <returns><see cref="ICreateRandomEntities"/>Representing the object to test</returns>
+    protected abstract ICreateRandomEntities CreateRandomEntityCreator();
+
+
+
+    /// <summary>
+    /// Verifies that CreateRandomEntities returns the specified number of items
+    /// </summary>
+    /// <param name="count"></param>
+    [Theory]
+    [InlineData(7)]
+    [InlineData(17)]
+    public void CreateRandomEntities_returns_the_specified_number_of_items(int count)
+    {
+        // Arrange
+        var sut = CreateRandomEntityCreator();
+
+        // Act
+        var entities = sut.CreateRandomEntities<SampleEntity>(count).ToList();
+
+        // Assert
+        Assert.Equal(count, entities.Count);
+        Assert.All(entities, Assert.NotNull);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that passing count less than 1, throws an ArgumentOutOfRangeException
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_when_count_is_less_than_1_throws_ArgumentOutOfRangeException()
     {
 
-        /// <summary>
-        /// Creates an instance of the specific implementation of ICreateRandomEntities to be tested.
-        /// </summary>
-        /// <returns><see cref="ICreateRandomEntities"/>Representing the object to test</returns>
-        protected abstract ICreateRandomEntities CreateRandomEntityCreator();
+        // Arrange
+        var sut = CreateRandomEntityCreator();
+        const int count = 0;
 
+        // Act
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => sut.CreateRandomEntities<SampleEntity>(count));
 
-
-        /// <summary>
-        /// Verifies that CreateRandomEntities returns the specified number of items
-        /// </summary>
-        /// <param name="count"></param>
-        [Theory]
-        [InlineData(7)]
-        [InlineData(17)]
-        public void CreateRandomEntities_returns_the_specified_number_of_items(int count)
-        {
-            // Arrange
-            var sut = CreateRandomEntityCreator();
-
-            // Act
-            var entities = sut.CreateRandomEntities<SampleEntity>(count).ToList();
-
-            // Assert
-            Assert.Equal(count, entities.Count);
-            Assert.All(entities, Assert.NotNull);
-        }
-
-
-
-        /// <summary>
-        /// Verifies that passing count less than 1, throws an ArgumentOutOfRangeException
-        /// </summary>
-        [Fact]
-        public void CreateRandomEntities_when_count_is_less_than_1_throws_ArgumentOutOfRangeException()
-        {
-
-            // Arrange
-            var sut = CreateRandomEntityCreator();
-            const int count = 0;
-
-            // Act
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => sut.CreateRandomEntities<SampleEntity>(count));
-
-            // Assert
-            var argumentOutOfRangeException = Assert.IsType<ArgumentOutOfRangeException>(exception);
-            Assert.Equal("count", argumentOutOfRangeException.ParamName);
-            Assert.Equal(count, argumentOutOfRangeException.ActualValue);
-        }
+        // Assert
+        var argumentOutOfRangeException = Assert.IsType<ArgumentOutOfRangeException>(exception);
+        Assert.Equal("count", argumentOutOfRangeException.ParamName);
+        Assert.Equal(count, argumentOutOfRangeException.ActualValue);
     }
 }

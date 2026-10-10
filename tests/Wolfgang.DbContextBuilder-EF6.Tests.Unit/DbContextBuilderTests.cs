@@ -9,6 +9,17 @@ namespace Wolfgang.DbContextBuilderEF6.Tests.Unit;
 
 public class DbContextBuilderTests
 {
+    /// <summary>
+    /// The entity counts the SeedWithRandom theories run with (#602).
+    /// </summary>
+    public static TheoryData<int> SeedCounts => new() { 1, 3, 7 };
+
+
+
+    // Build and BuildAsync each create two contexts: the temporary seed context and the one returned.
+    private const int ContextsCreatedPerBuild = 2;
+
+
 
     private static DbContextBuilder<TestDbContext> CreateDbContextBuilder() =>
         new DbContextBuilder<TestDbContext>()
@@ -484,9 +495,7 @@ public class DbContextBuilderTests
     /// Verifies that a newly created DbContext contains the specified number of randomly created entities.
     /// </summary>
     [Theory]
-    [InlineData(1)]
-    [InlineData(3)]
-    [InlineData(7)]
+    [MemberData(nameof(SeedCounts))]
     public void SeedWithRandom_int_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         // Arrange
@@ -569,9 +578,7 @@ public class DbContextBuilderTests
     /// with the transformation function applied.
     /// </summary>
     [Theory]
-    [InlineData(1)]
-    [InlineData(3)]
-    [InlineData(7)]
+    [MemberData(nameof(SeedCounts))]
     public void SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         // Arrange
@@ -660,9 +667,7 @@ public class DbContextBuilderTests
     /// with the index-based transformation function applied.
     /// </summary>
     [Theory]
-    [InlineData(1)]
-    [InlineData(3)]
-    [InlineData(7)]
+    [MemberData(nameof(SeedCounts))]
     public void SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         // Arrange
@@ -1016,7 +1021,7 @@ public class DbContextBuilderTests
 
         using var context = sut.Build();
 
-        Assert.Equal(2, creator.Created);
+        Assert.Equal(ContextsCreatedPerBuild, creator.Created);
         Assert.Same(creator, sut.CreateDbContext);
     }
 
@@ -1034,7 +1039,7 @@ public class DbContextBuilderTests
 
         using var context = await sut.BuildAsync();
 
-        Assert.Equal(2, creator.Created);
+        Assert.Equal(ContextsCreatedPerBuild, creator.Created);
         Assert.Same(creator, sut.CreateDbContext);
     }
 
