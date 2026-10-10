@@ -407,6 +407,11 @@ public class SeedWithRandomCoverageTests
 
         Assert.StartsWith("DbContextBuilder failed to create the in-memory database", ex.Message, StringComparison.Ordinal);
         Assert.IsType<InvalidOperationException>(ex.InnerException);
+        // The guidance this PR corrected (#565): the builder's own logging hook and the
+        // sensitive-data switch, not the obsolete advice to call .LogTo(...) on your own builder.
+        Assert.Contains("UseDiagnosticOutput(...)", ex.Message, StringComparison.Ordinal);
+        Assert.Contains(".EnableSensitiveDataLogging()", ex.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(".LogTo(", ex.Message, StringComparison.Ordinal);
     }
 
 
