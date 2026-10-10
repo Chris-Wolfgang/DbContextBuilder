@@ -1,22 +1,15 @@
 <Project>
-  <!-- Override the root Directory.Build.props for extra-projects (sample/demo projects) -->
+  <!-- extra-projects (the scaffolded AdventureWorks sample databases) deliberately do NOT
+       inherit the root Directory.Build.props: this file stops MSBuild's upward search and has no
+       <Import> of the root, so none of the root's analyzers, BannedSymbols.txt, Nullable or
+       LangVersion settings apply here (#579). Only the settings below do. -->
   <PropertyGroup>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+
+    <!-- Same reasons as the root props (#578): the net6.0/net7.0 projects (AdventureWorks-EF6/EF7)
+         are deliberate, so silence the MSBuild-level TFM-support and EOL (NETSDK1138) warnings. -->
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
-
-  <!-- Remove all analyzer package references inherited from root -->
-  <ItemGroup>
-    <PackageReference Remove="Roslynator.Analyzers" />
-    <PackageReference Remove="AsyncFixer" />
-    <PackageReference Remove="Microsoft.VisualStudio.Threading.Analyzers" />
-    <PackageReference Remove="Microsoft.CodeAnalysis.BannedApiAnalyzers" />
-    <PackageReference Remove="Meziantou.Analyzer" />
-    <PackageReference Remove="SonarAnalyzer.CSharp" />
-  </ItemGroup>
-
-  <!-- Remove BannedSymbols.txt reference -->
-  <ItemGroup>
-    <AdditionalFiles Remove="@(AdditionalFiles)" />
-  </ItemGroup>
 </Project>

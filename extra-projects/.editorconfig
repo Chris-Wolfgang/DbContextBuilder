@@ -28,10 +28,11 @@ generated_code = true
 # CS8632 — "annotation for nullable reference types should only be used
 # in code within a '#nullable' annotations context." The scaffolder emits
 # `string?` / `T?` in these files but does NOT emit a `#nullable enable`
-# header. The repo-wide `<Nullable>enable</Nullable>` in Directory.Build.props
-# means the C# compiler sees them as valid (no CS8632 locally), but
-# `jb inspectcode` evaluates the analyzer without picking up the DBP
-# nullable context and flags every `?` (354 alerts across the 5
-# AdventureWorks-EF* projects). Suppress only inside Models/Generated/
-# so a real CS8632 in hand-written code still surfaces.
+# header, and these projects do not enable Nullable: extra-projects/
+# Directory.Build.props does not import the root props, so the repo-wide
+# `<Nullable>enable</Nullable>` never applies here (#579). Every `?` is
+# therefore a CS8632 (a warning here, since TreatWarningsAsErrors is off,
+# and 354 `jb inspectcode` alerts across the 5 AdventureWorks-EF* projects).
+# Suppress only inside Models/Generated/ so a real CS8632 in hand-written
+# code still surfaces.
 dotnet_diagnostic.CS8632.severity = none
