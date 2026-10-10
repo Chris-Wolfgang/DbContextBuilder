@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using AutoFixture;
 using AutoFixture.Kernel;
 using Xunit;
 
@@ -59,5 +61,51 @@ public class IgnoreVirtualMembersTests
     }
 
 
+    /// <summary>
+    /// #561: a non-virtual property that implicitly implements an interface member is emitted as
+    /// virtual final. It is a scalar, not a navigation, so the builder leaves it to AutoFixture.
+    /// </summary>
+    [Fact]
+    public void Create_when_property_implements_an_interface_returns_NoSpecimen()
+    {
+        var sut = new AutoFixtureRandomEntityCreator.IgnoreVirtualMembers();
+        var context = new SpecimenContext(new Fixture());
+        var interfaceProp = typeof(InterfaceImplementingRow).GetProperty(nameof(InterfaceImplementingRow.Code))!;
 
+        var result = sut.Create(interfaceProp, context);
+
+        Assert.True(interfaceProp.GetMethod!.IsVirtual && interfaceProp.GetMethod.IsFinal);
+        Assert.IsType<NoSpecimen>(result);
+    }
+
+
+
+    /// <summary>
+    /// #561: the creator populates an interface-implementing scalar property.
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_populates_a_property_that_implements_an_interface()
+    {
+        var sut = new AutoFixtureRandomEntityCreator();
+
+        var row = sut.CreateRandomEntities<InterfaceImplementingRow>(1).First();
+
+        Assert.False(string.IsNullOrEmpty(row.Code));
+    }
 }
+
+
+/// <summary>An interface whose implementation the compiler emits as virtual final (#561).</summary>
+internal interface IHasCode
+{
+    string Code { get; set; }
+}
+
+
+
+/// <summary>Implements <see cref="IHasCode"/> with a plain, non-virtual auto-property (#561).</summary>
+internal sealed class InterfaceImplementingRow : IHasCode
+{
+    public string Code { get; set; } = string.Empty;
+}
+

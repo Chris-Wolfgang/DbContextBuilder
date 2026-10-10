@@ -157,7 +157,10 @@ public class AutoFixtureRandomEntityCreator : ICreateRandomEntities
                 return new NoSpecimen();
             }
 
-            if (propertyInfo.GetMethod != null && propertyInfo.GetMethod.IsVirtual)
+            // An implicit interface implementation is emitted as virtual *final*, so IsVirtual
+            // alone also skipped plain scalars such as IAuditable.CreatedAt (#561). Only an
+            // overridable getter marks a navigation.
+            if (propertyInfo.GetMethod != null && propertyInfo.GetMethod.IsVirtual && !propertyInfo.GetMethod.IsFinal)
             {
                 return null;
             }
