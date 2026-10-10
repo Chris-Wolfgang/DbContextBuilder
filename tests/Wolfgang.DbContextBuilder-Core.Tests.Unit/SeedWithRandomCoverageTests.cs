@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -720,12 +721,12 @@ public class SeedWithRandomCoverageTests
     [Fact]
     public async Task BuildAsync_without_seed_data_does_not_call_SaveChanges()
     {
-        SaveCountingContext.Saves = 0;
+        var saves = SaveCountingContext.StartCounting();
         using var sut = new DbContextBuilder<SaveCountingContext>().UseInMemory();
 
         await using var context = await sut.BuildAsync();
 
-        Assert.Equal(0, SaveCountingContext.Saves);
+        Assert.Equal(0, saves.Value);
     }
 
 
@@ -737,12 +738,12 @@ public class SeedWithRandomCoverageTests
     [Fact]
     public async Task BuildAsync_with_seed_data_calls_SaveChanges_once()
     {
-        SaveCountingContext.Saves = 0;
+        var saves = SaveCountingContext.StartCounting();
         using var sut = new DbContextBuilder<SaveCountingContext>().UseInMemory();
 
         await using var context = await sut.SeedWith(new SaveCountingRow()).BuildAsync();
 
-        Assert.Equal(1, SaveCountingContext.Saves);
+        Assert.Equal(1, saves.Value);
         Assert.NotEqual(0, Assert.Single(context.Set<SaveCountingRow>().ToList()).Id);
     }
 
@@ -1390,7 +1391,20 @@ internal sealed class SaveCountingRow
 /// <summary>Counts the calls to its SaveChangesAsync override, across instances.</summary>
 internal sealed class SaveCountingContext(DbContextOptions<SaveCountingContext> options) : DbContext(options)
 {
-    internal static int Saves { get; set; }
+    // Per test, not process-wide (#597): each test installs its own counter, and AsyncLocal flows
+    // it only into the calls made on that test's execution context, so tests running in parallel
+    // cannot reset or bump each other's count. The box is a reference, so increments made inside
+    // the builder's async calls are visible to the test.
+    private static readonly AsyncLocal<StrongBox<int>?> _saves = new();
+
+
+
+    internal static StrongBox<int> StartCounting()
+    {
+        var saves = new StrongBox<int>();
+        _saves.Value = saves;
+        return saves;
+    }
 
 
 
@@ -1401,7 +1415,7 @@ internal sealed class SaveCountingContext(DbContextOptions<SaveCountingContext> 
 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
-        Saves++;
+        _saves.Value!.Value++;
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 }

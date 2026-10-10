@@ -1058,12 +1058,12 @@ public class DbContextBuilderTests
     [Fact]
     public void Build_without_seed_data_does_not_call_SaveChanges()
     {
-        SaveCountingContext.Saves = 0;
+        var saves = SaveCountingContext.StartCounting();
         var sut = new DbContextBuilder<SaveCountingContext>();
 
         using var context = sut.Build();
 
-        Assert.Equal(0, SaveCountingContext.Saves);
+        Assert.Equal(0, saves.Value);
     }
 
 
@@ -1075,12 +1075,12 @@ public class DbContextBuilderTests
     [Fact]
     public void Build_with_seed_data_calls_SaveChanges_once()
     {
-        SaveCountingContext.Saves = 0;
+        var saves = SaveCountingContext.StartCounting();
         var sut = new DbContextBuilder<SaveCountingContext>().SeedWith(new Category { Name = "seeded" });
 
         using var context = sut.Build();
 
-        Assert.Equal(1, SaveCountingContext.Saves);
+        Assert.Equal(1, saves.Value);
         Assert.Equal("seeded", Assert.Single(context.Categories).Name);
     }
 
@@ -1093,12 +1093,12 @@ public class DbContextBuilderTests
     [Fact]
     public async Task BuildAsync_without_seed_data_does_not_call_SaveChangesAsync()
     {
-        SaveCountingContext.Saves = 0;
+        var saves = SaveCountingContext.StartCounting();
         var sut = new DbContextBuilder<SaveCountingContext>();
 
         using var context = await sut.BuildAsync();
 
-        Assert.Equal(0, SaveCountingContext.Saves);
+        Assert.Equal(0, saves.Value);
     }
 
 
@@ -1110,12 +1110,12 @@ public class DbContextBuilderTests
     [Fact]
     public async Task BuildAsync_with_seed_data_calls_SaveChangesAsync_once()
     {
-        SaveCountingContext.Saves = 0;
+        var saves = SaveCountingContext.StartCounting();
         var sut = new DbContextBuilder<SaveCountingContext>().SeedWith(new Category { Name = "seeded" });
 
         using var context = await sut.BuildAsync();
 
-        Assert.Equal(1, SaveCountingContext.Saves);
+        Assert.Equal(1, saves.Value);
         Assert.Equal("seeded", Assert.Single(context.Categories).Name);
     }
 
