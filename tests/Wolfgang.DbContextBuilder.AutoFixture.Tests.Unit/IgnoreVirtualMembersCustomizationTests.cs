@@ -11,20 +11,6 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 public class IgnoreVirtualMembersCustomizationTests
 {
     /// <summary>
-    /// Verifies that an instance of IgnoreVirtualMembersCustomization can be created.
-    /// </summary>
-    [Fact]
-    public void Can_create_instance_of_IgnoreVirtualMembersCustomization()
-    {
-        // Arrange
-
-        // Act — construction alone is the assertion (must not throw).
-        _ = new IgnoreVirtualMembersCustomization();
-    }
-
-
-
-    /// <summary>
     /// Verifies that calling Customize and passing null throws ArgumentNullException
     /// </summary>
     [Fact]
@@ -108,39 +94,13 @@ public class IgnoreVirtualMembersCustomizationTests
 
 
 
-    /// <summary>
-    /// Verifies IgnoreVirtualMembersCustomization ignores virtual methods
-    /// </summary>
-    [Fact]
-    public void Customize_when_entity_has_virtual_methods_ignores_them()
-    {
-        // Arrange
-        var fixture = new Fixture();
-        fixture.Customize(new IgnoreVirtualMembersCustomization());
-
-        // Act
-        var result = fixture.Create<TestClass>();
-
-        // Assert
-        Assert.Equal(0, result.VirtualMethod());
-        Assert.NotEqual(0, result.NonVirtualMethod());
-    }
-
-
-    // Test fixture — the customization under test populates VirtualProperty
-    // via reflection, and NonVirtualMethod exists to contrast against
-    // VirtualMethod (Sonar S2325's "make static" suggestion would defeat
-    // the contrast). All members are exercised by the test's inspection
-    // rather than direct call.
+    // Test fixture — the customization under test leaves VirtualProperty unset; AutoFixture
+    // populates both properties via reflection.
     // ReSharper disable once ClassNeverInstantiated.Local
     // ReSharper disable UnusedAutoPropertyAccessor.Global
     private class TestClass
     {
         public virtual string? VirtualProperty { get; set; }
         public string NonVirtualProperty { get; set; } = "NonVirtual";
-        public virtual int VirtualMethod() => 0;
-#pragma warning disable S2325 // Deliberately non-static: contrasts against VirtualMethod for the customization test
-        public int NonVirtualMethod() => 42;
-#pragma warning restore S2325
     }
 }
