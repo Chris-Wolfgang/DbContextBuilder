@@ -40,6 +40,8 @@ Random-data and shared add-on packages (install alongside your EF Core package):
 | [`Wolfgang.DbContextBuilder.Bogus`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder.Bogus) | Bogus-backed random data (realistic fake values). Adds `.UseBogus()`. |
 | [`Wolfgang.DbContextBuilder.Abstractions`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder.Abstractions) | Shared `ICreateRandomEntities` abstraction, EF-Core-version-independent. Every `-Core-EF*` package and both random-data packages reference it, so you rarely install it yourself. |
 
+The classic `-EF6` package does not use Abstractions: it has its own `Wolfgang.DbContextBuilderEF6.ICreateRandomEntities` with the same contract ([ADR-0004](docs/adr/0004-ef6-keeps-its-own-icreaterandomentities.md)).
+
 ```bash
 # Pick whichever matches your project's EF version, plus a random-data provider
 dotnet add package Wolfgang.DbContextBuilder-Core-EF8
