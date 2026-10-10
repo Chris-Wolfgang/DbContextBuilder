@@ -160,6 +160,8 @@ public class SeedWithRandomCoverageTests
 
         // The builder's own message, not one from the creator it would otherwise reach.
         Assert.All(new[] { plain, func, indexed }, ex => Assert.StartsWith("Count must be greater than 0", ex.Message, StringComparison.Ordinal));
+        // The rejected value is reported, as both random-data providers do (#571).
+        Assert.All(new[] { plain, func, indexed }, ex => Assert.Equal(0, ex.ActualValue));
     }
 
 
