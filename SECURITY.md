@@ -66,7 +66,7 @@ repository, unmodified. Consumers (and enterprise procurement) can verify each l
   Verify a downloaded package with the GitHub CLI:
 
   ```bash
-  gh attestation verify Wolfgang.DbContextBuilder-Core.<version>.nupkg \
+  gh attestation verify Wolfgang.DbContextBuilder-Core-EF10.<version>.nupkg \
     --repo Chris-Wolfgang/DbContextBuilder
   ```
 
@@ -74,7 +74,7 @@ repository, unmodified. Consumers (and enterprise procurement) can verify each l
   published package. Verify it with:
 
   ```bash
-  nuget verify -Signatures Wolfgang.DbContextBuilder-Core.<version>.nupkg
+  nuget verify -Signatures Wolfgang.DbContextBuilder-Core-EF10.<version>.nupkg
   ```
 
   > Author (code-signing-certificate) signing is not currently applied — packages
@@ -92,7 +92,7 @@ repository, unmodified. Consumers (and enterprise procurement) can verify each l
 to `main`, scoring this repo's security posture (branch protection, pinned
 dependencies, dangerous-workflow patterns, vulnerability response time, etc.)
 against the project's checks. Results publish to the
-[Scorecard viewer](https://securityscorecards.dev/viewer/?uri=github.com/Chris-Wolfgang/DbContextBuilder)
+[Scorecard viewer](https://scorecard.dev/viewer/?uri=github.com/Chris-Wolfgang/DbContextBuilder)
 and the badge in `README.md`, and upload as SARIF to this repo's Security tab
 alongside CodeQL alerts.
 

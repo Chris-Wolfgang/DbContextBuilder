@@ -63,8 +63,11 @@ packages they test: it runs every framework's build of those tests but puts the 
 package into the net10.0 build only, so the kills are lost (#552). Those two packages are
 left out of the root config's `mutate` list, and each test project has its own
 `stryker-config.json`; the workflow runs Stryker in that directory, in project mode, after the
-umbrella run, and judges the report against the same `mutation-floors.json`. A package with a
-test project like that needs the same treatment.
+umbrella run, and judges the report against the same `mutation-floors.json`. Those configs set
+`"break": 0`, so the per-project floor in `mutation-floors.json` is the only mutation-score
+threshold for those packages. The run still fails on its own if `dotnet stryker` exits non-zero
+or `Test-StrykerRun` finds no valid report or no mutants. A package with a test project like that
+needs the same treatment.
 
 ## Measuring honestly
 
@@ -73,7 +76,7 @@ mode logs "test coverage capture failed", after which a mutant the tests do not 
 more tests than its timeout allows and is recorded as `Timeout`, which Stryker counts as
 detected. Survivors were being scored as kills: the same code measured 97.59 % that way and
 78.39 % with `coverage-analysis: perTestInIsolation`, which reports 258 more survivors
-(#544). The workflow now uses `perTestInIsolation`. A full run takes about 93 minutes.
+(#544). The workflow now uses `perTestInIsolation`. A full run takes about 110 minutes (see below).
 
 When a score looks too good, check the share of `Timeout` mutants: a large share is a sign
 that survivors are being hidden.
@@ -83,10 +86,11 @@ that survivors are being hidden.
 | Trigger | Scope | What it does |
 |---|---|---|
 | Weekly (Sunday 06:00 UTC) and `workflow_dispatch` | Every mutant | Enforces the floors, charts the score on the docs site under `/dev/stryker/`, and keeps one rolling `kind:mutation-survives` issue listing the surviving and uncovered mutants |
-| Pull requests to `main` that touch `src/**`, `tests/**/*.cs`, `tests/**/*.csproj`, `stryker-config.json`, `mutation-floors.json` or the workflow | `--since:<base commit>` | Enforces the floors on the mutants the PR's changes bring into scope (a project's floor applies only when the PR brings some of its mutants into scope), using `stryker-config.json` and `mutation-floors.json` from the base branch so a PR cannot lower its own floors; fails a PR that lowers or removes a floor in `mutation-floors.json` |
+| Pull requests to `main` that touch `src/**`, `tests/**/*.cs`, `tests/**/*.csproj`, `stryker-config.json`, `tests/**/stryker-config.json`, `mutation-floors.json` or the workflow | `--since:<base commit>` | Enforces the floors on the mutants the PR's changes bring into scope (a project's floor applies only when the PR brings some of its mutants into scope), using `stryker-config.json` and `mutation-floors.json` from the base branch so a PR cannot lower its own floors; fails a PR that lowers or removes a floor in `mutation-floors.json` |
 
-A full run takes about 105 minutes on a Windows runner (Windows, so the .NET Framework
-targets compile), which is why pull requests use `--since`. What a PR run covers:
+A full run takes about 110 minutes on a Windows runner (Windows, so the .NET Framework
+targets compile; 1 h 48 min on 2026-10-09, including the project-mode runs), which is why pull
+requests use `--since`. What a PR run covers:
 
 - Mutants in the `.cs` files the PR changed.
 - Mutants covered by the tests in any test file the PR changed. Editing a widely used test
