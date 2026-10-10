@@ -108,6 +108,13 @@ function ConvertTo-MarkdownCell([string]$Text) {
     return (("$Text" -replace '\|', '\|') -replace '\s+', ' ').Trim()
 }
 
+# A URL cell is an <autolink>. Percent-encode what would break the row or the link instead of
+# backslash-escaping it: '|' would end the table cell, and whitespace or angle brackets are not
+# allowed inside an autolink. %7C, %20, %3C and %3E name the same resource in every renderer.
+function ConvertTo-MarkdownUrl([string]$Url) {
+    return "$Url".Trim() -replace '\|', '%7C' -replace '\s', '%20' -replace '<', '%3C' -replace '>', '%3E'
+}
+
 $failed = 0
 foreach ($proj in $projects) {
     $projDir = Split-Path -Parent $proj.FullName
@@ -181,8 +188,8 @@ foreach ($proj in $projects) {
         $lines.Add('| Package | Version(s) | License | Copyright | Project |')
         $lines.Add('|---|---|---|---|---|')
         foreach ($r in ($rows.Values | Sort-Object { $_.Package }, { $_.License })) {
-            # The URL is escaped like every other cell: a | in a PackageProjectUrl broke the row (#593).
-            $url = if ($r.Url) { "<$(ConvertTo-MarkdownCell $r.Url)>" } else { '' }
+            # A | in a PackageProjectUrl broke the row (#593); it is percent-encoded, not escaped.
+            $url = if ($r.Url) { "<$(ConvertTo-MarkdownUrl $r.Url)>" } else { '' }
             $lines.Add("| $(ConvertTo-MarkdownCell $r.Package) | $(($r.Versions | ForEach-Object { ConvertTo-MarkdownCell $_ }) -join ', ') | $(ConvertTo-MarkdownCell $r.License) | $(ConvertTo-MarkdownCell $r.Copyright) | $url |")
         }
     }
