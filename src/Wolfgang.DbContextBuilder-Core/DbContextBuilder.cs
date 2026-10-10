@@ -11,10 +11,18 @@ namespace Wolfgang.DbContextBuilderCore;
 /// </summary>
 /// <typeparam name="T">The concrete <see cref="DbContext"/> type to construct.</typeparam>
 /// <remarks>
-/// When using the SQLite provider, the builder holds an open SQLite in-memory connection.
-/// Dispose the builder only after all <see cref="DbContext"/> instances returned by
-/// <see cref="BuildAsync"/> are no longer in use, as disposing the builder closes the
-/// shared connection and destroys the in-memory database.
+/// <para>
+/// The first <see cref="BuildAsync"/> call creates and seeds the database; later calls return
+/// another context over the same, already-seeded database. Add all seed data before the first
+/// <see cref="BuildAsync"/> call. Selecting a different provider afterwards starts a new, empty
+/// database that the next <see cref="BuildAsync"/> call seeds again.
+/// </para>
+/// <para>
+/// When using the SQLite provider, the builder holds an open SQLite in-memory connection and
+/// the EF Core service provider every context shares. Dispose the builder only after all
+/// <see cref="DbContext"/> instances returned by <see cref="BuildAsync"/> are no longer in use,
+/// as disposing the builder closes the shared connection and destroys the in-memory database.
+/// </para>
 /// </remarks>
 public class DbContextBuilder<T> : IDisposable where T : DbContext
 {
@@ -26,6 +34,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     private readonly HashSet<object> _randomlySeeded = new(ReferenceEqualityComparer.Instance);
     private DbContextOptionsBuilder<T>? _dbContextOptionsBuilder;
     private Action<string>? _diagnosticOutput;
+    // The creator whose database BuildAsync has already created and seeded. Later builds on the
+    // same creator neither re-create nor re-seed it (#559); selecting a new creator resets it.
+    private ICreateDbContext? _seededCreator;
 
 
 
@@ -34,6 +45,12 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
     internal ICreateDbContext? CreateDbContext { get; set; }
+
+
+
+    // Built from ServiceCollection on the first BuildAsync and shared by every context after it,
+    // so EF's singletons (model, caches) are built once per builder and disposed with it (#559).
+    internal ServiceProvider? InternalServiceProvider { get; private set; }
 
 
 
@@ -90,9 +107,15 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     {
         ThrowIfDisposed();
 
-        if (!ReferenceEquals(CreateDbContext, creator) && CreateDbContext is IDisposable previous)
+        if (!ReferenceEquals(CreateDbContext, creator))
         {
-            previous.Dispose();
+            (CreateDbContext as IDisposable)?.Dispose();
+
+            // A new provider means a new, empty database and (for SQLite) a changed
+            // ServiceCollection: drop the services built for the old one and seed again.
+            InternalServiceProvider?.Dispose();
+            InternalServiceProvider = null;
+            _seededCreator = null;
         }
 
         CreateDbContext = creator;
@@ -108,6 +131,22 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         if (_disposed)
         {
             throw new ObjectDisposedException(nameof(DbContextBuilder<T>));
+        }
+    }
+
+
+
+    // The seeding methods call this: seed data added after the database was seeded would never
+    // reach it, because later BuildAsync calls do not seed again (#559).
+    private void ThrowIfSeeded()
+    {
+        if (_seededCreator is not null)
+        {
+            throw new InvalidOperationException
+            (
+                "Seed data must be added before the first BuildAsync() call: the database has already been " +
+                "created and seeded. Add all seed data first, or use a new DbContextBuilder."
+            );
         }
     }
 
@@ -206,6 +245,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <remarks>
     /// Insertion order across distinct entity types is not guaranteed — the builder
     /// accumulates seeds in a single list and EF's <c>SaveChangesAsync</c> orders the
@@ -219,6 +259,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         where TEntity : class
     {
         ThrowIfDisposed();
+        ThrowIfSeeded();
 
         ArgumentNullException.ThrowIfNull(entities);
 
@@ -245,10 +286,12 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(params TEntity[] entities)
         where TEntity : class
     {
         ThrowIfDisposed();
+        ThrowIfSeeded();
 
         ArgumentNullException.ThrowIfNull(entities);
         AddSeedItems(entities, nameof(entities));
@@ -268,10 +311,12 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentException"><paramref name="entity"/> is a <see cref="string"/> instance (matches the
     /// <c>params</c> overload's rejection regardless of how <typeparamref name="TEntity"/> was inferred).</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(TEntity entity)
         where TEntity : class
     {
         ThrowIfDisposed();
+        ThrowIfSeeded();
 
         ArgumentNullException.ThrowIfNull(entity);
 
@@ -346,6 +391,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <remarks>
     /// Foreign keys on the generated entities are reconciled against the model when the
     /// context is built: a required FK is wired to a seeded principal of its type (so seed the
@@ -366,6 +412,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count) where TEntity : class
     {
         ThrowIfDisposed();
+        ThrowIfSeeded();
 
         if (count < 1)
         {
@@ -393,6 +440,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <remarks>
     /// Foreign keys on the generated entities are reconciled against the model when the
     /// context is built: a required FK is wired to a seeded principal of its type (so seed the
@@ -414,6 +462,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, TEntity> func) where TEntity : class
     {
         ThrowIfDisposed();
+        ThrowIfSeeded();
 
         if (count < 1)
         {
@@ -444,6 +493,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <remarks>
     /// Foreign keys on the generated entities are reconciled against the model when the
     /// context is built: a required FK is wired to a seeded principal of its type (so seed the
@@ -465,6 +515,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, int, TEntity> func) where TEntity : class
     {
         ThrowIfDisposed();
+        ThrowIfSeeded();
 
         if (count < 1)
         {
@@ -687,6 +738,10 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Creates a new instance of <typeparamref name="T"/> seeded with the specified data.
     /// </summary>
+    /// <remarks>
+    /// The first call creates the database and saves the seed data. Later calls return a new
+    /// context over the same database without seeding it again.
+    /// </remarks>
     /// <returns>A new instance of <typeparamref name="T"/>.</returns>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public async Task<T> BuildAsync()
@@ -696,8 +751,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         var optionBuilder = _dbContextOptionsBuilder ?? new DbContextOptionsBuilder<T>();
         if (ServiceCollection.Count > 0)
         {
-            var provider = ServiceCollection.BuildServiceProvider();
-            optionBuilder.UseInternalServiceProvider(provider);
+            InternalServiceProvider ??= ServiceCollection.BuildServiceProvider();
+            optionBuilder.UseInternalServiceProvider(InternalServiceProvider);
         }
 
         if (_diagnosticOutput is not null)
@@ -706,8 +761,32 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         }
 
         var contextCreator = CreateDbContext ??= new InMemoryDbContextCreator();
+        if (ReferenceEquals(_seededCreator, contextCreator))
+        {
+            _diagnosticOutput?.Invoke
+            (
+                $"DbContextBuilder<{typeof(T).Name}> built; database already seeded, no rows added."
+            );
+        }
+        else
+        {
+            await CreateAndSeedDatabaseAsync(contextCreator, optionBuilder).ConfigureAwait(false);
+            _seededCreator = contextCreator;
 
-        // Create a temporary context to initialize and seed the database, then dispose it
+            _diagnosticOutput?.Invoke
+            (
+                $"DbContextBuilder<{typeof(T).Name}> built; seeded {_seedData.Count} entity row(s)."
+            );
+        }
+
+        return await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
+    }
+
+
+
+    // Creates the database through a temporary context and saves the seed data, then disposes it.
+    private async Task CreateAndSeedDatabaseAsync(ICreateDbContext contextCreator, DbContextOptionsBuilder<T> optionBuilder)
+    {
         var seedContext = await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
         await using (seedContext.ConfigureAwait(false))
         {
@@ -739,20 +818,13 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
                 await seedContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
-
-        _diagnosticOutput?.Invoke
-        (
-            $"DbContextBuilder<{typeof(T).Name}> built; seeded {_seedData.Count} entity row(s)."
-        );
-
-        return await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
     }
 
 
 
     /// <summary>
-    /// Disposes the underlying database context creator, releasing any held resources
-    /// (e.g., the SQLite in-memory connection).
+    /// Disposes the underlying database context creator and the EF Core service provider the
+    /// builder's contexts share, releasing any held resources (e.g., the SQLite in-memory connection).
     /// </summary>
     public void Dispose()
     {
@@ -773,9 +845,10 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             return;
         }
 
-        if (disposing && CreateDbContext is IDisposable disposable)
+        if (disposing)
         {
-            disposable.Dispose();
+            (CreateDbContext as IDisposable)?.Dispose();
+            InternalServiceProvider?.Dispose();
         }
 
         _disposed = true;
