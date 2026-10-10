@@ -32,8 +32,9 @@ DbContextBuilder ships one package per supported EF version so you can install o
 - `Wolfgang.DbContextBuilder-Core-EF6` through `-Core-EF10` — pinned to a single EF Core major
 - `Wolfgang.DbContextBuilder-EF6` — for projects still on classic Entity Framework 6 (`System.Data.Entity`)
 
-Pick the one that matches your project's EF flavor. `SeedWithRandom` also needs a random-data
-provider package next to it:
+Pick the one that matches your project's EF flavor. With the EF Core packages, `SeedWithRandom`
+also needs a random-data provider package next to it. The classic `Wolfgang.DbContextBuilder-EF6`
+package keeps its built-in AutoFixture and needs neither:
 
 - `Wolfgang.DbContextBuilder.AutoFixture` — adds `.UseAutoFixture()`
 - `Wolfgang.DbContextBuilder.Bogus` — adds `.UseBogus()` (realistic fake values)
