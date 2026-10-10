@@ -419,16 +419,16 @@ FodyWeavers.xsd
 *.msm
 *.msp
 
-# Test results and coverage
-TestResults/
+# Test results and coverage (TestResults/ is covered by [Tt]est[Rr]esult*/ above)
 CoverageReport/
 
 # Release workflow temporary directories
 package-smoke-test/
 nuget-packages/
 
-# DocFX generated files
+# DocFX generated files (`docfx metadata` writes the API YAML and .manifest to api/)
 docfx_project/_site/
 docfx_project/obj/
+docfx_project/api/
 
 coverage-tmp/
