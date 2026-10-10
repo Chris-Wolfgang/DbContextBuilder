@@ -16,15 +16,19 @@ namespace Wolfgang.DbContextBuilderCore.Benchmarks;
 ///   <item><c>InMemory_SeedWithRandom_ForeignKeys</c> — N random principals and N random
 ///   dependents with a required foreign key, so build time includes primary-key
 ///   uniqueness and foreign-key reconciliation over every row.</item>
+///   <item><c>Sqlite_SeedWith</c> — N pre-built entities on the SQLite provider, which adds
+///   the in-memory connection, the model customizer and real schema creation.</item>
 /// </list>
 ///
 /// MemoryDiagnoser is on so allocation regressions surface in the gh-pages
 /// benchmark chart immediately.
 ///
-/// Each benchmark disposes the constructed <see cref="BenchmarkContext"/>
-/// before returning so successive iterations don't accumulate in-memory
-/// databases or tracked entities that would distort the allocation
-/// measurements.
+/// Each benchmark disposes the context and the builder before returning, so
+/// tracked entities and (for SQLite) the open connection do not carry over.
+/// Disposal does not remove an InMemory database from the provider's
+/// process-wide store: each build adds one small GUID-named database for the
+/// life of the benchmark process. That is retained memory, not per-operation
+/// allocation, so the allocation column is unaffected (#616).
 /// </summary>
 [MemoryDiagnoser]
 public class BuildAsyncBenchmarks
@@ -63,6 +67,9 @@ public class BuildAsyncBenchmarks
     /// <summary>
     /// Baseline: builder with default options (InMemory provider), no seed.
     /// Measures the irreducible cost of <see cref="DbContextBuilder{T}.BuildAsync"/>.
+    /// It ignores <c>SeedCount</c>, yet runs once per <c>[Params]</c> value: BenchmarkDotNet
+    /// computes the Ratio column within each parameter group, so every group needs its own
+    /// baseline row (#616).
     /// </summary>
     [Benchmark(Baseline = true)]
     public async Task InMemory_NoSeed()
@@ -98,6 +105,22 @@ public class BuildAsyncBenchmarks
         using var builder = new DbContextBuilder<BenchmarkContext>()
             .UseAutoFixture()
             .SeedWithRandom<BenchmarkEntity>(SeedCount);
+        await using var context = await builder.BuildAsync().ConfigureAwait(false);
+    }
+
+
+
+    /// <summary>
+    /// Builder with <c>SeedCount</c> pre-built entities on the SQLite provider: adds the
+    /// in-memory connection, the model customizer and real schema creation to the
+    /// <c>InMemory_SeedWith</c> path (#616).
+    /// </summary>
+    [Benchmark]
+    public async Task Sqlite_SeedWith()
+    {
+        using var builder = new DbContextBuilder<BenchmarkContext>()
+            .UseSqlite()
+            .SeedWith(_seedRows);
         await using var context = await builder.BuildAsync().ConfigureAwait(false);
     }
 
