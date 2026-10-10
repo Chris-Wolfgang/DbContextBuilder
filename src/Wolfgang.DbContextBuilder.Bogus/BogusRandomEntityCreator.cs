@@ -37,7 +37,7 @@ public class BogusRandomEntityCreator : ICreateRandomEntities
 {
     // Null for the unseeded creator. Seeded, it hands each CreateRandomEntities call its own seed,
     // so a run is reproducible while successive calls still produce different entities.
-    private readonly Random? _seeds;
+    private readonly Randomizer? _seeds;
 
 
 
@@ -57,7 +57,7 @@ public class BogusRandomEntityCreator : ICreateRandomEntities
     /// <param name="seed">The seed for the random values.</param>
     public BogusRandomEntityCreator(int seed)
     {
-        _seeds = new Random(seed);
+        _seeds = new Randomizer(seed);
     }
 
 
@@ -117,7 +117,7 @@ public class BogusRandomEntityCreator : ICreateRandomEntities
 
         if (_seeds is not null)
         {
-            faker.UseSeed(_seeds.Next());
+            faker.UseSeed(_seeds.Int());
         }
 
         return faker.Generate(count);
