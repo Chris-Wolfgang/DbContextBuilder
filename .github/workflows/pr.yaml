@@ -144,6 +144,10 @@ jobs:
             ".editorconfig"
             "Directory.Build.props"
             "Directory.Build.targets"
+            # Nested copies (src/, examples/, extra-projects/): MSBuild picks them up by
+            # directory, and pr.yaml/protected-files.yaml treat them as protected at any depth.
+            "*/Directory.Build.props"
+            "*/Directory.Build.targets"
             "BannedSymbols.txt"
             "*.globalconfig"
             "*.ruleset"
@@ -418,6 +422,10 @@ jobs:
             ".editorconfig"
             "Directory.Build.props"
             "Directory.Build.targets"
+            # Nested copies (src/, examples/, extra-projects/): MSBuild picks them up by
+            # directory, and pr.yaml/protected-files.yaml treat them as protected at any depth.
+            "*/Directory.Build.props"
+            "*/Directory.Build.targets"
             "BannedSymbols.txt"
             "*.globalconfig"
             "*.ruleset"
@@ -644,6 +652,10 @@ jobs:
             ".editorconfig"
             "Directory.Build.props"
             "Directory.Build.targets"
+            # Nested copies (src/, examples/, extra-projects/): MSBuild picks them up by
+            # directory, and pr.yaml/protected-files.yaml treat them as protected at any depth.
+            "*/Directory.Build.props"
+            "*/Directory.Build.targets"
             "BannedSymbols.txt"
             "*.globalconfig"
             "*.ruleset"
@@ -1163,6 +1175,8 @@ jobs:
           # Same globs as the bash stages (#585): nested Directory.Build.* and .editorconfig
           # files, analyzer configs, ReSharper settings and the workflows themselves.
           $globPatterns = @(
+            "*/Directory.Build.props",
+            "*/Directory.Build.targets",
             "*.globalconfig",
             "*.ruleset",
             "*.DotSettings",
@@ -1650,6 +1664,10 @@ jobs:
             ".editorconfig"
             "Directory.Build.props"
             "Directory.Build.targets"
+            # Nested copies (src/, examples/, extra-projects/): MSBuild picks them up by
+            # directory, and pr.yaml/protected-files.yaml treat them as protected at any depth.
+            "*/Directory.Build.props"
+            "*/Directory.Build.targets"
             "BannedSymbols.txt"
             "*.globalconfig"
             "*.ruleset"
@@ -2074,6 +2092,10 @@ jobs:
             ".editorconfig"
             "Directory.Build.props"
             "Directory.Build.targets"
+            # Nested copies (src/, examples/, extra-projects/): MSBuild picks them up by
+            # directory, and pr.yaml/protected-files.yaml treat them as protected at any depth.
+            "*/Directory.Build.props"
+            "*/Directory.Build.targets"
             "BannedSymbols.txt"
             "*.globalconfig"
             "*.ruleset"
