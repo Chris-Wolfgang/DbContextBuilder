@@ -30,9 +30,12 @@ permissions:
 # build-all-versions.yaml shares this group. docfx.yaml (called from release.yaml,
 # which has its own release-level concurrency) and stryker.yaml's publish job do not,
 # so cross-workflow serialization is still partial (#589).
+# queue: max keeps every pending run: without it a group holds one pending run, and a newer
+# one cancels it, so a queued benchmark data point or all-versions deploy could be dropped.
 concurrency:
   group: gh-pages
   cancel-in-progress: false
+  queue: max
 
 jobs:
   benchmark:
