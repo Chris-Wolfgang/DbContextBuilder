@@ -30,3 +30,38 @@ public sealed class BenchmarkContext(DbContextOptions<BenchmarkContext> options)
     /// <summary>The entity set populated by benchmark seed scenarios.</summary>
     public DbSet<BenchmarkEntity> Entities => Set<BenchmarkEntity>();
 }
+
+
+
+/// <summary>
+/// Dependent of <see cref="BenchmarkEntity"/> with a required foreign key, used by the
+/// foreign-key reconciliation scenario.
+/// </summary>
+public class BenchmarkChild
+{
+    /// <summary>Primary key.</summary>
+    public int Id { get; set; }
+
+    /// <summary>Required foreign key to <see cref="BenchmarkEntity"/>.</summary>
+    public int ParentId { get; set; }
+
+    /// <summary>Navigation; virtual so AutoFixture leaves it unset and only the key is reconciled.</summary>
+    public virtual BenchmarkEntity? Parent { get; set; }
+}
+
+
+
+/// <summary>
+/// Context with <see cref="BenchmarkEntity"/> principals and <see cref="BenchmarkChild"/>
+/// dependents. Separate from <see cref="BenchmarkContext"/> so the existing series keep
+/// measuring the same one-entity model.
+/// </summary>
+public sealed class BenchmarkForeignKeyContext(DbContextOptions<BenchmarkForeignKeyContext> options)
+    : DbContext(options)
+{
+    /// <summary>The principal set.</summary>
+    public DbSet<BenchmarkEntity> Entities => Set<BenchmarkEntity>();
+
+    /// <summary>The dependent set.</summary>
+    public DbSet<BenchmarkChild> Children => Set<BenchmarkChild>();
+}

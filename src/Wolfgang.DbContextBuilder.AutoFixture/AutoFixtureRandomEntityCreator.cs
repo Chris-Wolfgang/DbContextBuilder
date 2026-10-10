@@ -28,6 +28,10 @@ public class AutoFixtureRandomEntityCreator : ICreateRandomEntities
     /// </summary>
     public AutoFixtureRandomEntityCreator()
     {
+        // Allocated here, not in a property initializer: an initializer also ran for the
+        // Fixture-taking ctor, which discarded the instance (#572).
+        Fixture = new Fixture();
+
         // AutoFixture 4.x does not have built-in support for DateOnly and TimeOnly. Add factories
         // that convert from a generated DateTime so AutoFixture can produce these types.
         Fixture.Customize<DateOnly>(o => o.FromFactory((DateTime dt) => DateOnly.FromDateTime(dt)));
@@ -60,7 +64,7 @@ public class AutoFixtureRandomEntityCreator : ICreateRandomEntities
     /// <summary>
     /// The AutoFixture Fixture instance used to create random data.
     /// </summary>
-    public Fixture Fixture { get; } = new();
+    public Fixture Fixture { get; }
 
 
 

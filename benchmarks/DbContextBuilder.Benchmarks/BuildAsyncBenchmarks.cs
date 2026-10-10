@@ -13,6 +13,9 @@ namespace Wolfgang.DbContextBuilderCore.Benchmarks;
 ///   <item><c>InMemory_SeedWithRandom_N</c> — N AutoFixture-generated
 ///   entities seeded via
 ///   <see cref="DbContextBuilder{T}.SeedWithRandom{TEntity}(int)"/>.</item>
+///   <item><c>InMemory_SeedWithRandom_ForeignKeys</c> — N random principals and N random
+///   dependents with a required foreign key, so build time includes primary-key
+///   uniqueness and foreign-key reconciliation over every row.</item>
 /// </list>
 ///
 /// MemoryDiagnoser is on so allocation regressions surface in the gh-pages
@@ -95,6 +98,23 @@ public class BuildAsyncBenchmarks
         using var builder = new DbContextBuilder<BenchmarkContext>()
             .UseAutoFixture()
             .SeedWithRandom<BenchmarkEntity>(SeedCount);
+        await using var context = await builder.BuildAsync().ConfigureAwait(false);
+    }
+
+
+
+    /// <summary>
+    /// Builder with <c>SeedCount</c> random principals and <c>SeedCount</c> random dependents
+    /// whose required foreign key the builder reconciles at build time. Covers the per-row
+    /// model lookups in key uniqueness and foreign-key reconciliation (#572).
+    /// </summary>
+    [Benchmark]
+    public async Task InMemory_SeedWithRandom_ForeignKeys()
+    {
+        using var builder = new DbContextBuilder<BenchmarkForeignKeyContext>()
+            .UseAutoFixture()
+            .SeedWithRandom<BenchmarkEntity>(SeedCount)
+            .SeedWithRandom<BenchmarkChild>(SeedCount);
         await using var context = await builder.BuildAsync().ConfigureAwait(false);
     }
 }
