@@ -79,14 +79,14 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 - **CHANGELOG:** [CHANGELOG.md](CHANGELOG.md)
 - **Contributing Guide:** [CONTRIBUTING.md](CONTRIBUTING.md)
 - **DocFX Version Picker Troubleshooting:** [docs/DOCFX-VERSION-PICKER.md](docs/DOCFX-VERSION-PICKER.md)
-- **Benchmarks (every push to `main`):** https://Chris-Wolfgang.github.io/DbContextBuilder/dev/bench/
+- **Benchmark trends (pushes to `main` that change `src/` or `benchmarks/`):** https://Chris-Wolfgang.github.io/DbContextBuilder/dev/bench/
 - **Mutation-testing report:** https://Chris-Wolfgang.github.io/DbContextBuilder/dev/stryker/
 
 ---
 
 ## ✨ Features
 
-- **In-memory `DbContext` for tests.** By default, DbContextBuilder uses the EF Core InMemory provider. Switch to SQLite in-memory, which enforces relational constraints, with `.UseSqlite()` or `.UseSqliteForMsSqlServer()`, or pass your own `DbContextOptionsBuilder` with `.UseDbContextOptionsBuilder(...)` for any other provider.
+- **In-memory `DbContext` for tests.** By default, DbContextBuilder uses the EF Core InMemory provider. Switch to SQLite in-memory, which enforces relational constraints, with `.UseSqlite()` or `.UseSqliteForMsSqlServer()`. To add provider-independent options, such as `.EnableSensitiveDataLogging()` or interceptors, pass your own `DbContextOptionsBuilder` with `.UseDbContextOptionsBuilder(...)`. The builder still applies the provider selected above, so a builder already configured for another provider is rejected by EF Core.
 
 - **Seed with your own data** using `.SeedWith(...)` — accepts a single entity, a `params T[]`, or an `IEnumerable<T>`.
 
@@ -149,16 +149,16 @@ The Core package exposes a small, focused surface. The full reference is on the 
 | `.UseBogus()` | Plug Bogus in as the random-entity generator (realistic fake values). Requires the `Wolfgang.DbContextBuilder.Bogus` package. |
 | `.UseCustomRandomEntityCreator(creator)` | Plug in any `ICreateRandomEntities` implementation. |
 | `.UseCustomDbContextCreator(creator)` | Plug in any `ICreateDbContext` implementation, for a provider the builder does not ship. The builder takes ownership of it. |
-| `.UseDbContextOptionsBuilder(opts)` | Bring your own `DbContextOptionsBuilder<T>` to override the provider entirely. |
+| `.UseDbContextOptionsBuilder(opts)` | Bring your own `DbContextOptionsBuilder<T>` for provider-independent options (sensitive-data logging, interceptors). The selected provider (InMemory, SQLite or a custom creator's) is still applied on top. |
 | `.UseSeedProfile(profile)` | Apply a reusable `ISeedProfile<T>` — a named bundle of seed data shareable across tests. Multiple profiles accumulate. |
 | `.UseDiagnosticOutput(writeLine)` | Route EF Core logs (and a one-line seed summary) to a sink such as `testOutputHelper.WriteLine`. |
 | `.SeedWith<TEntity>(...)` | Seed specific rows. Accepts a single entity, `params T[]`, or `IEnumerable<T>`. |
 | `.SeedWithRandom<TEntity>(count, [func])` | Seed N random rows (requires a random-data provider). Optional `func` mutates each generated entity. |
-| `.BuildAsync()` | Materialize the `DbContext` (dispose it with `await using`). The first call creates and seeds the database; later calls return new contexts over it. The builder owns the provider resources — for SQLite, the in-memory connection — so dispose the builder after the last context is done. |
+| `.BuildAsync()` / `.BuildAsync(cancellationToken)` | Materialize the `DbContext` (dispose it with `await using`). The token is passed to the context creator, database creation and the seed save. The first call creates and seeds the database; later calls return new contexts over it. The builder owns the provider resources — for SQLite, the in-memory connection — so dispose the builder after the last context is done. |
 | `SqliteModelCustomizer` | The model customizer `UseSqlite()` installs, with hooks: `OverrideTableRenaming`, `OverrideDefaultValueHandling`, `OverrideComputedValueHandling`, `OverrideManyToManyTableHandling`, `DefaultValueMap`. |
 | `SqliteForMsSqlServerModelCustomizer` | The customizer `UseSqliteForMsSqlServer()` installs: derives from `SqliteModelCustomizer`, maps `(getdate())` / `(newid())` defaults to SQLite and drops other SQL Server default and computed SQL. |
-| `.Should()` (namespace `Wolfgang.DbContextBuilderCore.Assertions`) | Fluent assertions on a `DbSet<T>` or `IQueryable<T>` (`DbSetAssertions<T>`): `HaveCount`, `BeEmpty`, `NotBeEmpty`, `Contain`, `NotContain`, `AllSatisfy`. Failures throw `DbContextAssertionException`. |
-| `ICreateDbContext` / `ICreateRandomEntities` | Extension points for plugging in your own provider (`UseCustomDbContextCreator`) or random-entity generator (`UseCustomRandomEntityCreator`). |
+| `.Should()` (namespace `Wolfgang.DbContextBuilderCore.Assertions`) | Fluent assertions on a `DbSet<T>` or `IQueryable<T>` (`DbSetAssertions<T>`): `HaveCount`, `BeEmpty`, `NotBeEmpty`, `Contain`, `NotContain`, `AllSatisfy`, each with an optional trailing `CancellationToken`. Failures throw `DbContextAssertionException`. |
+| `ICreateDbContext` / `ICreateRandomEntities` | Extension points for plugging in your own provider (`UseCustomDbContextCreator`) or random-entity generator (`UseCustomRandomEntityCreator`). `ICreateDbContext.CreateDbContextAsync(optionsBuilder, cancellationToken)` has a default implementation that checks the token and calls the original overload, so existing creators keep working; override it to pass the token on. |
 
 
 
