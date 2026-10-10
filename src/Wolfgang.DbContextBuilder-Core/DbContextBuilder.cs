@@ -814,17 +814,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     {
         ThrowIfDisposed();
 
-        var optionBuilder = _dbContextOptionsBuilder ?? new DbContextOptionsBuilder<T>();
-        if (ServiceCollection.Count > 0)
-        {
-            InternalServiceProvider ??= ServiceCollection.BuildServiceProvider();
-            optionBuilder.UseInternalServiceProvider(InternalServiceProvider);
-        }
-
-        if (_diagnosticOutput is not null)
-        {
-            optionBuilder.LogTo(_diagnosticOutput);
-        }
+        var optionBuilder = CreateOptionsBuilder();
 
         var contextCreator = CreateDbContext ??= new InMemoryDbContextCreator();
         if (ReferenceEquals(_seededCreator, contextCreator))
@@ -884,6 +874,31 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
                 await seedContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
+    }
+
+
+
+    // The options for one build. Per-build configuration (internal service provider, provider,
+    // logging) goes on a copy, never on the caller's builder: otherwise a SQLite build left its
+    // provider and services in the caller's builder, and re-selecting InMemory for the next build
+    // failed (#558 review).
+    private DbContextOptionsBuilder<T> CreateOptionsBuilder()
+    {
+        var optionBuilder = _dbContextOptionsBuilder is null
+            ? new DbContextOptionsBuilder<T>()
+            : new DbContextOptionsBuilder<T>(_dbContextOptionsBuilder.Options);
+        if (ServiceCollection.Count > 0)
+        {
+            InternalServiceProvider ??= ServiceCollection.BuildServiceProvider();
+            optionBuilder.UseInternalServiceProvider(InternalServiceProvider);
+        }
+
+        if (_diagnosticOutput is not null)
+        {
+            optionBuilder.LogTo(_diagnosticOutput);
+        }
+
+        return optionBuilder;
     }
 
 
