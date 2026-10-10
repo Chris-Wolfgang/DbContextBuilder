@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791597862961,
+  "lastUpdate": 1791652925237,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -1794,6 +1794,84 @@ window.BENCHMARK_DATA = {
             "value": 1326143.6171875,
             "unit": "ns",
             "range": "± 65176.79449196893"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "405b5b52bf431c87340a2b2ca8732c28d0795c34",
+          "message": "ci(perf): guard pr-benchmarks against missing/zero baselines and split its write job; clean between shadow runs; require the Coyote rewrite (#640)\n\n* ci(perf): guard pr-benchmarks against missing/zero baselines and split its write job; clean between shadow runs; require the Coyote rewrite\n\npr-benchmarks.yaml\n- The job holding pull-requests: write checked out and ran the PR's benchmark\n  code before the commenting action got the token. perf-delta is now\n  read-only and exports the table; a new `comment` job, which never checks out\n  PR code, posts it (#592).\n- A merge-base without a BuildAsyncBenchmarks report failed the gate for a\n  non-perf reason; it now reports \"no baseline\" and passes (#616).\n- A missing or 0 B base allocation aborted jq (divide by zero), and a\n  benchmark added or renamed in the PR was silently dropped from the table;\n  both now show (n/a / \"(new)\") and never count as regressions (#616).\n\nshadow.yaml: `git clean -xdf -e current.json` between the source run and the\n-p:UseBaselinePackage run so their bin/obj cannot mix (#617).\n\ncoyote.yaml: export COYOTE_REQUIRE_REWRITTEN=1 for the suite; the test that\nreads it comes in a later PR of this stack (#618).\n\nRefs #592, #616, #617, #618.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* ci(perf): keep a missing allocation measurement as n/a instead of 0 B\n\nReview on #640: `// 0` turned a missing Memory.BytesAllocatedPerOperation\ninto 0 B, so a missing head measurement against a 100 B base read as a\n-100% allocation change. Missing values now stay null: no percentage unless\nboth sides were measured, and the table prints n/a for an unknown byte\ncount. The explicit 0 B-base handling (#616) applies only when both are\npresent.\n\nVerified by running the step's jq programs on synthetic reports: 100->120 B\nis 20% and regressed; head missing, both missing and a new benchmark without\nmemory data are n/a and not regressed; 0->0 B is 0%.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* ci(perf): skip a merge-base without the benchmark project; guard the comment job\n\nReview on #640:\n- The \"no baseline\" path in Compute delta was unreachable when the\n  merge-base predates the benchmark project: `dotnet run --project` failed\n  first. The merge-base step now skips with a notice when $BENCH_PROJECT\n  does not exist. It also creates ./bdn-artifacts-base, because Compute\n  delta runs `find` on that directory under `set -o pipefail`, and a missing\n  directory would fail the step (reproduced locally) before the\n  missing-report branch.\n- The comment job (pull-requests: write) now skips fork and Dependabot PRs,\n  whose pull_request token is read-only, with the same guard as pr.yaml's\n  inspectcode-upload. They still get the gate, just not the comment.\n- coyote.yaml: the COYOTE_REQUIRE_REWRITTEN comment no longer claims the test\n  reads it yet. The test-side assertion is a non-protected change and comes\n  in a later PR of this stack.\n\nVerified: actionlint and zizmor are clean; a local simulation of the skip\nfollowed by the delta step's report lookup reaches \"baseline=missing\".\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* ci(perf): keep ignored label events out of the benchmark concurrency group\n\nFound on #631: adding the no-changelog label started a pull_request\n`labeled` run. perf-delta skips every label except perf-impact-acknowledged,\nbut the run joined the PR's cancel-in-progress group, so it cancelled the\nin-flight synchronize run. The \"Benchmark delta vs base\" check was left\nCANCELLED (run 38056124215) with a SKIPPED sibling (run 38056124708).\nmain's copy has the same group, which is why #631 hit it.\n\nLabel/unlabel events for any other label now get a group of their own\n(pr-benchmarks-<n>-ignored-<run_id>). Pushes and the override label still\nshare pr-benchmarks-<n>, so a newer run still cancels an older one.\n\nVerified: actionlint (which parses the expression) and zizmor are clean.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-10T13:20:09-04:00",
+          "tree_id": "937f614209f02a5ae40cb8413eedb78aee26e1d9",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/405b5b52bf431c87340a2b2ca8732c28d0795c34"
+        },
+        "date": 1791652923701,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 17023.574564615887,
+            "unit": "ns",
+            "range": "± 265.2802058652781"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 22868.931752522785,
+            "unit": "ns",
+            "range": "± 312.28413603314425"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 100779.55224609375,
+            "unit": "ns",
+            "range": "± 12514.298708318009"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 17615.775655110676,
+            "unit": "ns",
+            "range": "± 688.1071798406014"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 43709.673828125,
+            "unit": "ns",
+            "range": "± 2560.904509031141"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 224040.24186197916,
+            "unit": "ns",
+            "range": "± 8912.171879698422"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 19461.131072998047,
+            "unit": "ns",
+            "range": "± 1288.8815646866185"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 159576.33365885416,
+            "unit": "ns",
+            "range": "± 6996.484087107699"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 1257571.9739583333,
+            "unit": "ns",
+            "range": "± 67316.59987328594"
           }
         ]
       }
