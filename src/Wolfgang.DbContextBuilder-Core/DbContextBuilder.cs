@@ -12,15 +12,15 @@ namespace Wolfgang.DbContextBuilderCore;
 /// <typeparam name="T">The concrete <see cref="DbContext"/> type to construct.</typeparam>
 /// <remarks>
 /// <para>
-/// The first <see cref="BuildAsync"/> call creates and seeds the database; later calls return
+/// The first <see cref="BuildAsync()"/> call creates and seeds the database; later calls return
 /// another context over the same, already-seeded database. Add all seed data before the first
-/// <see cref="BuildAsync"/> call. Selecting a different provider afterwards starts a new, empty
-/// database that the next <see cref="BuildAsync"/> call seeds again.
+/// <see cref="BuildAsync()"/> call. Selecting a different provider afterwards starts a new, empty
+/// database that the next <see cref="BuildAsync()"/> call seeds again.
 /// </para>
 /// <para>
 /// When using the SQLite provider, the builder holds an open SQLite in-memory connection and
 /// the EF Core service provider every context shares. Dispose the builder only after all
-/// <see cref="DbContext"/> instances returned by <see cref="BuildAsync"/> are no longer in use,
+/// <see cref="DbContext"/> instances returned by <see cref="BuildAsync()"/> are no longer in use,
 /// as disposing the builder closes the shared connection and destroys the in-memory database.
 /// </para>
 /// </remarks>
@@ -280,7 +280,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
-    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync()"/> call has already created and seeded the database.</exception>
     /// <remarks>
     /// Insertion order across distinct entity types is not guaranteed — the builder
     /// accumulates seeds in a single list and EF's <c>SaveChangesAsync</c> orders the
@@ -322,7 +322,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
-    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync()"/> call has already created and seeded the database.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(params TEntity[] entities)
         where TEntity : class
     {
@@ -355,7 +355,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <c>params</c> overload's rejection regardless of how <typeparamref name="TEntity"/> was inferred), or
     /// <paramref name="entity"/> is a sequence that contains a null or a <see cref="string"/> item.</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
-    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="BuildAsync()"/> call has already created and seeded the database.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(TEntity entity)
         where TEntity : class
     {
@@ -442,7 +442,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
-    /// <exception cref="InvalidOperationException">No random-entity provider is configured (call <c>UseAutoFixture()</c>, <c>UseBogus()</c> or <see cref="UseCustomRandomEntityCreator"/> first), or a previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
+    /// <exception cref="InvalidOperationException">No random-entity provider is configured (call <c>UseAutoFixture()</c>, <c>UseBogus()</c> or <see cref="UseCustomRandomEntityCreator"/> first), or a previous <see cref="BuildAsync()"/> call has already created and seeded the database.</exception>
     /// <remarks>
     /// Foreign keys on the generated entities are reconciled against the model when the
     /// context is built: a required FK is wired to a seeded principal of its type (so seed the
@@ -483,7 +483,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
-    /// <exception cref="InvalidOperationException">No random-entity provider is configured (call <c>UseAutoFixture()</c>, <c>UseBogus()</c> or <see cref="UseCustomRandomEntityCreator"/> first), or a previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
+    /// <exception cref="InvalidOperationException">No random-entity provider is configured (call <c>UseAutoFixture()</c>, <c>UseBogus()</c> or <see cref="UseCustomRandomEntityCreator"/> first), or a previous <see cref="BuildAsync()"/> call has already created and seeded the database.</exception>
     /// <remarks>
     /// Foreign keys on the generated entities are reconciled against the model when the
     /// context is built: a required FK is wired to a seeded principal of its type (so seed the
@@ -529,7 +529,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
-    /// <exception cref="InvalidOperationException">No random-entity provider is configured (call <c>UseAutoFixture()</c>, <c>UseBogus()</c> or <see cref="UseCustomRandomEntityCreator"/> first), or a previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
+    /// <exception cref="InvalidOperationException">No random-entity provider is configured (call <c>UseAutoFixture()</c>, <c>UseBogus()</c> or <see cref="UseCustomRandomEntityCreator"/> first), or a previous <see cref="BuildAsync()"/> call has already created and seeded the database.</exception>
     /// <remarks>
     /// Foreign keys on the generated entities are reconciled against the model when the
     /// context is built: a required FK is wired to a seeded principal of its type (so seed the
@@ -810,9 +810,30 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     /// <exception cref="InvalidOperationException">The database could not be created for the configured
     /// provider; EF Core's failure is the <see cref="Exception.InnerException"/>.</exception>
-    public async Task<T> BuildAsync()
+    public Task<T> BuildAsync() =>
+        BuildAsync(CancellationToken.None);
+
+
+
+    /// <summary>
+    /// Creates a new instance of <typeparamref name="T"/> seeded with the specified data, observing
+    /// <paramref name="cancellationToken"/> (#575).
+    /// </summary>
+    /// <remarks>
+    /// The first call creates the database and saves the seed data. Later calls return a new
+    /// context over the same database without seeding it again. The token is passed to database
+    /// creation, the seed save and the context creator.
+    /// </remarks>
+    /// <param name="cancellationToken">Cancels the build; the returned task then throws <see cref="OperationCanceledException"/>.</param>
+    /// <returns>A new instance of <typeparamref name="T"/>.</returns>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">The database could not be created for the configured
+    /// provider; EF Core's failure is the <see cref="Exception.InnerException"/>.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    public async Task<T> BuildAsync(CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
+        cancellationToken.ThrowIfCancellationRequested();
 
         var optionBuilder = _dbContextOptionsBuilder ?? new DbContextOptionsBuilder<T>();
         if (ServiceCollection.Count > 0)
@@ -836,7 +857,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         }
         else
         {
-            await CreateAndSeedDatabaseAsync(contextCreator, optionBuilder).ConfigureAwait(false);
+            await CreateAndSeedDatabaseAsync(contextCreator, optionBuilder, cancellationToken).ConfigureAwait(false);
             _seededCreator = contextCreator;
 
             _diagnosticOutput?.Invoke
@@ -845,20 +866,20 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             );
         }
 
-        return await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
+        return await contextCreator.CreateDbContextAsync(optionBuilder, cancellationToken).ConfigureAwait(false);
     }
 
 
 
     // Creates the database through a temporary context and saves the seed data, then disposes it.
-    private async Task CreateAndSeedDatabaseAsync(ICreateDbContext contextCreator, DbContextOptionsBuilder<T> optionBuilder)
+    private async Task CreateAndSeedDatabaseAsync(ICreateDbContext contextCreator, DbContextOptionsBuilder<T> optionBuilder, CancellationToken cancellationToken)
     {
-        var seedContext = await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
+        var seedContext = await contextCreator.CreateDbContextAsync(optionBuilder, cancellationToken).ConfigureAwait(false);
         await using (seedContext.ConfigureAwait(false))
         {
             try
             {
-                await seedContext.Database.EnsureCreatedAsync().ConfigureAwait(false);
+                await seedContext.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (InvalidOperationException e)
             {
@@ -881,7 +902,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
                 EnsureUniqueRandomPrimaryKeys(seedContext);
                 ReconcileRandomForeignKeys(seedContext);
                 seedContext.AddRange(_seedData.AsEnumerable());
-                await seedContext.SaveChangesAsync().ConfigureAwait(false);
+                await seedContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             }
         }
     }
