@@ -47,6 +47,10 @@ param
 )
 
 Set-StrictMode -Version Latest
+
+# Accept 'changelog/unreleased/', a backslash path, or the default: the fragment match in `check`
+# compares forward-slash git paths against "<dir>/" (#619).
+$FragmentDir = ($FragmentDir -replace '\\', '/').TrimEnd('/')
 $ErrorActionPreference = 'Stop'
 
 $kinds = [ordered]@{
@@ -136,14 +140,18 @@ function Get-DerivedVersion
 
 function Get-PrSuffix
 {
-    # Best effort: the PR number from the commit that introduced the fragment (squash "(#123)" or merge "#123").
+    # Best effort: the PR number from the commit that introduced the fragment. A squash subject ends
+    # with "(#PR)" and may name an issue earlier ("... (#530) (#532)", "closes #515 (#520)"), so the
+    # trailing marker wins; failing that, the LAST "#N" in the subject (#619).
     param([string]$RelPath)
 
     $subjects = & git log --format=%s --diff-filter=A -- $RelPath 2>$null
     if ($LASTEXITCODE -ne 0 -or -not $subjects) { return '' }
     foreach ($s in @($subjects))
     {
-        if ($s -match '#(\d+)') { return " (#$($Matches[1]))" }
+        if ($s -match '\(#(\d+)\)\s*$') { return " (#$($Matches[1]))" }
+        $all = [regex]::Matches($s, '#(\d+)')
+        if ($all.Count -gt 0) { return " (#$($all[$all.Count - 1].Groups[1].Value))" }
     }
     return ''
 }
@@ -187,7 +195,8 @@ function Invoke-Bump
     $fragments = @(Get-Fragments)
     $current = Get-CurrentVersion
     $next = Get-DerivedVersion $current $fragments
-    Write-Host "current: $current  fragments: $($fragments.Count)  next: $next"
+    # Diagnostic to stderr, so `$(pwsh ./scripts/changelog.ps1 bump)` captures exactly one line (#619).
+    [Console]::Error.WriteLine("current: $current  fragments: $($fragments.Count)  next: $next")
     Write-Output $next
 }
 
@@ -209,18 +218,20 @@ function Invoke-Assemble
     if (-not $Version) { $Version = Get-DerivedVersion $current $fragments }
     if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw "version '$Version' is not x.y.z" }
 
-    $sb = [System.Text.StringBuilder]::new()
-    [void]$sb.AppendLine("## [$Version] - $(Get-Date -Format 'yyyy-MM-dd')")
+    # Built as a list of lines and joined with "`n" below: StringBuilder.AppendLine uses
+    # Environment.NewLine (CRLF on Windows) while CHANGELOG.md is LF (#619).
+    $block = [System.Collections.Generic.List[string]]::new()
+    $block.Add("## [$Version] - $(Get-Date -Format 'yyyy-MM-dd')")
     foreach ($kind in $kinds.Keys)
     {
         $group = @($fragments | Where-Object { $_.Type -eq $kind })
         if ($group.Count -eq 0) { continue }
-        [void]$sb.AppendLine()
-        [void]$sb.AppendLine("### $($kinds[$kind])")
-        [void]$sb.AppendLine()
-        foreach ($g in $group) { [void]$sb.AppendLine("- $($g.Description)$(Get-PrSuffix $g.RelPath)") }
+        $block.Add('')
+        $block.Add("### $($kinds[$kind])")
+        $block.Add('')
+        foreach ($g in $group) { $block.Add("- $($g.Description)$(Get-PrSuffix $g.RelPath)") }
     }
-    $section = $sb.ToString().TrimEnd()
+    $block.Add('')
 
     $lines = [System.Collections.Generic.List[string]]::new([string[]](Get-Content $ChangelogPath))
     $unreleased = -1
@@ -229,10 +240,9 @@ function Invoke-Assemble
     $insertAt = $lines.Count
     for ($i = $unreleased + 1; $i -lt $lines.Count; $i++) { if ($lines[$i] -match '^## \[') { $insertAt = $i; break } }
 
-    $block = @($section -split "`n") + @('')
     $lines.InsertRange($insertAt, [string[]]$block)
-    Set-Content -Path $ChangelogPath -Value ($lines -join "`n") -NoNewline
-    Add-Content -Path $ChangelogPath -Value ''
+    # One trailing LF, written explicitly (Add-Content -Value '' appended CRLF on Windows).
+    Set-Content -Path $ChangelogPath -Value (($lines -join "`n") + "`n") -NoNewline
 
     foreach ($f in $fragments) { Remove-Item $f.Path -Force }
     Write-Host "✅ Wrote [$Version] to $ChangelogPath from $($fragments.Count) fragment(s) (previous: $current) and removed them"
