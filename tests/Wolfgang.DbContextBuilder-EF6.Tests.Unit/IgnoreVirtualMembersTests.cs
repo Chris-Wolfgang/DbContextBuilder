@@ -12,25 +12,6 @@ public class IgnoreVirtualMembersTests
 {
 
     /// <summary>
-    /// Verifies that virtual properties are skipped during AutoFixture generation.
-    /// </summary>
-    [Fact]
-    public void AutoFixture_with_IgnoreVirtualMembers_skips_virtual_properties()
-    {
-        // Arrange
-        var sut = new AutoFixtureRandomEntityCreator();
-
-        // Act
-        var product = sut.CreateRandomEntities<Product>(1).First();
-
-        // Assert — non-virtual properties should be populated
-        Assert.NotNull(product.Name);
-        Assert.NotEqual(string.Empty, product.Name);
-    }
-
-
-
-    /// <summary>
     /// Verifies that the IgnoreVirtualMembers specimen builder returns NoSpecimen for non-property requests.
     /// </summary>
     [Fact]

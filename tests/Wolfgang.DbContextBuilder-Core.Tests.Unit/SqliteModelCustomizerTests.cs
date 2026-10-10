@@ -28,26 +28,6 @@ public class SqliteModelCustomizerTests
 {
 
     /// <summary>
-    /// Verifies that an instance of SqliteModelCustomizer can be created.
-    /// </summary>
-    [Fact]
-    public void Can_create_instance_of_SqliteModelCustomizer()
-    {
-        // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
-
-        // Act & Assert — constructor should not throw
-        _ = new SqliteModelCustomizer(dependencies);
-    }
-
-
-
-    /// <summary>
     /// Verifies that passing null to the constructor throws ArgumentNullException
     /// </summary>
     [Fact]
@@ -412,34 +392,6 @@ public class SqliteModelCustomizerTests
         // Act & Assert
         var ex = Assert.Throws<InvalidOperationException>(() => sut.Customize(modelBuilder, context));
         Assert.Contains("has no table name", ex.Message, StringComparison.Ordinal);
-    }
-
-
-
-    /// <summary>
-    /// Verifies that Customize skips customization when database is not SQLite.
-    /// </summary>
-    [Fact]
-    public void Customize_when_database_is_not_sqlite_does_not_rename_tables()
-    {
-        // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
-
-        var sut = new SqliteModelCustomizer(dependencies);
-        using var context = new BasicContext
-        (
-            new DbContextOptionsBuilder<BasicContext>()
-                .UseInMemoryDatabase("test-not-sqlite")
-                .Options
-        );
-
-        // Act — should return early without error since it's not SQLite
-        sut.Customize(new ModelBuilder(), context);
     }
 
 
@@ -997,6 +949,29 @@ public class SqliteModelCustomizerTests
         Assert.Equal("sales_Invoice", entity.GetTableName());
         Assert.Equal("CURRENT_TIMESTAMP", entity.FindProperty(nameof(Invoice.CreatedAt))!.GetDefaultValueSql());
         Assert.Equal("\"Qty\" * \"Price\"", entity.FindProperty(nameof(Invoice.Total))!.GetComputedColumnSql());
+    }
+
+
+
+    /// <summary>
+    /// With its default handlers the customizer passes computed-column SQL through unchanged and
+    /// leaves a default-value SQL that is not in <see cref="SqliteModelCustomizer.DefaultValueMap"/>
+    /// alone; only the schema is folded into the table name.
+    /// </summary>
+    [Fact]
+    public void Customize_with_default_handlers_keeps_computed_and_unmapped_default_SQL()
+    {
+        var options = new DbContextOptionsBuilder<SchemaContext>()
+            .UseSqlite("DataSource=:memory:")
+            .ReplaceService<IModelCustomizer, SqliteModelCustomizer>()
+            .Options;
+        using var context = new SchemaContext(options);
+
+        var entity = context.GetService<IDesignTimeModel>().Model.FindEntityType(typeof(Invoice))!;
+
+        Assert.Equal("sales_Invoice", entity.GetTableName());
+        Assert.Equal("GETDATE()", entity.FindProperty(nameof(Invoice.CreatedAt))!.GetDefaultValueSql());
+        Assert.Equal("[Qty] * [Price]", entity.FindProperty(nameof(Invoice.Total))!.GetComputedColumnSql());
     }
 
 

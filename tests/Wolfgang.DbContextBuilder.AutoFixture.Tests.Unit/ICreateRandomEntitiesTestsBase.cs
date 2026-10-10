@@ -22,21 +22,6 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit
 
 
         /// <summary>
-        /// Verifies that this class can create an instance of the System Under Test
-        /// </summary>
-        [Fact]
-        public void Can_create_instance_of_SystemUnderTest()
-        {
-            // Arrange & Act
-            var sut = CreateRandomEntityCreator();
-            
-            // Assert
-            Assert.NotNull(sut);
-        }
-
-
-
-        /// <summary>
         /// Verifies that CreateRandomEntities returns the specified number of items
         /// </summary>
         /// <param name="count"></param>

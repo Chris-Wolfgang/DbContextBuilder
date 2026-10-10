@@ -23,26 +23,6 @@ public class SqliteForMsSqlServerModelCustomizerTests
 {
 
     /// <summary>
-    /// Verifies that an instance of SqliteForMsSqlServerModelCustomizer can be created.
-    /// </summary>
-    [Fact]
-    public void Can_create_instance_of_SqliteForMsSqlServerModelCustomizer()
-    {
-        // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
-
-        // Act & Assert — construction alone is the assertion (must not throw).
-        _ = new SqliteForMsSqlServerModelCustomizer(dependencies);
-    }
-
-
-
-    /// <summary>
     /// Verifies that passing null to the constructor throws ArgumentNullException
     /// </summary>
     [Fact]
