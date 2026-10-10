@@ -13,13 +13,15 @@ namespace Wolfgang.DbContextBuilder.Tests.Fuzz;
 internal static class RandomEntityCreatorProperties
 {
     /// <summary>
-    /// <paramref name="count"/> is fuzzed across the full <see cref="int"/> range by the
-    /// caller; both the below-the-floor and at-or-above-the-floor branches of the documented
-    /// contract are exercised by the same property. Bounds the magnitude generating output
+    /// <paramref name="count"/> comes from FsCheck's <see cref="int"/> arbitrary, which generates
+    /// values in <c>[-size, size]</c>; with the default <c>EndSize</c> of 100 that is
+    /// <c>[-100, 100]</c>, so both the below-the-floor and at-or-above-the-floor branches of the
+    /// documented contract are exercised by the same property (#618). Bounds the magnitude generating output
     /// defensively - materializing entities is real (reflection-driven) work per item, unlike
     /// AuditTrail's pure string-fuzzing properties this suite is modeled on, so an
     /// FsCheck-shrink-search excursion to an extreme count must not turn into a multi-minute
-    /// (or hung) CI run. Values outside the bound are vacuously satisfied (returns true),
+    /// (or hung) CI run. FsCheck's default sizes never reach the bound; only the pinned unit
+    /// tests exercise it. Values outside the bound are vacuously satisfied (returns true),
     /// matching the established "not applicable, so true" pattern for out-of-scope inputs in
     /// a boolean FsCheck property.
     /// </summary>
