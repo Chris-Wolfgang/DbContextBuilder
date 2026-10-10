@@ -392,7 +392,8 @@ dotnet_diagnostic.VSTHRD114.severity = none       # Allow returning null from Ta
 dotnet_diagnostic.VSTHRD200.severity = none       # Async suffix not required in test method names
 
 # Banned API Analyzer - Allow in tests (sync I/O and Stream overrides are common in test setup)
-# BannedSymbols.txt (async-first I/O) is therefore enforced on src/ and samples/ only.
+# BannedSymbols.txt (async-first I/O) is therefore enforced on src/, samples/ and
+# .github/sourcelink/consumer/ (StepIntoConsumer, which inherits the root props) only.
 # Known consequence (#593): sync I/O in tests compiles; #601 and #600 remove the instances
 # found so far, after which this can move to warning.
 dotnet_diagnostic.RS0030.severity = none          # Allow banned APIs in tests
@@ -458,7 +459,8 @@ dotnet_diagnostic.S6966.severity = none
 dotnet_diagnostic.VSTHRD200.severity = none
 
 # Sample projects (samples/: the shadow workload) - a console tool run by shadow.yaml,
-# not a library. Replaces the ad-hoc <NoWarn> in its csproj (#582).
+# not a library. Takes over from the ad-hoc <NoWarn> in its csproj, which a later PR
+# removes (#582); until then both suppress the same five rules.
 [samples/**/*.cs]
 dotnet_diagnostic.CA1515.severity = none          # Types in a console app need not be internal
 dotnet_diagnostic.CA1812.severity = none          # Classes instantiated by reflection/JSON
