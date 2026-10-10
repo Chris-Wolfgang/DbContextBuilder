@@ -42,8 +42,10 @@ public sealed class DbSetAssertions<TEntity>
         var actual = await _query.CountAsync().ConfigureAwait(false);
         if (actual != expected)
         {
-            throw new DbContextAssertionException(
-                $"Expected DbSet<{typeof(TEntity).Name}> to have {expected} entities, but found {actual}.");
+            throw new DbContextAssertionException
+            (
+                $"Expected DbSet<{typeof(TEntity).Name}> to have {expected} entities, but found {actual}."
+            );
         }
 
         return this;
@@ -66,8 +68,10 @@ public sealed class DbSetAssertions<TEntity>
         if (any)
         {
             var actual = await _query.CountAsync().ConfigureAwait(false);
-            throw new DbContextAssertionException(
-                $"Expected DbSet<{typeof(TEntity).Name}> to be empty, but found {actual} entities.");
+            throw new DbContextAssertionException
+            (
+                $"Expected DbSet<{typeof(TEntity).Name}> to be empty, but found {actual} entities."
+            );
         }
 
         return this;
@@ -87,8 +91,10 @@ public sealed class DbSetAssertions<TEntity>
         var actual = await _query.AnyAsync().ConfigureAwait(false);
         if (!actual)
         {
-            throw new DbContextAssertionException(
-                $"Expected DbSet<{typeof(TEntity).Name}> to contain at least one entity, but it was empty.");
+            throw new DbContextAssertionException
+            (
+                $"Expected DbSet<{typeof(TEntity).Name}> to contain at least one entity, but it was empty."
+            );
         }
 
         return this;
@@ -114,9 +120,11 @@ public sealed class DbSetAssertions<TEntity>
         if (!matched)
         {
             var total = await _query.CountAsync().ConfigureAwait(false);
-            throw new DbContextAssertionException(
+            throw new DbContextAssertionException
+            (
                 $"Expected DbSet<{typeof(TEntity).Name}> to contain an entity matching ({predicate}), " +
-                $"but no matching entity was found among {total} entities.");
+                $"but no matching entity was found among {total} entities."
+            );
         }
 
         return this;
@@ -144,9 +152,11 @@ public sealed class DbSetAssertions<TEntity>
         if (matched)
         {
             var count = await _query.CountAsync(predicate).ConfigureAwait(false);
-            throw new DbContextAssertionException(
+            throw new DbContextAssertionException
+            (
                 $"Expected DbSet<{typeof(TEntity).Name}> to contain NO entity matching ({predicate}), " +
-                $"but {count} matching entities were found.");
+                $"but {count} matching entities were found."
+            );
         }
 
         return this;
@@ -179,9 +189,11 @@ public sealed class DbSetAssertions<TEntity>
         if (matching != total)
         {
             var failing = total - matching;
-            throw new DbContextAssertionException(
+            throw new DbContextAssertionException
+            (
                 $"Expected all {total} entities in DbSet<{typeof(TEntity).Name}> to satisfy ({predicate}), " +
-                $"but {failing} of {total} failed.");
+                $"but {failing} of {total} failed."
+            );
         }
 
         return this;

@@ -7,7 +7,6 @@ namespace Wolfgang.DbContextBuilderCore;
 /// </summary>
 internal class InMemoryDbContextCreator : ICreateDbContext
 {
-
     private readonly string _databaseName = Guid.NewGuid().ToString();
 
 

@@ -7,7 +7,6 @@ namespace Wolfgang.DbContextBuilderEF6;
 /// </summary>
 public interface ICreateRandomEntities
 {
-
     /// <summary>
     /// Creates the specified number of entities of type TEntity with random data.
     /// </summary>
@@ -16,5 +15,4 @@ public interface ICreateRandomEntities
     /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TEntity"/>.</returns>
     /// <exception cref="System.ArgumentOutOfRangeException"><paramref name="count"/> is less than 1.</exception>
     IEnumerable<TEntity> CreateRandomEntities<TEntity>(int count) where TEntity : class;
-
 }

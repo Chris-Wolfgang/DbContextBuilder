@@ -13,7 +13,6 @@ namespace Wolfgang.DbContextBuilderCore;
 /// </summary>
 public static class DbContextBuilderSqliteExtensions
 {
-
     /// <summary>
     /// Instructs the builder to use SQLite as the database provider.
     /// </summary>
@@ -74,7 +73,7 @@ public static class DbContextBuilderSqliteExtensions
     /// <returns>The builder, for chaining.</returns>
     private static DbContextBuilder<TDbContext> UseSqlite<TDbContext>
     (
-        this DbContextBuilder<TDbContext> builder,
+        DbContextBuilder<TDbContext> builder,
         Type modelCustomizerType
     ) where TDbContext : DbContext
     {

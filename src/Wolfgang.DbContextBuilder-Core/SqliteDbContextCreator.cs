@@ -10,7 +10,6 @@ namespace Wolfgang.DbContextBuilderCore;
 /// </summary>
 internal sealed class SqliteDbContextCreator : ICreateDbContext, IDisposable
 {
-
     private readonly SqliteConnection _connection;
 
 
@@ -28,6 +27,9 @@ internal sealed class SqliteDbContextCreator : ICreateDbContext, IDisposable
     public SqliteDbContextCreator()
     {
         _connection = new SqliteConnection("DataSource=:memory:");
+
+        // Synchronous by necessity (a constructor cannot await) and harmless here: opening a
+        // ":memory:" connection does no file or network I/O.
         _connection.Open();
     }
 
