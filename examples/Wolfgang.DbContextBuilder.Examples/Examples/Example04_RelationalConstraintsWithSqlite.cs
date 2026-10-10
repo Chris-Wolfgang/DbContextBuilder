@@ -29,8 +29,10 @@ public class Example04_RelationalConstraintsWithSqlite
             Lines = { new OrderLine { Product = product, Quantity = 4, UnitPrice = 5m } },
         });
 
-        // The only change from Example 2 is UseSqlite() instead of UseInMemory().
-        await using var context = await new DbContextBuilder<ShopDbContext>()
+        // The only change from Example 2 is UseSqlite() instead of UseInMemory(). The builder
+        // owns the in-memory SQLite connection, so dispose it too, after the context.
+        using var builder = new DbContextBuilder<ShopDbContext>();
+        await using var context = await builder
             .UseSqlite()
             .SeedWith(customer)
             .BuildAsync();
