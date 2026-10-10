@@ -76,7 +76,11 @@ function Get-Sha
 {
     param([string]$Ref)
 
-    return Invoke-Git @('rev-parse', '--verify', '--quiet', "$Ref^{commit}")
+    # $null when the ref does not exist, so callers can report a missing branch themselves
+    # (rev-parse --verify --quiet exits non-zero with no output).
+    $sha = Invoke-Git @('rev-parse', '--verify', '--quiet', "$Ref^{commit}") -AllowFailure
+    if ($sha) { return $sha }
+    return $null
 }
 
 
@@ -203,7 +207,9 @@ $oldTip = @{}
 foreach ($b in $Stack) { $oldTip[$b] = Get-Sha "$Remote/$b" }
 
 if (-not $MergedTip) { $MergedTip = Find-MergedTip "$Remote/$($Stack[0])" }
-$MergedTip = Get-Sha $MergedTip
+$resolvedTip = Get-Sha $MergedTip
+if (-not $resolvedTip) { throw "MergedTip $MergedTip is not a commit" }
+$MergedTip = $resolvedTip
 if (-not (Test-Ancestor $MergedTip "$Remote/$($Stack[0])")) { throw "MergedTip $MergedTip is not in $($Stack[0])'s history" }
 
 Write-Host ''
@@ -238,9 +244,18 @@ try
         {
             Write-Host ($out | Out-String)
             Write-Host "::error::rebase of $b stopped on a conflict."
+            $remaining = @(@($Stack) | Select-Object -Skip ([array]::IndexOf($Stack, $b) + 1))
             Write-Host "Resolve it, run 'git rebase --continue' until it finishes, push with"
             Write-Host "  git push --force-with-lease=${b}:$($oldTip[$b]) $Remote $b"
-            Write-Host "then re-run this script with the remaining branches: -Stack $((@($Stack) | Select-Object -Skip ([array]::IndexOf($Stack, $b) + 1)) -join ',') -MergedTip $($oldTip[$b])"
+            Write-Host "and make sure its PR targets ${prBase}:"
+            Write-Host "  gh pr edit $b --base $prBase"
+            if ($remaining.Count -gt 0)
+            {
+                # -Base is the branch just pushed: without it the rest of the stack would be rebased
+                # onto $Remote/main and the next PR retargeted to main (#620).
+                Write-Host "then, AFTER that push, re-run this script for the remaining branches:"
+                Write-Host "  -Stack $($remaining -join ',') -MergedTip $($oldTip[$b]) -Base $b -Remote $Remote"
+            }
             exit 1
         }
         $newTip = Get-Sha $b
