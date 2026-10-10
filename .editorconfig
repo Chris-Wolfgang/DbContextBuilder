@@ -363,6 +363,12 @@ dotnet_diagnostic.CA2007.severity = warning  # .NET Analyzer: Use ConfigureAwait
 dotnet_diagnostic.MA0004.severity = suggestion  # Meziantou: Use ConfigureAwait
 dotnet_diagnostic.S3216.severity = suggestion   # SonarAnalyzer: ConfigureAwait
 
+# Security-category rules (CA2100, CA3xxx, CA5xxx: SQL injection, insecure XML, weak
+# crypto, ...): shipped library code fails the build on any of them (#593). Many are off by
+# default, and a category severity only re-grades rules that are already on, so
+# src/Directory.Build.props turns the whole category on with AnalysisModeSecurity=All.
+dotnet_analyzer_diagnostic.category-Security.severity = error
+
 # Test projects - relaxed naming, no doc requirements
 [tests/**/*.cs]
 # Allow Test_Method_Names_With_Underscores
@@ -386,6 +392,10 @@ dotnet_diagnostic.VSTHRD114.severity = none       # Allow returning null from Ta
 dotnet_diagnostic.VSTHRD200.severity = none       # Async suffix not required in test method names
 
 # Banned API Analyzer - Allow in tests (sync I/O and Stream overrides are common in test setup)
+# BannedSymbols.txt (async-first I/O) is therefore enforced on src/, samples/ and
+# .github/sourcelink/consumer/ (StepIntoConsumer, which inherits the root props) only.
+# Known consequence (#593): sync I/O in tests compiles; #601 and #600 remove the instances
+# found so far, after which this can move to warning.
 dotnet_diagnostic.RS0030.severity = none          # Allow banned APIs in tests
 
 # Meziantou - Relax in tests
@@ -426,7 +436,8 @@ dotnet_diagnostic.MA0004.severity = none          # Meziantou: Use ConfigureAwai
 dotnet_diagnostic.S3216.severity = none           # SonarAnalyzer: ConfigureAwait
 dotnet_diagnostic.CA2007.severity = none          # .NET Analyzer: Use ConfigureAwait
 
-# Banned API Analyzer - Allow in benchmarks (sync APIs are often the benchmark target)
+# Banned API Analyzer - Allow in benchmarks (sync APIs are often the benchmark target;
+# BannedSymbols.txt is not enforced here, #593)
 dotnet_diagnostic.RS0030.severity = none          # Allow banned APIs in benchmarks
 
 # Suppress Meziantou, Sonar, and VSTHRD analyzers in benchmarks
@@ -447,6 +458,16 @@ dotnet_diagnostic.S3776.severity = none
 dotnet_diagnostic.S6966.severity = none
 dotnet_diagnostic.VSTHRD200.severity = none
 
+# Sample projects (samples/: the shadow workload) - a console tool run by shadow.yaml,
+# not a library. Takes over from the ad-hoc <NoWarn> in its csproj, which a later PR
+# removes (#582); until then both suppress the same five rules.
+[samples/**/*.cs]
+dotnet_diagnostic.CA1515.severity = none          # Types in a console app need not be internal
+dotnet_diagnostic.CA1812.severity = none          # Classes instantiated by reflection/JSON
+dotnet_diagnostic.CA2007.severity = none          # ConfigureAwait not needed in an app
+dotnet_diagnostic.MA0004.severity = none          # ConfigureAwait not needed in an app
+dotnet_diagnostic.MA0048.severity = none          # File name matching not required in samples
+
 # Example projects - relaxed naming, docs encouraged
 [examples/**/*.cs]
 # Allow Example_Method_Names
@@ -454,7 +475,9 @@ dotnet_diagnostic.SA1300.severity = none
 dotnet_diagnostic.IDE1006.severity = none
 dotnet_diagnostic.CA1707.severity = none
 
-# Banned API Analyzer - Allow in examples for demonstration purposes
+# Banned API Analyzer - Allow in examples for demonstration purposes. Moot in practice:
+# examples/Directory.Build.props does not import the root props, so BannedApiAnalyzers and
+# BannedSymbols.txt are not referenced there at all (#593).
 dotnet_diagnostic.RS0030.severity = none          # Allow banned APIs in examples for demonstration
 
 # Suppress Meziantou, Sonar, and VSTHRD analyzers in examples
