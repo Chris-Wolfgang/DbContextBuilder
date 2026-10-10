@@ -63,11 +63,37 @@ function Get-ReferencedProjects([string]$Project, [string]$Tfm) {
     return @($items | ForEach-Object { [System.IO.Path]::GetFullPath((Join-Path $dir $_.Identity)) })
 }
 
+# A TFM's family and version: 'core' (netcoreappX.Y and netX.Y from net5.0 on), 'fx'
+# (.NET Framework, net462 -> 4.6.2) or 'ns' (netstandard). $null for anything else
+# (e.g. a platform TFM such as net10.0-android, which only matches exactly).
+function Get-TfmInfo([string]$Tfm) {
+    if ($Tfm -match '^netcoreapp(\d+)\.(\d+)$') { return @{ Family = 'core'; Version = [version]"$($Matches[1]).$($Matches[2])" } }
+    if ($Tfm -match '^net(\d+)\.(\d+)$' -and [int]$Matches[1] -ge 5) { return @{ Family = 'core'; Version = [version]"$($Matches[1]).$($Matches[2])" } }
+    if ($Tfm -match '^net(\d)(\d)(\d)?$') {
+        $v = if ($Matches[3]) { "$($Matches[1]).$($Matches[2]).$($Matches[3])" } else { "$($Matches[1]).$($Matches[2])" }
+        return @{ Family = 'fx'; Version = [version]$v }
+    }
+    if ($Tfm -match '^netstandard(\d+)\.(\d+)$') { return @{ Family = 'ns'; Version = [version]"$($Matches[1]).$($Matches[2])" } }
+    return $null
+}
+
 # Which asset of a multi-targeted project a consumer built for $ConsumerTfm
-# loads: the exact TFM if the project has it, otherwise the newest netstandard
-# the consumer can reference. Returns $null when nothing is compatible.
+# loads, following NuGet's nearest-framework rule: the exact TFM if the project
+# has it; otherwise the highest asset of the consumer's OWN family that is not
+# newer than the consumer (a net8.0 consumer loads net6.0 before netstandard2.1,
+# a net48 consumer loads net462 before netstandard2.0, #623); otherwise the
+# newest netstandard the consumer can reference. Returns $null when nothing is
+# compatible.
 function Select-Asset([string]$ConsumerTfm, [string[]]$CandidateTfms) {
     if ($CandidateTfms -contains $ConsumerTfm) { return $ConsumerTfm }
+    $consumer = Get-TfmInfo $ConsumerTfm
+    if ($null -eq $consumer) { return $null }
+
+    $sameFamily = @($CandidateTfms |
+        ForEach-Object { $info = Get-TfmInfo $_; if ($info -and $info.Family -eq $consumer.Family -and $info.Version -le $consumer.Version) { [pscustomobject]@{ Tfm = $_; Version = $info.Version } } } |
+        Sort-Object Version -Descending)
+    if ($sameFamily.Count -gt 0) { return $sameFamily[0].Tfm }
+
     $canLoad21 = $ConsumerTfm -match '^(netcoreapp3\.\d|net[5-9]\.0|net[1-9]\d\.0|netstandard2\.1)'
     $canLoad20 = $canLoad21 -or $ConsumerTfm -match '^(net4(6[1-9]|[7-9]\d*)|netcoreapp2\.\d|netstandard2\.0)'
     if ($canLoad21 -and $CandidateTfms -contains 'netstandard2.1') { return 'netstandard2.1' }
