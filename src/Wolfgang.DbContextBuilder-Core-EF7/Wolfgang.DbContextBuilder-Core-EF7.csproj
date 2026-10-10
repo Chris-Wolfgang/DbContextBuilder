@@ -28,7 +28,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>true</IsPackable>
 		<EnablePackageValidation>true</EnablePackageValidation>
-		<PackageValidationBaselineVersion>0.8.1</PackageValidationBaselineVersion>
+		<PackageValidationBaselineVersion>0.9.0</PackageValidationBaselineVersion>
 		<IsTestProject>false</IsTestProject>
 	</PropertyGroup>
 	 <PropertyGroup>
