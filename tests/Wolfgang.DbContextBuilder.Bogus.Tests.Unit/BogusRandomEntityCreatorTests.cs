@@ -113,6 +113,22 @@ public class BogusRandomEntityCreatorTests
 
 
     /// <summary>
+    /// Verifies that a count of exactly 1, the smallest valid count, is accepted (kills the
+    /// `count &lt; 1` → `count &lt;= 1` boundary mutant).
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_when_count_is_one_returns_one_entity()
+    {
+        var sut = new BogusRandomEntityCreator();
+
+        var items = sut.CreateRandomEntities<Sample>(1).ToList();
+
+        Assert.Single(items);
+    }
+
+
+
+    /// <summary>
     /// Verifies that every type rule fills its property. Rules whose range includes the default
     /// (bool, byte, float, double, decimal) are checked across a batch, where an all-default
     /// result is vanishingly unlikely; the others must be non-default on every entity.
