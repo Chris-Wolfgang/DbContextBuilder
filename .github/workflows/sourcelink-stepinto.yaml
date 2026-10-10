@@ -50,9 +50,12 @@ jobs:
         # Debug + ContinuousIntegrationBuild=true: the referenced library compiles
         # with the same SourceLink map a released package ships, non-optimized so the
         # step-into target is not reordered/inlined.
+        # LibraryProject: -Core-EF10, a package that ships. The consumer's default still
+        # names -Core, which stopped publishing in 0.9.0 (ADR-0003, #591).
         run: >
           dotnet build "$CONSUMER/StepIntoConsumer.csproj"
           -c Debug -p:ContinuousIntegrationBuild=true
+          -p:LibraryProject=../../../src/Wolfgang.DbContextBuilder-Core-EF10/Wolfgang.DbContextBuilder-Core-EF10.csproj
 
       - name: Drive netcoredbg step-into
         run: |
