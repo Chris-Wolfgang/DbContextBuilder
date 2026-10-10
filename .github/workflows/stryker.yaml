@@ -164,15 +164,14 @@ jobs:
           done
 
       - name: Setup .NET
-        # Install every SDK in the canonical test matrix (.NET Core 3.1
+        # Install every SDK the repository's projects target (.NET 6.0
         # through .NET 10.0). Stryker has to be able to build whichever
         # TFM each test project targets; pinning to a subset would
-        # silently fail repos that target older runtimes.
+        # silently fail repos that target older runtimes. No project
+        # targets netcoreapp3.1 or net5.0, so those SDKs are not installed (#586).
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: |
-            3.1.x
-            5.0.x
             6.0.x
             7.0.x
             8.0.x
