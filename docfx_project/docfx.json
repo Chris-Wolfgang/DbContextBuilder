@@ -5,12 +5,18 @@
       "src": [
         {
           "files": [
-            "src/Wolfgang.DbContextBuilder-Core/Wolfgang.DbContextBuilder-Core.csproj"
+            "src/Wolfgang.DbContextBuilder-Core-EF10/Wolfgang.DbContextBuilder-Core-EF10.csproj",
+            "src/Wolfgang.DbContextBuilder.Abstractions/Wolfgang.DbContextBuilder.Abstractions.csproj",
+            "src/Wolfgang.DbContextBuilder.AutoFixture/Wolfgang.DbContextBuilder.AutoFixture.csproj",
+            "src/Wolfgang.DbContextBuilder.Bogus/Wolfgang.DbContextBuilder.Bogus.csproj"
           ],
           "src": "../"
         }
       ],
-      "dest": "api"
+      "dest": "api",
+      "properties": {
+        "TargetFramework": "net10.0"
+      }
     }
   ],
   "build": {

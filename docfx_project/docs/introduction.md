@@ -14,8 +14,10 @@ Tests that need a `DbContext` usually need one with:
 Wiring those up manually for every test costs a lot of repeated lines. `DbContextBuilder<T>` collapses them into:
 
 ```csharp
-var context = await new DbContextBuilder<MyDbContext>()
+using var builder = new DbContextBuilder<MyDbContext>();
+await using var context = await builder
     .UseInMemory()
+    .UseAutoFixture()                 // a random-data provider is required for SeedWithRandom
     .SeedWith(new User { Id = 1, Name = "Alice" })
     .SeedWithRandom<Order>(20)
     .BuildAsync();
@@ -30,9 +32,16 @@ DbContextBuilder ships one package per supported EF version so you can install o
 - `Wolfgang.DbContextBuilder-Core-EF6` through `-Core-EF10` — pinned to a single EF Core major
 - `Wolfgang.DbContextBuilder-EF6` — for projects still on classic Entity Framework 6 (`System.Data.Entity`)
 
-Pick the one that matches your project's EF flavor. See the [README](https://github.com/Chris-Wolfgang/DbContextBuilder) for the full installation matrix.
+Pick the one that matches your project's EF flavor. `SeedWithRandom` also needs a random-data
+provider package next to it:
+
+- `Wolfgang.DbContextBuilder.AutoFixture` — adds `.UseAutoFixture()`
+- `Wolfgang.DbContextBuilder.Bogus` — adds `.UseBogus()` (realistic fake values)
+
+Both build on `Wolfgang.DbContextBuilder.Abstractions` (the shared `ICreateRandomEntities`), which
+comes in as a dependency. See the [README](https://github.com/Chris-Wolfgang/DbContextBuilder) for the full installation matrix.
 
 ## Where to go next
 
-- [Getting started](getting-started.html) — install, build a first `DbContext`, run a first test
-- [API](../api/Wolfgang.DbContextBuilderCore.html) — generated reference for every public type
+- [Getting started](getting-started.md) — install, build a first `DbContext`, run a first test
+- [API](../api/Wolfgang.DbContextBuilderCore.yml) — generated reference for every public type
