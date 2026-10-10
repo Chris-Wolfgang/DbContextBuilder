@@ -381,4 +381,4 @@ No public API change vs `0.3.3`.
 [0.3.1]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.3.0-rc1...v0.3.1-rc1
 [0.3.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.2.0...v0.3.0-rc1
 [0.2.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/releases/tag/v0.2.0
-[0.1.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/tree/v0.1.0-prerelease
+[0.1.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/releases/tag/v0.1.0-prerelease
