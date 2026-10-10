@@ -33,8 +33,16 @@ on:
       - 'src/**'
       - 'benchmarks/**'
 
+# A label event other than perf-impact-acknowledged runs nothing (perf-delta skips it), so it
+# gets a group of its own: sharing the PR's group let adding ANY label (e.g. no-changelog)
+# cancel the in-flight benchmark run and leave the check cancelled. Pushes and the override
+# label still share the PR's group, so a newer one cancels an older one.
 concurrency:
-  group: pr-benchmarks-${{ github.event.pull_request.number }}
+  group: >-
+    pr-benchmarks-${{ github.event.pull_request.number }}${{
+    (github.event.action == 'labeled' || github.event.action == 'unlabeled')
+    && github.event.label.name != 'perf-impact-acknowledged'
+    && format('-ignored-{0}', github.run_id) || '' }}
   cancel-in-progress: true
 
 env:
