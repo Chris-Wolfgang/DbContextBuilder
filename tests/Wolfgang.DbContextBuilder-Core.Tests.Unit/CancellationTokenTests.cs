@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Wolfgang.DbContextBuilderCore.Assertions;
 using Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
@@ -35,7 +37,7 @@ public class CancellationTokenTests
     /// the returned one.
     /// </summary>
     [Fact]
-    public async Task BuildAsync_passes_the_token_to_the_context_creator()
+    public async Task BuildAsync_when_given_a_token_passes_it_to_the_context_creator()
     {
         using var cts = new CancellationTokenSource();
         var creator = new TokenRecordingCreator();
@@ -49,11 +51,52 @@ public class CancellationTokenTests
 
 
     /// <summary>
+    /// Verifies that a token canceled after the seed context exists stops the build at database
+    /// creation: BuildAsync hands the token to EnsureCreatedAsync, so no table is created. SQLite,
+    /// not InMemory: InMemory's EnsureCreatedAsync does not observe the token. The test holds the
+    /// connection, so it can look at the schema afterwards.
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_when_the_token_is_canceled_mid_build_stops_at_database_creation()
+    {
+        await using var connection = new SqliteConnection("DataSource=:memory:");
+        await connection.OpenAsync();
+        using var cts = new CancellationTokenSource();
+        using var sut = new DbContextBuilder<TokenCapturingContext>()
+            .UseCustomDbContextCreator(new CancelAfterSeedContextSqliteCreator(connection, cts));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => sut.BuildAsync(cts.Token));
+
+        await using var tables = connection.CreateCommand();
+        tables.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table'";
+        Assert.Equal(0L, (long)(await tables.ExecuteScalarAsync())!);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that BuildAsync passes its token to the seed SaveChangesAsync.
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_when_seeding_passes_the_token_to_SaveChangesAsync()
+    {
+        using var cts = new CancellationTokenSource();
+        var saved = TokenCapturingContext.StartCapturing();
+        using var sut = new DbContextBuilder<TokenCapturingContext>().UseInMemory().SeedWith(new SaveCountingRow());
+
+        await using var context = await sut.BuildAsync(cts.Token);
+
+        Assert.Equal(cts.Token, saved.Value);
+    }
+
+
+
+    /// <summary>
     /// Verifies that the parameterless BuildAsync passes CancellationToken.None, and that a creator's
     /// plain overload is not what the builder calls.
     /// </summary>
     [Fact]
-    public async Task BuildAsync_without_a_token_passes_None_to_the_token_overload()
+    public async Task BuildAsync_when_called_without_a_token_passes_None_to_the_token_overload()
     {
         var creator = new TokenRecordingCreator();
         using var sut = new DbContextBuilder<BasicContext>().UseCustomDbContextCreator(creator);
@@ -73,7 +116,7 @@ public class CancellationTokenTests
     /// calls the original overload, so existing creators keep working.
     /// </summary>
     [Fact]
-    public async Task ICreateDbContext_default_token_overload_checks_the_token_then_delegates()
+    public async Task CreateDbContextAsync_default_token_overload_when_called_checks_the_token_then_delegates()
     {
         ICreateDbContext sut = new InMemoryDbContextCreator();
 
@@ -90,7 +133,7 @@ public class CancellationTokenTests
     /// </summary>
     [Theory]
     [MemberData(nameof(AssertionCalls))]
-    public async Task DbSetAssertions_token_overloads_observe_a_canceled_token(string call)
+    public async Task DbSetAssertions_token_overloads_when_token_is_canceled_throw_OperationCanceledException(string call)
     {
         using var builder = new DbContextBuilder<BasicContext>().UseInMemory().SeedWith(new TableWithDefaults { Id = 1 });
         await using var context = await builder.BuildAsync();
@@ -164,5 +207,54 @@ internal sealed class TokenRecordingCreator : ICreateDbContext
         ViaTokenOverload.Add(viaTokenOverload);
         optionsBuilder.UseInMemoryDatabase(_databaseName);
         return Task.FromResult((TDbContext)Activator.CreateInstance(typeof(TDbContext), optionsBuilder.Options)!);
+    }
+}
+
+
+
+/// <summary>
+/// SQLite over a connection the test owns. Implements only the plain overload (the token overload
+/// is the interface default, which checks the token first) and cancels the source right after
+/// creating the first context, i.e. the seed context.
+/// </summary>
+internal sealed class CancelAfterSeedContextSqliteCreator(SqliteConnection connection, CancellationTokenSource source) : ICreateDbContext
+{
+    public Task<TDbContext> CreateDbContextAsync<TDbContext>(DbContextOptionsBuilder<TDbContext> optionsBuilder)
+        where TDbContext : DbContext
+    {
+        optionsBuilder.UseSqlite(connection);
+        var context = (TDbContext)Activator.CreateInstance(typeof(TDbContext), optionsBuilder.Options)!;
+        source.Cancel();
+        return Task.FromResult(context);
+    }
+}
+
+
+
+/// <summary>Records the token its SaveChangesAsync receives, per test (AsyncLocal, as SaveCountingContext).</summary>
+internal sealed class TokenCapturingContext(DbContextOptions<TokenCapturingContext> options) : DbContext(options)
+{
+    private static readonly AsyncLocal<StrongBox<CancellationToken>?> _saved = new();
+
+
+
+    internal static StrongBox<CancellationToken> StartCapturing()
+    {
+        var saved = new StrongBox<CancellationToken>();
+        _saved.Value = saved;
+        return saved;
+    }
+
+
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<SaveCountingRow>();
+
+
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        _saved.Value!.Value = cancellationToken;
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 }
