@@ -307,16 +307,14 @@ jobs:
               $aId = $aIds[$i]
               $bId = $bIds[$i]
 
-              # TryParse needs [ref] to a real variable, not an expression.
-              # We don't use the out value (we re-parse below via [int]$aId).
-              $aOut = 0; $bOut = 0
-              $aIsNum = [int]::TryParse($aId, [ref]$aOut)
-              $bIsNum = [int]::TryParse($bId, [ref]$bOut)
+              # A SemVer numeric identifier is digits only, of any size: [int]::TryParse would
+              # call 10000000000 alphanumeric and accept "-1" as a number.
+              $aIsNum = $aId -match '^\d+$'
+              $bIsNum = $bId -match '^\d+$'
 
               if ($aIsNum -and $bIsNum) {
-                $aVal = [int]$aId
-                $bVal = [int]$bId
-                if ($aVal -ne $bVal) { return [Math]::Sign($bVal - $aVal) }
+                $numCmp = ([bigint]::Parse($aId)).CompareTo([bigint]::Parse($bId))
+                if ($numCmp -ne 0) { return -$numCmp }
               }
               elseif ($aIsNum -and -not $bIsNum) {
                 # Numeric identifiers have lower precedence than non-numeric.
