@@ -178,6 +178,73 @@ public class IgnoreVirtualMembersTests
 
 
     /// <summary>
+    /// A sealed override of a virtual navigation is virtual AND final, like an interface
+    /// implementation, but it is still a navigation: the builder must keep omitting it (#561 review).
+    /// </summary>
+    [Fact]
+    public void Create_when_property_is_a_sealed_override_returns_null()
+    {
+        var sut = new AutoFixtureRandomEntityCreator.IgnoreVirtualMembers();
+        var context = new SpecimenContext(new Fixture());
+        var sealedOverride = typeof(SealedOverrideRow).GetProperty(nameof(SealedOverrideRow.Parent))!;
+
+        var result = sut.Create(sealedOverride, context);
+
+        Assert.True(sealedOverride.GetMethod!.IsVirtual && sealedOverride.GetMethod.IsFinal);
+        Assert.Null(result);
+    }
+
+
+
+    /// <summary>
+    /// End to end: the creator leaves a sealed-override navigation unset.
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_leaves_a_sealed_override_navigation_null()
+    {
+        var sut = new AutoFixtureRandomEntityCreator();
+
+        var row = sut.CreateRandomEntities<SealedOverrideRow>(1).First();
+
+        Assert.Null(row.Parent);
+    }
+
+
+
+    /// <summary>
+    /// An interface implementation declared on a base class and read through a derived type is
+    /// still a scalar the builder leaves to AutoFixture (#561 review).
+    /// </summary>
+    [Fact]
+    public void Create_when_inherited_property_implements_an_interface_returns_NoSpecimen()
+    {
+        var sut = new AutoFixtureRandomEntityCreator.IgnoreVirtualMembers();
+        var context = new SpecimenContext(new Fixture());
+        var inherited = typeof(DerivedInterfaceRow).GetProperty(nameof(DerivedInterfaceRow.Code))!;
+
+        var result = sut.Create(inherited, context);
+
+        Assert.IsType<NoSpecimen>(result);
+    }
+
+
+
+    /// <summary>
+    /// End to end: the creator populates an interface implementation inherited from a base class.
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_populates_an_inherited_interface_property()
+    {
+        var sut = new AutoFixtureRandomEntityCreator();
+
+        var row = sut.CreateRandomEntities<DerivedInterfaceRow>(1).First();
+
+        Assert.False(string.IsNullOrEmpty(row.Code));
+    }
+
+
+
+    /// <summary>
     /// #561: the creator populates an interface-implementing scalar property.
     /// </summary>
     [Fact]
@@ -226,4 +293,35 @@ internal class WriteOnlyPropertyClass
     {
         set { _writeOnly = value; }
     }
+}
+
+
+
+/// <summary>Declares an overridable navigation for <see cref="SealedOverrideRow"/> to seal (#561 review).</summary>
+internal abstract class NavigationRowBase
+{
+    public abstract InterfaceImplementingRow? Parent { get; set; }
+}
+
+
+
+/// <summary>Seals the inherited navigation: its getter is virtual and final (#561 review).</summary>
+internal sealed class SealedOverrideRow : NavigationRowBase
+{
+    public sealed override InterfaceImplementingRow? Parent { get; set; }
+}
+
+
+
+/// <summary>Implements <see cref="IHasCode"/> on a base class (#561 review).</summary>
+internal class InterfaceRowBase : IHasCode
+{
+    public string Code { get; set; } = string.Empty;
+}
+
+
+
+/// <summary>Inherits <see cref="InterfaceRowBase"/>'s interface implementation (#561 review).</summary>
+internal sealed class DerivedInterfaceRow : InterfaceRowBase
+{
 }
