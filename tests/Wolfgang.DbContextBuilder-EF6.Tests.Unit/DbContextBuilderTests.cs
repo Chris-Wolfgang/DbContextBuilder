@@ -1123,6 +1123,11 @@ public class DbContextBuilderTests
 
         Assert.StartsWith("Failed to create database. See InnerException for details.", ex.Message, StringComparison.Ordinal);
         Assert.IsAssignableFrom<InvalidOperationException>(ex.InnerException);
+        // The causes this PR corrected (#565): a missing (DbConnection, bool) constructor cannot
+        // reach this path, so the message must not suggest it.
+        Assert.Contains("the model cannot be mapped to the database provider", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("has already been disposed", ex.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("(DbConnection, bool)", ex.Message, StringComparison.Ordinal);
     }
 
 
