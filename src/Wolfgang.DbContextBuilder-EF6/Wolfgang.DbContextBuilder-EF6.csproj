@@ -1,16 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
+	<!-- Version, AssemblyVersion and the PackageValidation baseline: one shared copy for the lockstep packages. -->
+	<Import Project="..\Version.props" />
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderEF6</RootNamespace>
 		<TargetFrameworks>net462;net47;net471;net472;net48;net481</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.9.0</Version>
-		<!-- Pin AssemblyVersion to a fixed binding-stability baseline so consumers
-		     do not need to recompile / add binding redirects on every minor/patch
-		     bump. Bump only on a deliberate breaking API change. FileVersion +
-		     InformationalVersion (the latter auto-derived from <Version>) carry
-		     the actual release version. -->
-		<AssemblyVersion>1.0.0.0</AssemblyVersion>
-		<FileVersion>$([System.Text.RegularExpressions.Regex]::Replace("$(Version)", "[-+].*$", "")).0</FileVersion>
 		<Title>Wolfgang.DbContextBuilder for Entity Framework 6</Title>
 		<Description>A library for easily building DbContext for testing using in-memory database with Entity Framework 6</Description>
 		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
@@ -24,7 +18,6 @@
 		<PackageTags>dbcontext;entity-framework;ef6;testing;unit-testing;in-memory</PackageTags>
 		<IsPackable>true</IsPackable>
 		<EnablePackageValidation>true</EnablePackageValidation>
-		<PackageValidationBaselineVersion>0.9.0</PackageValidationBaselineVersion>
 		<IsTestProject>false</IsTestProject>
 	</PropertyGroup>
 	<PropertyGroup>

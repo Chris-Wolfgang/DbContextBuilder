@@ -89,7 +89,7 @@ The workflow triggers automatically when the release is published.
 
 Six jobs run (see *Workflow Architecture* below for the order):
 
-1. **validate-release** — checks the tag matches every csproj `<Version>`, runs every test project
+1. **validate-release** — checks the tag equals `<Version>` in `src/Version.props` (and that no src csproj sets its own), runs every test project
    on every target framework with coverage, and enforces 95 % per src assembly and 100 % per test
    assembly (each assembly that ran must have a coverage row).
 2. **pack-and-validate** — generates the third-party notices, packs, smoke-tests installing each
@@ -158,7 +158,7 @@ Before creating a production GitHub Release (e.g., `v1.0.0`):
 - [ ] All tests pass on all platforms (pr.yaml workflow)
 - [ ] Code coverage meets the thresholds: 95% per src assembly, 100% per test assembly
 - [ ] Security scan shows no critical issues
-- [ ] Version numbers updated in `.csproj` files
+- [ ] `<Version>` bumped in `src/Version.props` (the one place; the src csprojs import it)
 - [ ] `CHANGELOG.md` updated with release notes (if applicable)
 - [ ] All PRs merged to `main` branch
 - [ ] Local build succeeds: `dotnet build --configuration Release`
