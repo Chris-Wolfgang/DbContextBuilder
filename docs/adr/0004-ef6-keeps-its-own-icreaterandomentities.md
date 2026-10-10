@@ -25,11 +25,18 @@ can consume, so unification is technically possible.
 - **Keep the EF6 interface.** No change for EF6 consumers. Keep the two
   interfaces' contracts and XML docs in lock-step by hand.
 - **Unify on the Abstractions interface at the next EF6 minor version.**
-  Reference Abstractions from `-EF6`, keep a type in the old
-  `Wolfgang.DbContextBuilderEF6` namespace that consumers' compiled code still
-  binds to (an interface cannot be forwarded to one with a different full name,
-  so this means an `[Obsolete]` derived interface or an adapter), and move the
-  builder to the shared interface.
+  Reference Abstractions from `-EF6` and add a `UseCustomRandomEntityCreator`
+  overload that takes the shared interface. Staying binary-safe needs two more
+  things:
+  - **Keep the EF6 interface unchanged, member included**, marked `[Obsolete]`.
+    An interface cannot be forwarded to one with a different full name. Turning
+    it into an interface derived from the shared one, with the member moved to
+    the base, would break every existing *explicit* implementation, which names
+    the EF6 interface's own member.
+  - **Keep the existing `UseCustomRandomEntityCreator(Wolfgang.DbContextBuilderEF6.ICreateRandomEntities)`
+    overload**, also `[Obsolete]`. Compiled callers bind to that exact signature.
+    It wraps its argument in a small adapter that implements the shared
+    interface by delegating to the EF6 one, and then goes down the new path.
 - **Unify in a patch release.** Rejected outright: changing the type
   `UseCustomRandomEntityCreator` accepts is a source and binary break for every
   EF6 consumer with a custom creator.
