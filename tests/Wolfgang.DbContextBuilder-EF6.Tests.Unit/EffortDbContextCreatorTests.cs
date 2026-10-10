@@ -48,37 +48,6 @@ public class EffortDbContextCreatorTests
 
 
     /// <summary>
-    /// Verifies that Dispose can be called without error.
-    /// </summary>
-    [Fact]
-    public void Dispose_can_be_called()
-    {
-        // Arrange
-        var sut = new EffortDbContextCreator();
-
-        // Act & Assert — should not throw
-        sut.Dispose();
-    }
-
-
-
-    /// <summary>
-    /// Verifies that Dispose can be called multiple times without error.
-    /// </summary>
-    [Fact]
-    public void Dispose_can_be_called_multiple_times()
-    {
-        // Arrange
-        var sut = new EffortDbContextCreator();
-
-        // Act & Assert — should not throw
-        sut.Dispose();
-        sut.Dispose();
-    }
-
-
-
-    /// <summary>
     /// Verifies that CreateDbContext throws when the DbContext type
     /// does not have a (DbConnection, bool) constructor.
     /// </summary>

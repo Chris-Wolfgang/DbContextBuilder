@@ -60,37 +60,6 @@ public class TestsWithDefaults : DbContextBuilderTestsBase
 
 
     /// <summary>
-    /// Verifies that Dispose can be called without error on a default builder.
-    /// </summary>
-    [Fact]
-    public void Dispose_when_called_does_not_throw()
-    {
-        // Arrange
-        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
-
-        // Act & Assert
-        sut.Dispose();
-    }
-
-
-
-    /// <summary>
-    /// Verifies that Dispose is idempotent (safe to call multiple times).
-    /// </summary>
-    [Fact]
-    public void Dispose_when_called_multiple_times_does_not_throw()
-    {
-        // Arrange
-        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
-
-        // Act & Assert
-        sut.Dispose();
-        sut.Dispose();
-    }
-
-
-
-    /// <summary>
     /// Verifies that BuildAsync throws ObjectDisposedException after Dispose.
     /// </summary>
     [Fact]
@@ -110,19 +79,21 @@ public class TestsWithDefaults : DbContextBuilderTestsBase
 
 
     /// <summary>
-    /// Verifies that Dispose is safe when using the Sqlite provider.
+    /// Verifies that disposing a SQLite-backed builder disposes its creator, which closes the
+    /// in-memory connection, and that a second Dispose is a no-op.
     /// </summary>
     [Fact]
     public void Dispose_when_using_Sqlite_disposes_creator()
     {
         // Arrange
         using var sut = new DbContextBuilder<AdventureWorksDbContext>().UseSqlite();
+        var creator = Assert.IsType<SqliteDbContextCreator>(sut.CreateDbContext);
 
         // Act
         sut.Dispose();
-
-        // Assert — calling Dispose twice should be safe (idempotent)
         sut.Dispose();
-    }
 
+        // Assert
+        Assert.True(creator.IsDisposed);
+    }
 }

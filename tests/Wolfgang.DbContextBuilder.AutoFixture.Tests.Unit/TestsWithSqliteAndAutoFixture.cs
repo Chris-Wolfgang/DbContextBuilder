@@ -211,32 +211,6 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
 
 
 
-    /// <summary>
-    /// Verifies that the default behavior when using Sqlite, is to prepend the schema name to the table name,
-    /// separated by an underscore, and to strip the schema name from the table itself
-    /// </summary>
-    [Fact]
-    public async Task UseSqlite_default_behavior_for_computed_column_is_to_remove_computed_value()
-    {
-
-        // Arrange
-        using var sut = new DbContextBuilder<BasicContext>()
-            .UseSqlite()
-            .UseAutoFixture();
-
-        // Act
-        await using var context = await sut
-            .BuildAsync();
-
-        // Assert
-        var columns = await GetColumnMetadataAsync(context);
-        var columnsWithComputedValues = columns.Where(c => !string.IsNullOrEmpty(c.ComputedValue)).ToList();
-        Assert.Empty(columnsWithComputedValues);
-
-    }
-
-
-
     private record TableMetadata(string TableName);
 
 

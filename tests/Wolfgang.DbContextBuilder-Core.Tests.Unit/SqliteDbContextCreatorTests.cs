@@ -38,37 +38,6 @@ public class SqliteDbContextCreatorTests
 
 
     /// <summary>
-    /// Verifies that Dispose can be called without error.
-    /// </summary>
-    [Fact]
-    public void Dispose_can_be_called()
-    {
-        // Arrange
-        var sut = new SqliteDbContextCreator();
-
-        // Act & Assert — no exception
-        sut.Dispose();
-    }
-
-
-
-    /// <summary>
-    /// Verifies that Dispose can be called multiple times without error.
-    /// </summary>
-    [Fact]
-    public void Dispose_can_be_called_multiple_times()
-    {
-        // Arrange
-        var sut = new SqliteDbContextCreator();
-
-        // Act & Assert — no exception
-        sut.Dispose();
-        sut.Dispose();
-    }
-
-
-
-    /// <summary>
     /// Verifies that <see cref="SqliteDbContextCreator.IsDisposed"/> tracks disposal state and
     /// that Dispose is idempotent.
     /// </summary>
