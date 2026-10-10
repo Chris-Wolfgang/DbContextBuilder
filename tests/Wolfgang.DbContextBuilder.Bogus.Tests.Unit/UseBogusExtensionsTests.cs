@@ -45,11 +45,11 @@ public class UseBogusExtensionsTests
     [Fact]
     public async Task UseBogus_enables_SeedWithRandom()
     {
-        await using var context = await new DbContextBuilder<SampleDbContext>()
+        using var builder = new DbContextBuilder<SampleDbContext>()
             .UseInMemory()
             .UseBogus()
-            .SeedWithRandom<SampleEntity>(3)
-            .BuildAsync();
+            .SeedWithRandom<SampleEntity>(3);
+        await using var context = await builder.BuildAsync();
 
         Assert.Equal(3, context.Samples.Count());
     }
