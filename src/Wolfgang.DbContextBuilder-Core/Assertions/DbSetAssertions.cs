@@ -37,9 +37,25 @@ public sealed class DbSetAssertions<TEntity>
     /// <exception cref="DbContextAssertionException">
     /// The actual count differs from <paramref name="expected"/>.
     /// </exception>
-    public async Task<DbSetAssertions<TEntity>> HaveCount(int expected)
+    public Task<DbSetAssertions<TEntity>> HaveCount(int expected) =>
+        HaveCount(expected, CancellationToken.None);
+
+
+
+    /// <summary>
+    /// Asserts that the wrapped <see cref="DbSet{TEntity}"/> contains exactly <paramref name="expected"/>
+    /// entities.
+    /// </summary>
+    /// <param name="expected">The exact entity count expected.</param>
+    /// <param name="cancellationToken">Cancels the work; the returned task then throws <see cref="OperationCanceledException"/>.</param>
+    /// <returns>This assertions instance for chaining.</returns>
+    /// <exception cref="DbContextAssertionException">
+    /// The actual count differs from <paramref name="expected"/>.
+    /// </exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    public async Task<DbSetAssertions<TEntity>> HaveCount(int expected, CancellationToken cancellationToken)
     {
-        var actual = await _query.CountAsync().ConfigureAwait(false);
+        var actual = await _query.CountAsync(cancellationToken).ConfigureAwait(false);
         if (actual != expected)
         {
             throw new DbContextAssertionException
@@ -60,14 +76,28 @@ public sealed class DbSetAssertions<TEntity>
     /// <exception cref="DbContextAssertionException">
     /// The DbSet contains at least one entity.
     /// </exception>
-    public async Task<DbSetAssertions<TEntity>> BeEmpty()
+    public Task<DbSetAssertions<TEntity>> BeEmpty() =>
+        BeEmpty(CancellationToken.None);
+
+
+
+    /// <summary>
+    /// Asserts that the wrapped <see cref="DbSet{TEntity}"/> contains no entities.
+    /// </summary>
+    /// <param name="cancellationToken">Cancels the work; the returned task then throws <see cref="OperationCanceledException"/>.</param>
+    /// <returns>This assertions instance for chaining.</returns>
+    /// <exception cref="DbContextAssertionException">
+    /// The DbSet contains at least one entity.
+    /// </exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    public async Task<DbSetAssertions<TEntity>> BeEmpty(CancellationToken cancellationToken)
     {
         // AnyAsync short-circuits on the first row; only run the full Count on the
         // failing path so the success case stays O(1).
-        var any = await _query.AnyAsync().ConfigureAwait(false);
+        var any = await _query.AnyAsync(cancellationToken).ConfigureAwait(false);
         if (any)
         {
-            var actual = await _query.CountAsync().ConfigureAwait(false);
+            var actual = await _query.CountAsync(cancellationToken).ConfigureAwait(false);
             throw new DbContextAssertionException
             (
                 $"Expected DbSet<{typeof(TEntity).Name}> to be empty, but found {actual} entities."
@@ -86,9 +116,23 @@ public sealed class DbSetAssertions<TEntity>
     /// <exception cref="DbContextAssertionException">
     /// The DbSet is empty.
     /// </exception>
-    public async Task<DbSetAssertions<TEntity>> NotBeEmpty()
+    public Task<DbSetAssertions<TEntity>> NotBeEmpty() =>
+        NotBeEmpty(CancellationToken.None);
+
+
+
+    /// <summary>
+    /// Asserts that the wrapped <see cref="DbSet{TEntity}"/> contains at least one entity.
+    /// </summary>
+    /// <param name="cancellationToken">Cancels the work; the returned task then throws <see cref="OperationCanceledException"/>.</param>
+    /// <returns>This assertions instance for chaining.</returns>
+    /// <exception cref="DbContextAssertionException">
+    /// The DbSet is empty.
+    /// </exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    public async Task<DbSetAssertions<TEntity>> NotBeEmpty(CancellationToken cancellationToken)
     {
-        var actual = await _query.AnyAsync().ConfigureAwait(false);
+        var actual = await _query.AnyAsync(cancellationToken).ConfigureAwait(false);
         if (!actual)
         {
             throw new DbContextAssertionException
@@ -112,14 +156,31 @@ public sealed class DbSetAssertions<TEntity>
     /// No entity matches <paramref name="predicate"/>.
     /// </exception>
     /// <exception cref="ArgumentNullException"><paramref name="predicate"/> is null.</exception>
-    public async Task<DbSetAssertions<TEntity>> Contain(Expression<Func<TEntity, bool>> predicate)
+    public Task<DbSetAssertions<TEntity>> Contain(Expression<Func<TEntity, bool>> predicate) =>
+        Contain(predicate, CancellationToken.None);
+
+
+
+    /// <summary>
+    /// Asserts that at least one entity in the wrapped <see cref="DbSet{TEntity}"/> satisfies
+    /// <paramref name="predicate"/>.
+    /// </summary>
+    /// <param name="predicate">Expression evaluated server-side via EF.</param>
+    /// <param name="cancellationToken">Cancels the work; the returned task then throws <see cref="OperationCanceledException"/>.</param>
+    /// <returns>This assertions instance for chaining.</returns>
+    /// <exception cref="DbContextAssertionException">
+    /// No entity matches <paramref name="predicate"/>.
+    /// </exception>
+    /// <exception cref="ArgumentNullException"><paramref name="predicate"/> is null.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    public async Task<DbSetAssertions<TEntity>> Contain(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
-        var matched = await _query.AnyAsync(predicate).ConfigureAwait(false);
+        var matched = await _query.AnyAsync(predicate, cancellationToken).ConfigureAwait(false);
         if (!matched)
         {
-            var total = await _query.CountAsync().ConfigureAwait(false);
+            var total = await _query.CountAsync(cancellationToken).ConfigureAwait(false);
             throw new DbContextAssertionException
             (
                 $"Expected DbSet<{typeof(TEntity).Name}> to contain an entity matching ({predicate}), " +
@@ -142,16 +203,33 @@ public sealed class DbSetAssertions<TEntity>
     /// At least one entity matches <paramref name="predicate"/>.
     /// </exception>
     /// <exception cref="ArgumentNullException"><paramref name="predicate"/> is null.</exception>
-    public async Task<DbSetAssertions<TEntity>> NotContain(Expression<Func<TEntity, bool>> predicate)
+    public Task<DbSetAssertions<TEntity>> NotContain(Expression<Func<TEntity, bool>> predicate) =>
+        NotContain(predicate, CancellationToken.None);
+
+
+
+    /// <summary>
+    /// Asserts that no entity in the wrapped <see cref="DbSet{TEntity}"/> satisfies
+    /// <paramref name="predicate"/>.
+    /// </summary>
+    /// <param name="predicate">Expression evaluated server-side via EF.</param>
+    /// <param name="cancellationToken">Cancels the work; the returned task then throws <see cref="OperationCanceledException"/>.</param>
+    /// <returns>This assertions instance for chaining.</returns>
+    /// <exception cref="DbContextAssertionException">
+    /// At least one entity matches <paramref name="predicate"/>.
+    /// </exception>
+    /// <exception cref="ArgumentNullException"><paramref name="predicate"/> is null.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    public async Task<DbSetAssertions<TEntity>> NotContain(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
         // AnyAsync short-circuits on the first match; only run the full Count on the
         // failing path so the success case stays O(1).
-        var matched = await _query.AnyAsync(predicate).ConfigureAwait(false);
+        var matched = await _query.AnyAsync(predicate, cancellationToken).ConfigureAwait(false);
         if (matched)
         {
-            var count = await _query.CountAsync(predicate).ConfigureAwait(false);
+            var count = await _query.CountAsync(predicate, cancellationToken).ConfigureAwait(false);
             throw new DbContextAssertionException
             (
                 $"Expected DbSet<{typeof(TEntity).Name}> to contain NO entity matching ({predicate}), " +
@@ -174,18 +252,35 @@ public sealed class DbSetAssertions<TEntity>
     /// At least one entity fails <paramref name="predicate"/>.
     /// </exception>
     /// <exception cref="ArgumentNullException"><paramref name="predicate"/> is null.</exception>
-    public async Task<DbSetAssertions<TEntity>> AllSatisfy(Expression<Func<TEntity, bool>> predicate)
+    public Task<DbSetAssertions<TEntity>> AllSatisfy(Expression<Func<TEntity, bool>> predicate) =>
+        AllSatisfy(predicate, CancellationToken.None);
+
+
+
+    /// <summary>
+    /// Asserts that every entity in the wrapped <see cref="DbSet{TEntity}"/> satisfies
+    /// <paramref name="predicate"/>.
+    /// </summary>
+    /// <param name="predicate">Expression evaluated server-side via EF.</param>
+    /// <param name="cancellationToken">Cancels the work; the returned task then throws <see cref="OperationCanceledException"/>.</param>
+    /// <returns>This assertions instance for chaining.</returns>
+    /// <exception cref="DbContextAssertionException">
+    /// At least one entity fails <paramref name="predicate"/>.
+    /// </exception>
+    /// <exception cref="ArgumentNullException"><paramref name="predicate"/> is null.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    public async Task<DbSetAssertions<TEntity>> AllSatisfy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
-        var total = await _query.CountAsync().ConfigureAwait(false);
+        var total = await _query.CountAsync(cancellationToken).ConfigureAwait(false);
         if (total == 0)
         {
             // Vacuously true: an empty set "all satisfies" any predicate.
             return this;
         }
 
-        var matching = await _query.CountAsync(predicate).ConfigureAwait(false);
+        var matching = await _query.CountAsync(predicate, cancellationToken).ConfigureAwait(false);
         if (matching != total)
         {
             var failing = total - matching;
