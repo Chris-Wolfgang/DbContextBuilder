@@ -124,7 +124,8 @@ public class DbContextBuilder<T> where T : DbContext
     /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="entity"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="entity"/> is a <see cref="string"/> instance (matches the
-    /// <c>params</c> overload's rejection regardless of how <typeparamref name="TEntity"/> was inferred).</exception>
+    /// <c>params</c> overload's rejection regardless of how <typeparamref name="TEntity"/> was inferred), or
+    /// <paramref name="entity"/> is a sequence that contains a null or a <see cref="string"/> item.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(TEntity entity)
         where TEntity : class
     {
