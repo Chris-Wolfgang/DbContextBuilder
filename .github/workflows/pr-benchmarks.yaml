@@ -131,6 +131,15 @@ jobs:
         run: |
           set -euo pipefail
           git checkout "$MERGE_BASE_SHA"
+          # A merge-base older than the benchmark project has nothing to run. Skip it, so
+          # "Compute delta" finds no base report and reports "no baseline" instead of this
+          # step failing on a missing project (#616).
+          if [ ! -f "$BENCH_PROJECT" ]; then
+            echo "::notice::The merge-base has no $BENCH_PROJECT - no baseline to run."
+            # The delta step runs `find` on this directory under pipefail; it must exist.
+            mkdir -p ./bdn-artifacts-base
+            exit 0
+          fi
           dotnet run \
             --project "$BENCH_PROJECT" \
             --configuration Release \
@@ -259,7 +268,13 @@ jobs:
   comment:
     name: Post the benchmark delta comment
     needs: perf-delta
-    if: always() && needs.perf-delta.outputs.table != ''
+    # Under pull_request a fork's token - and Dependabot's - is read-only, so the comment
+    # would fail with a permissions error even when the gate passed. Same guard as pr.yaml's
+    # inspectcode-upload; those PRs still get the gate, just not the comment.
+    if: >-
+      always() && needs.perf-delta.outputs.table != ''
+      && github.event.pull_request.head.repo.full_name == github.repository
+      && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
