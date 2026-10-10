@@ -721,9 +721,10 @@ jobs:
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           # Install the same SDK set as validate-release so dotnet build can
-          # compile every TFM the solution targets (some test projects span
-          # netcoreapp3.1 → net10.0). Without these, the docs verify step
-          # fails on repos with broad multi-targeting.
+          # compile every TFM the solution targets (the SDK-style slots span
+          # net6.0 → net10.0; the net4x slots need no SDK of their own).
+          # Without these, the docs verify step fails on repos with broad
+          # multi-targeting.
           dotnet-version: |
             6.0.x
             7.0.x
