@@ -375,7 +375,7 @@ public abstract class DbContextBuilderTestsBase
     /// This test is needed because the T is restricted to class, which string is
     /// </remarks>
     [Fact]
-    public void SeedWith_IEnumerable_when_passed_an_list_of_strings_throws_ArgumentException()
+    public void SeedWith_IEnumerable_when_passed_a_list_of_strings_throws_ArgumentException()
     {
         // Arrange
         using var sut = CreateDbContextBuilder();
@@ -395,7 +395,7 @@ public abstract class DbContextBuilderTestsBase
     /// </summary>
     /// <remarks>This does not yet verify that the data is actually seeded into the context.</remarks>
     [Fact]
-    public void SeedWith_IEnumerable_returns_DbContextBuild()
+    public void SeedWith_IEnumerable_when_called_returns_the_builder()
     {
         // Arrange
         using var sut = CreateDbContextBuilder();
@@ -423,7 +423,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that a newly created DbContext contains the data it was seeded with.
     /// </summary>
     [Fact]
-    public async Task SeedsWith_IEnumerable_seeds_DbContext_with_specified_data()
+    public async Task SeedWith_IEnumerable_when_called_seeds_the_context_with_the_data()
     {
         // Arrange
         using var sut = CreateDbContextBuilder();
@@ -463,7 +463,7 @@ public abstract class DbContextBuilderTestsBase
     /// </summary>
     /// <remarks>This does not yet verify that the data is actually seeded into the context.</remarks>
     [Fact]
-    public void SeedWith_params_returns_DbContextBuild()
+    public void SeedWith_params_when_called_returns_the_builder()
     {
         // Arrange
         using var sut = CreateDbContextBuilder();
@@ -687,7 +687,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that a newly created DbContext contains the data it was seeded with.
     /// </summary>
     [Fact]
-    public async Task SeedsWith_params_seeds_DbContext_with_specified_data()
+    public async Task SeedWith_params_when_called_seeds_the_context_with_the_data()
     {
         // Arrange
         using var sut = CreateDbContextBuilder();
@@ -749,7 +749,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling SeedWithRandom{T}(int) throws ArgumentOutOfRangeException when passed a value less than 1.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_when_passed_value_less_than_1_throws_ArgumentException()
+    public void SeedWithRandom_int_when_passed_value_less_than_1_throws_ArgumentOutOfRangeException()
     {
         // Arrange
         using var sut = CreateDbContextBuilder();
@@ -811,7 +811,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling SeedWithRandom{T}(int, func{TEntity, TEntity}) throws ArgumentOutOfRangeException when passed a value less than 1.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_value_less_than_1_throws_ArgumentException()
+    public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_value_less_than_1_throws_ArgumentOutOfRangeException()
     {
         // Arrange
         Func<Address, Address> func = null!; 
@@ -829,7 +829,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling SeedWithRandom{T}(int, func{TEntity, TEntity}) throws ArgumentOutOfRangeException when passed a value less than 1.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_null_for_func_throws_ArgumentException()
+    public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_null_for_func_throws_ArgumentNullException()
     {
         // Arrange
         using var sut = CreateDbContextBuilder();
@@ -959,7 +959,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling SeedWithRandom{T}(int, func{TEntity, int, TEntity}) throws ArgumentOutOfRangeException when passed a value less than 1.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_value_less_than_1_throws_ArgumentException()
+    public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_value_less_than_1_throws_ArgumentOutOfRangeException()
     {
         // Arrange
         Func<Address, int, Address> func = null!;
@@ -976,7 +976,7 @@ public abstract class DbContextBuilderTestsBase
     /// Verifies that calling SeedWithRandom{T}(int, func{TEntity, int, TEntity}) throws ArgumentOutOfRangeException when passed a value less than 1.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_null_for_func_throws_ArgumentException()
+    public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_null_for_func_throws_ArgumentNullException()
     {
         // Arrange
         using var sut = CreateDbContextBuilder();

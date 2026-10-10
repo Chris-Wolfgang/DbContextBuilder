@@ -12,7 +12,7 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 public class IgnoreVirtualMembersTests
 {
     /// <summary>
-    /// Verifies IgnoreVirtualMembersCustomization ignores virtual properties
+    /// Verifies that Create throws ArgumentNullException naming <c>request</c> when the request is null.
     /// </summary>
     [Fact]
     public void Create_when_passed_null_request_throws_ArgumentNullException()
@@ -31,7 +31,7 @@ public class IgnoreVirtualMembersTests
 
 
     /// <summary>
-    /// Verifies IgnoreVirtualMembersCustomization ignores virtual properties
+    /// Verifies that Create throws ArgumentNullException naming <c>context</c> when the context is null.
     /// </summary>
     [Fact]
     public void Create_when_passed_null_context_throws_ArgumentNullException()
