@@ -1,1 +1,2 @@
 #nullable enable
+Wolfgang.DbContextBuilderCore.DbContextBuilder<T>.UseCustomDbContextCreator(Wolfgang.DbContextBuilderCore.ICreateDbContext! creator) -> Wolfgang.DbContextBuilderCore.DbContextBuilder<T!>!

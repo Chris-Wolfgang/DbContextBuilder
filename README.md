@@ -148,6 +148,7 @@ The Core package exposes a small, focused surface. The full reference is on the 
 | `.UseAutoFixture()` | Plug AutoFixture in as the random-entity generator (used by `SeedWithRandom`). Requires the `Wolfgang.DbContextBuilder.AutoFixture` package. |
 | `.UseBogus()` | Plug Bogus in as the random-entity generator (realistic fake values). Requires the `Wolfgang.DbContextBuilder.Bogus` package. |
 | `.UseCustomRandomEntityCreator(creator)` | Plug in any `ICreateRandomEntities` implementation. |
+| `.UseCustomDbContextCreator(creator)` | Plug in any `ICreateDbContext` implementation, for a provider the builder does not ship. The builder takes ownership of it. |
 | `.UseDbContextOptionsBuilder(opts)` | Bring your own `DbContextOptionsBuilder<T>` to override the provider entirely. |
 | `.UseSeedProfile(profile)` | Apply a reusable `ISeedProfile<T>` — a named bundle of seed data shareable across tests. Multiple profiles accumulate. |
 | `.UseDiagnosticOutput(writeLine)` | Route EF Core logs (and a one-line seed summary) to a sink such as `testOutputHelper.WriteLine`. |
@@ -157,7 +158,7 @@ The Core package exposes a small, focused surface. The full reference is on the 
 | `SqliteModelCustomizer` | The model customizer `UseSqlite()` installs, with hooks: `OverrideTableRenaming`, `OverrideDefaultValueHandling`, `OverrideComputedValueHandling`, `OverrideManyToManyTableHandling`, `DefaultValueMap`. |
 | `SqliteForMsSqlServerModelCustomizer` | The customizer `UseSqliteForMsSqlServer()` installs: derives from `SqliteModelCustomizer`, maps `(getdate())` / `(newid())` defaults to SQLite and drops other SQL Server default and computed SQL. |
 | `.Should()` (namespace `Wolfgang.DbContextBuilderCore.Assertions`) | Fluent assertions on a `DbSet<T>` or `IQueryable<T>` (`DbSetAssertions<T>`): `HaveCount`, `BeEmpty`, `NotBeEmpty`, `Contain`, `NotContain`, `AllSatisfy`. Failures throw `DbContextAssertionException`. |
-| `ICreateDbContext` / `ICreateRandomEntities` | Extension points for plugging in your own provider or random-entity generator. |
+| `ICreateDbContext` / `ICreateRandomEntities` | Extension points for plugging in your own provider (`UseCustomDbContextCreator`) or random-entity generator (`UseCustomRandomEntityCreator`). |
 
 
 

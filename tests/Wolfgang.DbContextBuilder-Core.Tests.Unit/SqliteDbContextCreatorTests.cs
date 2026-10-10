@@ -266,6 +266,7 @@ public class SqliteDbContextCreatorTests
         ["UseInMemory"] = b => b.UseInMemory(),
         ["UseSqlite"] = b => b.UseSqlite(),
         ["UseSqliteForMsSqlServer"] = b => b.UseSqliteForMsSqlServer(),
+        ["UseCustomDbContextCreator"] = b => b.UseCustomDbContextCreator(null!), // the disposed check runs first
         ["UseCustomRandomEntityCreator"] = b => b.UseCustomRandomEntityCreator(new DeterministicRandomEntityCreator()),
         ["UseDbContextOptionsBuilder"] = b => b.UseDbContextOptionsBuilder(new DbContextOptionsBuilder<BasicContext>()),
         ["UseSeedProfile"] = b => b.UseSeedProfile(null!), // the disposed check runs before the null check

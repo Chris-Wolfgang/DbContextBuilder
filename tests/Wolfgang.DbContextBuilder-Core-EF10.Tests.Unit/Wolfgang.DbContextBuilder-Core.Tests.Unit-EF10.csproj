@@ -23,6 +23,7 @@
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/DbSetAssertionsTests.cs" Link="DbSetAssertionsTests.cs" />
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/SqliteDbContextCreatorTests.cs" Link="SqliteDbContextCreatorTests.cs" />
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/BuildAsyncReentrancyTests.cs" Link="BuildAsyncReentrancyTests.cs" />
+	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/CustomDbContextCreatorTests.cs" Link="CustomDbContextCreatorTests.cs" />
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/Models/CoverageModels.cs" Link="Models/CoverageModels.cs" />
 	</ItemGroup>
 

@@ -155,6 +155,37 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
     /// <summary>
+    /// Plugs in a custom <see cref="ICreateDbContext"/> that creates the contexts this builder
+    /// builds and seeds, for a provider the builder does not ship (for example a real SQL Server
+    /// test database) or for full control over how the context is constructed.
+    /// </summary>
+    /// <param name="creator">The creator to use. It configures the provider on the options
+    /// builder it is handed.</param>
+    /// <returns>The builder, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="creator"/> is null.</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
+    /// <remarks>
+    /// Provider selection is last-write-wins, as with <see cref="UseInMemory"/> and the SQLite
+    /// extensions: the EF Core services a SQLite extension registered are dropped. The builder
+    /// takes ownership of <paramref name="creator"/>: if it implements <see cref="IDisposable"/>,
+    /// it is disposed when another provider replaces it or when the builder is disposed.
+    /// </remarks>
+    public DbContextBuilder<T> UseCustomDbContextCreator(ICreateDbContext creator)
+    {
+        ThrowIfDisposed();
+
+        ArgumentNullException.ThrowIfNull(creator);
+
+        // Same reasoning as UseInMemory (#558): SQLite services left registered would build an
+        // internal service provider without the custom creator's provider.
+        ServiceCollection.Clear();
+        SetCreateDbContext(creator);
+        return this;
+    }
+
+
+
+    /// <summary>
     /// Allows the user to specify their own implementation of ICreateRandomEntities
     /// for creating random entities.
     /// </summary>
