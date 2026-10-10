@@ -160,11 +160,9 @@ public static class DocExampleSource
             var open = FenceOpen.Match(lines[i]);
             if (!open.Success)
             {
-                if (!string.IsNullOrWhiteSpace(lines[i]))
-                {
-                    previous = lines[i].Trim();
-                }
-
+                // Every non-fence line replaces `previous`, a blank one included: the marker counts
+                // only on the line immediately before the fence, so it cannot reach a later sample.
+                previous = lines[i].Trim();
                 continue;
             }
 
