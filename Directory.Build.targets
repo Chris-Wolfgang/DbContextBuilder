@@ -1,0 +1,22 @@
+<Project>
+  <!-- The net6.0/net7.0 slots are deliberate (the EF Core 6/7 packages, their tests and the
+       AdventureWorks-EF6/EF7 samples), so silence two MSBuild-level warnings for those two target
+       frameworks only (#578):
+       - SuppressTfmSupportBuildWarnings: the "<package> doesn't support net6.0/net7.0" messages
+         from build-time-only packages (System.IO.Hashing via SourceLink);
+       - CheckEolTargetFramework=false: NETSDK1138, the end-of-life notice.
+       Neither is a compiler warning, so TreatWarningsAsErrors does not catch them.
+
+       This is a .targets file, not part of Directory.Build.props, because $(TargetFramework) is
+       not known yet when the props are evaluated in a single-target project (its csproj sets it
+       after the import). Every other target framework, including any added later, keeps both
+       diagnostics.
+
+       MSBuild finds Directory.Build.targets on its own upward search, independent of the props,
+       so this file also applies under extra-projects/, whose Directory.Build.props deliberately
+       does not import the root one (#579). -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0'">
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+  </PropertyGroup>
+</Project>
