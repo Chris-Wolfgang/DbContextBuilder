@@ -232,6 +232,48 @@ public class SqliteDbContextCreatorTests
 
 
     /// <summary>
+    /// With a caller-supplied options builder, a SQLite build followed by re-selecting InMemory
+    /// builds an InMemory context: BuildAsync applies its per-build configuration (internal
+    /// service provider, provider, logging) to a copy, so the caller's builder never carries the
+    /// earlier SQLite configuration into the next build (#558 review).
+    /// </summary>
+    [Fact]
+    public async Task UseInMemory_after_a_Sqlite_build_with_a_caller_options_builder_builds_an_InMemory_context()
+    {
+        var options = new DbContextOptionsBuilder<BasicContext>();
+        using var builder = new DbContextBuilder<BasicContext>().UseDbContextOptionsBuilder(options).UseSqlite();
+        await using (var sqlite = await builder.BuildAsync())
+        {
+            Assert.Equal("Microsoft.EntityFrameworkCore.Sqlite", sqlite.Database.ProviderName);
+        }
+
+        builder.UseInMemory().SeedWith(NewLog("reselected"));
+        await using var context = await builder.BuildAsync();
+
+        Assert.Equal("Microsoft.EntityFrameworkCore.InMemory", context.Database.ProviderName);
+        Assert.Equal("reselected", Assert.Single(context.DatabaseLogs).Event);
+    }
+
+
+
+    /// <summary>
+    /// BuildAsync leaves the caller-supplied options builder exactly as the caller configured it.
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_does_not_modify_the_caller_options_builder()
+    {
+        var options = new DbContextOptionsBuilder<BasicContext>();
+        var before = options.Options.Extensions.Select(e => e.GetType()).ToList();
+        using var builder = new DbContextBuilder<BasicContext>().UseDbContextOptionsBuilder(options).UseSqlite().UseDiagnosticOutput(_ => { });
+
+        await using var context = await builder.BuildAsync();
+
+        Assert.Equal(before, options.Options.Extensions.Select(e => e.GetType()).ToList());
+    }
+
+
+
+    /// <summary>
     /// After Dispose, every configuration entry point throws <see cref="ObjectDisposedException"/>
     /// instead of accepting new state (#563).
     /// </summary>
@@ -277,6 +319,8 @@ public class SqliteDbContextCreatorTests
         ["UseDbContextOptionsBuilder"] = b => b.UseDbContextOptionsBuilder(new DbContextOptionsBuilder<BasicContext>()),
         ["UseSeedProfile"] = b => b.UseSeedProfile(null!), // the disposed check runs before the null check
         ["UseDiagnosticOutput"] = b => b.UseDiagnosticOutput(_ => { }),
+        // Internal, but it has its own disposed guard: covered directly, not only through its callers.
+        ["SetCreateDbContext"] = b => b.SetCreateDbContext(new InMemoryDbContextCreator()),
         ["SeedWith(IEnumerable)"] = b => b.SeedWith(new List<DatabaseLog> { NewLog("a") }.AsEnumerable()),
         ["SeedWith(params)"] = b => b.SeedWith(NewLog("a"), NewLog("b")),
         ["SeedWith(entity)"] = b => b.SeedWith(NewLog("a")),
