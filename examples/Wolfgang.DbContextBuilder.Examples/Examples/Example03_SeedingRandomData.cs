@@ -10,16 +10,19 @@ namespace Wolfgang.DbContextBuilder.Examples.Examples;
 ///
 /// When the <em>shape</em> of the data matters but the exact rows do not, let the
 /// builder generate them. Here we fill a catalogue with 50 random products and test
-/// an inventory query without hand-writing 50 rows. (Random generation uses
-/// AutoFixture under the hood — no extra setup required.)
+/// an inventory query without hand-writing 50 rows. Random generation needs a provider:
+/// <c>UseAutoFixture()</c> from the Wolfgang.DbContextBuilder.AutoFixture package here
+/// (or <c>UseBogus()</c> from Wolfgang.DbContextBuilder.Bogus).
 /// </summary>
 public class Example03_SeedingRandomData
 {
     [Fact]
     public async Task Low_stock_query_runs_over_a_randomly_seeded_catalogue()
     {
-        await using var context = await new DbContextBuilder<ShopDbContext>()
+        using var builder = new DbContextBuilder<ShopDbContext>();
+        await using var context = await builder
             .UseInMemory()
+            .UseAutoFixture()
             .SeedWithRandom<Product>(count: 50)
             .BuildAsync();
 

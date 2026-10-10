@@ -14,8 +14,12 @@
       A consumer installs the one package that matches their EF Core version.
       This example targets EF Core 8, so it references Wolfgang.DbContextBuilder-Core-EF8.
       EF6 -> -Core-EF6, EF7 -> -Core-EF7, EF9 -> -Core-EF9, EF10 -> -Core-EF10.
+      SeedWithRandom needs a random-data provider package next to it (since 0.8.0):
+      Wolfgang.DbContextBuilder.AutoFixture (UseAutoFixture) or .Bogus (UseBogus).
+      Keep both versions at the latest release (part of the post-release baseline bump).
     -->
-    <PackageReference Include="Wolfgang.DbContextBuilder-Core-EF8" Version="0.7.0" />
+    <PackageReference Include="Wolfgang.DbContextBuilder-Core-EF8" Version="0.9.0" />
+    <PackageReference Include="Wolfgang.DbContextBuilder.AutoFixture" Version="0.9.0" />
 
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
