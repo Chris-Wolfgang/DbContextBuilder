@@ -29,7 +29,6 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="tests/Wolfgang.DbContextBuilder-Core-EF10.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF10.csproj" />
-    <Project Path="tests/Wolfgang.DbContextBuilder-Core-EF6.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF6.csproj" />
     <Project Path="tests/Wolfgang.DbContextBuilder-Core-EF7.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF7.csproj" />
     <Project Path="tests/Wolfgang.DbContextBuilder-Core-EF8.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF8.csproj" />
     <Project Path="tests/Wolfgang.DbContextBuilder-Core-EF9.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF9.csproj" />
