@@ -112,6 +112,8 @@ before `pip install`, and refuse to fall back to the PR's copy.
       ".editorconfig"
       "Directory.Build.props"
       "Directory.Build.targets"
+      "*/Directory.Build.props"    # nested copies (src/, examples/, extra-projects/)
+      "*/Directory.Build.targets"
       "BannedSymbols.txt"
       "*.globalconfig"
       "*.ruleset"
