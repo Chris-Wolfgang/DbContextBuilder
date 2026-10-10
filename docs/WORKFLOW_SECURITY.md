@@ -106,6 +106,8 @@ before the guard's failure blocks the merge. It prevents the change landing, not
       ".editorconfig"
       "Directory.Build.props"
       "Directory.Build.targets"
+      "*/Directory.Build.props"    # nested copies (src/, examples/, extra-projects/)
+      "*/Directory.Build.targets"
       "BannedSymbols.txt"
       "*.globalconfig"
       "*.ruleset"
