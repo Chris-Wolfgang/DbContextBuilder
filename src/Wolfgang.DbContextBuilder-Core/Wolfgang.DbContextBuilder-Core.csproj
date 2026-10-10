@@ -37,7 +37,6 @@
 		<IsPackable>false</IsPackable>
 		<!-- Nothing is packed any more, so there is no package to validate against the baseline. -->
 		<EnablePackageValidation>false</EnablePackageValidation>
-		<PackageValidationBaselineVersion>0.8.1</PackageValidationBaselineVersion>
 		<IsTestProject>false</IsTestProject>
 		<DefineConstants>$(DefineConstants);EF_CORE_6;EF_CORE_6_OR_GREATER</DefineConstants>
 	</PropertyGroup>
