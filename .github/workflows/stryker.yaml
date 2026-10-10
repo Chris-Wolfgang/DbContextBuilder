@@ -540,3 +540,39 @@ jobs:
             gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file issue-body.md \
               --label "kind:mutation-survives"
           fi
+
+  # Scheduled runs have no one watching them, so a failure files (or comments on) one tracking
+  # issue per workflow instead of failing into a void (#588). A separate job, so only it holds
+  # issues: write; manual and push/PR runs are watched by whoever started them.
+  notify-failure:
+    name: File an issue when the scheduled run fails
+    needs: [stryker, publish]
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - name: File or update the tracking issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          WORKFLOW: ${{ github.workflow }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          label="scheduled-workflow-failure"
+          gh label create "$label" --color B60205 \
+            --description "A scheduled workflow run failed" 2>/dev/null || true
+          title="Scheduled run failed: $WORKFLOW"
+          existing="$(gh issue list --label "$label" --state open --json number,title \
+            --jq "[.[] | select(.title == \"$title\")][0].number // empty")"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "Failed again: $RUN_URL"
+            echo "Commented on #$existing"
+          else
+            gh issue create --title "$title" --label "$label" \
+              --body "The scheduled run of the \`$WORKFLOW\` workflow failed: $RUN_URL
+
+          Close this issue once the cause is fixed and a run passes."
+          fi
