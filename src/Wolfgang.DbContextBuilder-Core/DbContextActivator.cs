@@ -48,8 +48,9 @@ internal static class DbContextActivator<TDbContext>
         {
             // Fall back to Activator.CreateInstance so the call still works (and
             // throws a familiar MissingMethodException) for types that take
-            // DbContextOptions (non-generic) or other shapes. Same allocation cost
-            // as before, but only on the first call for this TDbContext.
+            // DbContextOptions (non-generic) or other shapes. Only the constructor
+            // lookup above is cached: the returned delegate pays Activator's
+            // reflection cost on every Create.
             return options => (TDbContext)Activator.CreateInstance(type, options)!;
         }
 

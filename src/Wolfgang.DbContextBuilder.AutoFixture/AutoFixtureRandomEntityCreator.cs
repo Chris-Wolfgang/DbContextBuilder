@@ -12,8 +12,8 @@ namespace Wolfgang.DbContextBuilderCore;
 /// <summary>
 /// An <see cref="ICreateRandomEntities"/> implementation backed by
 /// <see href="https://github.com/AutoFixture/AutoFixture">AutoFixture</see>. It populates the
-/// scalar properties of an entity with random values while omitting virtual (navigation)
-/// members and breaking circular references, so seeding does not pull in object graphs.
+/// properties of an entity with random values. The parameterless constructor also omits virtual
+/// (navigation) members and breaks circular references, so seeding does not pull in object graphs.
 /// </summary>
 /// <remarks>
 /// Configure the builder to use it with <c>UseAutoFixture()</c> (the convenience extension) or
@@ -45,6 +45,12 @@ public class AutoFixtureRandomEntityCreator : ICreateRandomEntities
     /// Creates an instance of <see cref="AutoFixtureRandomEntityCreator"/> using the specified Fixture
     /// for creating random entities.
     /// </summary>
+    /// <remarks>
+    /// The fixture is used as given: none of the customizations the parameterless constructor applies
+    /// (DateOnly/TimeOnly support, recursion omission, virtual-member exclusion) are added. Apply
+    /// <see cref="NoCircularReferencesCustomization"/> and <see cref="IgnoreVirtualMembersCustomization"/>
+    /// yourself if you need them.
+    /// </remarks>
     /// <param name="fixture">The fixture to use when creating random entities</param>
     /// <exception cref="ArgumentNullException"><paramref name="fixture"/> is null.</exception>
     public AutoFixtureRandomEntityCreator(Fixture fixture) =>

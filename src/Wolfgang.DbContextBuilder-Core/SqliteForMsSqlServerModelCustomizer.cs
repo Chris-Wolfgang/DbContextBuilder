@@ -23,6 +23,8 @@ public class SqliteForMsSqlServerModelCustomizer : SqliteModelCustomizer
     /// </remarks>
     public SqliteForMsSqlServerModelCustomizer(ModelCustomizerDependencies dependencies) : base(dependencies)
     {
+        // Only the scaffolded, parenthesised spellings are registered; another spelling such as a
+        // hand-written GETDATE() misses the map and is dropped below. Add it to DefaultValueMap.
         DefaultValueMap.Add("(newid())", "lower(hex(randomblob(16)))");
         DefaultValueMap.Add("(getdate())", "datetime('now')");
 

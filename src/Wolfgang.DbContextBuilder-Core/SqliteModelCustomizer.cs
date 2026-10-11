@@ -5,15 +5,16 @@ using Microsoft.EntityFrameworkCore.Metadata;
 namespace Wolfgang.DbContextBuilderCore;
 
 /// <summary>
-/// Overrides the default model creation process in the DbContext{T} with configurations suitable for SQLite.
+/// Overrides the default model creation process of a <see cref="DbContext"/> with configurations suitable for SQLite.
 /// </summary>
 /// <remarks>
 /// Unless the production database you are testing is also SQLite, there will be differences between
 /// your database and the context's configuration definition and SQLite's capabilities. This class
-/// provides some basic overrides to make your DbContext work in SQLite. This class provides some
-/// basic capabilities like,
-///   1. Renaming tables to avoid schema issues since SQLite does not support schemas.
-///   2. Removing computed values for columns since SQLite may not support the same functions.
+/// provides some basic overrides to make your DbContext work in SQLite:
+///   1. Renaming tables to <c>schema_table</c> (see <see cref="OverrideTableRenaming"/>), since SQLite does not support schemas.
+///   2. Replacing column default-value SQL found in <see cref="DefaultValueMap"/> (see <see cref="OverrideDefaultValueHandling"/>).
+///   3. Passing computed-column SQL through a hook that leaves it unchanged by default (see <see cref="OverrideComputedValueHandling"/>).
+///   4. Renaming join tables of many-to-many relationships after the two tables they join.
 /// 
 /// You can override the functionality provided in this class or, if you will frequently work
 /// against the same database engine, derive your own <see cref="ModelCustomizer"/> (from
@@ -83,11 +84,14 @@ public class SqliteModelCustomizer : ModelCustomizer
     /// value to replace it with.
     /// </summary>
     /// <remarks>
-    /// Examples of default values that may need to be replaced are <c>getdate()</c> and
-    /// <c>newid()</c>, which would be replaced with <c>datetime('now')</c> and
-    /// <c>lower(hex(randomblob(16)))</c> respectively. Key lookups are case-insensitive
-    /// (<see cref="StringComparer.OrdinalIgnoreCase"/>) so variant spellings produced by
-    /// different EF versions match the same replacement entry.
+    /// Examples of default values that may need to be replaced are <c>(getdate())</c> and
+    /// <c>(newid())</c>, which would be replaced with <c>datetime('now')</c> and
+    /// <c>lower(hex(randomblob(16)))</c> respectively. A key must match the model's default-value
+    /// SQL exactly apart from case: lookups are case-insensitive
+    /// (<see cref="StringComparer.OrdinalIgnoreCase"/>), but <c>getdate()</c> and
+    /// <c>(getdate())</c> are different keys. Scaffolded models use the parenthesised form; add
+    /// an entry for any other spelling your model uses (for example a hand-written
+    /// <c>HasDefaultValueSql("GETDATE()")</c>).
     ///
     /// Configure this map during builder setup (before <c>BuildAsync</c>); mutating it
     /// after the first <c>Customize</c> pass is unsupported because the customizer is
@@ -169,10 +173,12 @@ public class SqliteModelCustomizer : ModelCustomizer
 
 
     /// <summary>
-    /// Overrides the default model creation process in the DbContext{T} with configurations suitable for SQLite.
+    /// Overrides the default model creation process of a <see cref="DbContext"/> with configurations suitable for SQLite.
     /// </summary>
     /// <param name="modelBuilder">The builder being used to construct the model.</param>
     /// <param name="context">The context instance that the model is being created for.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="modelBuilder"/> or <paramref name="context"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">An entity type in the model has no table name.</exception>
     public override void Customize
     (
         ModelBuilder modelBuilder,
