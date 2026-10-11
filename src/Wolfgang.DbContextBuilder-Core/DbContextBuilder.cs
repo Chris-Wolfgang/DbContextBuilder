@@ -37,6 +37,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     // The creator whose database BuildAsync has already created and seeded. Later builds on the
     // same creator neither re-create nor re-seed it (#559); selecting a new creator resets it.
     private ICreateDbContext? _seededCreator;
+    // The primary-key CLR types EnsureUniqueRandomPrimaryKeys renumbers.
+    private static readonly HashSet<Type> _integralKeyTypes = [typeof(int), typeof(long), typeof(short), typeof(byte)];
 
 
 
@@ -556,10 +558,6 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
 
-    private static readonly HashSet<Type> IntegralKeyTypes = [typeof(int), typeof(long), typeof(short), typeof(byte)];
-
-
-
     /// <summary>
     /// Makes single-property integer primary keys unique across the seeded entities sharing each
     /// key, changing only randomly-seeded entities. Every type in an inheritance hierarchy shares
@@ -641,7 +639,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     {
         var keyProperties = context.Model.FindEntityType(clrType)?.FindPrimaryKey()?.Properties;
         var property = keyProperties is { Count: 1 } ? keyProperties[0] : null;
-        return property?.PropertyInfo is not null && IntegralKeyTypes.Contains(property.PropertyInfo.PropertyType) ? property : null;
+        return property?.PropertyInfo is not null && _integralKeyTypes.Contains(property.PropertyInfo.PropertyType) ? property : null;
     }
 
 
