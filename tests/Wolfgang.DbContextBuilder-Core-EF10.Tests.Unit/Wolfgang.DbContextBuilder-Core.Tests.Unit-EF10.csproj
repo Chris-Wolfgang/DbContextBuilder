@@ -37,6 +37,7 @@
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/DiagnosticOutputTests.cs" Link="DiagnosticOutputTests.cs" />
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/DbSetAssertionsTests.cs" Link="DbSetAssertionsTests.cs" />
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/SqliteDbContextCreatorTests.cs" Link="SqliteDbContextCreatorTests.cs" />
+	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/BuildAsyncReentrancyTests.cs" Link="BuildAsyncReentrancyTests.cs" />
 	</ItemGroup>
 
 
