@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791512587097,
+  "lastUpdate": 1791706951347,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "Mutation score": [
@@ -188,6 +188,33 @@ window.BENCHMARK_DATA = {
           {
             "name": "Mutation score",
             "value": 93.55,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "146505450c1bc05c4b704e2d40cd9baab57d86a9",
+          "message": "build: bump PackageValidationBaselineVersion to 0.9.0 (#645)\n\n0.9.0 is on the NuGet flatcontainer for all nine published packages, so the\nnine packable src projects now validate against it (was 0.8.1). The shadow\nsample's BaselineVersion moves with them, as its csproj says it must.\n\n-Core drops the property instead: IsPackable=false and\nEnablePackageValidation=false (since #432) make it inert, and there is no\n-Core 0.9.0 to point it at.\n\nLocal: dotnet pack with package validation passes for -Core-EF10,\nAbstractions and -EF6 against the 0.9.0 baseline; the shadow sample builds\nwith -p:UseBaselinePackage=true (0.9.0).\n\nRefs #628.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-11T02:02:59Z",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/146505450c1bc05c4b704e2d40cd9baab57d86a9"
+        },
+        "date": 1791706949177,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score",
+            "value": 94.58,
             "unit": "%"
           }
         ]
