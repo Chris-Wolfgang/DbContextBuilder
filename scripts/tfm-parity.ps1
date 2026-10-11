@@ -7,8 +7,11 @@
     Guard 3 of the test-matrix regression guards. Walks the ProjectReference
     graph from every test project the way the build does: for each test TFM,
     the referenced src project contributes the single asset NuGet/MSBuild would
-    select for that consumer (exact TFM match, else the nearest netstandard the
-    consumer can load), and that selected TFM is what carries on to the src
+    select for that consumer (exact TFM match, else the nearest asset of the
+    consumer's own family that is not newer than it, else the nearest
+    netstandard the consumer can load; a platform consumer such as
+    net10.0-android is matched through its base TFM), and that selected TFM is
+    what carries on to the src
     project's own references. A src TFM that is never the selected asset for
     any test TFM is reported - it is built and shipped but never loaded by a
     test.
@@ -63,13 +66,44 @@ function Get-ReferencedProjects([string]$Project, [string]$Tfm) {
     return @($items | ForEach-Object { [System.IO.Path]::GetFullPath((Join-Path $dir $_.Identity)) })
 }
 
+# A TFM's family and version: 'core' (netcoreappX.Y and netX.Y from net5.0 on), 'fx'
+# (.NET Framework, net462 -> 4.6.2) or 'ns' (netstandard). $null for anything else
+# (e.g. a platform TFM such as net10.0-android, which only matches exactly).
+function Get-TfmInfo([string]$Tfm) {
+    if ($Tfm -match '^netcoreapp(\d+)\.(\d+)$') { return @{ Family = 'core'; Version = [version]"$($Matches[1]).$($Matches[2])" } }
+    if ($Tfm -match '^net(\d+)\.(\d+)$' -and [int]$Matches[1] -ge 5) { return @{ Family = 'core'; Version = [version]"$($Matches[1]).$($Matches[2])" } }
+    if ($Tfm -match '^net(\d)(\d)(\d)?$') {
+        $v = if ($Matches[3]) { "$($Matches[1]).$($Matches[2]).$($Matches[3])" } else { "$($Matches[1]).$($Matches[2])" }
+        return @{ Family = 'fx'; Version = [version]$v }
+    }
+    if ($Tfm -match '^netstandard(\d+)\.(\d+)$') { return @{ Family = 'ns'; Version = [version]"$($Matches[1]).$($Matches[2])" } }
+    return $null
+}
+
 # Which asset of a multi-targeted project a consumer built for $ConsumerTfm
-# loads: the exact TFM if the project has it, otherwise the newest netstandard
-# the consumer can reference. Returns $null when nothing is compatible.
+# loads, following NuGet's nearest-framework rule: the exact TFM if the project
+# has it; otherwise the highest asset of the consumer's OWN family that is not
+# newer than the consumer (a net8.0 consumer loads net6.0 before netstandard2.1,
+# a net48 consumer loads net462 before netstandard2.0, #623); otherwise the
+# newest netstandard the consumer can reference. Returns $null when nothing is
+# compatible.
+# A platform consumer (net10.0-android) can load its base TFM's assets (net10.0, and from
+# there the same fallbacks), so everything after the exact match uses the base TFM. A
+# platform-specific CANDIDATE still matches only exactly: Get-TfmInfo returns $null for it.
 function Select-Asset([string]$ConsumerTfm, [string[]]$CandidateTfms) {
     if ($CandidateTfms -contains $ConsumerTfm) { return $ConsumerTfm }
-    $canLoad21 = $ConsumerTfm -match '^(netcoreapp3\.\d|net[5-9]\.0|net[1-9]\d\.0|netstandard2\.1)'
-    $canLoad20 = $canLoad21 -or $ConsumerTfm -match '^(net4(6[1-9]|[7-9]\d*)|netcoreapp2\.\d|netstandard2\.0)'
+    $baseTfm = $ConsumerTfm -replace '-.*$', ''
+    if ($baseTfm -ne $ConsumerTfm -and $CandidateTfms -contains $baseTfm) { return $baseTfm }
+    $consumer = Get-TfmInfo $baseTfm
+    if ($null -eq $consumer) { return $null }
+
+    $sameFamily = @($CandidateTfms |
+        ForEach-Object { $info = Get-TfmInfo $_; if ($info -and $info.Family -eq $consumer.Family -and $info.Version -le $consumer.Version) { [pscustomobject]@{ Tfm = $_; Version = $info.Version } } } |
+        Sort-Object Version -Descending)
+    if ($sameFamily.Count -gt 0) { return $sameFamily[0].Tfm }
+
+    $canLoad21 = $baseTfm -match '^(netcoreapp3\.\d|net[5-9]\.0|net[1-9]\d\.0|netstandard2\.1)'
+    $canLoad20 = $canLoad21 -or $baseTfm -match '^(net4(6[1-9]|[7-9]\d*)|netcoreapp2\.\d|netstandard2\.0)'
     if ($canLoad21 -and $CandidateTfms -contains 'netstandard2.1') { return 'netstandard2.1' }
     if ($canLoad20 -and $CandidateTfms -contains 'netstandard2.0') { return 'netstandard2.0' }
     return $null
