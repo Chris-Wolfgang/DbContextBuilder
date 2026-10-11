@@ -122,7 +122,15 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
                 return new NoSpecimen();
             }
 
-            if (propertyInfo.GetMethod != null && propertyInfo.GetMethod.IsVirtual)
+            // An implicit interface implementation is emitted as virtual *final*, so IsVirtual
+            // alone also skipped plain scalars such as IAuditable.CreatedAt (#561). A navigation
+            // is a virtual getter that is either still overridable or overrides a base member - a
+            // sealed override is final too, but it is still the base class's navigation. Declaring
+            // types are compared, not the MethodInfos: those differ by ReflectedType when the
+            // property is read through a derived type.
+            var getter = propertyInfo.GetMethod;
+            if (getter != null && getter.IsVirtual
+                && (!getter.IsFinal || getter.GetBaseDefinition().DeclaringType != getter.DeclaringType))
             {
                 return null;
             }
