@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791748193268,
+  "lastUpdate": 1791759411350,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -2142,6 +2142,102 @@ window.BENCHMARK_DATA = {
             "value": 3516257.09375,
             "unit": "ns",
             "range": "± 69525.79032043368"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0ffe50b09938554454e902a910840eb2667f4f05",
+          "message": "test(concurrency): assert the Coyote rewrite when required; correct the fuzz count range (#668)\n\nConcurrentBuilderIsolationTests fails when COYOTE_REQUIRE_REWRITTEN=1 (set by\ncoyote.yaml since #640) and the loaded test assembly is not Coyote-rewritten,\ninstead of passing on the un-rewritten smoke path that explores no\ninterleaving. pr.yaml leaves the variable unset, so its un-rewritten run is\nunchanged.\n\nRandomEntityCreatorProperties' doc no longer claims count is fuzzed across\nthe full int range: FsCheck's Int32 arbitrary yields [-size, size], i.e.\n[-100, 100] at the default EndSize; the +/-5,000 guard is reached only by the\npinned unit tests.\n\nCloses #618\n\n\n(cherry picked from commit 1fd2109cd00d277b3e117ccaee53f7889bc7dab5)\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-11T18:54:33-04:00",
+          "tree_id": "989cb190dd8a0411b7e255f6a37aef37e1531128",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/0ffe50b09938554454e902a910840eb2667f4f05"
+        },
+        "date": 1791759409800,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 37517.66315714518,
+            "unit": "ns",
+            "range": "± 1671.9716116829618"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 60222.77217610677,
+            "unit": "ns",
+            "range": "± 1663.0820160119367"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 255714.43326822916,
+            "unit": "ns",
+            "range": "± 18018.255755161026"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 1)",
+            "value": 274172.4342447917,
+            "unit": "ns",
+            "range": "± 32739.071852122357"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 37999.11977132162,
+            "unit": "ns",
+            "range": "± 1636.5472698950794"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 125449.1337890625,
+            "unit": "ns",
+            "range": "± 13033.59179776212"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 483788.9856770833,
+            "unit": "ns",
+            "range": "± 23957.71968985736"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 10)",
+            "value": 846383.03515625,
+            "unit": "ns",
+            "range": "± 77838.827081451"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 37637.494079589844,
+            "unit": "ns",
+            "range": "± 1281.5295146356411"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 434981.2669270833,
+            "unit": "ns",
+            "range": "± 6764.634924638604"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 3829145.5338541665,
+            "unit": "ns",
+            "range": "± 941134.9334667496"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 100)",
+            "value": 7976422.1875,
+            "unit": "ns",
+            "range": "± 2364677.8911751383"
           }
         ]
       }
