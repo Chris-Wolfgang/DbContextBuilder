@@ -16,6 +16,10 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
 {
     public AutoFixtureRandomEntityCreator()
     {
+        // Allocated here, not in a property initializer: an initializer also ran for the
+        // Fixture-taking ctor, which discarded the instance (#572).
+        Fixture = new Fixture();
+
         // Swaps ThrowingRecursionBehavior for OmitOnRecursionBehavior, so circular references
         // are cut instead of failing creation.
         Fixture.Customize(new NoCircularReferencesCustomization());
@@ -38,7 +42,7 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
     /// <summary>
     /// The AutoFixture Fixture instance used to create random data.
     /// </summary>
-    public Fixture Fixture { get; } = new();
+    public Fixture Fixture { get; }
 
 
 
