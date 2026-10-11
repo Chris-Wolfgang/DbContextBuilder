@@ -539,7 +539,7 @@ public class SeedWithRandomCoverageTests
 
 
 
-#if !EF_CORE_6 && !EF_CORE_7
+#if EF_CORE_8_OR_GREATER
     /// <summary>
     /// #530 review: with <c>HasSentinel(-1)</c> (EF Core 8+), -1 means "let EF generate it", so
     /// entities left at -1 are assigned keys; 0 is not treated as unset.
@@ -1130,7 +1130,7 @@ internal sealed class KeylessContext(DbContextOptions<KeylessContext> options) :
 
 
 
-#if !EF_CORE_6 && !EF_CORE_7
+#if EF_CORE_8_OR_GREATER
 /// <summary>Maps <see cref="CoverageManufacturer"/> with a generated key whose sentinel is -1 (#530).</summary>
 internal sealed class SentinelKeyContext(DbContextOptions<SentinelKeyContext> options) : DbContext(options)
 {

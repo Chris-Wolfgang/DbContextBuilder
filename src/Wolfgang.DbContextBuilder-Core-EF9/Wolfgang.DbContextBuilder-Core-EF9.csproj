@@ -29,7 +29,7 @@
 		<IsTestProject>false</IsTestProject>
 	</PropertyGroup>
 	 <PropertyGroup>
-		 <DefineConstants>$(DefineConstants);EF_CORE_9;EF_CORE_9_OR_GREATER</DefineConstants>
+		 <DefineConstants>$(DefineConstants);EF_CORE_9;EF_CORE_6_OR_GREATER;EF_CORE_7_OR_GREATER;EF_CORE_8_OR_GREATER;EF_CORE_9_OR_GREATER</DefineConstants>
 	 </PropertyGroup>
 	 <ItemGroup>
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextActivator.cs" Link="DbContextActivator.cs" />
