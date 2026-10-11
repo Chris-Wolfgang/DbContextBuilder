@@ -440,6 +440,31 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
+    /// #569: a required FK whose principal is an inheritance base is wired to a seeded instance
+    /// of a derived type. Matching principals by exact runtime type missed it and left the FK
+    /// random, which SQLite's foreign-key check then rejected.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_reconciles_a_foreign_key_to_a_seeded_derived_principal()
+    {
+        using var sut = new DbContextBuilder<HierarchyCollarContext>()
+            .UseCustomRandomEntityCreator(new DeterministicRandomEntityCreator())
+            .UseSqlite();
+
+        await using var context = await sut
+            .SeedWith(new HierarchyDog { Id = 41, Name = "Rex", Breed = "Collie" })
+            .SeedWithRandom<HierarchyCollar>(2)
+            .BuildAsync();
+
+        var collars = context.Set<HierarchyCollar>().Include(collar => collar.Animal).ToList();
+        Assert.Equal(2, collars.Count);
+        Assert.All(collars, collar => Assert.Equal(41, collar.AnimalId));
+        Assert.All(collars, collar => Assert.IsType<HierarchyDog>(collar.Animal));
+    }
+
+
+
+    /// <summary>
     /// #530: a creator that leaves a store-generated key at 0 means "let EF generate it". Keeping
     /// 0 for the first entity and numbering the rest from 1 made EF generate 1 for it, colliding
     /// with the assigned 1. Every unset key is now assigned, so no key is left for EF to generate.
@@ -1260,6 +1285,37 @@ internal sealed class HierarchyContext(DbContextOptions<HierarchyContext> option
     {
         modelBuilder.Entity<HierarchyAnimal>();
         modelBuilder.Entity<HierarchyDog>();
+    }
+}
+
+
+
+/// <summary>
+/// Dependent of the <see cref="HierarchyAnimal"/> base type, with a required FK (#569).
+/// </summary>
+internal class HierarchyCollar
+{
+    public int Id { get; set; }
+
+    public int AnimalId { get; set; }
+
+    // Virtual so the random-entity double leaves it unset (only the scalar FK is populated).
+    public virtual HierarchyAnimal? Animal { get; set; }
+}
+
+
+
+/// <summary>
+/// Maps <see cref="HierarchyCollar"/> against the <see cref="HierarchyAnimal"/> hierarchy, so the
+/// FK's principal type is the base while the seeded principal is a <see cref="HierarchyDog"/>.
+/// </summary>
+internal sealed class HierarchyCollarContext(DbContextOptions<HierarchyCollarContext> options) : DbContext(options)
+{
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<HierarchyAnimal>();
+        modelBuilder.Entity<HierarchyDog>();
+        modelBuilder.Entity<HierarchyCollar>();
     }
 }
 

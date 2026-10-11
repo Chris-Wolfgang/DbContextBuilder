@@ -732,13 +732,16 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         IReadOnlyDictionary<Type, List<object>> seededByType
     )
     {
-        if (!seededByType.TryGetValue(foreignKey.PrincipalEntityType.ClrType, out var candidates))
-        {
-            return null;
-        }
+        // Seeded entities are grouped by runtime type, so match every group whose type IS the
+        // principal type, not just the exact one: an inheritance base principal (TPH/TPT) whose
+        // seeded instances are of a derived type was never found (#569).
+        var principalType = foreignKey.PrincipalEntityType.ClrType;
 
         // Prefer a principal that is not the dependent itself (handles self-referencing FKs).
-        return candidates.FirstOrDefault(candidate => !ReferenceEquals(candidate, dependent));
+        return seededByType
+            .Where(group => principalType.IsAssignableFrom(group.Key))
+            .SelectMany(group => group.Value)
+            .FirstOrDefault(candidate => !ReferenceEquals(candidate, dependent));
     }
 
 
