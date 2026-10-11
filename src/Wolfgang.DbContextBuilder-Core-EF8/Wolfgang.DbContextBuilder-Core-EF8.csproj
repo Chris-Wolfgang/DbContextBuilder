@@ -17,9 +17,7 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageIcon>dbcontext-builder.png</PackageIcon>
-		<ApplicationIcon>dbcontext-builder.ico</ApplicationIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 
 		<SignAssembly>False</SignAssembly>
@@ -49,10 +47,6 @@
 	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\Assertions\DbSetAssertions.cs" Link="Assertions\DbSetAssertions.cs" />
 	 </ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="coverlet.collector" Version="10.0.1">
-	    <PrivateAssets>all</PrivateAssets>
-	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
 	  <!-- Lock EF to version 8.x but not 9 or later -->
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="[8.0.31,9.0.0)" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="[8.0.31,9.0.0)" />
@@ -67,9 +61,6 @@
 		  <Pack>True</Pack>
 		  <PackagePath>\</PackagePath>
 		</None>
-		<Content Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder.png" Link="Content\dbcontext-builder.png" />
-		<Content Include="..\Wolfgang.DbContextBuilder-Core\Content\dbcontext-builder-inverted.png" Link="Content\dbcontext-builder-inverted.png" />
-		<Content Include="dbcontext-builder.ico" Link="Content\dbcontext-builder.ico" />
 	</ItemGroup>
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
 	<ItemGroup>
