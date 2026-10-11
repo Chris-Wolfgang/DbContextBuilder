@@ -187,7 +187,12 @@ internal abstract class NavigationRowBase
 
 
 /// <summary>Seals the inherited navigation: its getter is virtual and final (#561 review).</summary>
-internal sealed class SealedOverrideRow : NavigationRowBase
+/// <remarks>
+/// Deliberately not a sealed class: Roslyn emits the IL <c>final</c> flag on an override only when the
+/// member itself is <c>sealed</c> (an override in a sealed class stays non-final), and the tests assert
+/// that flag.
+/// </remarks>
+internal class SealedOverrideRow : NavigationRowBase
 {
     public sealed override InterfaceImplementingRow? Parent { get; set; }
 }
@@ -205,4 +210,5 @@ internal class InterfaceRowBase : IHasCode
 /// <summary>Inherits <see cref="InterfaceRowBase"/>'s interface implementation (#561 review).</summary>
 internal sealed class DerivedInterfaceRow : InterfaceRowBase
 {
+    public int Rank { get; set; }
 }
