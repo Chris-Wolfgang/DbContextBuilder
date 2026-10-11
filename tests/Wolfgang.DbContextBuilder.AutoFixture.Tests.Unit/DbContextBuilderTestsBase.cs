@@ -28,18 +28,6 @@ public abstract class DbContextBuilderTestsBase
 
 
     /// <summary>
-    /// Verifies that the parameterless DbContextBuilder ctor returns a non-null instance.
-    /// </summary>
-    [Fact]
-    public void DbContextBuilder_ctor_when_called_returns_a_new_instance()
-    {
-        using var builder = new DbContextBuilder<AdventureWorksDbContext>();
-        Assert.NotNull(builder);
-    }
-
-
-
-    /// <summary>
     /// Verifies that calling Build on the DbContextBuilder returns an instance of the specified DbContext type.
     /// </summary>
     [Fact]

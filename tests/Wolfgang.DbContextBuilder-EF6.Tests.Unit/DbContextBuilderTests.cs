@@ -18,18 +18,6 @@ public class DbContextBuilderTests
 
 
     /// <summary>
-    /// Verifies that the test project can create an instance of DbContextBuilder.
-    /// </summary>
-    [Fact]
-    public void Can_create_instance_of_DbContextBuilder()
-    {
-        var builder = new DbContextBuilder<TestDbContext>();
-        Assert.NotNull(builder);
-    }
-
-
-
-    /// <summary>
     /// Verifies that calling Build returns an instance of the specified DbContext type.
     /// </summary>
     [Fact]
