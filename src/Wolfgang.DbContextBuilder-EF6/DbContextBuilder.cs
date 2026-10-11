@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -357,7 +356,6 @@ public class DbContextBuilder<T> where T : DbContext
 
 
 
-    [ExcludeFromCodeCoverage]
     private static void InitializeDatabase(T context)
     {
         try
@@ -366,8 +364,12 @@ public class DbContextBuilder<T> where T : DbContext
         }
         catch (InvalidOperationException e)
         {
+            // A missing (DbConnection, bool) constructor cannot reach this catch: it throws
+            // MissingMethodException while the context is created, before this runs (#565).
             const string msg = "Failed to create database. See InnerException for details. " +
-                               "Ensure your DbContext has a constructor that accepts (DbConnection, bool).";
+                               "Common causes: the model cannot be mapped to the database provider, " +
+                               "or the context's connection is not usable (for example, the context " +
+                               "returned by the context creator has already been disposed).";
             throw new InvalidOperationException(msg, e);
         }
     }
