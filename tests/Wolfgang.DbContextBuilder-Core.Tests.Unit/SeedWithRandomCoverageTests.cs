@@ -272,6 +272,26 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
+    /// Verifies the singleton overload rejects a sequence containing a null item at seed time,
+    /// atomically, instead of storing it to fail later inside EF (#560).
+    /// </summary>
+    [Fact]
+    public async Task SeedWith_singleton_given_a_sequence_with_a_null_item_throws_and_seeds_nothing()
+    {
+        var sequence = new List<CoverageManufacturer> { new() { Id = 1, Name = "a" }, null! };
+        using var sut = new DbContextBuilder<CoverageContext>().UseInMemory();
+
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(sequence));
+        Assert.Equal("entity", ex.ParamName);
+        Assert.StartsWith("One of the entities is null", ex.Message, StringComparison.Ordinal);
+
+        await using var context = await sut.BuildAsync();
+        Assert.Equal(0, context.Manufacturers.Count());
+    }
+
+
+
+    /// <summary>
     /// Verifies the params overload flattens an item that is itself an <c>IEnumerable&lt;object&gt;</c>.
     /// </summary>
     [Fact]
