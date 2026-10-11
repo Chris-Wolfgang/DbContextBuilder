@@ -17,7 +17,7 @@ using Wolfgang.DbContextBuilderCore.Assertions;
 // SeedWith, SeedWithRandom (through UseCustomRandomEntityCreator with the sample's own
 // deterministic creator, so no second package has to be baselined), UseSeedProfile,
 // UseDiagnosticOutput, BuildAsync, and the Should() assertions. Every scenario must
-// compile against the baseline package too (0.8.1 has all of them).
+// compile against the baseline package too (0.9.0 has all of them).
 
 var outputPath = args.Length > 0 ? args[0] : "shadow-results.json";
 var iterations = args.Length > 1 && int.TryParse(args[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var n) ? n : 100;
