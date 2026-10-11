@@ -178,6 +178,30 @@ public class SqliteDbContextCreatorTests
 
 
     /// <summary>
+    /// #599: passing the active creator to SetCreateDbContext again is a no-op: the creator is
+    /// not disposed (its connection still holds the database) and the shared service provider
+    /// is kept.
+    /// </summary>
+    [Fact]
+    public async Task SetCreateDbContext_with_the_active_creator_keeps_it_and_its_service_provider()
+    {
+        using var builder = new DbContextBuilder<BasicContext>().UseSqlite();
+        var creator = Assert.IsType<SqliteDbContextCreator>(builder.CreateDbContext);
+        await using (await builder.BuildAsync())
+        {
+        }
+        var provider = builder.InternalServiceProvider;
+
+        builder.SetCreateDbContext(creator);
+
+        Assert.False(creator.IsDisposed);
+        Assert.Same(creator, builder.CreateDbContext);
+        Assert.Same(provider, builder.InternalServiceProvider);
+    }
+
+
+
+    /// <summary>
     /// Re-selecting InMemory after a SQLite flavor must leave a working InMemory builder: the
     /// SQLite services and model customizer the extension registered are dropped, so BuildAsync
     /// no longer builds an internal service provider without the InMemory services (#558).
