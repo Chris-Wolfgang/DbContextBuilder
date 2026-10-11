@@ -61,13 +61,21 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Instructs the builder to use InMemory as the database provider.
     /// </summary>
     /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     /// <remarks>
     /// Provider selection is last-write-wins — calling <see cref="UseInMemory"/> after a
     /// previous call to either <see cref="UseInMemory"/> or a SQLite extension overrides
-    /// the earlier choice. Choose one provider per builder.
+    /// the earlier choice, including the EF Core services and model customizer the SQLite
+    /// extension registered. Choose one provider per builder.
     /// </remarks>
     public DbContextBuilder<T> UseInMemory()
     {
+        ThrowIfDisposed();
+
+        // The only registrations in ServiceCollection are the SQLite provider's services and its
+        // IModelCustomizer. Left in place, BuildAsync would build an internal service provider
+        // holding only SQLite services for an InMemory context, and EF rejects it (#558).
+        ServiceCollection.Clear();
         SetCreateDbContext(new InMemoryDbContextCreator());
         return this;
     }
@@ -80,6 +88,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     // abandoned creator's connection.
     internal void SetCreateDbContext(ICreateDbContext creator)
     {
+        ThrowIfDisposed();
+
         if (!ReferenceEquals(CreateDbContext, creator) && CreateDbContext is IDisposable previous)
         {
             previous.Dispose();
@@ -90,14 +100,30 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
 
+    // Every configuration entry point calls this first (#563): after Dispose a builder must not
+    // accept new state, and a SQLite creator created then could never be released, because a
+    // second Dispose returns early.
+    internal void ThrowIfDisposed()
+    {
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(DbContextBuilder<T>));
+        }
+    }
+
+
+
     /// <summary>
     /// Allows the user to specify their own implementation of ICreateRandomEntities
     /// for creating random entities.
     /// </summary>
     /// <param name="creator">The creator to use</param>
     /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> UseCustomRandomEntityCreator(ICreateRandomEntities creator)
     {
+        ThrowIfDisposed();
+
         ArgumentNullException.ThrowIfNull(creator);
         RandomEntityCreator = creator;
         return this;
@@ -111,8 +137,11 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <param name="dbContextOptionsBuilder">The options builder to use when creating the DbContext.</param>
     /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentNullException"><paramref name="dbContextOptionsBuilder"/> is null.</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> UseDbContextOptionsBuilder(DbContextOptionsBuilder<T> dbContextOptionsBuilder)
     {
+        ThrowIfDisposed();
+
         ArgumentNullException.ThrowIfNull(dbContextOptionsBuilder);
 
         _dbContextOptionsBuilder = dbContextOptionsBuilder;
@@ -130,8 +159,11 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <param name="profile">The seed profile to apply.</param>
     /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentNullException"><paramref name="profile"/> is null.</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> UseSeedProfile(ISeedProfile<T> profile)
     {
+        ThrowIfDisposed();
+
         ArgumentNullException.ThrowIfNull(profile);
 
         profile.Apply(this);
@@ -151,8 +183,11 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <param name="writeLine">Receives each diagnostic line.</param>
     /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentNullException"><paramref name="writeLine"/> is null.</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> UseDiagnosticOutput(Action<string> writeLine)
     {
+        ThrowIfDisposed();
+
         ArgumentNullException.ThrowIfNull(writeLine);
 
         _diagnosticOutput = writeLine;
@@ -170,6 +205,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     /// <remarks>
     /// Insertion order across distinct entity types is not guaranteed — the builder
     /// accumulates seeds in a single list and EF's <c>SaveChangesAsync</c> orders the
@@ -182,6 +218,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     public DbContextBuilder<T> SeedWith<TEntity>(IEnumerable<TEntity> entities)
         where TEntity : class
     {
+        ThrowIfDisposed();
+
         ArgumentNullException.ThrowIfNull(entities);
 
         if (typeof(TEntity) == typeof(string))
@@ -206,9 +244,12 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(params TEntity[] entities)
         where TEntity : class
     {
+        ThrowIfDisposed();
+
         ArgumentNullException.ThrowIfNull(entities);
         AddSeedItems(entities, nameof(entities));
         return this;
@@ -226,9 +267,12 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentNullException"><paramref name="entity"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="entity"/> is a <see cref="string"/> instance (matches the
     /// <c>params</c> overload's rejection regardless of how <typeparamref name="TEntity"/> was inferred).</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(TEntity entity)
         where TEntity : class
     {
+        ThrowIfDisposed();
+
         ArgumentNullException.ThrowIfNull(entity);
 
         // Reject by runtime type, not just TEntity, so `SeedWith<object>("...")` is still
@@ -301,6 +345,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     /// <remarks>
     /// Foreign keys on the generated entities are reconciled against the model when the
     /// context is built: a required FK is wired to a seeded principal of its type (so seed the
@@ -320,6 +365,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count) where TEntity : class
     {
+        ThrowIfDisposed();
+
         if (count < 1)
         {
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
@@ -345,6 +392,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     /// <remarks>
     /// Foreign keys on the generated entities are reconciled against the model when the
     /// context is built: a required FK is wired to a seeded principal of its type (so seed the
@@ -365,6 +413,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, TEntity> func) where TEntity : class
     {
+        ThrowIfDisposed();
+
         if (count < 1)
         {
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
@@ -393,6 +443,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     /// <remarks>
     /// Foreign keys on the generated entities are reconciled against the model when the
     /// context is built: a required FK is wired to a seeded principal of its type (so seed the
@@ -413,6 +464,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, int, TEntity> func) where TEntity : class
     {
+        ThrowIfDisposed();
+
         if (count < 1)
         {
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
@@ -638,23 +691,9 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public async Task<T> BuildAsync()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(DbContextBuilder<T>));
-        }
+        ThrowIfDisposed();
 
-        var optionBuilder = _dbContextOptionsBuilder ?? new DbContextOptionsBuilder<T>();
-        if (ServiceCollection.Count > 0)
-        {
-            var provider = ServiceCollection.BuildServiceProvider();
-            optionBuilder.UseInternalServiceProvider(provider);
-        }
-
-        if (_diagnosticOutput is not null)
-        {
-            optionBuilder.LogTo(_diagnosticOutput);
-        }
-
+        var optionBuilder = CreateOptionsBuilder();
         var contextCreator = CreateDbContext ??= new InMemoryDbContextCreator();
 
         // Create a temporary context to initialize and seed the database, then dispose it
@@ -696,6 +735,31 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         );
 
         return await contextCreator.CreateDbContextAsync(optionBuilder).ConfigureAwait(false);
+    }
+
+
+
+    // The options for one build. Per-build configuration (internal service provider, provider,
+    // logging) goes on a copy, never on the caller's builder: otherwise a SQLite build left its
+    // provider and services in the caller's builder, and re-selecting InMemory for the next build
+    // failed (#558 review).
+    private DbContextOptionsBuilder<T> CreateOptionsBuilder()
+    {
+        var optionBuilder = _dbContextOptionsBuilder is null
+            ? new DbContextOptionsBuilder<T>()
+            : new DbContextOptionsBuilder<T>(_dbContextOptionsBuilder.Options);
+        if (ServiceCollection.Count > 0)
+        {
+            var provider = ServiceCollection.BuildServiceProvider();
+            optionBuilder.UseInternalServiceProvider(provider);
+        }
+
+        if (_diagnosticOutput is not null)
+        {
+            optionBuilder.LogTo(_diagnosticOutput);
+        }
+
+        return optionBuilder;
     }
 
 

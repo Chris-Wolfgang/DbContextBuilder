@@ -1,4 +1,7 @@
+using AdventureWorks.Models;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -204,4 +207,154 @@ public class SqliteDbContextCreatorTests
 
         Assert.Equal("builder", ex.ParamName);
     }
+
+
+    /// <summary>
+    /// Re-selecting InMemory after a SQLite flavor must leave a working InMemory builder: the
+    /// SQLite services and model customizer the extension registered are dropped, so BuildAsync
+    /// no longer builds an internal service provider without the InMemory services (#558).
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UseInMemory_after_a_Sqlite_flavor_builds_an_InMemory_context(bool forMsSqlServer)
+    {
+        using var builder = new DbContextBuilder<BasicContext>();
+        if (forMsSqlServer) { builder.UseSqliteForMsSqlServer(); } else { builder.UseSqlite(); }
+
+        builder.UseInMemory().SeedWith(NewLog("reselected"));
+        await using var context = await builder.BuildAsync();
+
+        Assert.Empty(builder.ServiceCollection);
+        Assert.Equal("Microsoft.EntityFrameworkCore.InMemory", context.Database.ProviderName);
+        Assert.Equal("reselected", Assert.Single(context.DatabaseLogs).Event);
+    }
+
+
+
+    /// <summary>
+    /// With a caller-supplied options builder, a SQLite build followed by re-selecting InMemory
+    /// builds an InMemory context: BuildAsync applies its per-build configuration (internal
+    /// service provider, provider, logging) to a copy, so the caller's builder never carries the
+    /// earlier SQLite configuration into the next build (#558 review).
+    /// </summary>
+    [Fact]
+    public async Task UseInMemory_after_a_Sqlite_build_with_a_caller_options_builder_builds_an_InMemory_context()
+    {
+        var options = new DbContextOptionsBuilder<BasicContext>();
+        using var builder = new DbContextBuilder<BasicContext>().UseDbContextOptionsBuilder(options).UseSqlite();
+        await using (var sqlite = await builder.BuildAsync())
+        {
+            Assert.Equal("Microsoft.EntityFrameworkCore.Sqlite", sqlite.Database.ProviderName);
+        }
+
+        builder.UseInMemory().SeedWith(NewLog("reselected"));
+        await using var context = await builder.BuildAsync();
+
+        Assert.Equal("Microsoft.EntityFrameworkCore.InMemory", context.Database.ProviderName);
+        Assert.Equal("reselected", Assert.Single(context.DatabaseLogs).Event);
+    }
+
+
+
+    /// <summary>
+    /// BuildAsync leaves the caller-supplied options builder exactly as the caller configured it.
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_does_not_modify_the_caller_options_builder()
+    {
+        var options = new DbContextOptionsBuilder<BasicContext>();
+        var before = options.Options.Extensions.Select(e => e.GetType()).ToList();
+        using var builder = new DbContextBuilder<BasicContext>().UseDbContextOptionsBuilder(options).UseSqlite().UseDiagnosticOutput(_ => { });
+
+        await using var context = await builder.BuildAsync();
+
+        Assert.Equal(before, options.Options.Extensions.Select(e => e.GetType()).ToList());
+    }
+
+
+
+    /// <summary>
+    /// After Dispose, every configuration entry point throws <see cref="ObjectDisposedException"/>
+    /// instead of accepting new state (#563).
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(ConfigurationCalls))]
+    public void Configuration_after_Dispose_throws_ObjectDisposedException(string call)
+    {
+        var builder = new DbContextBuilder<BasicContext>();
+        builder.Dispose();
+
+        var ex = Assert.Throws<ObjectDisposedException>(() => ConfigurationCallsByName[call](builder));
+
+        Assert.Equal(nameof(DbContextBuilder<BasicContext>), ex.ObjectName);
+    }
+
+
+
+    /// <summary>
+    /// UseSqlite on a disposed builder registers nothing and opens no connection that a later
+    /// Dispose could never release (#563).
+    /// </summary>
+    [Fact]
+    public void UseSqlite_after_Dispose_registers_no_services_and_creates_no_creator()
+    {
+        var builder = new DbContextBuilder<BasicContext>();
+        builder.Dispose();
+
+        Assert.Throws<ObjectDisposedException>(() => builder.UseSqlite());
+
+        Assert.Empty(builder.ServiceCollection);
+        Assert.Null(builder.CreateDbContext);
+    }
+
+
+
+    // BasicContext is internal, so the theory takes the call's name and looks the action up here.
+    private static readonly Dictionary<string, Action<DbContextBuilder<BasicContext>>> ConfigurationCallsByName = new()
+    {
+        ["UseInMemory"] = b => b.UseInMemory(),
+        ["UseSqlite"] = b => b.UseSqlite(),
+        ["UseSqliteForMsSqlServer"] = b => b.UseSqliteForMsSqlServer(),
+        ["UseCustomRandomEntityCreator"] = b => b.UseCustomRandomEntityCreator(new DeterministicRandomEntityCreator()),
+        ["UseDbContextOptionsBuilder"] = b => b.UseDbContextOptionsBuilder(new DbContextOptionsBuilder<BasicContext>()),
+        ["UseSeedProfile"] = b => b.UseSeedProfile(null!), // the disposed check runs before the null check
+        ["UseDiagnosticOutput"] = b => b.UseDiagnosticOutput(_ => { }),
+        // Internal, but it has its own disposed guard: covered directly, not only through its callers.
+        ["SetCreateDbContext"] = b => b.SetCreateDbContext(new InMemoryDbContextCreator()),
+        ["SeedWith(IEnumerable)"] = b => b.SeedWith(new List<DatabaseLog> { NewLog("a") }.AsEnumerable()),
+        ["SeedWith(params)"] = b => b.SeedWith(NewLog("a"), NewLog("b")),
+        ["SeedWith(entity)"] = b => b.SeedWith(NewLog("a")),
+        ["SeedWithRandom(count)"] = b => b.SeedWithRandom<DatabaseLog>(1),
+        ["SeedWithRandom(count, func)"] = b => b.SeedWithRandom<DatabaseLog>(1, e => e),
+        ["SeedWithRandom(count, func with index)"] = b => b.SeedWithRandom<DatabaseLog>(1, (e, _) => e),
+    };
+
+
+
+    /// <summary>
+    /// The names of the configuration entry points the disposed-builder theory exercises.
+    /// </summary>
+    public static TheoryData<string> ConfigurationCalls()
+    {
+        var data = new TheoryData<string>();
+        foreach (var name in ConfigurationCallsByName.Keys)
+        {
+            data.Add(name);
+        }
+        return data;
+    }
+
+
+
+    private static DatabaseLog NewLog(string evt) => new()
+    {
+        PostTime = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+        DatabaseUser = "user",
+        Event = evt,
+        Schema = "dbo",
+        Object = "obj",
+        Tsql = "select 1",
+        XmlEvent = "<e/>",
+    };
 }
