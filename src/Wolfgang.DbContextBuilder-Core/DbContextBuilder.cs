@@ -437,19 +437,11 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
         }
 
-        var entities = GetRandomEntityCreator()
-            .CreateRandomEntities<TEntity>(count);
-
-        // Materialise once (a creator may return a lazy sequence) and record the entities
-        // as randomly seeded so their foreign keys are reconciled at build time.
-        var materialized = entities as IReadOnlyList<TEntity> ?? entities.ToList();
-        _seedData.AddRange(materialized);
-        foreach (var entity in materialized)
-        {
-            _randomlySeeded.Add(entity);
-        }
-
-        return this;
+        return AddRandomlySeeded
+        (
+            GetRandomEntityCreator()
+                .CreateRandomEntities<TEntity>(count)
+        );
     }
 
 
@@ -490,20 +482,12 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
         ArgumentNullException.ThrowIfNull(func);
 
-        var entities = GetRandomEntityCreator()
-            .CreateRandomEntities<TEntity>(count)
-            .Select(func);
-
-        // Materialise once (the func overloads use a lazy Select) and record the entities
-        // as randomly seeded so their foreign keys are reconciled at build time.
-        var materialized = entities as IReadOnlyList<TEntity> ?? entities.ToList();
-        _seedData.AddRange(materialized);
-        foreach (var entity in materialized)
-        {
-            _randomlySeeded.Add(entity);
-        }
-
-        return this;
+        return AddRandomlySeeded
+        (
+            GetRandomEntityCreator()
+                .CreateRandomEntities<TEntity>(count)
+                .Select(func)
+        );
     }
 
 
@@ -544,12 +528,22 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
         ArgumentNullException.ThrowIfNull(func);
 
-        var entities = GetRandomEntityCreator()
-            .CreateRandomEntities<TEntity>(count)
-            .Select(func);
+        return AddRandomlySeeded
+        (
+            GetRandomEntityCreator()
+                .CreateRandomEntities<TEntity>(count)
+                .Select(func)
+        );
+    }
 
-        // Materialise once (the func overloads use a lazy Select) and record the entities
-        // as randomly seeded so their foreign keys are reconciled at build time.
+
+
+    // Shared by the three SeedWithRandom overloads (#573). Materialises once — a creator may return
+    // a lazy sequence, and the func overloads add a lazy Select — and records the entities as
+    // randomly seeded so their keys and foreign keys are reconciled at build time.
+    private DbContextBuilder<T> AddRandomlySeeded<TEntity>(IEnumerable<TEntity> entities)
+        where TEntity : class
+    {
         var materialized = entities as IReadOnlyList<TEntity> ?? entities.ToList();
         _seedData.AddRange(materialized);
         foreach (var entity in materialized)
@@ -615,10 +609,16 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             }
 
             long candidate = 1;
-            // An unset key is always assigned. A random entity whose key is still free claims it;
-            // only a colliding one is renumbered.
-            foreach (var entity in entities.Where(entity => IsUnset(entity) || (_randomlySeeded.Contains(entity) && !used.Add(ReadKey(keyProperty, entity)))))
+            foreach (var entity in entities)
             {
+                // An unset key is always assigned. A set SeedWith key is fixed (it is already in
+                // `used`); a random entity whose key is still free claims it, and only a colliding
+                // one is renumbered.
+                if (!IsUnset(entity) && (!_randomlySeeded.Contains(entity) || used.Add(ReadKey(keyProperty, entity))))
+                {
+                    continue;
+                }
+
                 while (!used.Add(candidate))
                 {
                     candidate++;

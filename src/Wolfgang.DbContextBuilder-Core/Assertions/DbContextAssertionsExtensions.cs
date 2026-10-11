@@ -17,6 +17,9 @@ public static class DbContextAssertionsExtensions
     /// <param name="set">The DbSet to assert against.</param>
     /// <returns>A <see cref="DbSetAssertions{TEntity}"/> instance for chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="set"/> is null.</exception>
+    // Functionally equivalent to the IQueryable overload below, which a DbSet also binds to;
+    // both construct the same assertions object. Kept because it is shipped public API (#573)
+    // and is a candidate for removal at the next major version.
     public static DbSetAssertions<TEntity> Should<TEntity>(this DbSet<TEntity> set)
         where TEntity : class
     {
