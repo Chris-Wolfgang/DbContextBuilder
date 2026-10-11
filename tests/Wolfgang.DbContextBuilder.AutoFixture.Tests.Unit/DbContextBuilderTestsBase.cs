@@ -40,7 +40,6 @@ public abstract class DbContextBuilderTestsBase
         await using var context = await sut.BuildAsync();
 
         // Assert
-        Assert.NotNull(context);
         Assert.IsType<AdventureWorksDbContext>(context);
     }
 
@@ -60,8 +59,6 @@ public abstract class DbContextBuilderTestsBase
         await using var context2 = await sut.BuildAsync();
 
         // Assert
-        Assert.NotNull(context1);
-        Assert.NotNull(context2);
         Assert.IsType<AdventureWorksDbContext>(context1);
         Assert.IsType<AdventureWorksDbContext>(context2);
         Assert.NotSame(context1, context2);
@@ -177,7 +174,7 @@ public abstract class DbContextBuilderTestsBase
         sut.UseCustomRandomEntityCreator(creator);
 
         // Assert
-        Assert.Equal(creator, sut.RandomEntityCreator);
+        Assert.Same(creator, sut.RandomEntityCreator);
     }
 
 
@@ -365,6 +362,7 @@ public abstract class DbContextBuilderTestsBase
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(addresses.AsEnumerable()));
         Assert.Equal("entities", ex.ParamName);
+        Assert.StartsWith("One of the entities is null", ex.Message, StringComparison.Ordinal);
     }
 
 
@@ -387,6 +385,7 @@ public abstract class DbContextBuilderTestsBase
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(invalidValues.AsEnumerable()));
         Assert.Equal("entities", ex.ParamName);
+        Assert.StartsWith("The type of TEntity cannot be string", ex.Message, StringComparison.Ordinal);
     }
 
 
@@ -558,6 +557,7 @@ public abstract class DbContextBuilderTestsBase
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(address1, null!, address2));
         Assert.Equal("entities", ex.ParamName);
+        Assert.StartsWith("One of the entities is null", ex.Message, StringComparison.Ordinal);
     }
 
 
@@ -601,6 +601,7 @@ public abstract class DbContextBuilderTestsBase
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(null!, addressList));
         Assert.Equal("entities", ex.ParamName);
+        Assert.StartsWith("One of the entities is null", ex.Message, StringComparison.Ordinal);
     }
 
 
@@ -647,6 +648,7 @@ public abstract class DbContextBuilderTestsBase
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith<Address>(addressList!));
         Assert.Equal("entities", ex.ParamName);
+        Assert.StartsWith("One of the entities is null", ex.Message, StringComparison.Ordinal);
     }
 
 
@@ -665,15 +667,17 @@ public abstract class DbContextBuilderTestsBase
         // Arrange
         using var sut = CreateDbContextBuilder();
 
-        // Act & Assert — the single-string call now resolves to the singleton overload
-        // (added in the SeedWith singleton PR) which raises ArgumentException with
-        // paramName "entity"; the params overload still raises it for string[] with
-        // paramName "entities". Assert at the Exception level so the test is resilient
-        // to overload-resolution choices.
-        Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value"));
+        // Act & Assert — overload resolution is deterministic: a single string binds to the
+        // singleton overload (paramName "entity"), a string[] to the params overload
+        // (paramName "entities").
+        var single = Assert.Throws<ArgumentException>(() => sut.SeedWith("Invalid value"));
+        Assert.Equal("entity", single.ParamName);
+        Assert.StartsWith("One of the entities passed in is of type string", single.Message, StringComparison.Ordinal);
 #pragma warning disable S3878 // Explicit array literal is deliberate here — it forces overload resolution to the params/array overload instead of the singleton overload above.
-        Assert.Throws<ArgumentException>(() => sut.SeedWith(new[] { "Invalid value" }));
+        var array = Assert.Throws<ArgumentException>(() => sut.SeedWith(new[] { "Invalid value" }));
 #pragma warning restore S3878
+        Assert.Equal("entities", array.ParamName);
+        Assert.StartsWith("One of the entities passed in is of type string", array.Message, StringComparison.Ordinal);
     }
 
 
@@ -796,7 +800,6 @@ public abstract class DbContextBuilderTestsBase
             .ToList();
 
         // Assert
-        Assert.NotNull(actualAddresses);
         Assert.Equal(count, actualAddresses.Count);
     }
 
@@ -889,9 +892,10 @@ public abstract class DbContextBuilderTestsBase
             .People
             .ToList();
 
-        // Assert
-        Assert.NotNull(actualPeople);
+        // Assert — the transform ran on every entity: it nulls AdditionalContactInfo,
+        // which the random creator always fills
         Assert.Equal(count, actualPeople.Count);
+        Assert.All(actualPeople, p => Assert.Null(p.AdditionalContactInfo));
     }
 
 
@@ -1035,9 +1039,13 @@ public abstract class DbContextBuilderTestsBase
             .People
             .ToList();
 
-        // Assert
-        Assert.NotNull(actualPeople);
-        Assert.Equal(count, actualPeople.Count);
+        // Assert — every entity went through the transform with its own index
+        Assert.Equal
+        (
+            Enumerable.Range(startingId, count),
+            actualPeople.Select(p => p.BusinessEntityId).OrderBy(id => id)
+        );
+        Assert.All(actualPeople, p => Assert.Null(p.AdditionalContactInfo));
     }
 
 
@@ -1160,7 +1168,7 @@ public abstract class DbContextBuilderTestsBase
             .BuildAsync();
 
         // Assert
-        Assert.NotNull(context);
+        Assert.Equal("Microsoft.EntityFrameworkCore.InMemory", context.Database.ProviderName);
     }
 
 

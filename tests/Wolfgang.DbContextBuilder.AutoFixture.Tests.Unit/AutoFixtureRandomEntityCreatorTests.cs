@@ -59,7 +59,7 @@ public class AutoFixtureRandomEntityCreatorTests : ICreateRandomEntitiesTestsBas
 		var sut = new AutoFixtureRandomEntityCreator(fixture);
 
 		// Assert
-		Assert.Equal(fixture, sut.Fixture);
+		Assert.Same(fixture, sut.Fixture);
 	}
 
 
