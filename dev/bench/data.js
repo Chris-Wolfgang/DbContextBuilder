@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791724179944,
+  "lastUpdate": 1791748193268,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -2046,6 +2046,102 @@ window.BENCHMARK_DATA = {
             "value": 2164057.078125,
             "unit": "ns",
             "range": "± 60554.17748746284"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "02cabc9eb0e306110f43242b67221aa656769b48",
+          "message": "build(src): stop packing icons as content files; csproj hygiene (#657)\n\n* fix(core): drop SQLite services when UseInMemory replaces UseSqlite; reject configuration after Dispose\n\nUseInMemory() now clears ServiceCollection before selecting the InMemory\ncreator. The only registrations there are the SQLite provider's services and\nits IModelCustomizer, and with them left in place BuildAsync built an internal\nservice provider for an InMemory context that held only SQLite services (#558).\n\nEvery configuration entry point (UseInMemory, UseSqlite and the MS SQL flavor,\nUseCustomRandomEntityCreator, UseDbContextOptionsBuilder, UseSeedProfile,\nUseDiagnosticOutput, SeedWith x3, SeedWithRandom x3) and SetCreateDbContext\nnow call a shared ThrowIfDisposed(), which BuildAsync reuses. The SQLite\nextension checks before it registers services or opens a connection (#563).\n\nCloses #558\nCloses #563\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* fix(core): build from a copy of the caller's options builder; document UseSqlite's ObjectDisposedException\n\nReview on #646:\n- BuildAsync applied its per-build configuration to the caller's\n  DbContextOptionsBuilder (UseInternalServiceProvider, LogTo, and\n  SqliteDbContextCreator's UseSqlite). After a SQLite build, that builder still\n  carried the SQLite provider and services, so UseInMemory() and a second\n  BuildAsync failed whenever UseDbContextOptionsBuilder(...) was in use. Each\n  build now works on new DbContextOptionsBuilder<T>(caller.Options), via a\n  CreateOptionsBuilder helper (BuildAsync was at MA0051's 60-line limit).\n- Both public UseSqlite extensions now document ObjectDisposedException.\n- The disposed-builder theory gains a direct SetCreateDbContext case: its own\n  guard was only reached through callers that check first.\n\nTests (new):\n- UseInMemory_after_a_Sqlite_build_with_a_caller_options_builder_builds_an_InMemory_context\n- BuildAsync_does_not_modify_the_caller_options_builder\nBoth failed before the fix and pass after.\n\nVerified: Release build of the solution has 0 warnings; every\nCore.Tests.Unit project passes (net6.0-net10.0).\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* fix(core): make BuildAsync re-entrant: seed once, share one service provider\n\nThe first BuildAsync creates and seeds the database; later calls on the same\ncreator return another context over it instead of seeding again, which failed\non a duplicate key on both providers. The EF Core internal service provider\nis built once per builder, shared by every context, and disposed with the\nbuilder (it used to be rebuilt and leaked on every call).\n\nSelecting another provider (SetCreateDbContext with a new creator) disposes\nthe old service provider and resets the seeded state, so the new, empty\ndatabase is seeded by the next build. Seeding methods called after the\ndatabase was seeded throw InvalidOperationException: that data could never\nreach it. The create-and-seed block moved to CreateAndSeedDatabaseAsync to\nkeep BuildAsync under MA0051's 60-line limit.\n\nCloses #559\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit c8ff70447af73c8c01540889b9c18bf2ab6300c1)\n\n* fix: reject a null item in a sequence passed to SeedWith(entity)\n\nSeedWith(new List<Product> { p, null }) binds to the single-entity overload,\nwhich flattened the sequence and rejected string items but stored a null; it\nthen failed inside EF at BuildAsync with ArgumentNullException (Parameter\n'key'). The sequence loop in the Core and EF6 builders now throws\nArgumentException(\"One of the entities is null\", \"entity\") first, matching\nthe params overload, and still atomically (nothing is seeded).\n\nCloses #560\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit 033bbe1034f8bff633eca76bf2898e78df0c46d8)\n\n* docs(ef6): document SeedWith(entity)'s null and string sequence items\n\nReview on #648: this PR made the EF6 single-entity SeedWith reject a null or\nstring item inside a sequence (ArgumentException), but its <exception> entry\nstill described only a direct string. It now matches the Core counterpart.\n\nVerified: Release build of the EF6 project has 0 warnings, 0 errors.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit f7a71424a953ba483b22502280f45af9d203e0f3)\n\n* fix(core): reconcile random FKs to seeded principals of a derived type\n\nFindPrincipal looked up seeded entities by the FK principal's exact CLR type.\nWith an inheritance base as principal and only derived instances seeded, the\nlookup missed and a required FK stayed random (an optional one was cleared).\nIt now takes candidates from every seeded type assignable to the principal\ntype, still skipping the dependent itself.\n\nCloses #569\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit 809fd6703408ca24e29617bd85b0d055c11b474c)\n\n* fix(autofixture): populate properties that implicitly implement an interface\n\nIgnoreVirtualMembers treated any property with a virtual getter as a\nnavigation. The compiler emits implicit interface implementations as virtual\nfinal, so a plain scalar such as IAuditable.CreatedAt was left unpopulated.\nBoth copies (AutoFixture package and -EF6) now require an overridable getter:\nIsVirtual && !IsFinal.\n\nCloses #561\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit 8c24f9d5f0d4ab96ae6fc5198e4960b6fe48710f)\n\n* fix(autofixture): keep omitting a sealed override of a virtual navigation\n\nReview on #650: `IsVirtual && !IsFinal` also stopped omitting a sealed\noverride of an EF navigation, whose getter is virtual and final like an\nimplicit interface implementation's, so AutoFixture would fill that object\ngraph. A virtual getter is now treated as a navigation when it is either\nnon-final or overrides a member declared on another type\n(GetBaseDefinition().DeclaringType != DeclaringType). Declaring types are\ncompared rather than MethodInfos, which differ by ReflectedType when an\ninherited property is read through a derived type. Same change in the EF6\nand AutoFixture creators.\n\nTests (new, in both IgnoreVirtualMembersTests files):\n- Create_when_property_is_a_sealed_override_returns_null\n- CreateRandomEntities_leaves_a_sealed_override_navigation_null\n- Create_when_inherited_property_implements_an_interface_returns_NoSpecimen\n- CreateRandomEntities_populates_an_inherited_interface_property\n- fixtures: abstract NavigationRowBase, SealedOverrideRow, InterfaceRowBase,\n  DerivedInterfaceRow\nThe sealed-override test fails without the fix (all 11 TFMs across the two\nprojects) and passes with it.\n\nVerified: AutoFixture tests (net6.0-net10.0) and EF6 tests (net462-net481)\npass; coverage of the touched src and test assemblies is 100% (coverlet on\nnet10.0, the Microsoft collector on net48).\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit e434c67390d69ceebbf621d7cbd065b46684c831)\n\n* test(autofixture): unseal the sealed-override fixture class; give DerivedInterfaceRow a member\n\nInspectCode flagged the `sealed` modifier on SealedOverrideRow.Parent as redundant and\nDerivedInterfaceRow as an empty class. The modifier is not redundant for the test's purpose:\nan override inside a sealed class is not emitted as IL `final`, and the test asserts\nIsVirtual && IsFinal. Keep the member sealed and unseal the class instead; give the empty\nfixture a scalar member.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n\n* fix: correct the database-creation failure messages; cover EF6 InitializeDatabase\n\nCore BuildAsync's wrapped InvalidOperationException now points at\nUseDiagnosticOutput(...) for EF Core's log instead of telling the caller to\nbuild a DbContextOptionsBuilder with LogTo (#565). EF6's message dropped the\n\"(DbConnection, bool) constructor\" hint: a missing constructor throws\nMissingMethodException before InitializeDatabase runs, so it was never the\ncause.\n\nThe [ExcludeFromCodeCoverage] on EF6 InitializeDatabase is removed (it runs on\nevery Build/BuildAsync) and its catch is covered by tests whose context\ncreator returns an already-disposed context (#568).\n\nCloses #565\nCloses #568\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit 874576a9f5ce9aa5e74dbdb66ba41873fbb184f8)\n\n* test: assert the corrected failure guidance, not just the message prefix\n\nReview on #651: both failure-path tests checked only the unchanged message\nprefix, so they still passed if the stale advice came back.\n- Core (BuildAsync_when_the_database_cannot_be_created_wraps_the_EF_failure)\n  now asserts that the message names UseDiagnosticOutput(...) and\n  .EnableSensitiveDataLogging() and no longer mentions .LogTo(.\n- EF6 (Build_when_the_database_cannot_be_created_wraps_the_EF_failure) now\n  asserts the two new causes and the absence of the (DbConnection, bool)\n  hint.\n\nVerified: both pass with this PR's messages. With the base branch's two\nDbContextBuilder.cs files checked out, both fail (Core net10.0 1/1, EF6\nnet48 1/2).\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit afd841736176679e5efe4e7aa69ae2750a19080f)\n\n* chore(api): drop the stale oblivious duplicate of params SeedWith from PublicAPI.Shipped.txt\n\nAll 7 PublicAPI.Shipped.txt files (Core, Core-EF6..EF10, EF6) listed the\nparams SeedWith overload twice: once annotated (current) and once\nnullable-oblivious (stale). The oblivious line is removed; a Release build of\nthe solution raises no RS0016/RS0017 on any TFM.\n\nCloses #567\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit 41dc96cd9eb54d76b7d4ebc0cddd32dcbb176c66)\n\n* docs(xml): XML doc accuracy sweep across Core, SQLite extensions and AutoFixture\n\nMissing tags: ArgumentNullException on UseCustomRandomEntityCreator and the\nSeedWithRandom func overloads; the no-provider InvalidOperationException on\nall SeedWithRandom overloads; BuildAsync's wrapped InvalidOperationException;\n<typeparam> on the three SeedWith overloads; <typeparam>/<param>/\nArgumentNullException/ObjectDisposedException on UseSqlite and\nUseSqliteForMsSqlServer; ArgumentNullException/InvalidOperationException on\nSqliteModelCustomizer.Customize.\n\nCorrections: SqliteModelCustomizer class remarks (computed SQL is passed\nthrough, not removed; default-value and many-to-many items added; no\nDbContext{T}); DefaultValueMap examples use the registered (getdate())/(newid())\nspellings and say other spellings need their own entry (document-only, no\nbehaviour change); single-entity SeedWith explains the List<T> binding and\nflattening; Dispose(bool) no longer claims unmanaged resources; the\nDbContextActivator fallback comment says Activator runs on every Create; the\nAutoFixture creator says the Fixture ctor applies no customizations; the\ncount-only SeedWithRandom comment drops the Select it does not have. Every\nfluent <returns> is \"The builder, for chaining.\"\n\nCloses #566\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit 6c54bbc80cb67f01ca48fa95318572d4934c0b9c)\n\n* refactor: dedupe SeedWithRandom tracking and EF6 Build/BuildAsync; no side-effecting Where\n\nCore: the materialise-and-track block repeated in the three SeedWithRandom\noverloads moves to AddRandomlySeeded<TEntity>. EnsureUniqueRandomPrimaryKeys\nreplaces `entities.Where(... !used.Add(...))` with a plain loop and an explicit\ncontinue; the evaluation order (and so which keys are claimed) is unchanged.\n\nEF6: Build and BuildAsync share ResolveContextCreator and PrepareSeedContext,\nleaving only SaveChanges vs SaveChangesAsync in each.\n\nAssertions: Should(DbSet<TEntity>) gets a comment that it duplicates\nShould(IQueryable<TEntity>) and is kept as shipped API.\n\nNo behaviour change. Closes #573\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit 18a367ca4525dd79edf1bd0b11830d241d36be72)\n\n* refactor: reword the Should(DbSet) overload note so it does not read as commented-out code\n\nInspectCode (S125) flagged the explanatory comment above the DbSet overload as commented-out\ncode because it spelled out the method signatures. Same information, prose form.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n\n* perf: resolve model metadata once per type when seeding; no discarded Fixture\n\nEnsureUniqueRandomPrimaryKeys and ReconcileRandomForeignKeys looked up the EF\nentity type / primary key for every seeded row; both now build a per-CLR-type\ndictionary first (Distinct().ToDictionary), so N rows of one type cost one\nlookup. Row order and grouping are unchanged.\n\nBoth AutoFixtureRandomEntityCreator copies allocated a Fixture in the property\ninitializer, which the Fixture-taking ctor then discarded; the parameterless\nctor allocates it instead.\n\nAdds an InMemory_SeedWithRandom_ForeignKeys benchmark (random principals plus\nrandom dependents with a required FK) on a separate context so the existing\nseries keep their model.\n\nRefs #572 (Bogus Faker caching and the Activator fallback compile are deferred;\nsee the PR description).\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit a6e86aeb90c647fc3b499a5cfa9afafd522d0db1)\n\n* style(src): formatting sweep (field naming/placement, member spacing, throw layout, newlines)\n\n- DbContextBuilder: IntegralKeyTypes -> _integralKeyTypes, hoisted into the\n  field block; trailing newline.\n- SqliteModelCustomizer: no blank lines after the class brace; three blank\n  lines between members; the many-to-many backing field and property moved up\n  beside the other field/property pairs; stray blank line before a closing\n  brace removed; trailing newline.\n- DbSetAssertions: the six DbContextAssertionException throws use the Allman\n  argument layout.\n- Stray blank lines after `{` / before `}` removed in the SQLite extensions,\n  both creators and both ICreateRandomEntities; trailing newline on the\n  Abstractions interface.\n- The private UseSqlite helper drops its `this` modifier (callers already use\n  static syntax).\n- SqliteDbContextCreator: comment on why the ctor opens synchronously.\n- Core-EF6..EF10 csproj: the ISeedProfile Compile Include uses `\\` like the\n  other twelve.\n\nNo behaviour change. Closes #574\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit e5fc5ad3072aa318555a265647f2c549f5fb36e6)\n\n* build(src): stop packing icons as content files; csproj hygiene\n\n#576: the -Core-EFx wrappers and -EF6 declared the PNG/ICO files as <Content>\nitems, which a packable library packs by default, so each package carried\nthem under content/ and contentFiles/ (copied into consuming projects). The\nitems are removed; the root icon still packs via its <None Pack=\"True\">.\n\n#577:\n- coverlet.collector removed from the 7 library projects (tests keep it).\n- <ApplicationIcon> removed from Core and the five wrappers; the per-wrapper\n  dbcontext-builder.ico copies (used only by it and the Content items) are\n  deleted.\n- <PackageRequireLicenseAcceptance> removed from all 10 src csproj (MIT).\n- Retired -Core (IsPackable=false): dead package metadata and Pack items\n  removed.\n- Wrapper ReadMe.md stubs say EF Core N, point classic EF6 users at -EF6, and\n  note the package readme is the root README.\n(The BannedApiAnalyzers 5.6.0 alignment shipped in the protected PR #630.)\n\nCloses #576\nCloses #577\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit 72606b4566a4633dd90ccc55b3528ab3f7b72d33)\n(cherry picked from commit 16710442a8b2876386dbdb26c02224d86788d0df)\n\n* ci: re-trigger the PR checks after the base retarget to main\n\nThe base changed from style/src-formatting-sweep to main after the last push; a base\nchange alone does not fire pr.yaml, so the eight required checks never reported.\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-11T15:47:53-04:00",
+          "tree_id": "042403d403760624536df242fe64bb7bc9718e76",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/02cabc9eb0e306110f43242b67221aa656769b48"
+        },
+        "date": 1791748191157,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 24009.66455078125,
+            "unit": "ns",
+            "range": "± 37.37528957200993"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 35024.16658528646,
+            "unit": "ns",
+            "range": "± 1588.5718847063642"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 221555.99967447916,
+            "unit": "ns",
+            "range": "± 14372.105793265273"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 1)",
+            "value": 241296.853515625,
+            "unit": "ns",
+            "range": "± 13186.100561911107"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 25139.63299560547,
+            "unit": "ns",
+            "range": "± 612.3693600395169"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 62323.636393229164,
+            "unit": "ns",
+            "range": "± 7492.895530047504"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 436019.7958984375,
+            "unit": "ns",
+            "range": "± 77673.88051580456"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 10)",
+            "value": 815649.80078125,
+            "unit": "ns",
+            "range": "± 274183.04598141153"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 24329.055033365887,
+            "unit": "ns",
+            "range": "± 18.97236301900449"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 338230.8984375,
+            "unit": "ns",
+            "range": "± 9105.587074892788"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 1779598.7109375,
+            "unit": "ns",
+            "range": "± 52461.392550117715"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 100)",
+            "value": 3516257.09375,
+            "unit": "ns",
+            "range": "± 69525.79032043368"
           }
         ]
       }
