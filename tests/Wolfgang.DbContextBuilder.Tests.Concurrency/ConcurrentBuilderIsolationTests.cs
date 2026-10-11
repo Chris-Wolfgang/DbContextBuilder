@@ -41,6 +41,17 @@ public class ConcurrentBuilderIsolationTests
         // (pr.yaml): Coyote controls nothing, so the Task.Yield points below would read as a
         // deadlock; systematic fuzzing (delay injection) is the mode built for that case.
         var rewritten = RewritingEngine.IsAssemblyRewritten(typeof(ConcurrentBuilderIsolationTests).Assembly);
+
+        // coyote.yaml sets COYOTE_REQUIRE_REWRITTEN=1 (#618). There, an assembly the test run did
+        // not load rewritten must fail rather than fall back to the un-rewritten smoke path, which
+        // explores no interleaving and would pass.
+        var rewriteRequired = string.Equals(Environment.GetEnvironmentVariable("COYOTE_REQUIRE_REWRITTEN"), "1", StringComparison.Ordinal);
+        Assert.True
+        (
+            rewritten || !rewriteRequired,
+            "COYOTE_REQUIRE_REWRITTEN=1 but the test assembly is not Coyote-rewritten: the run would explore no interleaving."
+        );
+
         var config = Configuration.Create()
             .WithTestingIterations(Iterations)
             .WithPotentialDeadlocksReportedAsBugs(false)
