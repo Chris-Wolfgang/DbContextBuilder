@@ -1118,6 +1118,70 @@ public class DbContextBuilderTests
         Assert.Equal(1, SaveCountingContext.Saves);
         Assert.Equal("seeded", Assert.Single(context.Categories).Name);
     }
+
+
+
+    /// <summary>
+    /// #568: a database that cannot be created surfaces from Build as the builder's own
+    /// <see cref="InvalidOperationException"/>, with EF's failure as the inner exception.
+    /// </summary>
+    [Fact]
+    public void Build_when_the_database_cannot_be_created_wraps_the_EF_failure()
+    {
+        using var creator = new DisposedContextCreator();
+        var sut = new DbContextBuilder<TestDbContext> { CreateDbContext = creator };
+
+        var ex = Assert.Throws<InvalidOperationException>(() => sut.Build());
+
+        Assert.StartsWith("Failed to create database. See InnerException for details.", ex.Message, StringComparison.Ordinal);
+        Assert.IsAssignableFrom<InvalidOperationException>(ex.InnerException);
+        // The causes this PR corrected (#565): a missing (DbConnection, bool) constructor cannot
+        // reach this path, so the message must not suggest it.
+        Assert.Contains("the model cannot be mapped to the database provider", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("has already been disposed", ex.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("(DbConnection, bool)", ex.Message, StringComparison.Ordinal);
+    }
+
+
+
+    /// <summary>
+    /// #568: the same wrapping applies to BuildAsync.
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_when_the_database_cannot_be_created_wraps_the_EF_failure()
+    {
+        using var creator = new DisposedContextCreator();
+        var sut = new DbContextBuilder<TestDbContext> { CreateDbContext = creator };
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.BuildAsync());
+
+        Assert.StartsWith("Failed to create database. See InnerException for details.", ex.Message, StringComparison.Ordinal);
+        Assert.IsAssignableFrom<InvalidOperationException>(ex.InnerException);
+    }
+}
+
+
+
+/// <summary>
+/// Returns contexts that are already disposed, so <c>Database.CreateIfNotExists()</c> throws
+/// EF6's <see cref="InvalidOperationException"/> inside the builder's InitializeDatabase (#568).
+/// </summary>
+internal sealed class DisposedContextCreator : ICreateDbContext
+{
+    private readonly EffortDbContextCreator _inner = new();
+
+
+
+    public TDbContext CreateDbContext<TDbContext>() where TDbContext : System.Data.Entity.DbContext
+    {
+        var context = _inner.CreateDbContext<TDbContext>();
+        context.Dispose();
+        return context;
+    }
+
+
+
+    public void Dispose() => _inner.Dispose();
 }
 
 

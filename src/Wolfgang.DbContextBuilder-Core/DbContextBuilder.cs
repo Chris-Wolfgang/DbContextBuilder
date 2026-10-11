@@ -804,10 +804,10 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
                     "by default, so this usually indicates a custom ICreateDbContext returned a " +
                     "context with no provider); the configured provider cannot model one of the " +
                     "DbContext's entities; or a required EF service has not been registered. " +
-                    "If you need to capture EF Core diagnostic logs to investigate, build a " +
-                    "DbContextOptionsBuilder<T> with .LogTo(...) or .EnableSensitiveDataLogging() " +
-                    "yourself and pass it to UseDbContextOptionsBuilder(...) before calling " +
-                    "BuildAsync().";
+                    "To capture EF Core's log of the failure, call UseDiagnosticOutput(...) before " +
+                    "BuildAsync(). To include entity values in that log, pass a " +
+                    "DbContextOptionsBuilder<T> with .EnableSensitiveDataLogging() to " +
+                    "UseDbContextOptionsBuilder(...).";
                 throw new InvalidOperationException(msg, e);
             }
 
