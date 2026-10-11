@@ -20,14 +20,16 @@ public class BogusRandomEntityCreatorTests
 #pragma warning disable S3459 // Unassigned auto-property — assigned via reflection by Bogus
     private sealed class Sample
     {
-        // A rule whose range includes the type's default (false, 0) may legitimately produce it,
-        // so for those properties the test checks that the setter ran, not what it stored.
+        // A rule whose range includes the type's default (false, 0, midnight, Unset) may legitimately
+        // produce it, so for those properties the test checks that the setter ran, not what it stored.
         private readonly HashSet<string> _assigned = [];
         private bool _isActive;
         private byte _byteValue;
         private float _floatValue;
         private double _doubleValue;
         private decimal _price;
+        private TimeOnly _opensAt;
+        private Shade _shade;
 
         public IReadOnlyCollection<string> Assigned => _assigned;
 
@@ -57,7 +59,7 @@ public class BogusRandomEntityCreatorTests
 
         public DateOnly Birthday { get; set; }
 
-        public TimeOnly OpensAt { get; set; }
+        public TimeOnly OpensAt { get => _opensAt; set => _opensAt = Track(nameof(OpensAt), value); }
 
         public bool? NullableBool { get; set; }
 
@@ -85,7 +87,7 @@ public class BogusRandomEntityCreatorTests
 
         public TimeOnly? NullableTimeOnly { get; set; }
 
-        public Shade Shade { get; set; }
+        public Shade Shade { get => _shade; set => _shade = Track(nameof(Shade), value); }
 
         public Shade? NullableShade { get; set; }
 
@@ -106,10 +108,15 @@ public class BogusRandomEntityCreatorTests
     private sealed class IndexedSample
     {
         private readonly Dictionary<int, Shade> _byIndex = [];
+        private Shade _shade;
 
 
 
-        public Shade Shade { get; set; }
+        public bool ShadeAssigned { get; private set; }
+
+
+
+        public Shade Shade { get => _shade; set => (_shade, ShadeAssigned) = (value, true); }
 
 
 
@@ -122,7 +129,8 @@ public class BogusRandomEntityCreatorTests
 
 
 
-    // Unset is 0 and never generated, so an unpopulated property is visible.
+    // Unset is 0, the value a property the creator leaves alone keeps. The creator picks from every
+    // defined value, Unset included, so a populated property can hold it too.
     private enum Shade
     {
         Unset = 0,
@@ -187,10 +195,9 @@ public class BogusRandomEntityCreatorTests
         Assert.All(items, item => Assert.NotEqual(default, item.UpdatedOn));
         // Rules whose range includes the default are checked through their setters: deterministic,
         // where "some entity got true / a non-zero value" only fails rarely by chance.
-        string[] tracked = [nameof(Sample.ByteValue), nameof(Sample.DoubleValue), nameof(Sample.FloatValue), nameof(Sample.IsActive), nameof(Sample.Price)];
+        string[] tracked = [nameof(Sample.ByteValue), nameof(Sample.DoubleValue), nameof(Sample.FloatValue), nameof(Sample.IsActive), nameof(Sample.OpensAt), nameof(Sample.Price), nameof(Sample.Shade)];
         Assert.All(items, item => Assert.Equal(tracked, item.Assigned.OrderBy(name => name, StringComparer.Ordinal)));
         Assert.All(items, item => Assert.NotEqual(default, item.Birthday));
-        Assert.Contains(items, item => item.OpensAt != default);
     }
 
 
@@ -234,7 +241,7 @@ public class BogusRandomEntityCreatorTests
 
         var items = sut.CreateRandomEntities<Sample>(64).ToList();
 
-        Assert.Contains(items, item => item.Shade != Shade.Unset);
+        Assert.All(items, item => Assert.Contains(nameof(Sample.Shade), item.Assigned));
         Assert.All(items, item => Assert.True(Enum.IsDefined(item.Shade)));
         Assert.All(items, item => Assert.NotNull(item.NullableShade));
         Assert.All(items, item => Assert.Equal(Shade.Unset, item.FixedShade));
@@ -253,7 +260,8 @@ public class BogusRandomEntityCreatorTests
 
         var items = sut.CreateRandomEntities<IndexedSample>(8).ToList();
 
-        Assert.Contains(items, item => item.Shade != Shade.Unset);
+        Assert.All(items, item => Assert.True(item.ShadeAssigned));
+        Assert.All(items, item => Assert.True(Enum.IsDefined(item.Shade)));
         Assert.All(items, item => Assert.Equal(Shade.Unset, item[0]));
         items[0][0] = Shade.Dark;
         Assert.Equal(Shade.Dark, items[0][0]);
@@ -307,7 +315,8 @@ public class BogusRandomEntityCreatorTests
     [Fact]
     public void CreateRandomEntities_produces_varied_values_across_entities()
     {
-        var sut = new BogusRandomEntityCreator();
+        // Seeded, so the values (and this outcome) are the same on every run.
+        var sut = new BogusRandomEntityCreator(seed: 7);
 
         var items = sut.CreateRandomEntities<Sample>(20).ToList();
 
