@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
@@ -19,11 +20,22 @@ public class BogusRandomEntityCreatorTests
 #pragma warning disable S3459 // Unassigned auto-property — assigned via reflection by Bogus
     private sealed class Sample
     {
+        // A rule whose range includes the type's default (false, 0) may legitimately produce it,
+        // so for those properties the test checks that the setter ran, not what it stored.
+        private readonly HashSet<string> _assigned = [];
+        private bool _isActive;
+        private byte _byteValue;
+        private float _floatValue;
+        private double _doubleValue;
+        private decimal _price;
+
+        public IReadOnlyCollection<string> Assigned => _assigned;
+
         public string Name { get; set; } = string.Empty;
 
-        public bool IsActive { get; set; }
+        public bool IsActive { get => _isActive; set => _isActive = Track(nameof(IsActive), value); }
 
-        public byte ByteValue { get; set; }
+        public byte ByteValue { get => _byteValue; set => _byteValue = Track(nameof(ByteValue), value); }
 
         public short ShortValue { get; set; }
 
@@ -31,17 +43,23 @@ public class BogusRandomEntityCreatorTests
 
         public long LongValue { get; set; }
 
-        public float FloatValue { get; set; }
+        public float FloatValue { get => _floatValue; set => _floatValue = Track(nameof(FloatValue), value); }
 
-        public double DoubleValue { get; set; }
+        public double DoubleValue { get => _doubleValue; set => _doubleValue = Track(nameof(DoubleValue), value); }
 
-        public decimal Price { get; set; }
+        public decimal Price { get => _price; set => _price = Track(nameof(Price), value); }
 
         public Guid Reference { get; set; }
 
         public DateTime CreatedOn { get; set; }
 
         public DateTimeOffset UpdatedOn { get; set; }
+
+        private T Track<T>(string property, T value)
+        {
+            _assigned.Add(property);
+            return value;
+        }
     }
 #pragma warning restore S3459
     // ReSharper restore UnusedAutoPropertyAccessor.Local
@@ -82,8 +100,8 @@ public class BogusRandomEntityCreatorTests
 
     /// <summary>
     /// Verifies that every type rule fills its property. Rules whose range includes the default
-    /// (bool, byte, float, double, decimal) are checked across a batch, where an all-default
-    /// result is vanishingly unlikely; the others must be non-default on every entity.
+    /// (bool, byte, float, double, decimal) are checked through their setters, since a correct
+    /// rule may produce the default; the others must be non-default on every entity.
     /// </summary>
     [Fact]
     public void CreateRandomEntities_populates_every_rule_typed_property()
@@ -99,12 +117,10 @@ public class BogusRandomEntityCreatorTests
         Assert.All(items, item => Assert.NotEqual(Guid.Empty, item.Reference));
         Assert.All(items, item => Assert.NotEqual(default, item.CreatedOn));
         Assert.All(items, item => Assert.NotEqual(default, item.UpdatedOn));
-        Assert.Contains(items, item => item.IsActive);
-        Assert.Contains(items, item => !item.IsActive);
-        Assert.Contains(items, item => item.ByteValue != 0);
-        Assert.Contains(items, item => item.FloatValue != 0f);
-        Assert.Contains(items, item => item.DoubleValue != 0d);
-        Assert.Contains(items, item => item.Price != 0m);
+        // Rules whose range includes the default are checked through their setters: deterministic,
+        // where "some entity got true / a non-zero value" only fails rarely by chance.
+        string[] tracked = [nameof(Sample.ByteValue), nameof(Sample.DoubleValue), nameof(Sample.FloatValue), nameof(Sample.IsActive), nameof(Sample.Price)];
+        Assert.All(items, item => Assert.Equal(tracked, item.Assigned.OrderBy(name => name, StringComparer.Ordinal)));
     }
 
 
