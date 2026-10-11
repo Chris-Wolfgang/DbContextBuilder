@@ -33,7 +33,7 @@ public abstract class DbContextBuilderTestsBase
     [Fact]
     public void DbContextBuilder_ctor_when_called_returns_a_new_instance()
     {
-        var builder = new DbContextBuilder<AdventureWorksDbContext>();
+        using var builder = new DbContextBuilder<AdventureWorksDbContext>();
         Assert.NotNull(builder);
     }
 
@@ -46,7 +46,7 @@ public abstract class DbContextBuilderTestsBase
     public async Task BuildAsync_when_called_returns_an_instance_of_the_specified_context()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         // Act
         await using var context = await sut.BuildAsync();
@@ -65,7 +65,7 @@ public abstract class DbContextBuilderTestsBase
     public async Task BuildAsync_when_called_multiple_times_returns_distinct_instances()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         // Act
         await using var context1 = await sut.BuildAsync();
@@ -88,7 +88,7 @@ public abstract class DbContextBuilderTestsBase
     public void UseInMemory_when_called_returns_the_builder()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         // Act
         var result = sut.UseInMemory();
@@ -106,7 +106,7 @@ public abstract class DbContextBuilderTestsBase
     public void UseSqlite_when_called_returns_the_builder()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         // Act
         var result = sut.UseSqlite();
@@ -124,7 +124,7 @@ public abstract class DbContextBuilderTestsBase
     public void UseAutoFixture_when_called_returns_the_builder()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         // Act
         var result = sut.UseAutoFixture();
@@ -143,7 +143,7 @@ public abstract class DbContextBuilderTestsBase
     public void UseCustomRandomEntityCreator_when_called_returns_the_builder()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         var creator = new AutoFixtureRandomEntityCreator();
 
@@ -164,7 +164,7 @@ public abstract class DbContextBuilderTestsBase
     public void UseCustomRandomEntityCreator_when_creator_is_null_throws_ArgumentNullException()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentNullException> (() => sut.UseCustomRandomEntityCreator(null!));
@@ -181,7 +181,7 @@ public abstract class DbContextBuilderTestsBase
     public void UseCustomRandomEntityCreator_when_called_sets_the_RandomEntityCreator_property()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         var creator = new AutoFixtureRandomEntityCreator();
 
@@ -203,7 +203,7 @@ public abstract class DbContextBuilderTestsBase
     public async Task BuildAsync_when_no_seeds_are_provided_returns_a_context_with_mapped_but_empty_DbSets()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         // Act
         await using var context = await sut
@@ -231,7 +231,7 @@ public abstract class DbContextBuilderTestsBase
     public async Task BuildAsync_when_seeds_are_provided_does_not_leave_them_tracked()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
 
         var country = new CountryRegion
@@ -325,7 +325,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWith_IEnumerable_when_passed_null_throws_ArgumentNullException()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
         IEnumerable<Address> entities = null!;
 
         // Act & Assert
@@ -344,7 +344,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWith_IEnumerable_when_passed_list_of_values_and_one_is_null_throws_ArgumentException()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         var addresses = new List<Address>
         {
@@ -392,7 +392,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWith_IEnumerable_when_passed_an_list_of_strings_throws_ArgumentException()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         var invalidValues = new List<string> { "Dog", "Cat", "Bird" };
 
@@ -411,7 +411,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWith_IEnumerable_returns_DbContextBuild()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         var countries = new[]
         {
@@ -439,7 +439,7 @@ public abstract class DbContextBuilderTestsBase
     public async Task SeedsWith_IEnumerable_seeds_DbContext_with_specified_data()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         var expectedCountry = new CountryRegion
         {
@@ -478,7 +478,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWith_params_returns_DbContextBuild()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         var address1 = new Address
         {
@@ -519,7 +519,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWith_params_when_passed_null_throws_ArgumentNullException()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         Address[] addresses = null!;
 
@@ -540,7 +540,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWith_params_when_passed_list_of_values_and_one_is_null_throws_ArgumentException()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         var address1 = new Address
         {
@@ -582,7 +582,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWith_params_when_passed_mix_of_values_and_list_of_values_and_one_is_null_throws_ArgumentException()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         var addressList = new[]
         {
@@ -625,7 +625,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWith_params_when_passed_an_array_of_values_and_one_of_the_elements_is_null_throws_ArgumentException()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         var addressList = new[]
         {
@@ -675,7 +675,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWith_when_TEntity_is_string_throws_ArgumentException()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         // Act & Assert — the single-string call now resolves to the singleton overload
         // (added in the SeedWith singleton PR) which raises ArgumentException with
@@ -697,7 +697,7 @@ public abstract class DbContextBuilderTestsBase
     public async Task SeedsWith_params_seeds_DbContext_with_specified_data()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         var expectedCountry = new List<CountryRegion>
         {
@@ -758,7 +758,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWithRandom_int_when_passed_value_less_than_1_throws_ArgumentException()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom<Address>(0));
@@ -774,7 +774,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWithRandom_int_returns_DbContextBuilder()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
         const int count = 5;
 
         // Act
@@ -795,9 +795,9 @@ public abstract class DbContextBuilderTestsBase
     public async Task SeedWithRandom_int_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
-        var context = await sut
+        await using var context = await sut
             .SeedWithRandom<BusinessEntity>(count)
             .BuildAsync();
 
@@ -823,7 +823,7 @@ public abstract class DbContextBuilderTestsBase
         // Arrange
         Func<Address, Address> func = null!; 
 
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom(0, func));
@@ -839,7 +839,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_null_for_func_throws_ArgumentException()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
         Func<Address, Address> func = null!;
 
         // Act & Assert
@@ -856,7 +856,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWithRandom_int_func_TEntity_TEntity_returns_DbContextBuilder()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
         const int count = 5;
         var func = new Func<Address, Address>(a => a);
 
@@ -879,7 +879,7 @@ public abstract class DbContextBuilderTestsBase
     {
         var startingId = 1000;
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
         var func = new Func<Person, Person>(a =>
         {
             a.BusinessEntityId = ++startingId;
@@ -891,7 +891,7 @@ public abstract class DbContextBuilderTestsBase
             return a;
         });
 
-        var context = await sut
+        await using var context = await sut
             .SeedWithRandom(count, func)
             .BuildAsync();
 
@@ -921,7 +921,7 @@ public abstract class DbContextBuilderTestsBase
 
         var businessEntityId = startingId;
 
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
         var func = new Func<Person, Person>(a =>
         {
             a.BusinessEntityId = businessEntityId;
@@ -936,7 +936,7 @@ public abstract class DbContextBuilderTestsBase
             return a;
         });
 
-        var context = await sut
+        await using var context = await sut
             .SeedWithRandom(count, func)
             .BuildAsync();
 
@@ -969,7 +969,7 @@ public abstract class DbContextBuilderTestsBase
     {
         // Arrange
         Func<Address, int, Address> func = null!;
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.SeedWithRandom(0, func));
@@ -985,7 +985,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_null_for_func_throws_ArgumentException()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
         Func<Address, int, Address> func = null!;
 
         // Act & Assert
@@ -1002,7 +1002,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWithRandom_int_func_TEntity_int_TEntity_returns_DbContextBuilder()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
         const int count = 5;
         var func = new Func<Address, int, Address>((a, _) => a);
 
@@ -1025,7 +1025,7 @@ public abstract class DbContextBuilderTestsBase
     {
         const int startingId = 1001;
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
         var func = new Func<Person, int, Person>((a, i) =>
         {
             a.BusinessEntityId = startingId + i;
@@ -1037,7 +1037,7 @@ public abstract class DbContextBuilderTestsBase
             return a;
         });
 
-        var context = await sut
+        await using var context = await sut
             .SeedWithRandom(count, func)
             .BuildAsync();
 
@@ -1062,7 +1062,7 @@ public abstract class DbContextBuilderTestsBase
     {
         // Arrange
 
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentNullException>(() => sut.UseDbContextOptionsBuilder(null!));
@@ -1078,7 +1078,7 @@ public abstract class DbContextBuilderTestsBase
     public void UseDbContextOptionsBuilder_when_called_returns_the_builder()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
         var optionsBuilder = new DbContextOptionsBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
@@ -1094,7 +1094,7 @@ public abstract class DbContextBuilderTestsBase
     public async Task UseDbContextOptionsBuilder_after_calling_BuildAsync_uses_DbOptionBuilder_passed_in()
     {
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
         var buffer = new StringBuilder(10_240);
         var sw = new StringWriter(buffer);
@@ -1104,7 +1104,9 @@ public abstract class DbContextBuilderTestsBase
         sut.UseDbContextOptionsBuilder(optionsBuilder);
 
         // Act
-        await sut.BuildAsync();
+        await using (await sut.BuildAsync())
+        {
+        }
 
 
         // Assert — the LogTo callback the test wired in must have received something
