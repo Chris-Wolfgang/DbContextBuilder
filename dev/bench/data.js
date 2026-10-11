@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791652925237,
+  "lastUpdate": 1791684296908,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -1872,6 +1872,84 @@ window.BENCHMARK_DATA = {
             "value": 1257571.9739583333,
             "unit": "ns",
             "range": "± 67316.59987328594"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "146505450c1bc05c4b704e2d40cd9baab57d86a9",
+          "message": "build: bump PackageValidationBaselineVersion to 0.9.0 (#645)\n\n0.9.0 is on the NuGet flatcontainer for all nine published packages, so the\nnine packable src projects now validate against it (was 0.8.1). The shadow\nsample's BaselineVersion moves with them, as its csproj says it must.\n\n-Core drops the property instead: IsPackable=false and\nEnablePackageValidation=false (since #432) make it inert, and there is no\n-Core 0.9.0 to point it at.\n\nLocal: dotnet pack with package validation passes for -Core-EF10,\nAbstractions and -EF6 against the 0.9.0 baseline; the shadow sample builds\nwith -p:UseBaselinePackage=true (0.9.0).\n\nRefs #628.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-10T22:02:59-04:00",
+          "tree_id": "6df2446e56258fb5796632ec713f66f4d61e88d8",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/146505450c1bc05c4b704e2d40cd9baab57d86a9"
+        },
+        "date": 1791684294762,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 25123.28697713216,
+            "unit": "ns",
+            "range": "± 103.08177718342755"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 35910.405782063805,
+            "unit": "ns",
+            "range": "± 1653.8648301924748"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 244471.68098958334,
+            "unit": "ns",
+            "range": "± 25681.86156529169"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 25054.497965494793,
+            "unit": "ns",
+            "range": "± 134.19210612110197"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 62358.410807291664,
+            "unit": "ns",
+            "range": "± 3724.06979807698"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 415214.1201171875,
+            "unit": "ns",
+            "range": "± 59938.51907437341"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 25149.040517171223,
+            "unit": "ns",
+            "range": "± 363.72308936792024"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 330096.2122395833,
+            "unit": "ns",
+            "range": "± 7566.954591234323"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 1792964.703125,
+            "unit": "ns",
+            "range": "± 52941.15746806689"
           }
         ]
       }
