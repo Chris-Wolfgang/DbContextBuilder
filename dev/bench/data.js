@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791684296908,
+  "lastUpdate": 1791724179944,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -1950,6 +1950,102 @@ window.BENCHMARK_DATA = {
             "value": 1792964.703125,
             "unit": "ns",
             "range": "± 52941.15746806689"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b47d4899415f71f649b73714ddf9f9740b31dfb2",
+          "message": "style(src): formatting sweep (field naming/placement, member spacing, throw layout, newlines) (#656)\n\n- DbContextBuilder: IntegralKeyTypes -> _integralKeyTypes, hoisted into the\n  field block; trailing newline.\n- SqliteModelCustomizer: no blank lines after the class brace; three blank\n  lines between members; the many-to-many backing field and property moved up\n  beside the other field/property pairs; stray blank line before a closing\n  brace removed; trailing newline.\n- DbSetAssertions: the six DbContextAssertionException throws use the Allman\n  argument layout.\n- Stray blank lines after `{` / before `}` removed in the SQLite extensions,\n  both creators and both ICreateRandomEntities; trailing newline on the\n  Abstractions interface.\n- The private UseSqlite helper drops its `this` modifier (callers already use\n  static syntax).\n- SqliteDbContextCreator: comment on why the ctor opens synchronously.\n- Core-EF6..EF10 csproj: the ISeedProfile Compile Include uses `\\` like the\n  other twelve.\n\nNo behaviour change. Closes #574\n\n\n(cherry picked from commit e5fc5ad3072aa318555a265647f2c549f5fb36e6)\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-11T09:07:26-04:00",
+          "tree_id": "eacdbc28e073ff65487d0287900bd0ffe2353fad",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/b47d4899415f71f649b73714ddf9f9740b31dfb2"
+        },
+        "date": 1791724177983,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 18746.09575398763,
+            "unit": "ns",
+            "range": "± 1967.714299939266"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 23444.045522054035,
+            "unit": "ns",
+            "range": "± 110.63184936278559"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 96107.95556640625,
+            "unit": "ns",
+            "range": "± 23206.769370417296"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 1)",
+            "value": 94190.50179036458,
+            "unit": "ns",
+            "range": "± 9347.279751491753"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 17544.788004557293,
+            "unit": "ns",
+            "range": "± 1472.1901827797708"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 43789.90234375,
+            "unit": "ns",
+            "range": "± 2050.7100184958267"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 197748.634765625,
+            "unit": "ns",
+            "range": "± 17788.38767195083"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 10)",
+            "value": 402031.3424479167,
+            "unit": "ns",
+            "range": "± 32280.385155967593"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 16914.42300415039,
+            "unit": "ns",
+            "range": "± 500.22669241468725"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 165061.09212239584,
+            "unit": "ns",
+            "range": "± 15255.13408715468"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 1228288.8307291667,
+            "unit": "ns",
+            "range": "± 64286.99123994364"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 100)",
+            "value": 2164057.078125,
+            "unit": "ns",
+            "range": "± 60554.17748746284"
           }
         ]
       }
