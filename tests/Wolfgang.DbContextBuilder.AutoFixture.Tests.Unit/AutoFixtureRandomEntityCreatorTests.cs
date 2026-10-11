@@ -143,6 +143,10 @@ public class AutoFixtureRandomEntityCreatorTests : ICreateRandomEntitiesTestsBas
 
 
 
+// The fixtures below exist for AutoFixture to populate: it sets each property through its public
+// setter by reflection, which InspectCode cannot see, and removing a setter would stop AutoFixture
+// filling that property. Scoped to these three types.
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 /// <summary>A type with a <see cref="DateOnly"/> property.</summary>
 public class DatedEntity
 {
@@ -166,3 +170,4 @@ public class SelfReferencingNode
 
     public SelfReferencingNode? Parent { get; set; }
 }
+// ReSharper restore UnusedAutoPropertyAccessor.Global
