@@ -96,10 +96,10 @@ public class NoCircularReferencesCustomizationTests
 
 
     /// <summary>
-    /// Verifies that when Create is called if Behaviors contains ThrowingRecursionBehavior it is removed
+    /// Verifies that Customize does not add a ThrowingRecursionBehavior when Behaviors has none.
     /// </summary>
     [Fact]
-    public void Customize_when_Behaviors_does_not_contain_ThrowingRecursionBehavior_it_does_error()
+    public void Customize_when_Behaviors_does_not_contain_ThrowingRecursionBehavior_does_not_add_one()
     {
         // Arrange
         var sut = new AutoFixtureRandomEntityCreator.NoCircularReferencesCustomization();
