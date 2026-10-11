@@ -53,20 +53,4 @@ public class UseBogusExtensionsTests
 
         Assert.Equal(3, context.Samples.Count());
     }
-
-
-
-    public class SampleEntity
-    {
-        public int Id { get; set; }
-
-        public string Name { get; set; } = string.Empty;
-    }
-
-
-
-    public class SampleDbContext(DbContextOptions<SampleDbContext> options) : DbContext(options)
-    {
-        public DbSet<SampleEntity> Samples => Set<SampleEntity>();
-    }
 }
