@@ -53,6 +53,17 @@ on:
       - 'mutation-floors.json'
       - '.github/workflows/stryker.yaml'
   workflow_dispatch:
+    inputs:
+      verbosity:
+        # For diagnosing a run (#701): anything above info adds --log-to-file, and the log lands
+        # in StrykerOutput/*/logs, which the "Upload Stryker report" step already uploads.
+        description: 'Stryker log verbosity; debug or trace also writes a log file into the uploaded report'
+        type: choice
+        options:
+          - info
+          - debug
+          - trace
+        default: info
   schedule:
     - cron: '0 6 * * 0' # weekly Sunday 06:00 UTC
 
@@ -205,6 +216,8 @@ jobs:
         shell: pwsh
         env:
           SINCE_SHA: ${{ github.event.pull_request.base.sha }}
+          # Empty on pull_request and schedule runs, which keep the default logging.
+          STRYKER_VERBOSITY: ${{ inputs.verbosity }}
         run: |
           # Configuration mode resolution:
           #   1. If a root stryker-config.json exists, it is the umbrella -
@@ -227,6 +240,12 @@ jobs:
           $reporters = @('--reporter', 'progress', '--reporter', 'html', '--reporter', 'json')
           # On a pull request, test only what the PR changed (see the header). An empty
           # scope is then a legitimate outcome, not a run that silently measured nothing.
+          # A dispatched diagnostic run (#701): more logging, and a log file in StrykerOutput.
+          $logArgs = @()
+          if ($env:STRYKER_VERBOSITY -and $env:STRYKER_VERBOSITY -ne 'info') {
+            $logArgs = @('--verbosity', $env:STRYKER_VERBOSITY, '--log-to-file')
+            Write-Host "Diagnostic run: Stryker verbosity $($env:STRYKER_VERBOSITY), logging to a file."
+          }
           $sinceArgs = @()
           if ($env:SINCE_SHA) {
             $sinceArgs = @("--since:$($env:SINCE_SHA)")
@@ -322,7 +341,7 @@ jobs:
             if ($solution) { dotnet restore $solution } else { dotnet restore }
             if ($LASTEXITCODE -ne 0) { Write-Host "::error::dotnet restore failed"; exit 1 }
             $started = Get-Date
-            dotnet stryker --config-file stryker-config.json @reporters @sinceArgs
+            dotnet stryker --config-file stryker-config.json @reporters @sinceArgs @logArgs
             if ($LASTEXITCODE -ne 0) { $failed++ }
             elseif (-not (Test-StrykerRun -Dir (Get-Location).Path -Since $started -FloorsFile 'mutation-floors.json')) { $failed++ }
             Write-Host "::endgroup::"
@@ -340,7 +359,7 @@ jobs:
               Push-Location $dir
               try {
                 $started = Get-Date
-                dotnet stryker --config-file stryker-config.json @reporters @sinceArgs
+                dotnet stryker --config-file stryker-config.json @reporters @sinceArgs @logArgs
                 if ($LASTEXITCODE -ne 0) { $failed++ }
                 elseif (-not (Test-StrykerRun -Dir $dir -Since $started -FloorsFile (Join-Path $root 'mutation-floors.json') -Root $root)) { $failed++ }
               } finally {
@@ -371,7 +390,7 @@ jobs:
                 if ($LASTEXITCODE -ne 0) { $failed++ }
                 else {
                   $started = Get-Date
-                  dotnet stryker @reporters @sinceArgs
+                  dotnet stryker @reporters @sinceArgs @logArgs
                   if ($LASTEXITCODE -ne 0) { $failed++ }
                   elseif (-not (Test-StrykerRun -Dir $dir -Since $started)) { $failed++ }
                 }
@@ -482,7 +501,10 @@ jobs:
     needs: stryker
     # Runs after a failed gate too: the score and the survivors are the point then.
     # Not on pull requests: their --since score covers only the PR's changes.
-    if: always() && needs.stryker.outputs.score != '' && github.event_name != 'pull_request'
+    # Only from main: a run dispatched on another branch (e.g. a verbosity=trace diagnostic, #701)
+    # measures that branch's code, so its score and survivors must not land in main's history
+    # or rewrite the kind:mutation-survives issue.
+    if: always() && needs.stryker.outputs.score != '' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
