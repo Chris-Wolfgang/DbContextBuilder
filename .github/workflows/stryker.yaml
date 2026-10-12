@@ -348,20 +348,38 @@ jobs:
             # on a copy of the solution without those test projects. The copy sits next to the
             # original so its relative project paths resolve; `dotnet sln remove` exits 0 even when
             # it removes nothing, so the project count is checked.
+            #
+            # The same copy also leaves out projects the trace run (38178220920, #701) showed add
+            # cost and nothing else:
+            #   - extra-projects/* (the scaffolded AdventureWorks models): Stryker treated all five
+            #     as projects to mutate, created ~13,580 mutants in them and discarded every one
+            #     (excluded-from-coverage code), after an initial test run of ~370 tests each;
+            #   - Tests.DocExamples, Tests.Fuzz and Tests.Concurrency: every one of their tests
+            #     reported "No mutant covered" in coverage capture (32, 19 and 5 of 5), so with
+            #     coverage-based selection they never test a mutant. DocExamples only compiles
+            #     the documentation snippets. They stay in pr.yaml's test stages.
+            # Projects referenced by a remaining test project still build; they are just not
+            # analysed as solution projects.
             $solutionArgs = @()
             $ownRun = @(Get-ChildItem -Path tests -Recurse -Filter 'stryker-config.json' -ErrorAction SilentlyContinue |
               ForEach-Object { Get-ChildItem -Path $_.DirectoryName -Filter '*.csproj' })
-            if ($solution -and $ownRun.Count -gt 0) {
+            $noKills = @(
+              @(Get-ChildItem -Path extra-projects -Recurse -Filter '*.csproj' -ErrorAction SilentlyContinue) +
+              @(foreach ($name in 'DocExamples', 'Fuzz', 'Concurrency') {
+                  Get-ChildItem -Path "tests/Wolfgang.DbContextBuilder.Tests.$name" -Filter '*.csproj' -ErrorAction SilentlyContinue
+                }))
+            $drop = @($ownRun + $noKills)
+            if ($solution -and $drop.Count -gt 0) {
               $umbrella = Join-Path (Split-Path -Parent (Resolve-Path $solution)) ('stryker-umbrella' + [IO.Path]::GetExtension($solution))
               Copy-Item $solution $umbrella -Force
               $before = @(Select-String -Path $umbrella -Pattern '<Project ').Count
-              dotnet sln $umbrella remove @($ownRun.FullName)
+              dotnet sln $umbrella remove @($drop.FullName)
               $after = @(Select-String -Path $umbrella -Pattern '<Project ').Count
-              if ($LASTEXITCODE -ne 0 -or ($before - $after) -ne $ownRun.Count) {
-                Write-Host "::error::Could not remove the $($ownRun.Count) project-mode test project(s) from $umbrella ($before -> $after projects)."
+              if ($LASTEXITCODE -ne 0 -or ($before - $after) -ne $drop.Count) {
+                Write-Host "::error::Could not remove the $($drop.Count) project(s) from $umbrella ($before -> $after projects)."
                 exit 1
               }
-              Write-Host "Umbrella solution: $umbrella, without $($ownRun.Name -join ', ')."
+              Write-Host "Umbrella solution: $umbrella, without $($drop.Name -join ', ')."
               $solutionArgs = @('--solution', $umbrella)
             }
             $started = Get-Date
