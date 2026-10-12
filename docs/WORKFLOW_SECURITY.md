@@ -15,9 +15,10 @@ copy of the workflow**. The validation a pull request receives is therefore the 
 for, and an edit that weakens it is visible in the same diff a reviewer reads.
 
 Analyzer and build configuration is deliberately **not** the PR's. Before the analyzer stages,
-`pr.yaml` re-fetches `.editorconfig`, `Directory.Build.props`/`.targets`, `BannedSymbols.txt`,
-`*.globalconfig`, `*.ruleset`, `*.DotSettings` and the CI scripts from `main`, so a pull request
-cannot lower a rule for its own run. That means a PR is **not** validated byte-for-byte as it will
+`pr.yaml` re-fetches `.editorconfig` (and nested `*.editorconfig`), `Directory.Build.props`/`.targets`,
+`BannedSymbols.txt`, `*.globalconfig`, `*.ruleset`, `*.DotSettings`, `coverlet.runsettings`,
+`.config/dotnet-tools.json`, the workflows and the CI scripts from `main`, so a pull request cannot
+lower a rule, change what coverage counts or swap a tool version for its own run. That means a PR is **not** validated byte-for-byte as it will
 merge - its own copies of those files are ignored. This is defence in depth; the primary control is
 the guard below.
 
@@ -56,14 +57,19 @@ A malicious PR could modify these files to disable security checks.
 
 **Solution**: `protected-files.yaml` classifies these files as protected and fails any PR that changes one alongside anything else. A configuration change is therefore always reviewed as a standalone PR rather than being silently applied to the run that validates a code change. `pr.yaml` additionally re-fetches several of them from `main` before the analyzer steps, which remains as defence in depth.
 
-**Protected Configuration Files**:
-- `.editorconfig` - Code style and analyzer rules
-- `Directory.Build.props` - MSBuild properties
-- `Directory.Build.targets` - MSBuild targets
-- `BannedSymbols.txt` - Banned API usage rules
-- `*.globalconfig` - Global analyzer configuration
-- `*.ruleset` - Code analysis rulesets
-- `.github/workflows/*.yml` and `.github/workflows/*.yaml` - Workflow definitions
+**Files `pr.yaml` overwrites from `main`** (every trusted-fetch list in the workflow):
+- `.editorconfig` and any nested `*.editorconfig` - code style and analyzer rules
+- `Directory.Build.props` / `Directory.Build.targets` - MSBuild properties and targets
+- `BannedSymbols.txt` - banned API usage rules
+- `*.globalconfig` - global analyzer configuration
+- `*.ruleset` - code analysis rulesets
+- `*.DotSettings` - ReSharper / InspectCode inspection severities
+- `coverlet.runsettings` - what coverage counts
+- `.config/dotnet-tools.json` - the CI tool versions `dotnet tool restore` installs
+- `.github/workflows/*.yml` and `.github/workflows/*.yaml` - workflow definitions
+
+The fetch fails closed: if `main` cannot be fetched, or a file the workflow requires is missing
+from it, the step fails instead of continuing with the PR's copy.
 
 The list above is what `pr.yaml` **overwrites**. The set the guard **protects** is larger, and is
 the authoritative one - `.github/workflows/protected-files.yaml` fails any PR that changes one of
@@ -87,10 +93,10 @@ Matching is case-insensitive, because Windows and ReSharper resolve names that w
 Dependabot is exempted from the overwrite step (its bumps to `Directory.Build.props` are
 legitimate), and from the guard.
 
-**Known limitation:** the guard is a required check, not a sandbox. It runs independently of the
-`pull_request` workflows, so a mixed PR's changed `.github/requirements/*` is still installed and
-executed by `actions-audit.yaml` and `semgrep.yaml` - both of which hold `security-events: write` -
-before the guard's failure blocks the merge. It prevents the change landing, not the code running.
+The guard is a required check, not a sandbox: it prevents a protected change landing, not a PR's
+own run from seeing it. The scans that hold `security-events: write` do not rely on it for their
+inputs: `actions-audit.yaml` and `semgrep.yaml` take `.github/requirements/*` from the base branch
+before `pip install`, and refuse to fall back to the PR's copy.
 
 **Implementation** (in jobs that consume project source — e.g. `detect-projects`, the test stages, and the security scans; *not* the `secrets-scan` job, which only fetches `.gitleaks.toml`):
 ```yaml
@@ -98,17 +104,23 @@ before the guard's failure blocks the merge. It prevents the change landing, not
   run: |
     echo "Fetching configuration files from main branch to prevent malicious overrides..."
     
-    # Fetch the main branch
+    # Fetch the main branch (fails the step if it cannot)
     git fetch origin main:main-branch
-    
+
     # List of configuration files that should come from trusted main branch
     config_files=(
       ".editorconfig"
       "Directory.Build.props"
       "Directory.Build.targets"
+      "*/Directory.Build.props"    # nested copies (src/, examples/, extra-projects/)
+      "*/Directory.Build.targets"
       "BannedSymbols.txt"
       "*.globalconfig"
       "*.ruleset"
+      "*.editorconfig"
+      "coverlet.runsettings"
+      ".config/dotnet-tools.json"
+      "*.DotSettings"
       ".github/workflows/*.yml"
       ".github/workflows/*.yaml"
     )
@@ -123,15 +135,18 @@ before the guard's failure blocks the merge. It prevents the change landing, not
 
 **Mechanism**: `persist-credentials: false`
 
-All checkout steps include `persist-credentials: false` to prevent the checkout token from being written to git config:
+All checkout steps include `persist-credentials: false` to prevent the checkout token from being written to git config. Under `pull_request` the default ref is the PR's merge commit, so no explicit `ref:` is needed; the one job that must not see PR content (the SARIF upload) checks out `github.event.pull_request.base.sha`. Actions are pinned by commit SHA:
 
 ```yaml
 - name: Checkout code
-  uses: actions/checkout@v6
+  uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
   with:
-    ref: refs/pull/${{ github.event.pull_request.number }}/head
     persist-credentials: false
 ```
+
+Workflows that need to authenticate a `git fetch` pass the token for that one command
+(`git -c http.extraheader="AUTHORIZATION: basic ..." fetch ...`), never in the remote URL, so it
+cannot end up in `.git/config` or in a logged URL.
 
 **Note**: This prevents the token from being stored in git config, but does NOT prevent steps from accessing `GITHUB_TOKEN` if explicitly exposed.
 
@@ -218,10 +233,13 @@ PR #2: New feature
 
 When adding new configuration files that control code quality or security:
 
-1. Add the file name to the `config_files` array in every job that runs `Fetch trusted configuration files from main branch` (the project-detection job, each test-stage job, and the security-scan jobs — search `pr.yaml` for that step name to find them all). The `secrets-scan` job does not consume project config files and does not need to be updated.
-2. Add the file path to the "Detect protected configuration file changes" guard in `pr.yaml` so PRs that touch the file fail with a maintainer-review banner.
-3. Test that the file is correctly fetched from main branch.
-4. Update this documentation.
+1. Add the file name to every trusted-fetch list in `pr.yaml` - the bash `config_files` arrays and the Stage 2 PowerShell list (search `pr.yaml` for `Fetch trusted configuration files` to find them all). The `secrets-scan` job does not consume project config files and does not need to be updated.
+2. Add the pattern to **`.github/workflows/protected-files.yaml`** - the authoritative guard (a required check).
+3. Add it to the "Detect protected configuration file changes" step in `pr.yaml` as well; the two classify the same files and are kept in lock-step.
+4. Test that the file is correctly fetched from main branch.
+5. Update this documentation (both lists above).
+
+Changes to these workflows are themselves protected-file changes, so they go in a protected-only PR.
 
 ## References
 

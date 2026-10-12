@@ -15,25 +15,46 @@ The release workflow triggers when you **publish a GitHub Release** and implemen
 
 Complete the following one-time setup so that the workflow can publish releases:
 
-### Add NuGet API Key Secret
+### Configure NuGet Trusted Publishing (no API key)
 
-**Location:** Settings → Secrets and variables → Actions → New repository secret
+The `publish-nuget` job does not use a stored API key. It runs with `id-token: write`, and the
+`NuGet/login` action exchanges the run's GitHub OIDC token for a temporary push key that expires
+in about an hour; nothing long-lived is kept in the repository. No `NUGET_API_KEY` secret is
+needed (or read).
 
-1. Click **"New repository secret"**
-2. **Name:** `NUGET_API_KEY`
-3. **Value:** Your NuGet.org API key
-   - Get your key from [NuGet.org Account → API Keys](https://www.nuget.org/account/apikeys)
-   - Recommended scopes: **Push new packages and package versions**
-   - Set expiration date (recommended: 1 year)
-4. Click **"Add secret"**
+**Location:** nuget.org → your account → **Trusted Publishing** → **Add policy**
 
-**What this does:** Allows the workflow to authenticate with NuGet.org and publish packages. The workflow validates this secret exists before attempting to publish.
+1. **Repository owner / repository:** this repository (`Chris-Wolfgang/DbContextBuilder`).
+2. **Workflow file:** `release.yaml`.
+3. **Environment:** leave empty (the job does not use a GitHub environment).
+4. **Policy owner:** the nuget.org account (or organization) that owns the packages. A policy
+   applies to every package that owner owns.
+5. **Scopes (optional):** a scope's glob pattern can narrow the policy to specific packages, e.g.
+   `Wolfgang.DbContextBuilder*` for the nine IDs this release publishes. There is no per-package
+   ID list.
+
+The `user:` input of the `NuGet/login` step in `release.yaml` must be the nuget.org account that
+owns the policy.
+
+### Optional: `SECURITY_ALERTS_TOKEN` for the security-alerts workflow
+
+`security-alerts.yml` turns open code-scanning, secret-scanning and Dependabot alerts into issues.
+`GITHUB_TOKEN` cannot read secret-scanning alerts (and Dependabot readability varies by account),
+so add a repository secret **`SECURITY_ALERTS_TOKEN`**: a fine-grained personal access token with
+only **Secret scanning alerts: read**, **Dependabot alerts: read** and **Metadata: read**. One
+token may cover all your repositories. Without it, those reads fall back to `GITHUB_TOKEN`, and a
+kind is skipped with a notice only when that fallback is denied: always for secret-scanning,
+depending on the account for Dependabot.
+The workflow file's header comment has the details.
 
 ### Verify Branch Protection Rules
 
 **Location:** Settings → Branches → main (or Settings → Rules → Rulesets)
 
-> **Note:** Repos created from `repo-template` ship with `scripts/Setup-BranchRuleset.ps1`, which configures branch protection interactively (option `[1]` for single-developer mode, `[2]` for multi-developer mode). The script may not be present in older repos — if it is missing, configure the equivalent settings manually using the checklist below.
+> **Note:** `scripts/Setup-BranchRuleset.ps1`, which creates the ruleset interactively, lives in
+> `repo-template` and is not copied into this repository. This repository has
+> `scripts/Fix-BranchRuleset.ps1`, which repairs an existing ruleset's required checks. Otherwise
+> configure the settings manually using the checklist below.
 
 Ensure the following settings are enabled:
 
@@ -47,6 +68,8 @@ Ensure the following settings are enabled:
     - "Stage 3: macOS Tests (.NET 6.0-10.0)"
     - "Security Scan (DevSkim)"
     - "Security Scan (CodeQL)"
+  - The "5.0" in the Stage 1/2 names is historical (the jobs no longer install the .NET 5 SDK).
+    The names are required-check contexts, so renaming a job and the ruleset must happen together.
 - ✅ **Require branches to be up to date before merging**
 - ✅ **Require conversation resolution before merging**
 - ✅ **Do not allow bypassing the above settings** (recommended, even for admins)
@@ -70,22 +93,20 @@ The workflow triggers automatically when the release is published.
 
 ### Expected Workflow Behavior
 
-1. **Job 1: validate-release** (3-10 minutes)
-   - Runs all framework tests with coverage
-   - Enforces 95% coverage on src assemblies and 100% on test assemblies
-   - Uploads coverage report
-   - ✅ Auto-passes if tests succeed
+Six jobs run (see *Workflow Architecture* below for the order):
 
-2. **Job 2: pack-and-validate** (2-5 minutes)
-   - Packs NuGet packages
-   - Performs smoke test installation
-   - Uploads packages as artifacts
-   - ✅ Auto-passes if packages are valid
-
-3. **Job 3: publish-nuget** (1-2 minutes)
-   - Validates NUGET_API_KEY secret
-   - Publishes packages to NuGet.org automatically
-   - ✅ Auto-completes if secret is valid
+1. **validate-release** — checks the tag matches at least one src csproj `<Version>`, runs every test project
+   on every target framework with coverage, and enforces 95 % per src assembly and 100 % per test
+   assembly (each assembly that ran must have a coverage row).
+2. **pack-and-validate** — generates the third-party notices, packs, smoke-tests installing each
+   package, generates the CycloneDX SBOM and uploads the packages.
+3. **verify-docs-build** — builds the docfx site (metadata + build) without deploying, so a release
+   never ships with broken docs.
+4. **publish-nuget** — `NuGet/login` (OIDC) and `dotnet nuget push` of every package.
+5. **trigger-docs** — starts the docs deploy for the release, only after publishing succeeded.
+6. **update-release-artifacts** — writes the reproducible-build manifest, attests build provenance
+   for the packages and attaches packages, SBOM, coverage report, manifest and provenance bundle
+   to the GitHub Release.
 
 ### Monitoring the Workflow
 
@@ -95,14 +116,16 @@ The workflow triggers automatically when the release is published.
 
 ## Troubleshooting
 
-### "NUGET_API_KEY secret not configured" Error
+### `NuGet/login` or `dotnet nuget push` fails with 401 / 403
 
-**Problem:** The `publish-nuget` job fails with secret validation error.
+**Problem:** The `publish-nuget` job fails at the NuGet login or the push.
 
 **Solution:**
-1. Verify the secret name is exactly `NUGET_API_KEY` (case-sensitive)
-2. Re-add the secret in Settings → Secrets → Actions
-3. Re-run the workflow from the Actions tab (do not re-publish the release)
+1. **401:** nuget.org has no Trusted Publishing policy matching this repository and `release.yaml`
+   (or the `user:` in the login step is not the policy owner's account). Add or fix the policy.
+2. **403:** the policy exists but does not cover the package being pushed: the package's owner is
+   not the policy owner, or a scope's glob pattern excludes it. Fix the owner or the pattern.
+3. Re-run the failed job from the Actions tab (do not re-publish the release).
 
 ### Tests Fail on Specific Framework
 
@@ -167,42 +190,32 @@ Before creating a production GitHub Release (e.g., `v1.0.0`):
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Job 1: validate-release (Windows)                          │
-│  • Restore & Build                                          │
-│  • Test all frameworks (net5.0-10.0, net462-481)           │
-│  • Collect coverage                                         │
-│  • Enforce coverage (95% src, 100% tests)                   │
-│  • Upload coverage artifacts                                │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            ▼ (only if tests pass)
-┌─────────────────────────────────────────────────────────────┐
-│  Job 2: pack-and-validate (Windows)                         │
-│  • Restore & Build (fresh)                                  │
-│  • Pack NuGet packages                                      │
-│  • Smoke test installation                                  │
-│  • Upload package artifacts                                 │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            ▼ (only if packing succeeds)
-┌─────────────────────────────────────────────────────────────┐
-│  Job 3: publish-nuget (Windows)                             │
-│  • Download packages                                        │
-│  • Validate NUGET_API_KEY                                   │
-│  • Publish to NuGet.org automatically                       │
-└─────────────────────────────────────────────────────────────┘
+validate-release ── tag/version check, tests on every TFM, coverage gate
+        │
+        ▼
+pack-and-validate ── notices, pack, smoke install, SBOM
+        │
+        ├──────────────► verify-docs-build ── docfx metadata + build (no deploy)
+        │                         │
+        ▼                         ▼
+publish-nuget  (needs pack-and-validate AND verify-docs-build) ── OIDC login, push
+        │
+        ├──────────────► trigger-docs  (needs validate-release, publish-nuget)
+        │
+        ▼
+update-release-artifacts  (needs validate-release, pack-and-validate, publish-nuget)
+   ── reproducible-build manifest, provenance attestation, release assets
 ```
 
 ## Key Improvements Over Previous Workflow
 
 | Issue | Before | After |
 |-------|--------|-------|
-| **Framework Coverage** | Default framework only | All frameworks (net5.0-10.0, net462-481) |
+| **Framework Coverage** | Default framework only | All frameworks (net6.0-10.0, net462-481) |
 | **Code Coverage** | Not enforced | 95% src / 100% test assemblies enforced |
 | **Package Validation** | None | Smoke test installation |
 | **Deployment** | Incomplete publish script | Automatic publishing after validation |
-| **Secret Validation** | None | Validates before publishing |
+| **Publishing credentials** | Long-lived API key secret | NuGet Trusted Publishing (OIDC, short-lived key) |
 | **GitHub Releases** | Not used as trigger | Workflow triggered by published release |
 | **Build Efficiency** | Duplicate builds in each job | Build once per job with dependencies |
 | **Test Logging** | No logger parameter | Console logging with verbosity |
