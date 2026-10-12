@@ -501,7 +501,10 @@ jobs:
     needs: stryker
     # Runs after a failed gate too: the score and the survivors are the point then.
     # Not on pull requests: their --since score covers only the PR's changes.
-    if: always() && needs.stryker.outputs.score != '' && github.event_name != 'pull_request'
+    # Only from main: a run dispatched on another branch (e.g. a verbosity=trace diagnostic, #701)
+    # measures that branch's code, so its score and survivors must not land in main's history
+    # or rewrite the kind:mutation-survives issue.
+    if: always() && needs.stryker.outputs.score != '' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
