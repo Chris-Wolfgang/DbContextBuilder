@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791770602230,
+  "lastUpdate": 1791835202933,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -2352,6 +2352,120 @@ window.BENCHMARK_DATA = {
             "value": 5228418.026041667,
             "unit": "ns",
             "range": "± 180669.70616960514"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a0e414936d75b27438a97d7411f3fc0c5a03159f",
+          "message": "build: one src/Version.props for the version, AssemblyVersion pin and baseline (#693)\n\n* build: forward slashes in the Version.props import; split a run-on doc line\n\nReview on #693:\n- The ten src csprojs import ../Version.props with forward slashes, the\n  portable spelling. MSBuild accepts either, and the repo already uses both\n  styles; the newer ProjectReference/Compile entries use '/'.\n- The validate-release item in RELEASE-WORKFLOW-SETUP.md is two sentences\n  instead of one comma chain.\n\nVerified: all ten projects still evaluate Version 0.9.0 and baseline 0.9.0\n(dotnet msbuild -getProperty).\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit bcab13cf982d82eae6ec8655666419cccde1a1a6)\n(cherry picked from commit 4baa33769e06f1017c18f40beff730973df3a6bb)\n(cherry picked from commit 8c910c3d518778665e6fd3244b72568f9674b44d)\n\n* build: one src/Version.props for the version, AssemblyVersion pin and baseline\n\nAll nine packages ship in lockstep, but <Version>, the AssemblyVersion\n1.0.0.0 pin, the derived FileVersion and PackageValidationBaselineVersion\nwere repeated in every src csproj (10, 10, 10 and 8 copies), so each\nrelease and each baseline bump meant editing ten files by hand.\n\nThey now live once in src/Version.props, which every src csproj imports.\nEffective values are unchanged for every project (Version 0.9.0,\nAssemblyVersion 1.0.0.0, FileVersion 0.9.0.0, baseline 0.9.0); the\nunpackable -Core project ignores the baseline because it sets\nEnablePackageValidation=false.\n\ndocs/RELEASE-WORKFLOW-SETUP.md now points at src/Version.props. The\nrelease.yaml check that reads it is the previous PR in the stack.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n(cherry picked from commit 44229083c2b6fac3505b90cc1fdb414145318b4d)\n(cherry picked from commit 1207f95d1ca673305c1085a0cf835b18941e33fe)\n(cherry picked from commit 6c62e0fb172c54a362ddd93ffacea5b3cce719ca)\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-12T15:52:31-04:00",
+          "tree_id": "9b3152edc0eafbd9d5ac590fcecc4afaed081831",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/a0e414936d75b27438a97d7411f3fc0c5a03159f"
+        },
+        "date": 1791835200732,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 29905.268391927082,
+            "unit": "ns",
+            "range": "± 2250.177251763766"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 42186.885416666664,
+            "unit": "ns",
+            "range": "± 1334.8659424403654"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 208892.86197916666,
+            "unit": "ns",
+            "range": "± 22526.053329195216"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 1)",
+            "value": 9381984.903645834,
+            "unit": "ns",
+            "range": "± 58201.03057982978"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 1)",
+            "value": 228935.61881510416,
+            "unit": "ns",
+            "range": "± 22660.99057366698"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 29336.688975016277,
+            "unit": "ns",
+            "range": "± 20.894183861154183"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 65783.00634765625,
+            "unit": "ns",
+            "range": "± 4479.95698911909"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 430659.1077473958,
+            "unit": "ns",
+            "range": "± 59188.11970229829"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 10)",
+            "value": 10286038.903645834,
+            "unit": "ns",
+            "range": "± 140249.74868670502"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 10)",
+            "value": 725714.7708333334,
+            "unit": "ns",
+            "range": "± 125581.760687611"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 28971.811513264973,
+            "unit": "ns",
+            "range": "± 59.83180795175996"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 291965.1803385417,
+            "unit": "ns",
+            "range": "± 7560.876956505443"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 3393418.8307291665,
+            "unit": "ns",
+            "range": "± 1289273.0838536252"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 100)",
+            "value": 14894758.8984375,
+            "unit": "ns",
+            "range": "± 1454189.695484016"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 100)",
+            "value": 6997162.786458333,
+            "unit": "ns",
+            "range": "± 2848331.315147827"
           }
         ]
       }
