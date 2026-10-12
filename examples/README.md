@@ -12,7 +12,9 @@ service, and asserts on the result — exactly what you would do in your own sui
 The project references the published NuGet package
 (`Wolfgang.DbContextBuilder-Core-EF8`), so it mirrors what a consumer's project
 looks like. Swap the package for the one matching your EF Core version
-(`-Core-EF6` … `-Core-EF10`).
+(`-Core-EF6` … `-Core-EF10`). The random-data examples also reference
+`Wolfgang.DbContextBuilder.AutoFixture`: `SeedWithRandom` needs a provider
+(`.UseAutoFixture()`, or `.UseBogus()` from `Wolfgang.DbContextBuilder.Bogus`).
 
 ## Run them
 
@@ -36,8 +38,10 @@ dotnet test examples/Wolfgang.DbContextBuilder.Examples
 The whole library boils down to this:
 
 ```csharp
-await using var context = await new DbContextBuilder<ShopDbContext>()
+using var builder = new DbContextBuilder<ShopDbContext>();
+await using var context = await builder
     .UseInMemory()                       // or .UseSqlite() / .UseSqliteForMsSqlServer()
+    .UseAutoFixture()                    // a random-data provider, for SeedWithRandom
     .SeedWith(new Customer { Name = "Alice" })
     .SeedWithRandom<Product>(50)
     .BuildAsync();
