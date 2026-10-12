@@ -18,8 +18,10 @@ public class Example05_ShapingRandomData
     [Fact]
     public async Task Generated_products_can_be_shaped_per_item()
     {
-        await using var context = await new DbContextBuilder<ShopDbContext>()
+        using var builder = new DbContextBuilder<ShopDbContext>();
+        await using var context = await builder
             .UseInMemory()
+            .UseAutoFixture()
             .SeedWithRandom<Product>(count: 30, (product, index) =>
             {
                 // First five are out of stock; the rest are comfortably stocked.

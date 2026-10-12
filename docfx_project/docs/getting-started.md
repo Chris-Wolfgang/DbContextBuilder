@@ -5,6 +5,8 @@
 ```bash
 # Pick whichever matches your project's EF version
 dotnet add package Wolfgang.DbContextBuilder-Core-EF8
+# Only if you use SeedWithRandom: a random-data provider
+dotnet add package Wolfgang.DbContextBuilder.AutoFixture   # or Wolfgang.DbContextBuilder.Bogus
 ```
 
 For the full version-to-package mapping, see the [Installation table in the README](https://github.com/Chris-Wolfgang/DbContextBuilder#-installation).
@@ -14,7 +16,8 @@ For the full version-to-package mapping, see the [Installation table in the READ
 ```csharp
 using Wolfgang.DbContextBuilderCore;
 
-await using var context = await new DbContextBuilder<MyDbContext>()
+using var builder = new DbContextBuilder<MyDbContext>();
+await using var context = await builder
     .UseInMemory()
     .SeedWith(new User { Id = 1, Name = "Alice" })
     .BuildAsync();
@@ -25,7 +28,7 @@ var user = await sut.GetByIdAsync(1);
 Assert.Equal("Alice", user.Name);
 ```
 
-`BuildAsync()` returns a real `MyDbContext` instance whose state matches the seeds you provided. The builder owns the underlying connection; `await using` disposes both.
+`BuildAsync()` returns a real `MyDbContext` instance whose state matches the seeds you provided. Dispose the context with `await using`, and the builder after the last context it built: the builder owns the provider resources (for SQLite, the in-memory connection that holds the database), which disposing the context does not release.
 
 ## 3. Pick a provider
 
@@ -40,14 +43,16 @@ The builder ships three providers out of the box:
 Two ways to seed:
 
 ```csharp
-// Specific data — for predictable assertions
-.SeedWith(new User { Id = 1, Name = "Alice" })
-.SeedWith(new[] { user1, user2, user3 })
+using var builder = new DbContextBuilder<MyDbContext>();
+builder
+    // Specific data — for predictable assertions: one entity, several, or a list
+    .SeedWith(new User { Id = 1, Name = "Alice" })
+    .SeedWith(new User { Id = 2, Name = "Bob" }, new User { Id = 3, Name = "Carol" })
 
-// Random data — for realistic row counts. Pick a random-data provider first
-// (.UseAutoFixture() or .UseBogus()).
-.UseAutoFixture()
-.SeedWithRandom<Order>(count: 20)
+    // Random data — for realistic row counts. Pick a random-data provider first
+    // (.UseAutoFixture() or .UseBogus()).
+    .UseAutoFixture()
+    .SeedWithRandom<Order>(count: 20);
 ```
 
 `SeedWith` and `SeedWithRandom` are chainable in any order. The builder accumulates all seeds and inserts them when `BuildAsync()` runs.
@@ -79,7 +84,8 @@ time:
 - a **required** FK is wired to a seeded principal of its type — so seed the principals too:
 
   ```csharp
-  await using var context = await new DbContextBuilder<ShopDbContext>()
+  using var builder = new DbContextBuilder<ShopDbContext>();
+  await using var context = await builder
       .UseSqlite()
       .UseAutoFixture()              // pick a random-data provider (or .UseBogus())
       .SeedWithRandom<Customer>(5)   // seed the principals...
@@ -100,11 +106,12 @@ those rows with `SeedWith`) to keep constraint-enforcing providers happy.
 > randomly-seeded entity are **not** the raw random values the generator produced. Entities you
 > add with `SeedWith` are never touched — their explicit FK values are preserved exactly.
 
-## 5. Customize the model (SQLite for SQL Server only)
+## 5. Customize the model (SQLite providers)
 
-`SqliteModelCustomizer` exposes hooks to override the schema-renaming heuristic, the default-value SQL translation, the computed-column handling, and the many-to-many join-table renaming. See the [API reference](../api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.html) for the exact signatures.
+`UseSqlite()` installs `SqliteModelCustomizer`; `UseSqliteForMsSqlServer()` installs
+`SqliteForMsSqlServerModelCustomizer`, which derives from it. `SqliteModelCustomizer` exposes hooks to override the schema-renaming heuristic, the default-value SQL translation, the computed-column handling, and the many-to-many join-table renaming. See the [API reference](../api/Wolfgang.DbContextBuilderCore.SqliteModelCustomizer.yml) for the exact signatures.
 
 ## Where to go next
 
-- [API reference](../api/Wolfgang.DbContextBuilderCore.html) — every public type and method
+- [API reference](../api/Wolfgang.DbContextBuilderCore.yml) — every public type and method
 - [GitHub repository](https://github.com/Chris-Wolfgang/DbContextBuilder) — source, issues, releases
