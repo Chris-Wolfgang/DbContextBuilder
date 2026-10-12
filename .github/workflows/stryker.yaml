@@ -368,7 +368,17 @@ jobs:
               @(foreach ($name in 'DocExamples', 'Fuzz', 'Concurrency') {
                   Get-ChildItem -Path "tests/Wolfgang.DbContextBuilder.Tests.$name" -Filter '*.csproj' -ErrorAction SilentlyContinue
                 }))
-            $drop = @($ownRun + $noKills)
+            # The five -Core-EF{N} wrappers compile the same linked source, so the umbrella created
+            # and tested the same 407 mutants five times, once per wrapper and its test project.
+            # EF6 (oldest) and EF10 (newest) are kept; between them they cover the EF_CORE_N
+            # conditional code at both ends. EF7-EF9 and their test projects are dropped here and
+            # stay in pr.yaml's test stages. Floors are keyed by source path
+            # (src/Wolfgang.DbContextBuilder-Core), which EF6 and EF10 still report under.
+            $duplicateWrappers = @(foreach ($n in 7, 8, 9) {
+                Get-ChildItem -Path "src/Wolfgang.DbContextBuilder-Core-EF$n" -Filter '*.csproj' -ErrorAction SilentlyContinue
+                Get-ChildItem -Path "tests/Wolfgang.DbContextBuilder-Core-EF$n.Tests.Unit" -Filter '*.csproj' -ErrorAction SilentlyContinue
+              })
+            $drop = @($ownRun + $noKills + $duplicateWrappers)
             if ($solution -and $drop.Count -gt 0) {
               $umbrella = Join-Path (Split-Path -Parent (Resolve-Path $solution)) ('stryker-umbrella' + [IO.Path]::GetExtension($solution))
               Copy-Item $solution $umbrella -Force
