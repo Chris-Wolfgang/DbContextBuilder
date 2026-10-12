@@ -65,14 +65,14 @@ function Invoke-Api
     # Returns @{ ok; data; status } — never throws on HTTP errors so callers can degrade per alert kind.
     param([string]$Path, [string]$Method = 'GET', [switch]$Paginate, [string]$Token)
 
-    $args = @('api', '-X', $Method, '-H', 'Accept: application/vnd.github+json', '-H', 'X-GitHub-Api-Version: 2022-11-28')
-    if ($Paginate) { $args += @('--paginate', '--slurp') }
-    $args += $Path
+    $ghArgs = @('api', '-X', $Method, '-H', 'Accept: application/vnd.github+json', '-H', 'X-GitHub-Api-Version: 2022-11-28')
+    if ($Paginate) { $ghArgs += @('--paginate', '--slurp') }
+    $ghArgs += $Path
     # Keep stdout (JSON) and stderr (gh diagnostics) apart: merging them can poison ConvertFrom-Json
     # even on a successful call. With 2>&1, stderr lines arrive as ErrorRecord objects.
     $saved = $env:GH_TOKEN
     if ($Token) { $env:GH_TOKEN = $Token }
-    try { $raw = & gh @args 2>&1 } finally { if ($Token) { $env:GH_TOKEN = $saved } }
+    try { $raw = & gh @ghArgs 2>&1 } finally { if ($Token) { $env:GH_TOKEN = $saved } }
     $ok = $LASTEXITCODE -eq 0
     $stdout = ($raw | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] } | Out-String)
     $stderr = ($raw | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] } | ForEach-Object { $_.ToString() } | Out-String)
@@ -248,7 +248,9 @@ function Confirm-Label
     if ($label -notin $existing)
     {
         if ($DryRun) { Write-Host "DRY-RUN create label $label"; return }
-        $out = & gh label create $label -R $Repository --color 'd93f0b' --description 'Security-related' 2>&1
+        # Same color and description as scripts/Setup-Labels.ps1, so a fresh repository gets one
+        # definition whichever script creates the label first.
+        $out = & gh label create $label -R $Repository --color '1d76db' --description 'Security alert tracked by security-alerts.yml' 2>&1
         if ($LASTEXITCODE -ne 0) { throw "gh label create $label failed: $out" }
     }
 }

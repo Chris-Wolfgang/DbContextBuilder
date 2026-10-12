@@ -1,4 +1,5 @@
 #!/usr/bin/env pwsh
+#Requires -Version 7.0
 <#
 .SYNOPSIS
     Fixes branch rulesets by disabling existing ones and recreating with the correct configuration.
@@ -6,7 +7,8 @@
 .DESCRIPTION
     This script inspects the existing branch rulesets for a repository, disables all of them,
     and renames any ruleset named "Protect main branch" to "Protect main branch (old)" so that
-    Setup-BranchRuleset.ps1 can create a fresh ruleset without conflicts.
+    a fresh ruleset can be created without conflicts. Setup-BranchRuleset.ps1, which creates it,
+    lives in repo-template; when it is next to this script it is run automatically.
 
     The script presents a plan of all changes before executing and prompts for confirmation.
 
@@ -36,7 +38,10 @@
 [CmdletBinding()]
 param(
     [Parameter()]
-    [string]$Repository = "{{GITHUB_USERNAME}}/{{REPO_NAME}}",
+    # Empty (auto-detect from `gh repo view`) or owner/repo. The default used to be an
+    # unsubstituted template placeholder (#593).
+    [ValidatePattern('^$|^[^/@\s]+/[^/@\s]+$')]
+    [string]$Repository,
 
     [Parameter()]
     [Alias("y")]
@@ -74,20 +79,19 @@ if ($Repository) {
 }
 
 # Determine repository
-if ($Repository -eq "{{GITHUB_USERNAME}}/{{REPO_NAME}}" -or -not $Repository) {
+if (-not $Repository) {
     Write-Host "Detecting current repository..." -ForegroundColor Cyan
-    try {
-        $repoInfo = gh repo view --json nameWithOwner | ConvertFrom-Json
-        $Repository = $repoInfo.nameWithOwner
-        Write-Host "Using repository: $Repository" -ForegroundColor Green
-    } catch {
-        if ($Repository -eq "{{GITHUB_USERNAME}}/{{REPO_NAME}}") {
-            Write-Error "Could not detect repository. Please run the setup script first to replace placeholders, or specify -Repository parameter."
-        } else {
-            Write-Error "Could not detect repository. Please run from within a git repository or specify -Repository parameter."
-        }
+    # A gh failure writes nothing to stdout and throws nothing, so check the exit code and the
+    # result: without this the script went on to call /repos//rulesets (#626).
+    $repoJson = gh repo view --json nameWithOwner
+    if ($LASTEXITCODE -eq 0 -and $repoJson) {
+        $Repository = ($repoJson | ConvertFrom-Json).nameWithOwner
+    }
+    if (-not $Repository) {
+        Write-Error "Could not detect repository. Please run from within a git repository or specify -Repository parameter."
         exit 1
     }
+    Write-Host "Using repository: $Repository" -ForegroundColor Green
 } else {
     Write-Host "Using specified repository: $Repository" -ForegroundColor Green
 }
@@ -141,8 +145,7 @@ Write-Host "`nFound $($rulesets.Count) ruleset(s):" -ForegroundColor Cyan
 Write-Host ""
 
 foreach ($ruleset in $rulesets) {
-    $status = if ($ruleset.enforcement -eq "disabled") { "disabled" } else { $ruleset.enforcement }
-    Write-Host "  [$($ruleset.id)] $($ruleset.name) (enforcement: $status)" -ForegroundColor Gray
+    Write-Host "  [$($ruleset.id)] $($ruleset.name) (enforcement: $($ruleset.enforcement))" -ForegroundColor Gray
 
     $actions = @()
 
@@ -275,7 +278,7 @@ if ($errors -gt 0) {
         Write-Host ""
         & $setupScript -Repository $Repository
     } else {
-        Write-Host "Setup-BranchRuleset.ps1 not found. Run it manually to create a fresh ruleset." -ForegroundColor Yellow
+        Write-Host "Setup-BranchRuleset.ps1 is not in this repository (it lives in repo-template). Create the fresh ruleset with it, or by hand." -ForegroundColor Yellow
         Write-Host "View rulesets at: https://github.com/$Repository/settings/rules" -ForegroundColor Cyan
     }
 }

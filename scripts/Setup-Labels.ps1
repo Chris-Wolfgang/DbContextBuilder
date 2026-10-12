@@ -4,11 +4,18 @@
     Creates custom GitHub labels for the repository.
 
 .DESCRIPTION
-    This script uses the GitHub CLI (gh) to create labels used by Dependabot and
-    other workflows. Run this locally once after creating a new repo from the template.
-    
+    This script uses the GitHub CLI (gh) to create the labels Dependabot, the workflows and
+    the maintenance process use. Run this locally once after creating a new repo from the
+    template; labels that already exist are skipped.
+
     Labels created:
     - dependencies             (blue)   — applied automatically by Dependabot to every update PR
+    - no-changelog             (yellow) — exempts a src/ PR from pr.yaml's changelog-fragment check
+    - perf-impact-acknowledged (yellow) — lets pr-benchmarks.yaml pass a PR with an accepted regression
+    - security                 (blue)   — issues filed by security-alerts.yml
+    - kind:mutation-survives   (pale)   — the rolling survivors issue stryker.yaml maintains
+    - shadow-regression        (red)    — issues filed by shadow.yaml
+    - scheduled-workflow-failure (red)  — issues filed when a scheduled workflow run fails
     - maintenance              (steel)  — kind label, applied to the per-repo parent Maintenance issue
     - maintenance-task         (steel)  — kind label, applied to every Maintenance sub-issue
     - maintenance - security   (red)    — category: scans, finding fixes, dependency vuln audit
@@ -38,11 +45,10 @@
 [CmdletBinding()]
 param(
     [Parameter()]
-    # Accept empty (auto-detect from `gh repo view`), the template placeholder
-    # (replaced by setup.ps1), or a strict owner/repo format. Rejecting URLs
-    # and malformed inputs here surfaces the problem at parameter binding
-    # instead of as a confusing 404 from gh api downstream.
-    [ValidatePattern('^$|^\{\{GITHUB_USERNAME\}\}/\{\{REPO_NAME\}\}$|^[^/@\s]+/[^/@\s]+$')]
+    # Accept empty (auto-detect from `gh repo view`) or a strict owner/repo format.
+    # Rejecting URLs and malformed inputs here surfaces the problem at parameter
+    # binding instead of as a confusing 404 from gh api downstream.
+    [ValidatePattern('^$|^[^/@\s]+/[^/@\s]+$')]
     [string]$Repository
 )
 
@@ -71,14 +77,17 @@ try {
 # Determine repository
 if (-not $Repository) {
     Write-Host "🔍 Detecting current repository..." -ForegroundColor Cyan
-    try {
-        $repoInfo = gh repo view --json nameWithOwner | ConvertFrom-Json
-        $Repository = $repoInfo.nameWithOwner
-        Write-Host "✅ Using repository: $Repository" -ForegroundColor Green
-    } catch {
+    # A gh failure writes nothing to stdout and throws nothing, so check the exit code and the
+    # result: without this the script went on to call /repos//labels (#626).
+    $repoJson = gh repo view --json nameWithOwner
+    if ($LASTEXITCODE -eq 0 -and $repoJson) {
+        $Repository = ($repoJson | ConvertFrom-Json).nameWithOwner
+    }
+    if (-not $Repository) {
         Write-Error "❌ Could not detect repository. Please run from within a git repository or specify -Repository parameter."
         exit 1
     }
+    Write-Host "✅ Using repository: $Repository" -ForegroundColor Green
 } else {
     Write-Host "✅ Using specified repository: $Repository" -ForegroundColor Green
 }
@@ -88,6 +97,14 @@ Write-Host "`n🏷️  Creating labels for: $Repository`n" -ForegroundColor Cyan
 $labels = @(
     # Dependabot — applies `dependencies` automatically per .github/dependabot.yml
     @{ name = "dependencies";             color = "0366d6"; description = "Pull requests that update a dependency file" },
+
+    # Labels the workflows read or apply
+    @{ name = "no-changelog";             color = "e4e669"; description = "A src/ change that needs no changelog fragment" },
+    @{ name = "perf-impact-acknowledged"; color = "FBCA04"; description = "A benchmark regression the PR accepts" },
+    @{ name = "security";                 color = "1d76db"; description = "Security alert tracked by security-alerts.yml" },
+    @{ name = "kind:mutation-survives";   color = "BFD4F2"; description = "Surviving mutants from the weekly Stryker run" },
+    @{ name = "shadow-regression";        color = "B60205"; description = "Shadow workload regression found by shadow.yaml" },
+    @{ name = "scheduled-workflow-failure"; color = "B60205"; description = "A scheduled workflow run failed" },
 
     # Maintenance framework — kind labels (neutral steel: the meta is colorless)
     @{ name = "maintenance";              color = "9aa7b3"; description = "Per-repo parent Maintenance issue (living improvement menu)" },
