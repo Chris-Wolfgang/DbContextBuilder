@@ -155,7 +155,8 @@ public static class DocExampleSource
     internal static IEnumerable<DocExample> ExtractFromMarkdown(IReadOnlyList<string> lines, string relative)
     {
         var previous = string.Empty;
-        for (var i = 0; i < lines.Count; i++)
+        var i = 0;
+        while (i < lines.Count)
         {
             var open = FenceOpen.Match(lines[i]);
             if (!open.Success)
@@ -163,6 +164,7 @@ public static class DocExampleSource
                 // Every non-fence line replaces `previous`, a blank one included: the marker counts
                 // only on the line immediately before the fence, so it cannot reach a later sample.
                 previous = lines[i].Trim();
+                i++;
                 continue;
             }
 
@@ -170,12 +172,16 @@ public static class DocExampleSource
             var indent = open.Groups["indent"].Value;
             var startLine = i + 2; // first code line, 1-based
             var buffer = new List<string>();
-            for (i++; i < lines.Count && !FenceClose.IsMatch(lines[i]); i++)
+            var end = i + 1;
+            while (end < lines.Count && !FenceClose.IsMatch(lines[end]))
             {
                 // A fence nested in a list item is indented; drop that indentation.
-                buffer.Add(lines[i].StartsWith(indent, StringComparison.Ordinal) ? lines[i].Substring(indent.Length) : lines[i]);
+                buffer.Add(lines[end].StartsWith(indent, StringComparison.Ordinal) ? lines[end].Substring(indent.Length) : lines[end]);
+                end++;
             }
 
+            // Resume after the closing fence (past the end when the fence is never closed).
+            i = end + 1;
             previous = string.Empty;
             if (!skip)
             {
