@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791759411350,
+  "lastUpdate": 1791770602230,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -2238,6 +2238,120 @@ window.BENCHMARK_DATA = {
             "value": 7976422.1875,
             "unit": "ns",
             "range": "± 2364677.8911751383"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f17aaa22794b96f75d2991829bbbb712b14efe63",
+          "message": "docs(copilot): analyzers apply to projects that inherit the root props (#679)\n\nReview on #679: \"on every project\" was wrong. examples/Directory.Build.props\nand extra-projects/Directory.Build.props stop MSBuild's search without\nimporting the root, so those projects do not load the analyzer set. The\nguidance now names that scope and the two exceptions.\n\n\n(cherry picked from commit 42497a98bc5a94d04048e94160dd3e5977283a5a)\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-11T21:55:30-04:00",
+          "tree_id": "4a51fa178f60c8e4fa17dc679ac59d33e9472d2c",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/f17aaa22794b96f75d2991829bbbb712b14efe63"
+        },
+        "date": 1791770600478,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 40096.81231689453,
+            "unit": "ns",
+            "range": "± 1527.513511664524"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 63410.66328938802,
+            "unit": "ns",
+            "range": "± 2290.088722588612"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 263364.9290364583,
+            "unit": "ns",
+            "range": "± 23297.535462223754"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 1)",
+            "value": 10750646.026041666,
+            "unit": "ns",
+            "range": "± 135740.35143268717"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 1)",
+            "value": 303738.2561848958,
+            "unit": "ns",
+            "range": "± 28123.016660132766"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 39622.260091145836,
+            "unit": "ns",
+            "range": "± 2315.982170372915"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 134424.75520833334,
+            "unit": "ns",
+            "range": "± 7395.765247252292"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 496220.4381510417,
+            "unit": "ns",
+            "range": "± 22268.092343332864"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 10)",
+            "value": 11379241.109375,
+            "unit": "ns",
+            "range": "± 101999.63656420178"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 10)",
+            "value": 936573.814453125,
+            "unit": "ns",
+            "range": "± 134497.64263276666"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 40016.187825520836,
+            "unit": "ns",
+            "range": "± 1459.3414934871482"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 452669.0813802083,
+            "unit": "ns",
+            "range": "± 4752.08895544531"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 3877056.640625,
+            "unit": "ns",
+            "range": "± 1452831.6262633181"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 100)",
+            "value": 19739033.895833332,
+            "unit": "ns",
+            "range": "± 584539.7421806155"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 100)",
+            "value": 5228418.026041667,
+            "unit": "ns",
+            "range": "± 180669.70616960514"
           }
         ]
       }
