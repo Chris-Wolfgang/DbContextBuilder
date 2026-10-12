@@ -45,8 +45,8 @@
     ],
     "output": "_site",
     "template": [
-      "modern",
-      "default"
+      "default",
+      "modern"
     ],
     "globalMetadata": {
       "_appName": "",
