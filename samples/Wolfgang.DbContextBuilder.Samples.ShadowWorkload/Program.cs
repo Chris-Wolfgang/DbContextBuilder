@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Wolfgang.DbContextBuilder.Samples.ShadowWorkload;
@@ -12,12 +14,13 @@ using Wolfgang.DbContextBuilderCore.Assertions;
 // scenario, comparable across two runs of this same program (see the csproj's
 // UseBaselinePackage/BaselineVersion toggle and shadow.yaml).
 //
-// Scoped to -Core-EF10's own public surface, every builder entry point included:
-// UseInMemory, UseSqlite, UseSqliteForMsSqlServer, UseDbContextOptionsBuilder,
-// SeedWith, SeedWithRandom (through UseCustomRandomEntityCreator with the sample's own
-// deterministic creator, so no second package has to be baselined), UseSeedProfile,
-// UseDiagnosticOutput, BuildAsync, and the Should() assertions. Every scenario must
-// compile against the baseline package too (0.9.0 has all of them).
+// Scoped to -Core-EF10's own public surface. Every configuration method is exercised at least
+// once - UseInMemory, UseSqlite, UseSqliteForMsSqlServer, UseDbContextOptionsBuilder,
+// UseCustomRandomEntityCreator (with the sample's own deterministic creator, so no second
+// package has to be baselined), UseSeedProfile, UseDiagnosticOutput and BuildAsync - but not
+// every overload: seeding goes through SeedWith(params) and SeedWithRandom(count), and the
+// assertion scenario through Should().HaveCount and AllSatisfy on a DbSet (#617). Every scenario must compile
+// against the baseline package too.
 
 var outputPath = args.Length > 0 ? args[0] : "shadow-results.json";
 var iterations = args.Length > 1 && int.TryParse(args[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var n) ? n : 100;
@@ -41,7 +44,9 @@ results["ConcurrentBuilds20"] = await MeasureConcurrentAsync("ConcurrentBuilds20
 var report = new ShadowReport
 (
     DateTime.UtcNow,
-    typeof(DbContextBuilder<>).Assembly.GetName().Version?.ToString() ?? "unknown",
+    // AssemblyVersion is pinned to 1.0.0.0 in every package, so it cannot tell the two runs
+    // apart; the informational version carries the real package version (#617).
+    typeof(DbContextBuilder<>).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown",
     results
 );
 
@@ -65,13 +70,16 @@ static async Task<ScenarioResult> MeasureAsync(string name, int iterationCount, 
 
     for (var i = 0; i < iterationCount; i++)
     {
-        var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
-        var startedAt = DateTime.UtcNow;
+        // Process-wide, not per-thread: the continuation after the await can resume on another
+        // thread-pool thread, which made a GetAllocatedBytesForCurrentThread delta meaningless.
+        // The scenarios run one at a time, so the process total is dominated by the operation (#617).
+        var allocatedBefore = GC.GetTotalAllocatedBytes(precise: true);
+        var startedAt = Stopwatch.GetTimestamp();
 
         await operation().ConfigureAwait(false);
 
-        elapsedMs[i] = (DateTime.UtcNow - startedAt).TotalMilliseconds;
-        allocatedBytes[i] = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
+        elapsedMs[i] = Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds;
+        allocatedBytes[i] = GC.GetTotalAllocatedBytes(precise: true) - allocatedBefore;
     }
 
     Console.WriteLine($"{name}: {iterationCount} iterations done.");
@@ -80,10 +88,8 @@ static async Task<ScenarioResult> MeasureAsync(string name, int iterationCount, 
 
 
 
-// GC.GetAllocatedBytesForCurrentThread() is per-thread; once work fans out
-// across Task.WhenAll (with no ConfigureAwait(false) guarantee of staying on
-// one thread), attributing allocations to "the operation" stops being
-// meaningful. Concurrent scenarios report wall-clock latency only.
+// Once work fans out across Task.WhenAll, the allocations of the concurrent callers overlap and
+// cannot be attributed to one operation. Concurrent scenarios report wall-clock latency only.
 static async Task<ScenarioResult> MeasureConcurrentAsync
 (
     string name,
@@ -92,30 +98,38 @@ static async Task<ScenarioResult> MeasureConcurrentAsync
     Func<Task> operation
 )
 {
+    // Warm up with the same fan-out that is measured, not one sequential call (#617).
     for (var i = 0; i < WarmupIterations; i++)
     {
-        await operation().ConfigureAwait(false);
+        await RunConcurrentlyAsync(concurrentCallers, operation).ConfigureAwait(false);
     }
 
     var elapsedMs = new double[iterationCount];
 
     for (var i = 0; i < iterationCount; i++)
     {
-        var startedAt = DateTime.UtcNow;
+        var startedAt = Stopwatch.GetTimestamp();
 
-        var tasks = new Task[concurrentCallers];
-        for (var c = 0; c < concurrentCallers; c++)
-        {
-            tasks[c] = operation();
-        }
+        await RunConcurrentlyAsync(concurrentCallers, operation).ConfigureAwait(false);
 
-        await Task.WhenAll(tasks).ConfigureAwait(false);
-
-        elapsedMs[i] = (DateTime.UtcNow - startedAt).TotalMilliseconds;
+        elapsedMs[i] = Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds;
     }
 
     Console.WriteLine($"{name}: {iterationCount} iterations of {concurrentCallers} concurrent builders done.");
     return new ScenarioResult(iterationCount, elapsedMs.Average(), AllocatedBytesMean: null);
+}
+
+
+
+static Task RunConcurrentlyAsync(int concurrentCallers, Func<Task> operation)
+{
+    var tasks = new Task[concurrentCallers];
+    for (var c = 0; c < concurrentCallers; c++)
+    {
+        tasks[c] = operation();
+    }
+
+    return Task.WhenAll(tasks);
 }
 
 
@@ -131,14 +145,8 @@ static async Task NoSeedAsync()
 
 static async Task SeedWithAsync(int count)
 {
-    var products = new Product[count];
-    for (var i = 0; i < count; i++)
-    {
-        products[i] = new Product { Name = $"Widget {i.ToString(CultureInfo.InvariantCulture)}", Price = 9.99m + i };
-    }
-
     using var builder = new DbContextBuilder<ShopDbContext>();
-    builder.UseInMemory().SeedWith(products);
+    builder.UseInMemory().SeedWith(CreateProducts(count));
     await using var context = await builder.BuildAsync().ConfigureAwait(false);
 }
 
@@ -146,14 +154,8 @@ static async Task SeedWithAsync(int count)
 
 static async Task SqliteSeedWithAsync(int count)
 {
-    var products = new Product[count];
-    for (var i = 0; i < count; i++)
-    {
-        products[i] = new Product { Name = $"Widget {i.ToString(CultureInfo.InvariantCulture)}", Price = 9.99m + i };
-    }
-
     using var builder = new DbContextBuilder<ShopDbContext>();
-    builder.UseSqlite().SeedWith(products);
+    builder.UseSqlite().SeedWith(CreateProducts(count));
     await using var context = await builder.BuildAsync().ConfigureAwait(false);
 }
 

@@ -5,19 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+This file is not edited by hand. From 0.9.0 on, each release section is assembled by
+`scripts/changelog.ps1` from the fragments in `changelog/unreleased/`, under the fragment
+headings *Breaking changes*, *Added*, *Fixed*, *Documentation* and *Internal*; earlier
+sections keep their original Keep a Changelog headings.
+
 ## [Unreleased]
-
-### Added
-
-### Changed
-
-### Fixed
-
-### Removed
-
-### Deprecated
-
-### Security
 
 ## [0.9.0] - 2026-10-09
 
@@ -104,7 +97,7 @@ surface changes; drop-in replacement for 0.8.0.
   suppressions after `Assert.NotNull`, and a duplicate no-op test — were
   fixed in place. (#377, #379, #380, #381, #382)
 
-## [0.8.0] - 2026-06-25
+## [0.8.0] - 2026-06-26
 
 ### Added
 
@@ -253,7 +246,7 @@ surface changes; drop-in replacement for 0.8.0.
   (a vulnerability in the bundled SQLite native library). Consumers of the
   SQLite providers now restore the patched native library.
 
-## [0.6.2] - 2026-05-29
+## [0.6.2] - 2026-05-31
 
 Canonical maintenance round + binding-stability fix. No public API or
 runtime behavior change vs v0.6.1 across any of the seven packages.
@@ -335,34 +328,34 @@ No public API change vs `0.4.0`.
 
 No public API change vs `0.3.3`.
 
-## [0.3.3]
+## [0.3.3] - 2025-12-09
 
 ### Changed
 - EF Core package dependency version ranges updated
 
-## [0.3.2]
+## [0.3.2] - 2025-10-29
 
 ### Changed
 - EF Core package dependency version ranges updated
 
-## [0.3.1]
+## [0.3.1] - 2025-10-28
 
 ### Changed
 - EF Core package dependency version ranges updated
 
-## [0.3.0]
+## [0.3.0] - 2025-10-28
 
 ### Added
 - EF Core 10 support (`Wolfgang.DbContextBuilder-Core-EF10`)
 
-## [0.2.0]
+## [0.2.0] - 2025-10-13
 
 ### Added
 - Sqlite in-memory database support via `UseSqlite()` extension method
 - `SqliteModelCustomizer` for Sqlite-specific model customization
 - `SqliteForMsSqlServerModelCustomizer` for SQL Server model compatibility with Sqlite
 
-## [0.1.0]
+## [0.1.0] - 2025-10-04
 
 ### Added
 - Initial release
@@ -383,9 +376,9 @@ No public API change vs `0.3.3`.
 [0.6.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.3.3...v0.4.0
-[0.3.3]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.3.2...v0.3.3
-[0.3.2]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.3.1...v0.3.2
-[0.3.1]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/releases/tag/v0.1.0
+[0.3.3]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.3.2-rc1...v0.3.3
+[0.3.2]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.3.1-rc1...v0.3.2-rc1
+[0.3.1]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.3.0-rc1...v0.3.1-rc1
+[0.3.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/compare/v0.2.0...v0.3.0-rc1
+[0.2.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/releases/tag/v0.2.0
+[0.1.0]: https://github.com/Chris-Wolfgang/DbContextBuilder/releases/tag/v0.1.0-prerelease
