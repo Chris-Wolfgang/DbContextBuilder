@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791763125919,
+  "lastUpdate": 1791706951347,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "Mutation score": [
@@ -215,33 +215,6 @@ window.BENCHMARK_DATA = {
           {
             "name": "Mutation score",
             "value": 94.58,
-            "unit": "%"
-          }
-        ]
-      },
-      {
-        "commit": {
-          "author": {
-            "name": "Chris Wolfgang",
-            "username": "Chris-Wolfgang",
-            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
-          },
-          "committer": {
-            "name": "Chris Wolfgang",
-            "username": "Chris-Wolfgang",
-            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
-          },
-          "id": "4c7126becea95575504af81ed655a27a7f320de2",
-          "message": "ci(stryker): add a verbosity input for diagnostic runs\n\n#701: in CI, the solution-mode (umbrella) Stryker run logs \"It looks like the\ntest coverage capture failed. Disable coverage based optimisation.\" on every\nrun, after 17-59 minutes. The project-mode runs (AutoFixture, Bogus) capture\nfine, in CI and locally. The default log doesn't say why, and local solution\nmode does not build (CS0234), so the cause has to be found in CI.\n\nworkflow_dispatch gains a `verbosity` choice (info / debug / trace; default\ninfo). Anything above info adds `--verbosity <level> --log-to-file` to all\nthree Stryker invocations. The log is written under StrykerOutput, which the\nexisting \"Upload Stryker report\" step already uploads (if: always()). The\ninput is passed through an env var, not interpolated into the script. Pull\nrequest and scheduled runs are unchanged: the input is empty for them.\n\nVerified: actionlint (shellcheck off) and zizmor are clean. The argument logic\ngives nothing for \"\" and \"info\" and `--verbosity trace --log-to-file` for\ntrace. `dotnet stryker --help` (pinned tool) lists -V|--verbosity and\n-L|--log-to-file.\n\nRefs #701\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
-          "timestamp": "2026-10-11T21:53:30Z",
-          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/4c7126becea95575504af81ed655a27a7f320de2"
-        },
-        "date": 1791763123824,
-        "tool": "customBiggerIsBetter",
-        "benches": [
-          {
-            "name": "Mutation score",
-            "value": 95.16,
             "unit": "%"
           }
         ]
