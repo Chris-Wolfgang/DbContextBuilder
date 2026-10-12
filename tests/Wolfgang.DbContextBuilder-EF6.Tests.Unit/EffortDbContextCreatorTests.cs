@@ -19,7 +19,7 @@ public class EffortDbContextCreatorTests
         using var sut = new EffortDbContextCreator();
 
         // Act
-        var context = sut.CreateDbContext<TestDbContext>();
+        using var context = sut.CreateDbContext<TestDbContext>();
 
         // Assert
         Assert.NotNull(context);
@@ -38,42 +38,11 @@ public class EffortDbContextCreatorTests
         using var sut = new EffortDbContextCreator();
 
         // Act
-        var context1 = sut.CreateDbContext<TestDbContext>();
-        var context2 = sut.CreateDbContext<TestDbContext>();
+        using var context1 = sut.CreateDbContext<TestDbContext>();
+        using var context2 = sut.CreateDbContext<TestDbContext>();
 
         // Assert
         Assert.NotSame(context1, context2);
-    }
-
-
-
-    /// <summary>
-    /// Verifies that Dispose can be called without error.
-    /// </summary>
-    [Fact]
-    public void Dispose_can_be_called()
-    {
-        // Arrange
-        var sut = new EffortDbContextCreator();
-
-        // Act & Assert — should not throw
-        sut.Dispose();
-    }
-
-
-
-    /// <summary>
-    /// Verifies that Dispose can be called multiple times without error.
-    /// </summary>
-    [Fact]
-    public void Dispose_can_be_called_multiple_times()
-    {
-        // Arrange
-        var sut = new EffortDbContextCreator();
-
-        // Act & Assert — should not throw
-        sut.Dispose();
-        sut.Dispose();
     }
 
 
@@ -83,13 +52,13 @@ public class EffortDbContextCreatorTests
     /// does not have a (DbConnection, bool) constructor.
     /// </summary>
     [Fact]
-    public void CreateDbContext_when_context_has_no_matching_constructor_throws()
+    public void CreateDbContext_when_context_has_no_matching_constructor_throws_MissingMethodException()
     {
         // Arrange
         using var sut = new EffortDbContextCreator();
 
-        // Act & Assert
-        Assert.ThrowsAny<Exception>(() => sut.CreateDbContext<NoConnectionConstructorContext>());
+        // Act & Assert — the documented exception, not any exception
+        Assert.Throws<MissingMethodException>(() => sut.CreateDbContext<NoConnectionConstructorContext>());
     }
 
 

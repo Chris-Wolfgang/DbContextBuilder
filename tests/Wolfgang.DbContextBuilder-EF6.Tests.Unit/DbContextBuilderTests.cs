@@ -9,6 +9,17 @@ namespace Wolfgang.DbContextBuilderEF6.Tests.Unit;
 
 public class DbContextBuilderTests
 {
+    /// <summary>
+    /// The entity counts the SeedWithRandom theories run with (#602).
+    /// </summary>
+    public static TheoryData<int> SeedCounts => new() { 1, 3, 7 };
+
+
+
+    // Build and BuildAsync each create two contexts: the temporary seed context and the one returned.
+    private const int ContextsCreatedPerBuild = 2;
+
+
 
     private static DbContextBuilder<TestDbContext> CreateDbContextBuilder() =>
         new DbContextBuilder<TestDbContext>()
@@ -18,22 +29,10 @@ public class DbContextBuilderTests
 
 
     /// <summary>
-    /// Verifies that the test project can create an instance of DbContextBuilder.
-    /// </summary>
-    [Fact]
-    public void Can_create_instance_of_DbContextBuilder()
-    {
-        var builder = new DbContextBuilder<TestDbContext>();
-        Assert.NotNull(builder);
-    }
-
-
-
-    /// <summary>
     /// Verifies that calling Build returns an instance of the specified DbContext type.
     /// </summary>
     [Fact]
-    public void Calling_Build_returns_instance_of_specified_context()
+    public void Build_when_called_returns_an_instance_of_the_context_type()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -52,7 +51,7 @@ public class DbContextBuilderTests
     /// Verifies that calling BuildAsync returns an instance of the specified DbContext type.
     /// </summary>
     [Fact]
-    public async Task Calling_BuildAsync_returns_instance_of_specified_context()
+    public async Task BuildAsync_when_called_returns_an_instance_of_the_context_type()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -71,7 +70,7 @@ public class DbContextBuilderTests
     /// Verifies that calling UseEffort returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseEffort_returns_DbContextBuilder()
+    public void UseEffort_when_called_returns_the_builder()
     {
         // Arrange
         var sut = new DbContextBuilder<TestDbContext>();
@@ -89,7 +88,7 @@ public class DbContextBuilderTests
     /// Verifies that calling UseAutoFixture returns the DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseAutoFixture_returns_DbContextBuilder()
+    public void UseAutoFixture_when_called_returns_the_builder()
     {
         // Arrange
         var sut = new DbContextBuilder<TestDbContext>();
@@ -107,7 +106,7 @@ public class DbContextBuilderTests
     /// Verifies that the RandomEntityCreator used is an instance of AutoFixtureRandomEntityCreator.
     /// </summary>
     [Fact]
-    public void RandomEntityCreator_is_AutoFixture()
+    public void Ctor_when_called_defaults_RandomEntityCreator_to_AutoFixture()
     {
         // Arrange
         var sut = new DbContextBuilder<TestDbContext>();
@@ -123,7 +122,7 @@ public class DbContextBuilderTests
     /// DbContextBuilder instance to allow for method chaining.
     /// </summary>
     [Fact]
-    public void Calling_UseCustomRandomEntityCreator_returns_DbContextBuilder()
+    public void UseCustomRandomEntityCreator_when_called_returns_the_builder()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -143,7 +142,7 @@ public class DbContextBuilderTests
     /// throws ArgumentNullException.
     /// </summary>
     [Fact]
-    public void Calling_UseCustomEntityCreator_and_passing_in_null_throws_ArgumentNullException()
+    public void UseCustomRandomEntityCreator_when_creator_is_null_throws_ArgumentNullException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -159,7 +158,7 @@ public class DbContextBuilderTests
     /// Verifies that calling UseCustomRandomEntityCreator sets the RandomEntityCreator property.
     /// </summary>
     [Fact]
-    public void Calling_UseCustomRandomEntityCreator_sets_the_RandomEntityCreator_property()
+    public void UseCustomRandomEntityCreator_when_called_sets_the_RandomEntityCreator_property()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -169,7 +168,7 @@ public class DbContextBuilderTests
         sut.UseCustomRandomEntityCreator(creator);
 
         // Assert
-        Assert.Equal(creator, sut.RandomEntityCreator);
+        Assert.Same(creator, sut.RandomEntityCreator);
     }
 
 
@@ -179,7 +178,7 @@ public class DbContextBuilderTests
     /// but the sets are empty as no data has been seeded.
     /// </summary>
     [Fact]
-    public void A_newly_created_DbContext_contains_the_mapped_entities_but_the_sets_are_empty()
+    public void Build_when_no_seeds_are_provided_returns_a_context_with_mapped_but_empty_sets()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -199,7 +198,7 @@ public class DbContextBuilderTests
     /// Verifies that a newly created DbContext does not have any tracked changes.
     /// </summary>
     [Fact]
-    public void A_newly_created_DbContext_does_not_have_any_tracked_changes()
+    public void Build_when_called_returns_a_context_with_no_tracked_changes()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -271,7 +270,7 @@ public class DbContextBuilderTests
     /// Verifies that calling SeedWith(IEnumerable{T}) with strings throws ArgumentException.
     /// </summary>
     [Fact]
-    public void SeedWith_IEnumerable_when_passed_an_list_of_strings_throws_ArgumentException()
+    public void SeedWith_IEnumerable_when_passed_a_list_of_strings_throws_ArgumentException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -460,7 +459,7 @@ public class DbContextBuilderTests
     /// Verifies that calling SeedWithRandom{T}(int) throws when passed a value less than 1.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_when_passed_value_less_than_1_throws_ArgumentException()
+    public void SeedWithRandom_int_when_passed_value_less_than_1_throws_ArgumentOutOfRangeException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -496,9 +495,7 @@ public class DbContextBuilderTests
     /// Verifies that a newly created DbContext contains the specified number of randomly created entities.
     /// </summary>
     [Theory]
-    [InlineData(1)]
-    [InlineData(3)]
-    [InlineData(7)]
+    [MemberData(nameof(SeedCounts))]
     public void SeedWithRandom_int_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         // Arrange
@@ -512,7 +509,6 @@ public class DbContextBuilderTests
         var actual = context.Categories.ToList();
 
         // Assert
-        Assert.NotNull(actual);
         Assert.Equal(count, actual.Count);
     }
 
@@ -526,7 +522,7 @@ public class DbContextBuilderTests
     /// Verifies that calling SeedWithRandom{T}(int, Func) throws when passed a value less than 1.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_value_less_than_1_throws_ArgumentException()
+    public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_value_less_than_1_throws_ArgumentOutOfRangeException()
     {
         // Arrange
         Func<Product, Product> func = null!;
@@ -544,7 +540,7 @@ public class DbContextBuilderTests
     /// Verifies that calling SeedWithRandom{T}(int, Func) throws when func is null.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_null_for_func_throws_ArgumentException()
+    public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_null_for_func_throws_ArgumentNullException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -582,9 +578,7 @@ public class DbContextBuilderTests
     /// with the transformation function applied.
     /// </summary>
     [Theory]
-    [InlineData(1)]
-    [InlineData(3)]
-    [InlineData(7)]
+    [MemberData(nameof(SeedCounts))]
     public void SeedWithRandom_int_func_TEntity_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         // Arrange
@@ -603,9 +597,8 @@ public class DbContextBuilderTests
         var actual = context.Products.ToList();
 
         // Assert
-        Assert.NotNull(actual);
         Assert.Equal(count, actual.Count);
-        Assert.All(actual, p => Assert.StartsWith("Modified_", p.Name));
+        Assert.All(actual, p => Assert.StartsWith("Modified_", p.Name, StringComparison.Ordinal));
     }
 
     #endregion
@@ -618,7 +611,7 @@ public class DbContextBuilderTests
     /// Verifies that calling SeedWithRandom{T}(int, Func) with index throws when passed a value less than 1.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_value_less_than_1_throws_ArgumentException()
+    public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_value_less_than_1_throws_ArgumentOutOfRangeException()
     {
         // Arrange
         Func<Product, int, Product> func = null!;
@@ -636,7 +629,7 @@ public class DbContextBuilderTests
     /// Verifies that calling SeedWithRandom{T}(int, Func) with index throws when func is null.
     /// </summary>
     [Fact]
-    public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_null_for_func_throws_ArgumentException()
+    public void SeedWithRandom_int_func_TEntity_int_TEntity_when_passed_null_for_func_throws_ArgumentNullException()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -674,9 +667,7 @@ public class DbContextBuilderTests
     /// with the index-based transformation function applied.
     /// </summary>
     [Theory]
-    [InlineData(1)]
-    [InlineData(3)]
-    [InlineData(7)]
+    [MemberData(nameof(SeedCounts))]
     public void SeedWithRandom_int_func_TEntity_int_TEntity_seeds_DbContext_with_specified_number_of_random_entities(int count)
     {
         // Arrange
@@ -694,9 +685,12 @@ public class DbContextBuilderTests
         // Act
         var actual = context.Products.ToList();
 
-        // Assert
-        Assert.NotNull(actual);
-        Assert.Equal(count, actual.Count);
+        // Assert — every entity went through the transform with its own index
+        Assert.Equal
+        (
+            Enumerable.Range(0, count).Select(i => $"Product_{i}"),
+            actual.Select(p => p.Name).OrderBy(n => int.Parse(n.Substring("Product_".Length), System.Globalization.CultureInfo.InvariantCulture))
+        );
     }
 
     #endregion
@@ -888,7 +882,7 @@ public class DbContextBuilderTests
     /// Verifies that calling UseEffort multiple times doesn't cause issues.
     /// </summary>
     [Fact]
-    public void Calling_UseEffort_multiple_times_still_works()
+    public void UseEffort_when_called_multiple_times_still_builds_a_context()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -909,7 +903,7 @@ public class DbContextBuilderTests
     /// Verifies that seeding with multiple entity types works.
     /// </summary>
     [Fact]
-    public void Can_seed_with_multiple_entity_types()
+    public void SeedWith_when_called_with_different_entity_types_seeds_each_set()
     {
         // Arrange
         var sut = CreateDbContextBuilder();
@@ -1027,7 +1021,7 @@ public class DbContextBuilderTests
 
         using var context = sut.Build();
 
-        Assert.Equal(2, creator.Created);
+        Assert.Equal(ContextsCreatedPerBuild, creator.Created);
         Assert.Same(creator, sut.CreateDbContext);
     }
 
@@ -1045,7 +1039,7 @@ public class DbContextBuilderTests
 
         using var context = await sut.BuildAsync();
 
-        Assert.Equal(2, creator.Created);
+        Assert.Equal(ContextsCreatedPerBuild, creator.Created);
         Assert.Same(creator, sut.CreateDbContext);
     }
 
@@ -1058,12 +1052,12 @@ public class DbContextBuilderTests
     [Fact]
     public void Build_without_seed_data_does_not_call_SaveChanges()
     {
-        SaveCountingContext.Saves = 0;
+        var saves = SaveCountingContext.StartCounting();
         var sut = new DbContextBuilder<SaveCountingContext>();
 
         using var context = sut.Build();
 
-        Assert.Equal(0, SaveCountingContext.Saves);
+        Assert.Equal(0, saves.Value);
     }
 
 
@@ -1075,12 +1069,12 @@ public class DbContextBuilderTests
     [Fact]
     public void Build_with_seed_data_calls_SaveChanges_once()
     {
-        SaveCountingContext.Saves = 0;
+        var saves = SaveCountingContext.StartCounting();
         var sut = new DbContextBuilder<SaveCountingContext>().SeedWith(new Category { Name = "seeded" });
 
         using var context = sut.Build();
 
-        Assert.Equal(1, SaveCountingContext.Saves);
+        Assert.Equal(1, saves.Value);
         Assert.Equal("seeded", Assert.Single(context.Categories).Name);
     }
 
@@ -1093,12 +1087,12 @@ public class DbContextBuilderTests
     [Fact]
     public async Task BuildAsync_without_seed_data_does_not_call_SaveChangesAsync()
     {
-        SaveCountingContext.Saves = 0;
+        var saves = SaveCountingContext.StartCounting();
         var sut = new DbContextBuilder<SaveCountingContext>();
 
         using var context = await sut.BuildAsync();
 
-        Assert.Equal(0, SaveCountingContext.Saves);
+        Assert.Equal(0, saves.Value);
     }
 
 
@@ -1110,12 +1104,12 @@ public class DbContextBuilderTests
     [Fact]
     public async Task BuildAsync_with_seed_data_calls_SaveChangesAsync_once()
     {
-        SaveCountingContext.Saves = 0;
+        var saves = SaveCountingContext.StartCounting();
         var sut = new DbContextBuilder<SaveCountingContext>().SeedWith(new Category { Name = "seeded" });
 
         using var context = await sut.BuildAsync();
 
-        Assert.Equal(1, SaveCountingContext.Saves);
+        Assert.Equal(1, saves.Value);
         Assert.Equal("seeded", Assert.Single(context.Categories).Name);
     }
 

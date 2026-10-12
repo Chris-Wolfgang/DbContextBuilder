@@ -21,24 +21,13 @@ namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 /// </summary>
 public class SqliteForMsSqlServerModelCustomizerTests
 {
-
-    /// <summary>
-    /// Verifies that an instance of SqliteForMsSqlServerModelCustomizer can be created.
-    /// </summary>
-    [Fact]
-    public void Can_create_instance_of_SqliteForMsSqlServerModelCustomizer()
-    {
-        // Arrange
+    // The one place that knows EF Core 6's ModelCustomizerDependencies needs an IDbSetFinder (#602).
+    private static ModelCustomizerDependencies CreateDependencies() =>
 #if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
+        new(new Mock<IDbSetFinder>().Object);
 #else
-        var dependencies = new ModelCustomizerDependencies();
+        new();
 #endif
-
-        // Act & Assert — construction alone is the assertion (must not throw).
-        _ = new SqliteForMsSqlServerModelCustomizer(dependencies);
-    }
 
 
 
@@ -61,15 +50,10 @@ public class SqliteForMsSqlServerModelCustomizerTests
     /// Verifies that setting OverrideTableRenaming property to null throws ArgumentNullException
     /// </summary>
     [Fact]
-    public void OverrideTableRenameRenaming_when_set_to_null_throws_ArgumentNullException()
+    public void OverrideTableRenaming_when_set_to_null_throws_ArgumentNullException()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteForMsSqlServerModelCustomizer(dependencies);
 
@@ -86,12 +70,7 @@ public class SqliteForMsSqlServerModelCustomizerTests
     public void OverrideTableRenaming_can_rename_table_with_default_implementation()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteForMsSqlServerModelCustomizer(dependencies);
 
@@ -123,12 +102,7 @@ public class SqliteForMsSqlServerModelCustomizerTests
     public void OverrideTableRenaming_can_rename_table_with_custom_implementation()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteForMsSqlServerModelCustomizer(dependencies);
 
@@ -169,12 +143,7 @@ public class SqliteForMsSqlServerModelCustomizerTests
     public void OverrideDefaultValueHandling_when_set_to_null_throws_ArgumentNullException()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteForMsSqlServerModelCustomizer(dependencies);
 
@@ -192,12 +161,7 @@ public class SqliteForMsSqlServerModelCustomizerTests
     public void OverrideDefaultValueHandling_default_implementation_overrides_known_SqlServer_values_with_Sqlite_equivalent()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteForMsSqlServerModelCustomizer(dependencies);
 
@@ -216,12 +180,7 @@ public class SqliteForMsSqlServerModelCustomizerTests
     public void OverrideDefaultValueHandling_default_implementation_overrides_unknown_SqlServer_values_with_null()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteForMsSqlServerModelCustomizer(dependencies);
 
@@ -241,12 +200,7 @@ public class SqliteForMsSqlServerModelCustomizerTests
     public void OverrideDefaultValueHandling_uses_custom_method_when_provided()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         // Act & Assert
         var sut = new SqliteForMsSqlServerModelCustomizer(dependencies)
@@ -271,12 +225,7 @@ public class SqliteForMsSqlServerModelCustomizerTests
     public void OverrideComputedValueHandling_when_set_to_null_throws_ArgumentNullException()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
         var sut = new SqliteForMsSqlServerModelCustomizer(dependencies);
 
@@ -293,22 +242,37 @@ public class SqliteForMsSqlServerModelCustomizerTests
     public void OverrideComputedValueHandling_uses_custom_method_when_provided()
     {
         // Arrange
-#if EF_CORE_6
-        var finder = new Mock<IDbSetFinder>().Object;
-        var dependencies = new ModelCustomizerDependencies(finder);
-#else
-        var dependencies = new ModelCustomizerDependencies();
-#endif
+        var dependencies = CreateDependencies();
 
-        // Act & Assert
+        // Act — a handler that differs from the default, so the assignment is observable
         var sut = new SqliteForMsSqlServerModelCustomizer(dependencies)
         {
-            OverrideComputedValueHandling = _ => null
+            OverrideComputedValueHandling = sql => sql is null ? null : "custom:" + sql
         };
 
+        // Assert
+        Assert.Equal("custom:([OrganizationNode].[GetLevel]())", sut.OverrideComputedValueHandling("([OrganizationNode].[GetLevel]())"));
+        Assert.Null(sut.OverrideComputedValueHandling(null));
+    }
+
+
+
+    /// <summary>
+    /// #599: without any assignment, the default handler drops every computed-column SQL (SQL
+    /// Server functions in it would not run on SQLite). A regression to pass-through must fail here.
+    /// </summary>
+    [Fact]
+    public void OverrideComputedValueHandling_by_default_drops_computed_SQL()
+    {
+        // Arrange
+        var dependencies = CreateDependencies();
+
+        // Act
+        var sut = new SqliteForMsSqlServerModelCustomizer(dependencies);
+
+        // Assert
         Assert.Null(sut.OverrideComputedValueHandling("(isnull('AW'+[dbo].[ufnLeadingZeros]([CustomerID]),''))"));
         Assert.Null(sut.OverrideComputedValueHandling("([OrganizationNode].[GetLevel]())"));
-        Assert.Null(sut.OverrideComputedValueHandling(""));
         Assert.Null(sut.OverrideComputedValueHandling(null));
     }
 }

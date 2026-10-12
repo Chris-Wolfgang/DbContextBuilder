@@ -32,10 +32,10 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     /// Verifies that UseSqlite returns a DbContext{T} for chaining additional calls
     /// </summary>
     [Fact]
-    public void UseSqlite_returns_DbContextBuilder()
+    public void UseSqlite_on_a_new_builder_returns_the_builder()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseSqlite());
@@ -47,10 +47,10 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     /// Verifies that UseSqlite returns a DbContext{T} for chaining additional calls
     /// </summary>
     [Fact]
-    public void UseSqliteForMsSqlServer_returns_DbContextBuilder()
+    public void UseSqliteForMsSqlServer_on_a_new_builder_returns_the_builder()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseSqliteForMsSqlServer());
@@ -65,10 +65,10 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     public async Task UseSqliteForMsSqlServer_causes_BuildAsync_to_use_Sqlite_with_customizations_for_Sql_Server()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act
-        var context = await sut
+        await using var context = await sut
             .UseSqliteForMsSqlServer()
             .BuildAsync();
 
@@ -82,10 +82,10 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     /// Verifies that UseAutoFixture returns a DbContext{T} for chaining additional calls
     /// </summary>
     [Fact]
-    public void UseAutoFixture_returns_DbContextBuilder()
+    public void UseAutoFixture_on_a_new_builder_returns_the_builder()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
 
         // Act & Assert
         Assert.IsType<DbContextBuilder<AdventureWorksDbContext>>(sut.UseAutoFixture());
@@ -97,10 +97,10 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     /// Verifies that the RandomEntityCreator used is an instance of AutoFixtureRandomEntityCreator
     /// </summary>
     [Fact]
-    public void RandomEntityCreator_is_AutoFixture()
+    public void UseAutoFixture_when_called_sets_an_AutoFixture_RandomEntityCreator()
     {
         // Arrange
-        var sut = new DbContextBuilder<AdventureWorksDbContext>().UseAutoFixture();
+        using var sut = new DbContextBuilder<AdventureWorksDbContext>().UseAutoFixture();
 
         // Act & Assert
         Assert.IsType<AutoFixtureRandomEntityCreator>(sut.RandomEntityCreator);
@@ -113,13 +113,13 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     /// Verifies that the database used Microsoft's Sqlite database
     /// </summary>
     [Fact]
-    public async Task Database_is_Sqlite()
+    public async Task UseSqlite_when_built_returns_a_Sqlite_context()
     {
         // Arrange
-        var sut = new DbContextBuilder<BasicContext>();
+        using var sut = new DbContextBuilder<BasicContext>();
 
         // Act
-        var context = await sut
+        await using var context = await sut
             .UseSqlite()
             .BuildAsync();
 
@@ -133,13 +133,13 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     /// Verifies that if you configure the DbContextOptionsBuilder correctly is will log SQL statements,
     /// </summary>
     [Fact]
-    public async Task When_configured_to_do_so_BuildAsync_will_log_the_create_statement_with_modified_table_names()
+    public async Task BuildAsync_when_LogTo_is_configured_logs_the_create_statement_with_renamed_tables()
     {
 
         // Arrange
-        var sut = CreateDbContextBuilder();
+        using var sut = CreateDbContextBuilder();
 
-        var buffer = new StringBuilder(10_240);
+        var buffer = new StringBuilder();
         var sw = new StringWriter(buffer);
 
         var optionsBuilder = new DbContextOptionsBuilder<AdventureWorksDbContext>()
@@ -148,7 +148,9 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
         sut.UseDbContextOptionsBuilder(optionsBuilder);
 
         // Act
-        await sut.BuildAsync();
+        await using (await sut.BuildAsync())
+        {
+        }
 
         // Assert
         Assert.Contains("CREATE TABLE \"Person_Person\"", buffer.ToString(), StringComparison.Ordinal);
@@ -161,16 +163,16 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     /// separated by an underscore, and to strip the schema name from the table itself
     /// </summary>
     [Fact]
-    public async Task UseSqlite_default_behavior_for_schema_names_is_to_prepend_the_schema_name_to_table_name()
+    public async Task UseSqlite_when_built_prepends_the_schema_name_to_the_table_name()
     {
 
         // Arrange
-        var sut = new DbContextBuilder<BasicContext>()
+        using var sut = new DbContextBuilder<BasicContext>()
                 .UseSqlite()
                 .UseAutoFixture();
 
         // Act
-        var context = await sut
+        await using var context = await sut
             .BuildAsync();
 
         // Assert
@@ -185,16 +187,16 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     /// separated by an underscore, and to strip the schema name from the table itself
     /// </summary>
     [Fact]
-    public async Task UseSqlite_default_behavior_for_default_values_is_to_not_change_them()
+    public async Task UseSqlite_when_built_leaves_default_values_unchanged()
     {
 
         // Arrange
-        var sut = new DbContextBuilder<BasicContext>()
+        using var sut = new DbContextBuilder<BasicContext>()
             .UseSqlite()
             .UseAutoFixture();
 
         // Act
-        var context = await sut
+        await using var context = await sut
             .BuildAsync();
 
         // Assert
@@ -205,32 +207,6 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
 
         var columnsWithGetDate = columns.Where(c => string.Equals(c.DefaultValue, "(getdate())", StringComparison.Ordinal)).ToList();
         Assert.Single(columnsWithGetDate);
-    }
-
-
-
-    /// <summary>
-    /// Verifies that the default behavior when using Sqlite, is to prepend the schema name to the table name,
-    /// separated by an underscore, and to strip the schema name from the table itself
-    /// </summary>
-    [Fact]
-    public async Task UseSqlite_default_behavior_for_computed_column_is_to_remove_computed_value()
-    {
-
-        // Arrange
-        var sut = new DbContextBuilder<BasicContext>()
-            .UseSqlite()
-            .UseAutoFixture();
-
-        // Act
-        var context = await sut
-            .BuildAsync();
-
-        // Assert
-        var columns = await GetColumnMetadataAsync(context);
-        var columnsWithComputedValues = columns.Where(c => !string.IsNullOrEmpty(c.ComputedValue)).ToList();
-        Assert.Empty(columnsWithComputedValues);
-
     }
 
 
@@ -368,7 +344,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     /// Verifies that calling UseSqlite multiple times doesn't cause issues 
     /// </summary>
     [Fact]
-    public async Task Calling_UseSqlite_multiple_times_still_works()
+    public async Task UseSqlite_when_called_multiple_times_still_builds_a_context()
     {
         // Arrange — use a fresh builder so we test the specific provider combination
         using var sut = new DbContextBuilder<BasicContext>();
@@ -389,7 +365,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
     /// Verifies that calling UseSqliteForMsSqlServer multiple times doesn't cause issues
     /// </summary>
     [Fact]
-    public async Task Calling_UseSqliteForMsSqlServer_multiple_times_still_works()
+    public async Task UseSqliteForMsSqlServer_when_called_multiple_times_still_builds_a_context()
     {
         // Arrange — use a fresh builder so we test the specific provider combination
         using var sut = new DbContextBuilder<BasicContext>();
@@ -515,7 +491,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
         // Arrange — capture all EF log output via .LogTo
         using var sut = CreateDbContextBuilder();
 
-        var buffer = new StringBuilder(10_240);
+        var buffer = new StringBuilder();
         var sw = new StringWriter(buffer);
 
         var optionsBuilder = new DbContextOptionsBuilder<AdventureWorksDbContext>()

@@ -9,7 +9,9 @@
 		<!-- CA1707 (underscores) is intentional: test names follow MethodUnderTest_when_condition_expected_result.
 		     NU1901/NU1902 suppressed: the net6.0/net7.0 slices reference the maintenance/EOL EF Core 6/7
 		     packages, whose transitive Azure.Identity (1.10.3) / Microsoft.Identity.Client (4.56.0) carry
-		     known advisories with no in-range fix. Same rationale as the Core-EF7 test project. -->
+		     known advisories with no in-range fix. Same rationale as the Core-EF7 test project.
+		     The suppression cannot be scoped to those TFMs: NuGet Audit reports once per project
+		     restore, not per TFM, so a TargetFramework-conditioned NoWarn is ignored (#582). -->
 		<NoWarn>$(NoWarn);CA1707;NU1901;NU1902</NoWarn>
 	</PropertyGroup>
 
@@ -19,16 +21,16 @@
 		<DefineConstants>$(DefineConstants);EF_CORE_6;EF_CORE_6_OR_GREATER</DefineConstants>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net7.0'">
-		<DefineConstants>$(DefineConstants);EF_CORE_7;EF_CORE_7_OR_GREATER</DefineConstants>
+		<DefineConstants>$(DefineConstants);EF_CORE_7;EF_CORE_6_OR_GREATER;EF_CORE_7_OR_GREATER</DefineConstants>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<DefineConstants>$(DefineConstants);EF_CORE_8;EF_CORE_8_OR_GREATER</DefineConstants>
+		<DefineConstants>$(DefineConstants);EF_CORE_8;EF_CORE_6_OR_GREATER;EF_CORE_7_OR_GREATER;EF_CORE_8_OR_GREATER</DefineConstants>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
-		<DefineConstants>$(DefineConstants);EF_CORE_9;EF_CORE_9_OR_GREATER</DefineConstants>
+		<DefineConstants>$(DefineConstants);EF_CORE_9;EF_CORE_6_OR_GREATER;EF_CORE_7_OR_GREATER;EF_CORE_8_OR_GREATER;EF_CORE_9_OR_GREATER</DefineConstants>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
-		<DefineConstants>$(DefineConstants);EF_CORE_10;EF_CORE_10_OR_GREATER</DefineConstants>
+		<DefineConstants>$(DefineConstants);EF_CORE_10;EF_CORE_6_OR_GREATER;EF_CORE_7_OR_GREATER;EF_CORE_8_OR_GREATER;EF_CORE_9_OR_GREATER;EF_CORE_10_OR_GREATER</DefineConstants>
 	</PropertyGroup>
 
 	<!-- .NET 6.0 - 7.0 test tooling -->
@@ -57,6 +59,7 @@
 	<ItemGroup>
 		<Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\Models\BasicContext.cs" Link="Models\BasicContext.cs" />
 		<Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\Models\TableWithDefaults.cs" Link="Models\TableWithDefaults.cs" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\Models\CoverageModels.cs" Link="Models\CoverageModels.cs" />
 		<Compile Include="..\Wolfgang.DbContextBuilder-Core.Tests.Unit\TestModelRoundTripTests.cs" Link="TestModelRoundTripTests.cs" />
 	</ItemGroup>
 

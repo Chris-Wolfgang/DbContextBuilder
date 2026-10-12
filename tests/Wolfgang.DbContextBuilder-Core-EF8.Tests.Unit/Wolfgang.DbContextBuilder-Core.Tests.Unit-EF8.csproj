@@ -4,25 +4,10 @@
 		<RootNamespace>Wolfgang.DbContextBuilderCore.Tests.Unit</RootNamespace>
 		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.4.0</Version>
-		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-		<Title>$(AssemblyName)</Title>
-		<Authors>Chris Wolfgang</Authors>
-		<Description>Unit tests for Wolfgang.DbContextBuilder-Core-EF8</Description>
-		<Copyright>Copyright 2025 Chris Wolfgang</Copyright>
-		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<PackageIcon></PackageIcon>
-		<ApplicationIcon></ApplicationIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<SignAssembly>False</SignAssembly>
-		<PackageTags></PackageTags>
-
+		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
-		<DefineConstants>$(DefineConstants);EF_CORE_8;EF_CORE_8_OR_GREATER</DefineConstants>
+		<DefineConstants>$(DefineConstants);EF_CORE_8;EF_CORE_6_OR_GREATER;EF_CORE_7_OR_GREATER;EF_CORE_8_OR_GREATER</DefineConstants>
 
 	</PropertyGroup>
 
@@ -38,6 +23,7 @@
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/DbSetAssertionsTests.cs" Link="DbSetAssertionsTests.cs" />
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/SqliteDbContextCreatorTests.cs" Link="SqliteDbContextCreatorTests.cs" />
 	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/BuildAsyncReentrancyTests.cs" Link="BuildAsyncReentrancyTests.cs" />
+	  <Compile Include="../Wolfgang.DbContextBuilder-Core.Tests.Unit/Models/CoverageModels.cs" Link="Models/CoverageModels.cs" />
 	</ItemGroup>
 
 

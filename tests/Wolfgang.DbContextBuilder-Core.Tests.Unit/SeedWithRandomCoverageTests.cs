@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -180,19 +181,57 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
-    /// Verifies SeedWith rejects null, a string element type, and (params) a null item.
+    /// Verifies SeedWith(IEnumerable) rejects a null sequence.
     /// </summary>
     [Fact]
-    public void SeedWith_rejects_null_string_type_and_null_items()
+    public void SeedWith_IEnumerable_when_null_throws_ArgumentNullException()
     {
         using var sut = new DbContextBuilder<CoverageContext>();
 
         Assert.Throws<ArgumentNullException>(() => sut.SeedWith((IEnumerable<CoverageManufacturer>)null!));
-        var stringType = Assert.Throws<ArgumentException>(() => sut.SeedWith(new[] { "not an entity" }.AsEnumerable()));
-        Assert.StartsWith("The type of TEntity cannot be string", stringType.Message, StringComparison.Ordinal);
+    }
+
+
+
+    /// <summary>
+    /// Verifies SeedWith(IEnumerable) rejects a string element type.
+    /// </summary>
+    [Fact]
+    public void SeedWith_IEnumerable_when_TEntity_is_string_throws_ArgumentException()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>();
+
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(new[] { "not an entity" }.AsEnumerable()));
+
+        Assert.StartsWith("The type of TEntity cannot be string", ex.Message, StringComparison.Ordinal);
+    }
+
+
+
+    /// <summary>
+    /// Verifies SeedWith(params) rejects a null array.
+    /// </summary>
+    [Fact]
+    public void SeedWith_params_when_null_throws_ArgumentNullException()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>();
+
         Assert.Throws<ArgumentNullException>(() => sut.SeedWith((CoverageManufacturer[])null!));
-        var nullItem = Assert.Throws<ArgumentException>(() => sut.SeedWith(new CoverageManufacturer { Id = 1 }, null!));
-        Assert.StartsWith("One of the entities is null", nullItem.Message, StringComparison.Ordinal);
+    }
+
+
+
+    /// <summary>
+    /// Verifies SeedWith(params) rejects a null item.
+    /// </summary>
+    [Fact]
+    public void SeedWith_params_when_an_item_is_null_throws_ArgumentException()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>();
+
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith(new CoverageManufacturer { Id = 1 }, null!));
+
+        Assert.StartsWith("One of the entities is null", ex.Message, StringComparison.Ordinal);
     }
 
 
@@ -215,20 +254,44 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
-    /// Verifies the singleton overload seeds one row and rejects null and string instances.
+    /// Verifies the singleton overload seeds one row.
     /// </summary>
     [Fact]
-    public async Task SeedWith_singleton_seeds_one_row_and_validates()
+    public async Task SeedWith_singleton_seeds_one_row()
     {
         using var sut = new DbContextBuilder<CoverageContext>().UseInMemory();
 
         await using var context = await sut.SeedWith(new CoverageManufacturer { Id = 1, Name = "a" }).BuildAsync();
-        Assert.Equal(1, context.Manufacturers.Count());
 
-        using var other = new DbContextBuilder<CoverageContext>();
-        Assert.Throws<ArgumentNullException>(() => other.SeedWith((CoverageManufacturer)null!));
-        var singleString = Assert.Throws<ArgumentException>(() => other.SeedWith<object>("a string"));
-        Assert.StartsWith("One of the entities passed in is of type string", singleString.Message, StringComparison.Ordinal);
+        Assert.Equal(1, context.Manufacturers.Count());
+    }
+
+
+
+    /// <summary>
+    /// Verifies the singleton overload rejects a null entity.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_when_null_throws_ArgumentNullException()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>();
+
+        Assert.Throws<ArgumentNullException>(() => sut.SeedWith((CoverageManufacturer)null!));
+    }
+
+
+
+    /// <summary>
+    /// Verifies the singleton overload rejects a string even when TEntity is widened to object.
+    /// </summary>
+    [Fact]
+    public void SeedWith_singleton_when_TEntity_is_widened_to_object_rejects_a_string()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>();
+
+        var ex = Assert.Throws<ArgumentException>(() => sut.SeedWith<object>("a string"));
+
+        Assert.StartsWith("One of the entities passed in is of type string", ex.Message, StringComparison.Ordinal);
     }
 
 
@@ -445,6 +508,81 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
+    /// #599: a REQUIRED foreign key whose principal type was never seeded is left at the value the
+    /// creator (here, the transform) produced, as documented; an optional one is cleared.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_when_a_required_principal_is_not_seeded_leaves_the_FK_untouched()
+    {
+        using var sut = NewBuilder().UseInMemory();
+
+        await using var context = await sut
+            .SeedWithRandom<CoverageWidget>(3, widget => { widget.ManufacturerId = 4242; return widget; })
+            .BuildAsync();
+
+        var widgets = context.Widgets.ToList();
+        Assert.Equal(3, widgets.Count);
+        Assert.All(widgets, widget => Assert.Equal(4242, widget.ManufacturerId));
+        Assert.All(widgets, widget => Assert.Null(widget.SupplierId));
+    }
+
+
+
+    /// <summary>
+    /// #599: reconciliation skips a SHADOW foreign key (no CLR property to write), as documented,
+    /// even when a principal is seeded: the build succeeds and the shadow FK stays unset.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_leaves_a_shadow_foreign_key_untouched()
+    {
+        using var sut = new DbContextBuilder<ShadowForeignKeyContext>()
+            .UseCustomRandomEntityCreator(new DeterministicRandomEntityCreator())
+            .UseInMemory();
+
+        await using var context = await sut
+            .SeedWith(new ShadowOwner { Id = 1, Name = "owner" })
+            .SeedWithRandom<ShadowChild>(2)
+            .BuildAsync();
+
+        var children = context.Set<ShadowChild>().ToList();
+        Assert.Equal(2, children.Count);
+        Assert.All(children, child => Assert.Null(context.Entry(child).Property<int?>("ShadowOwnerId").CurrentValue));
+        Assert.All(children, child => Assert.Null(child.Owner));
+    }
+
+
+
+    /// <summary>
+    /// #599: long, short and byte primary keys are made unique like int keys: colliding random
+    /// keys are renumbered through Convert.ChangeType into the key's own type.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_makes_long_short_and_byte_primary_keys_unique()
+    {
+        using var sut = new DbContextBuilder<NarrowKeyContext>()
+            .UseCustomRandomEntityCreator(new CollidingTypedKeyRandomEntityCreator())
+            .UseInMemory();
+
+        await using var context = await sut
+            .SeedWithRandom<LongKeyRow>(3)
+            .SeedWithRandom<ShortKeyRow>(3)
+            .SeedWithRandom<ByteKeyRow>(3)
+            .BuildAsync();
+
+        var longIds = context.Set<LongKeyRow>().Select(row => row.Id).ToList();
+        var shortIds = context.Set<ShortKeyRow>().Select(row => row.Id).ToList();
+        var byteIds = context.Set<ByteKeyRow>().Select(row => row.Id).ToList();
+        Assert.Equal(3, longIds.Distinct().Count());
+        Assert.Equal(3, shortIds.Distinct().Count());
+        Assert.Equal(3, byteIds.Distinct().Count());
+        Assert.Contains(7L, longIds);
+        Assert.Contains((short)7, shortIds);
+        Assert.Contains((byte)7, byteIds);
+    }
+
+
+
+    /// <summary>
     /// #569: a required FK whose principal is an inheritance base is wired to a seeded instance
     /// of a derived type. Matching principals by exact runtime type missed it and left the FK
     /// random, which SQLite's foreign-key check then rejected.
@@ -539,7 +677,7 @@ public class SeedWithRandomCoverageTests
 
 
 
-#if !EF_CORE_6 && !EF_CORE_7
+#if EF_CORE_8_OR_GREATER
     /// <summary>
     /// #530 review: with <c>HasSentinel(-1)</c> (EF Core 8+), -1 means "let EF generate it", so
     /// entities left at -1 are assigned keys; 0 is not treated as unset.
@@ -622,16 +760,26 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
-    /// Both transform overloads accept a count of exactly 1, the smallest valid count, and reject a
-    /// null transform.
+    /// Both transform overloads reject a null transform, even at the smallest valid count.
     /// </summary>
     [Fact]
-    public async Task SeedWithRandom_transform_overloads_accept_a_count_of_1_and_reject_a_null_transform()
+    public void SeedWithRandom_transform_overloads_when_func_is_null_throws_ArgumentNullException()
     {
         using var sut = NewBuilder().UseInMemory();
 
         Assert.Equal("func", Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom<CoverageManufacturer>(1, (Func<CoverageManufacturer, CoverageManufacturer>)null!)).ParamName);
         Assert.Equal("func", Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom<CoverageManufacturer>(1, (Func<CoverageManufacturer, int, CoverageManufacturer>)null!)).ParamName);
+    }
+
+
+
+    /// <summary>
+    /// Both transform overloads accept a count of exactly 1, the smallest valid count.
+    /// </summary>
+    [Fact]
+    public async Task SeedWithRandom_transform_overloads_accept_a_count_of_1()
+    {
+        using var sut = NewBuilder().UseInMemory();
 
         await using var context = await sut
             .SeedWithRandom<CoverageManufacturer>(1, m => m)
@@ -725,12 +873,12 @@ public class SeedWithRandomCoverageTests
     [Fact]
     public async Task BuildAsync_without_seed_data_does_not_call_SaveChanges()
     {
-        SaveCountingContext.Saves = 0;
+        var saves = SaveCountingContext.StartCounting();
         using var sut = new DbContextBuilder<SaveCountingContext>().UseInMemory();
 
         await using var context = await sut.BuildAsync();
 
-        Assert.Equal(0, SaveCountingContext.Saves);
+        Assert.Equal(0, saves.Value);
     }
 
 
@@ -742,12 +890,12 @@ public class SeedWithRandomCoverageTests
     [Fact]
     public async Task BuildAsync_with_seed_data_calls_SaveChanges_once()
     {
-        SaveCountingContext.Saves = 0;
+        var saves = SaveCountingContext.StartCounting();
         using var sut = new DbContextBuilder<SaveCountingContext>().UseInMemory();
 
         await using var context = await sut.SeedWith(new SaveCountingRow()).BuildAsync();
 
-        Assert.Equal(1, SaveCountingContext.Saves);
+        Assert.Equal(1, saves.Value);
         Assert.NotEqual(0, Assert.Single(context.Set<SaveCountingRow>().ToList()).Id);
     }
 
@@ -822,10 +970,10 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
-    /// Verifies UseDbContextOptionsBuilder accepts a builder and rejects null.
+    /// Verifies UseDbContextOptionsBuilder's builder is the one BuildAsync uses.
     /// </summary>
     [Fact]
-    public async Task UseDbContextOptionsBuilder_is_honored_and_rejects_null()
+    public async Task UseDbContextOptionsBuilder_is_honored()
     {
         var options = new DbContextOptionsBuilder<CoverageContext>()
             .UseInMemoryDatabase("explicit-options")
@@ -837,9 +985,19 @@ public class SeedWithRandomCoverageTests
 
         // Only the caller's builder turned sensitive-data logging on, so this proves it was the one used.
         Assert.True(context.GetService<IDbContextOptions>().FindExtension<CoreOptionsExtension>()!.IsSensitiveDataLoggingEnabled);
+    }
 
-        using var other = new DbContextBuilder<CoverageContext>();
-        Assert.Throws<ArgumentNullException>(() => other.UseDbContextOptionsBuilder(null!));
+
+
+    /// <summary>
+    /// Verifies UseDbContextOptionsBuilder rejects null.
+    /// </summary>
+    [Fact]
+    public void UseDbContextOptionsBuilder_when_null_throws_ArgumentNullException()
+    {
+        using var sut = new DbContextBuilder<CoverageContext>();
+
+        Assert.Throws<ArgumentNullException>(() => sut.UseDbContextOptionsBuilder(null!));
     }
 
 
@@ -1006,73 +1164,69 @@ internal sealed class DeterministicRandomEntityCreator : ICreateRandomEntities
         var t = Nullable.GetUnderlyingType(type) ?? type;
         var n = ++_seq;
 
-        if (t == typeof(string)) return $"value-{n}";
-        if (t == typeof(int)) return n;
-        if (t == typeof(long)) return (long)n;
-        if (t == typeof(short)) return (short)n;
-        if (t == typeof(byte)) return (byte)(n % 256);
-        if (t == typeof(decimal)) return (decimal)n;
-        if (t == typeof(double)) return (double)n;
-        if (t == typeof(float)) return (float)n;
-        if (t == typeof(bool)) return true;
-        if (t == typeof(Guid)) return new Guid(n, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-        if (t == typeof(DateTime)) return new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddDays(n);
-        if (t.IsEnum) return Enum.GetValues(t).GetValue(0);
+        if (t == typeof(string))
+        {
+            return $"value-{n}";
+        }
+
+        if (t == typeof(int))
+        {
+            return n;
+        }
+
+        if (t == typeof(long))
+        {
+            return (long)n;
+        }
+
+        if (t == typeof(short))
+        {
+            return (short)n;
+        }
+
+        if (t == typeof(byte))
+        {
+            return (byte)(n % 256);
+        }
+
+        if (t == typeof(decimal))
+        {
+            return (decimal)n;
+        }
+
+        if (t == typeof(double))
+        {
+            return (double)n;
+        }
+
+        if (t == typeof(float))
+        {
+            return (float)n;
+        }
+
+        if (t == typeof(bool))
+        {
+            return true;
+        }
+
+        if (t == typeof(Guid))
+        {
+            return new Guid(n, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        }
+
+        if (t == typeof(DateTime))
+        {
+            return new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddDays(n);
+        }
+
+        if (t.IsEnum)
+        {
+            return Enum.GetValues(t).GetValue(0);
+        }
 
         // Reference/complex types (navigation properties) are left unset.
         return null;
     }
-}
-
-
-
-internal sealed class CoverageManufacturer
-{
-    public int Id { get; set; }
-
-    public string Name { get; set; } = string.Empty;
-}
-
-
-
-internal sealed class CoverageSupplier
-{
-    public int Id { get; set; }
-
-    public string Name { get; set; } = string.Empty;
-}
-
-
-
-// Test-only EF entity POCO — properties are populated by the random-entity
-// creator via reflection. R# cannot see reflection consumers and reports the
-// scalar FK setters as unused.
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-internal class CoverageWidget
-{
-    public int Id { get; set; }
-
-    public string Name { get; set; } = string.Empty;
-
-    public int ManufacturerId { get; set; }
-
-    // Virtual so the random-entity double leaves it unset (only the scalar FK is populated).
-    public virtual CoverageManufacturer? Manufacturer { get; set; }
-
-    public int? SupplierId { get; set; }
-
-    public virtual CoverageSupplier? Supplier { get; set; }
-}
-
-
-
-internal sealed class CoverageContext(DbContextOptions<CoverageContext> options) : DbContext(options)
-{
-    public DbSet<CoverageManufacturer> Manufacturers => Set<CoverageManufacturer>();
-
-    public DbSet<CoverageSupplier> Suppliers => Set<CoverageSupplier>();
-
-    public DbSet<CoverageWidget> Widgets => Set<CoverageWidget>();
 }
 
 
@@ -1130,7 +1284,7 @@ internal sealed class KeylessContext(DbContextOptions<KeylessContext> options) :
 
 
 
-#if !EF_CORE_6 && !EF_CORE_7
+#if EF_CORE_8_OR_GREATER
 /// <summary>Maps <see cref="CoverageManufacturer"/> with a generated key whose sentinel is -1 (#530).</summary>
 internal sealed class SentinelKeyContext(DbContextOptions<SentinelKeyContext> options) : DbContext(options)
 {
@@ -1295,6 +1449,111 @@ internal sealed class HierarchyContext(DbContextOptions<HierarchyContext> option
 
 
 
+/// <summary>Principal of <see cref="ShadowChild"/>'s shadow foreign key (#599).</summary>
+internal sealed class ShadowOwner
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+}
+
+
+
+/// <summary>Has a navigation to <see cref="ShadowOwner"/> but no CLR foreign-key property (#599).</summary>
+internal class ShadowChild
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+
+    // Virtual so the random-entity double leaves it unset.
+    public virtual ShadowOwner? Owner { get; set; }
+}
+
+
+
+/// <summary>Maps <see cref="ShadowChild"/>'s optional relationship through a shadow FK (#599).</summary>
+internal sealed class ShadowForeignKeyContext(DbContextOptions<ShadowForeignKeyContext> options) : DbContext(options)
+{
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ShadowOwner>();
+        modelBuilder.Entity<ShadowChild>()
+            .HasOne(child => child.Owner)
+            .WithMany()
+            .HasForeignKey("ShadowOwnerId")
+            .IsRequired(false);
+    }
+}
+
+
+
+/// <summary>Keyed by <see cref="long"/> (#599).</summary>
+internal sealed class LongKeyRow
+{
+    public long Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+}
+
+
+
+/// <summary>Keyed by <see cref="short"/> (#599).</summary>
+internal sealed class ShortKeyRow
+{
+    public short Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+}
+
+
+
+/// <summary>Keyed by <see cref="byte"/> (#599).</summary>
+internal sealed class ByteKeyRow
+{
+    public byte Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+}
+
+
+
+/// <summary>Maps the three narrow-key rows (#599).</summary>
+internal sealed class NarrowKeyContext(DbContextOptions<NarrowKeyContext> options) : DbContext(options)
+{
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<LongKeyRow>();
+        modelBuilder.Entity<ShortKeyRow>();
+        modelBuilder.Entity<ByteKeyRow>();
+    }
+}
+
+
+
+/// <summary>
+/// Wraps <see cref="DeterministicRandomEntityCreator"/> and sets every generated entity's <c>Id</c>
+/// to 7 converted to the key's own type, so long/short/byte keys collide like the int ones (#599).
+/// </summary>
+internal sealed class CollidingTypedKeyRandomEntityCreator : ICreateRandomEntities
+{
+    private readonly DeterministicRandomEntityCreator _inner = new();
+
+
+
+    public IEnumerable<TEntity> CreateRandomEntities<TEntity>(int count)
+        where TEntity : class
+    {
+        var entities = _inner.CreateRandomEntities<TEntity>(count).ToList();
+        var id = typeof(TEntity).GetProperty("Id", BindingFlags.Public | BindingFlags.Instance)!;
+        var key = Convert.ChangeType(CollidingKeyRandomEntityCreator.Key, id.PropertyType, System.Globalization.CultureInfo.InvariantCulture);
+        entities.ForEach(entity => id.SetValue(entity, key));
+        return entities;
+    }
+}
+
+
+
 /// <summary>
 /// Dependent of the <see cref="HierarchyAnimal"/> base type, with a required FK (#569).
 /// </summary>
@@ -1395,7 +1654,20 @@ internal sealed class SaveCountingRow
 /// <summary>Counts the calls to its SaveChangesAsync override, across instances.</summary>
 internal sealed class SaveCountingContext(DbContextOptions<SaveCountingContext> options) : DbContext(options)
 {
-    internal static int Saves { get; set; }
+    // Per test, not process-wide (#597): each test installs its own counter, and AsyncLocal flows
+    // it only into the calls made on that test's execution context, so tests running in parallel
+    // cannot reset or bump each other's count. The box is a reference, so increments made inside
+    // the builder's async calls are visible to the test.
+    private static readonly AsyncLocal<StrongBox<int>?> _saves = new();
+
+
+
+    internal static StrongBox<int> StartCounting()
+    {
+        var saves = new StrongBox<int>();
+        _saves.Value = saves;
+        return saves;
+    }
 
 
 
@@ -1406,7 +1678,7 @@ internal sealed class SaveCountingContext(DbContextOptions<SaveCountingContext> 
 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
-        Saves++;
+        _saves.Value!.Value++;
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 }

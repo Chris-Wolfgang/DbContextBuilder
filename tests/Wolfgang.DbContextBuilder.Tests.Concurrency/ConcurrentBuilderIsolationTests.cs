@@ -9,7 +9,7 @@ namespace Wolfgang.DbContextBuilder.Tests.Concurrency;
 /// <summary>
 /// Systematic exploration of concurrent <see cref="DbContextBuilder{T}"/> usage (#302) — the
 /// realistic scenario is a parallel test run where many test classes build their own
-/// InMemory-backed context at the same time. <see cref="InMemoryDbContextCreator"/> isolates
+/// InMemory-backed context at the same time. <c>InMemoryDbContextCreator</c> (internal) isolates
 /// each builder with a fresh <see cref="Guid"/>-named database, and this suite proves that
 /// isolation holds under adversarial interleaving of the async build/seed path, not just under
 /// the ordinary uncontrolled scheduling a plain concurrent unit test would exercise.
@@ -41,6 +41,17 @@ public class ConcurrentBuilderIsolationTests
         // (pr.yaml): Coyote controls nothing, so the Task.Yield points below would read as a
         // deadlock; systematic fuzzing (delay injection) is the mode built for that case.
         var rewritten = RewritingEngine.IsAssemblyRewritten(typeof(ConcurrentBuilderIsolationTests).Assembly);
+
+        // coyote.yaml sets COYOTE_REQUIRE_REWRITTEN=1 (#618). There, an assembly the test run did
+        // not load rewritten must fail rather than fall back to the un-rewritten smoke path, which
+        // explores no interleaving and would pass.
+        var rewriteRequired = string.Equals(Environment.GetEnvironmentVariable("COYOTE_REQUIRE_REWRITTEN"), "1", StringComparison.Ordinal);
+        Assert.True
+        (
+            rewritten || !rewriteRequired,
+            "COYOTE_REQUIRE_REWRITTEN=1 but the test assembly is not Coyote-rewritten: the run would explore no interleaving."
+        );
+
         var config = Configuration.Create()
             .WithTestingIterations(Iterations)
             .WithPotentialDeadlocksReportedAsBugs(false)

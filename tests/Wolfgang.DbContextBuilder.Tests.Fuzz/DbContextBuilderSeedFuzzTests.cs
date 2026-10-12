@@ -39,6 +39,8 @@ public sealed class DbContextBuilderSeedFuzzTests
                 Name = name ?? string.Empty,
                 IsActive = firstIsActive ^ (i % 2 == 1),
                 Price = i * 1.25m,
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMinutes(i),
+                ExternalId = new Guid(i + 1, 0, 0, new byte[8]),
             })
             .ToList();
 
@@ -53,7 +55,9 @@ public sealed class DbContextBuilderSeedFuzzTests
                     pair.First.Id == pair.Second.Id
                     && string.Equals(pair.First.Name, pair.Second.Name, StringComparison.Ordinal)
                     && pair.First.IsActive == pair.Second.IsActive
-                    && pair.First.Price == pair.Second.Price);
+                    && pair.First.Price == pair.Second.Price
+                    && pair.First.CreatedAt == pair.Second.CreatedAt
+                    && pair.First.ExternalId == pair.Second.ExternalId);
         }
         finally
         {

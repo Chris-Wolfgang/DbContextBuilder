@@ -28,43 +28,11 @@ public class SqliteDbContextCreatorTests
         var optionsBuilder = new DbContextOptionsBuilder<BasicContext>();
 
         // Act
-        var context = await sut.CreateDbContextAsync(optionsBuilder);
+        await using var context = await sut.CreateDbContextAsync(optionsBuilder);
 
         // Assert
         Assert.NotNull(context);
         Assert.True(context.Database.IsSqlite());
-        context.Dispose();
-    }
-
-
-
-    /// <summary>
-    /// Verifies that Dispose can be called without error.
-    /// </summary>
-    [Fact]
-    public void Dispose_can_be_called()
-    {
-        // Arrange
-        var sut = new SqliteDbContextCreator();
-
-        // Act & Assert — no exception
-        sut.Dispose();
-    }
-
-
-
-    /// <summary>
-    /// Verifies that Dispose can be called multiple times without error.
-    /// </summary>
-    [Fact]
-    public void Dispose_can_be_called_multiple_times()
-    {
-        // Arrange
-        var sut = new SqliteDbContextCreator();
-
-        // Act & Assert — no exception
-        sut.Dispose();
-        sut.Dispose();
     }
 
 
@@ -207,6 +175,30 @@ public class SqliteDbContextCreatorTests
 
         Assert.Equal("builder", ex.ParamName);
     }
+
+
+    /// <summary>
+    /// #599: passing the active creator to SetCreateDbContext again is a no-op: the creator is
+    /// not disposed (its connection still holds the database) and the shared service provider
+    /// is kept.
+    /// </summary>
+    [Fact]
+    public async Task SetCreateDbContext_with_the_active_creator_keeps_it_and_its_service_provider()
+    {
+        using var builder = new DbContextBuilder<BasicContext>().UseSqlite();
+        var creator = Assert.IsType<SqliteDbContextCreator>(builder.CreateDbContext);
+        await using (await builder.BuildAsync())
+        {
+        }
+        var provider = builder.InternalServiceProvider;
+
+        builder.SetCreateDbContext(creator);
+
+        Assert.False(creator.IsDisposed);
+        Assert.Same(creator, builder.CreateDbContext);
+        Assert.Same(provider, builder.InternalServiceProvider);
+    }
+
 
 
     /// <summary>

@@ -13,20 +13,6 @@ public class NoCircularReferencesCustomizationTests
 
 
     /// <summary>
-    /// Verifies that an instance of NoCircularReferencesCustomization can be created.
-    /// </summary>
-    [Fact]
-    public void Can_create_instance_of_NoCircularReferencesCustomization()
-    {
-        // Arrange
-
-        // Act — construction alone is the assertion (must not throw).
-        _ = new AutoFixtureRandomEntityCreator.NoCircularReferencesCustomization();
-    }
-
-
-
-    /// <summary>
     /// Verifies that calling Customize and passing null throws ArgumentNullException
     /// </summary>
     [Fact]
@@ -110,10 +96,10 @@ public class NoCircularReferencesCustomizationTests
 
 
     /// <summary>
-    /// Verifies that when Create is called if Behaviors contains ThrowingRecursionBehavior it is removed
+    /// Verifies that Customize does not add a ThrowingRecursionBehavior when Behaviors has none.
     /// </summary>
     [Fact]
-    public void Customize_when_Behaviors_does_not_contain_ThrowingRecursionBehavior_it_does_error()
+    public void Customize_when_Behaviors_does_not_contain_ThrowingRecursionBehavior_does_not_add_one()
     {
         // Arrange
         var sut = new AutoFixtureRandomEntityCreator.NoCircularReferencesCustomization();
@@ -129,6 +115,4 @@ public class NoCircularReferencesCustomizationTests
         var countAfter = fixture.Behaviors.OfType<ThrowingRecursionBehavior>().Count();
         Assert.Equal(0, countAfter);
     }
-
-
 }
