@@ -343,9 +343,8 @@ jobs:
             # A test project with its own stryker-config.json is measured in its own run below, and
             # its package is outside the umbrella's mutate list, so in this run its tests cover no
             # mutant. Stryker cannot filter test projects in solution mode, and per-test coverage
-            # capture still ran each of their tests (39 % of the capture sessions) before reporting
-            # "It looks like the test coverage capture failed" for them (#701). So the umbrella runs
-            # on a copy of the solution without those test projects. The copy sits next to the
+            # capture still ran each of their tests (39 % of the capture sessions, #701). So the
+            # umbrella runs on a copy of the solution without those test projects. The copy sits next to the
             # original so its relative project paths resolve; `dotnet sln remove` exits 0 even when
             # it removes nothing, so the project count is checked.
             #
@@ -374,11 +373,33 @@ jobs:
             # conditional code at both ends. EF7-EF9 and their test projects are dropped here and
             # stay in pr.yaml's test stages. Floors are keyed by source path
             # (src/Wolfgang.DbContextBuilder-Core), which EF6 and EF10 still report under.
-            $duplicateWrappers = @(foreach ($n in 7, 8, 9) {
-                Get-ChildItem -Path "src/Wolfgang.DbContextBuilder-Core-EF$n" -Filter '*.csproj' -ErrorAction SilentlyContinue
-                Get-ChildItem -Path "tests/Wolfgang.DbContextBuilder-Core-EF$n.Tests.Unit" -Filter '*.csproj' -ErrorAction SilentlyContinue
-              })
-            $drop = @($ownRun + $noKills + $duplicateWrappers)
+            # Core-EF6 had two test projects: tests/...-Core-EF6.Tests.Unit has no code of its own
+            # and links the same 12 files from tests/...-Core.Tests.Unit, with the same constants,
+            # target frameworks and project references. In the umbrella every Core-EF6 test ran
+            # twice, in coverage capture and against every mutant it covers, killing nothing the
+            # other copy did not. The linking copy is dropped; the source project stays.
+            $duplicateWrappers = @(
+              @(foreach ($n in 7, 8, 9) {
+                  Get-ChildItem -Path "src/Wolfgang.DbContextBuilder-Core-EF$n" -Filter '*.csproj' -ErrorAction SilentlyContinue
+                  Get-ChildItem -Path "tests/Wolfgang.DbContextBuilder-Core-EF$n.Tests.Unit" -Filter '*.csproj' -ErrorAction SilentlyContinue
+                }) +
+              @(Get-ChildItem -Path 'tests/Wolfgang.DbContextBuilder-Core-EF6.Tests.Unit' -Filter '*.csproj' -ErrorAction SilentlyContinue))
+            # Wolfgang.DbContextBuilder.Abstractions is one interface with no executable code, so
+            # Stryker creates 0 mutants in it. It still runs per-test coverage capture for every
+            # project it mutates (StrykerRunner has no zero-mutant check), here every Core test a
+            # second time, and CoverageAnalyser logs "It looks like the test coverage capture
+            # failed" whenever a project's capture covers no mutant: the one ERR every run logged
+            # (#701). The guard below fails the run if Abstractions gains a class, struct or
+            # record, so code added there is not silently left unmeasured.
+            $noMutants = @(Get-ChildItem -Path 'src/Wolfgang.DbContextBuilder.Abstractions' -Filter '*.csproj' -ErrorAction SilentlyContinue)
+            $abstractionsCode = @(Get-ChildItem -Path 'src/Wolfgang.DbContextBuilder.Abstractions' -Recurse -Filter '*.cs' -ErrorAction SilentlyContinue |
+              Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } |
+              Select-String -Pattern '^(?!\s*//).*\b(class|struct|record)\s+\w')
+            if ($abstractionsCode.Count -gt 0) {
+              Write-Host "::error::src/Wolfgang.DbContextBuilder.Abstractions now declares a type with code ($($abstractionsCode[0].Filename):$($abstractionsCode[0].LineNumber)); remove it from the umbrella's drop list so it is mutated."
+              exit 1
+            }
+            $drop = @($ownRun + $noKills + $duplicateWrappers + $noMutants)
             if ($solution -and $drop.Count -gt 0) {
               $umbrella = Join-Path (Split-Path -Parent (Resolve-Path $solution)) ('stryker-umbrella' + [IO.Path]::GetExtension($solution))
               Copy-Item $solution $umbrella -Force
