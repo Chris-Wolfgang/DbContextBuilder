@@ -340,8 +340,50 @@ jobs:
             $solution = (Get-Content 'stryker-config.json' -Raw | ConvertFrom-Json).'stryker-config'.solution
             if ($solution) { dotnet restore $solution } else { dotnet restore }
             if ($LASTEXITCODE -ne 0) { Write-Host "::error::dotnet restore failed"; exit 1 }
+            # A test project with its own stryker-config.json is measured in its own run below, and
+            # its package is outside the umbrella's mutate list, so in this run its tests cover no
+            # mutant. Stryker cannot filter test projects in solution mode, and per-test coverage
+            # capture still ran each of their tests (39 % of the capture sessions) before reporting
+            # "It looks like the test coverage capture failed" for them (#701). So the umbrella runs
+            # on a copy of the solution without those test projects. The copy sits next to the
+            # original so its relative project paths resolve; `dotnet sln remove` exits 0 even when
+            # it removes nothing, so the project count is checked.
+            #
+            # The same copy also leaves out projects the trace run (38178220920, #701) showed add
+            # cost and nothing else:
+            #   - extra-projects/* (the scaffolded AdventureWorks models): Stryker treated all five
+            #     as projects to mutate, created ~13,580 mutants in them and discarded every one
+            #     (excluded-from-coverage code), after an initial test run of ~370 tests each;
+            #   - Tests.DocExamples, Tests.Fuzz and Tests.Concurrency: every one of their tests
+            #     reported "No mutant covered" in coverage capture (32, 19 and 5 of 5), so with
+            #     coverage-based selection they never test a mutant. DocExamples only compiles
+            #     the documentation snippets. They stay in pr.yaml's test stages.
+            # Projects referenced by a remaining test project still build; they are just not
+            # analysed as solution projects.
+            $solutionArgs = @()
+            $ownRun = @(Get-ChildItem -Path tests -Recurse -Filter 'stryker-config.json' -ErrorAction SilentlyContinue |
+              ForEach-Object { Get-ChildItem -Path $_.DirectoryName -Filter '*.csproj' })
+            $noKills = @(
+              @(Get-ChildItem -Path extra-projects -Recurse -Filter '*.csproj' -ErrorAction SilentlyContinue) +
+              @(foreach ($name in 'DocExamples', 'Fuzz', 'Concurrency') {
+                  Get-ChildItem -Path "tests/Wolfgang.DbContextBuilder.Tests.$name" -Filter '*.csproj' -ErrorAction SilentlyContinue
+                }))
+            $drop = @($ownRun + $noKills)
+            if ($solution -and $drop.Count -gt 0) {
+              $umbrella = Join-Path (Split-Path -Parent (Resolve-Path $solution)) ('stryker-umbrella' + [IO.Path]::GetExtension($solution))
+              Copy-Item $solution $umbrella -Force
+              $before = @(Select-String -Path $umbrella -Pattern '<Project ').Count
+              dotnet sln $umbrella remove @($drop.FullName)
+              $after = @(Select-String -Path $umbrella -Pattern '<Project ').Count
+              if ($LASTEXITCODE -ne 0 -or ($before - $after) -ne $drop.Count) {
+                Write-Host "::error::Could not remove the $($drop.Count) project(s) from $umbrella ($before -> $after projects)."
+                exit 1
+              }
+              Write-Host "Umbrella solution: $umbrella, without $($drop.Name -join ', ')."
+              $solutionArgs = @('--solution', $umbrella)
+            }
             $started = Get-Date
-            dotnet stryker --config-file stryker-config.json @reporters @sinceArgs @logArgs
+            dotnet stryker --config-file stryker-config.json @reporters @sinceArgs @logArgs @solutionArgs
             if ($LASTEXITCODE -ne 0) { $failed++ }
             elseif (-not (Test-StrykerRun -Dir (Get-Location).Path -Since $started -FloorsFile 'mutation-floors.json')) { $failed++ }
             Write-Host "::endgroup::"
