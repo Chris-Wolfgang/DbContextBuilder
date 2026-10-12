@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791706951347,
+  "lastUpdate": 1791829497307,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "Mutation score": [
@@ -215,6 +215,33 @@ window.BENCHMARK_DATA = {
           {
             "name": "Mutation score",
             "value": 94.58,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "24bbc24cc0f1a9444d84bab838a6fef738786ddc",
+          "message": "chore: drop nonexistent issue-template labels; ignore docfx API output; step-into consumer defaults to -Core-EF10 (#686)\n\n- BUG_REPORT and feature_request no longer apply needs-triage /\n  feature-request: neither label exists, and GitHub silently drops unknown\n  form labels.\n- .gitignore ignores docfx_project/api/ (docfx metadata output) and drops the\n  TestResults/ rule [Tt]est[Rr]esult*/ already covers.\n- .github/sourcelink/consumer/StepIntoConsumer.csproj's default\n  LibraryProject is -Core-EF10 (the workflow already passes it since #639),\n  not the retired -Core.\n\nCloses #627\nCloses #591 (netcoredbg checksum still open - see PR body)\n\n\n(cherry picked from commit 65c549efaa121efb93ba2bcc6bc11fdac741854d)\n(cherry picked from commit 81e8cf0400471201fcfa5f66dd7979ed85628883)\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-12T18:21:06Z",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/24bbc24cc0f1a9444d84bab838a6fef738786ddc"
+        },
+        "date": 1791829495781,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score",
+            "value": 94.95,
             "unit": "%"
           }
         ]
