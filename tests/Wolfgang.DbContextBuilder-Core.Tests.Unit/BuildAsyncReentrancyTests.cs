@@ -11,7 +11,7 @@ using Xunit;
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
 
 /// <summary>
-/// Tests for calling <see cref="DbContextBuilder{T}.BuildAsync"/> more than once on one builder (#559):
+/// Tests for calling <see cref="DbContextBuilder{T}.BuildAsync()"/> more than once on one builder (#559):
 /// the database is created and seeded once, and the EF Core service provider is built once and
 /// disposed with the builder.
 /// </summary>
