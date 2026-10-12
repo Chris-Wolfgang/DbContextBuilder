@@ -340,8 +340,32 @@ jobs:
             $solution = (Get-Content 'stryker-config.json' -Raw | ConvertFrom-Json).'stryker-config'.solution
             if ($solution) { dotnet restore $solution } else { dotnet restore }
             if ($LASTEXITCODE -ne 0) { Write-Host "::error::dotnet restore failed"; exit 1 }
+            # A test project with its own stryker-config.json is measured in its own run below, and
+            # its package is outside the umbrella's mutate list, so in this run its tests cover no
+            # mutant. Stryker cannot filter test projects in solution mode, and per-test coverage
+            # capture still ran each of their tests (39 % of the capture sessions) before reporting
+            # "It looks like the test coverage capture failed" for them (#701). So the umbrella runs
+            # on a copy of the solution without those test projects. The copy sits next to the
+            # original so its relative project paths resolve; `dotnet sln remove` exits 0 even when
+            # it removes nothing, so the project count is checked.
+            $solutionArgs = @()
+            $ownRun = @(Get-ChildItem -Path tests -Recurse -Filter 'stryker-config.json' -ErrorAction SilentlyContinue |
+              ForEach-Object { Get-ChildItem -Path $_.DirectoryName -Filter '*.csproj' })
+            if ($solution -and $ownRun.Count -gt 0) {
+              $umbrella = Join-Path (Split-Path -Parent (Resolve-Path $solution)) ('stryker-umbrella' + [IO.Path]::GetExtension($solution))
+              Copy-Item $solution $umbrella -Force
+              $before = @(Select-String -Path $umbrella -Pattern '<Project ').Count
+              dotnet sln $umbrella remove @($ownRun.FullName)
+              $after = @(Select-String -Path $umbrella -Pattern '<Project ').Count
+              if ($LASTEXITCODE -ne 0 -or ($before - $after) -ne $ownRun.Count) {
+                Write-Host "::error::Could not remove the $($ownRun.Count) project-mode test project(s) from $umbrella ($before -> $after projects)."
+                exit 1
+              }
+              Write-Host "Umbrella solution: $umbrella, without $($ownRun.Name -join ', ')."
+              $solutionArgs = @('--solution', $umbrella)
+            }
             $started = Get-Date
-            dotnet stryker --config-file stryker-config.json @reporters @sinceArgs @logArgs
+            dotnet stryker --config-file stryker-config.json @reporters @sinceArgs @logArgs @solutionArgs
             if ($LASTEXITCODE -ne 0) { $failed++ }
             elseif (-not (Test-StrykerRun -Dir (Get-Location).Path -Since $started -FloorsFile 'mutation-floors.json')) { $failed++ }
             Write-Host "::endgroup::"
