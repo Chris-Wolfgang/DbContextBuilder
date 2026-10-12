@@ -89,7 +89,19 @@ jobs:
     # which waits out Stryker's per-mutant timeout, so the run grows with the suite. 240 leaves
     # room under GitHub's 360-minute job limit; raising Stryker's concurrency instead would put
     # more load on the runner and turn more mutants into load-sensitive timeouts.
-    timeout-minutes: 240
+    # A pull-request run is usually narrower, but not always: as the --since notes above say, a
+    # changed test file brings in every mutant its tests cover, and a non-.cs change in scope
+    # makes the run test every mutant, so a PR run can be as long as a full run. The 40
+    # successful runs before 2026-10-11 (those cases included) took 46-126 min (median 79, p90
+    # 112). Stryker's sleep detection can rerun a slow test session indefinitely (#702), so a PR
+    # run stops at 165 min and frees the runner for a re-run. The weekly run and a manually
+    # dispatched full run keep 240; if PR runs that test every mutant start nearing 165, raise
+    # the PR limit rather than assume PR runs stay narrow.
+    timeout-minutes: ${{ github.event_name == 'pull_request' && 165 || 240 }}
+    env:
+      # vstest's default 90 s handshake was too short on a slow runner (#702: "failed to connect to
+      # vstest.console process after 90 seconds ... set VSTEST_CONNECTION_TIMEOUT"). Seconds.
+      VSTEST_CONNECTION_TIMEOUT: '300'
     outputs:
       score: ${{ steps.score.outputs.score }}
     steps:
