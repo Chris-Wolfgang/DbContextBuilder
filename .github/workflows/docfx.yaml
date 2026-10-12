@@ -106,6 +106,41 @@ jobs:
             exit 0
           }
 
+          # The overlaid docfx.json lists main's projects, which an older ref may not have (#675
+          # review): -Core-EF10 appeared in 0.3.0, Abstractions/AutoFixture/Bogus in 0.8.0. API
+          # metadata is source-specific, so it follows the ref: its own docfx.json metadata section
+          # when it has one (every tag from v0.2.0), otherwise every src/*/*.csproj in its tree (the
+          # v0.1.0 tags, which have no docfx_project). Everything else stays main's.
+          function Set-VersionAwareMetadata([string]$DocfxJson, [string]$RefDocfxJson, [string]$TreeRoot) {
+            $config = Get-Content $DocfxJson -Raw | ConvertFrom-Json -Depth 64
+            $own = if ($RefDocfxJson) { $RefDocfxJson | ConvertFrom-Json -Depth 64 } else { $null }
+            if ($own -and $own.PSObject.Properties['metadata']) {
+              $config.metadata = $own.metadata
+              $source = "the ref's own docfx.json"
+            }
+            else {
+              $dest = if ($config.metadata) { @($config.metadata)[0].dest } else { 'api' }
+              $files = @(Get-ChildItem -Path (Join-Path $TreeRoot 'src') -Directory -ErrorAction SilentlyContinue |
+                ForEach-Object { Get-ChildItem -Path $_.FullName -Filter '*.csproj' } |
+                ForEach-Object { 'src/' + $_.Directory.Name + '/' + $_.Name } | Sort-Object)
+              if ($files.Count -eq 0) {
+                Write-Error "No docfx.json metadata and no src/*/*.csproj in $TreeRoot - cannot generate API docs."
+                exit 1
+              }
+              $config.metadata = @([pscustomobject]@{ src = @([pscustomobject]@{ files = $files; src = '../' }); dest = $dest })
+              $source = 'every src/*/*.csproj in the tree'
+            }
+            $config | ConvertTo-Json -Depth 64 | Set-Content -Path $DocfxJson -Encoding utf8NoBOM
+            $listed = @($config.metadata | ForEach-Object { $_.src } | ForEach-Object { $_.files }) -join ', '
+            Write-Host "  API metadata from ${source}: $listed"
+          }
+
+          # The ref's own docfx.json, read before the overlay replaces it.
+          $refDocfx = $null
+          git cat-file -e HEAD:docfx_project/docfx.json 2>$null
+          if ($LASTEXITCODE -eq 0) { $refDocfx = (git show HEAD:docfx_project/docfx.json | Out-String) }
+          $global:LASTEXITCODE = 0
+
           Write-Host "Overlaying canonical docs assets from origin/main"
           Write-Host "  HEAD = $headSha"
           Write-Host "  main = $mainSha"
@@ -124,6 +159,10 @@ jobs:
               exit $LASTEXITCODE
             }
             Write-Host "  overlaid: $path"
+          }
+
+          if (Test-Path 'docfx_project/docfx.json') {
+            Set-VersionAwareMetadata 'docfx_project/docfx.json' $refDocfx '.'
           }
 
       - name: Setup .NET

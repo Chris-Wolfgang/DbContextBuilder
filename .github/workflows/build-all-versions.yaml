@@ -67,6 +67,35 @@ jobs:
           $outDir = Join-Path $env:RUNNER_TEMP 'all_version_docs'
           New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
+          # The overlaid docfx.json lists main's projects, which an older ref may not have (#675
+          # review): -Core-EF10 appeared in 0.3.0, Abstractions/AutoFixture/Bogus in 0.8.0. API
+          # metadata is source-specific, so it follows the ref: its own docfx.json metadata section
+          # when it has one (every tag from v0.2.0), otherwise every src/*/*.csproj in its tree (the
+          # v0.1.0 tags, which have no docfx_project). Everything else stays main's.
+          function Set-VersionAwareMetadata([string]$DocfxJson, [string]$RefDocfxJson, [string]$TreeRoot) {
+            $config = Get-Content $DocfxJson -Raw | ConvertFrom-Json -Depth 64
+            $own = if ($RefDocfxJson) { $RefDocfxJson | ConvertFrom-Json -Depth 64 } else { $null }
+            if ($own -and $own.PSObject.Properties['metadata']) {
+              $config.metadata = $own.metadata
+              $source = "the ref's own docfx.json"
+            }
+            else {
+              $dest = if ($config.metadata) { @($config.metadata)[0].dest } else { 'api' }
+              $files = @(Get-ChildItem -Path (Join-Path $TreeRoot 'src') -Directory -ErrorAction SilentlyContinue |
+                ForEach-Object { Get-ChildItem -Path $_.FullName -Filter '*.csproj' } |
+                ForEach-Object { 'src/' + $_.Directory.Name + '/' + $_.Name } | Sort-Object)
+              if ($files.Count -eq 0) {
+                Write-Error "No docfx.json metadata and no src/*/*.csproj in $TreeRoot - cannot generate API docs."
+                exit 1
+              }
+              $config.metadata = @([pscustomobject]@{ src = @([pscustomobject]@{ files = $files; src = '../' }); dest = $dest })
+              $source = 'every src/*/*.csproj in the tree'
+            }
+            $config | ConvertTo-Json -Depth 64 | Set-Content -Path $DocfxJson -Encoding utf8NoBOM
+            $listed = @($config.metadata | ForEach-Object { $_.src } | ForEach-Object { $_.files }) -join ', '
+            Write-Host "  API metadata from ${source}: $listed"
+          }
+
           # Versions to build – discovered automatically from all v*.*.* git tags so
           # no manual list updates are needed when new releases are published.
           # 'latest' is handled separately below.
@@ -113,11 +142,17 @@ jobs:
 
             # Overlay the current docfx_project config so that older tags
             # (which may lack docfx_project/) still produce consistent docs.
+            # The tag's own docfx.json is read first: its API metadata section is kept.
             if (Test-Path 'docfx_project') {
+              $refDocfx = $null
+              if (Test-Path "$workDir/docfx_project/docfx.json") {
+                $refDocfx = Get-Content "$workDir/docfx_project/docfx.json" -Raw
+              }
               if (Test-Path "$workDir/docfx_project") {
                 Remove-Item "$workDir/docfx_project" -Recurse -Force
               }
               Copy-Item 'docfx_project' "$workDir/docfx_project" -Recurse -Force
+              Set-VersionAwareMetadata "$workDir/docfx_project/docfx.json" $refDocfx $workDir
             }
 
             # Copy build-support files that were added in later versions to help
