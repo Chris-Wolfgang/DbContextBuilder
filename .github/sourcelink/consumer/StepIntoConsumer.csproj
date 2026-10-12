@@ -18,8 +18,9 @@
     <!-- Non-optimized so the step-into target is not reordered/inlined away. -->
     <Optimize>false</Optimize>
     <DebugType>portable</DebugType>
-    <!-- Set by the workflow to the repo's src project path. -->
-    <LibraryProject Condition="'$(LibraryProject)' == ''">../../../src/Wolfgang.DbContextBuilder-Core/Wolfgang.DbContextBuilder-Core.csproj</LibraryProject>
+    <!-- Set by the workflow to the repo's src project path. The default is -Core-EF10, the shipped
+         net10.0 package: the retired -Core no longer ships (#591). -->
+    <LibraryProject Condition="'$(LibraryProject)' == ''">../../../src/Wolfgang.DbContextBuilder-Core-EF10/Wolfgang.DbContextBuilder-Core-EF10.csproj</LibraryProject>
   </PropertyGroup>
 
   <ItemGroup>
