@@ -153,6 +153,26 @@ public class SqliteDbContextCreatorTests
 
 
     /// <summary>
+    /// A second Dispose leaves the connection alone: it is disposed, and raises its
+    /// <c>Disposed</c> event, once (#531).
+    /// </summary>
+    [Fact]
+    public async Task Dispose_called_twice_disposes_the_connection_once()
+    {
+        var sut = new SqliteDbContextCreator();
+        using var context = await sut.CreateDbContextAsync(new DbContextOptionsBuilder<BasicContext>());
+        var disposals = 0;
+        context.Database.GetDbConnection().Disposed += (_, _) => disposals++;
+
+        sut.Dispose();
+        sut.Dispose();
+
+        Assert.Equal(1, disposals);
+    }
+
+
+
+    /// <summary>
     /// <c>UseSqlite</c> rejects a null builder with <see cref="ArgumentNullException"/>.
     /// </summary>
     [Fact]
