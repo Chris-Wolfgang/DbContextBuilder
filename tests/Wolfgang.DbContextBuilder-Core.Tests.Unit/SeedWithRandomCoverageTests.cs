@@ -952,6 +952,62 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
+    /// A second Dispose does nothing: the context creator the builder owns is disposed once (#531).
+    /// </summary>
+    [Fact]
+    public async Task Dispose_called_twice_disposes_the_context_creator_once()
+    {
+        var creator = new DisposeCountingDbContextCreator();
+        var sut = new DbContextBuilder<CoverageContext>();
+        sut.SetCreateDbContext(creator);
+        await using (await sut.BuildAsync())
+        {
+        }
+
+        sut.Dispose();
+        sut.Dispose();
+
+        Assert.Equal(1, creator.DisposeCount);
+    }
+
+
+
+    /// <summary>
+    /// Dispose suppresses finalization, so a derived builder that adds a finalizer does not run it
+    /// after an explicit Dispose (#531). The builder nobody disposed shows the finalizer does run
+    /// here, so the assertion on the disposed one is not vacuous.
+    /// </summary>
+    [Fact]
+    public void Dispose_suppresses_the_finalizer_of_a_derived_builder()
+    {
+        var disposedFinalized = new StrongBox<bool>();
+        var abandonedFinalized = new StrongBox<bool>();
+
+        CreateFinalizableBuilder(disposedFinalized, dispose: true);
+        CreateFinalizableBuilder(abandonedFinalized, dispose: false);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+
+        Assert.True(abandonedFinalized.Value);
+        Assert.False(disposedFinalized.Value);
+    }
+
+
+
+    // Not inlined, so the builder is unreachable once this returns, even in a Debug build.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void CreateFinalizableBuilder(StrongBox<bool> finalized, bool dispose)
+    {
+        var builder = new FinalizableBuilder(finalized);
+        if (dispose)
+        {
+            builder.Dispose();
+        }
+    }
+
+
+
+    /// <summary>
     /// UseSqliteForMsSqlServer's model customizer is applied when the context is built: a SQL Server
     /// default ((getdate()), as scaffolded) only works on SQLite once the customizer has rewritten it.
     /// </summary>
@@ -1680,5 +1736,33 @@ internal sealed class SaveCountingContext(DbContextOptions<SaveCountingContext> 
     {
         _saves.Value!.Value++;
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+}
+
+
+
+/// <summary>Creates InMemory contexts and counts how often it is disposed (#531).</summary>
+internal sealed class DisposeCountingDbContextCreator : ICreateDbContext, IDisposable
+{
+    private readonly InMemoryDbContextCreator _inner = new();
+
+    public int DisposeCount { get; private set; }
+
+    public Task<TDbContext> CreateDbContextAsync<TDbContext>(DbContextOptionsBuilder<TDbContext> optionsBuilder)
+        where TDbContext : DbContext =>
+        _inner.CreateDbContextAsync(optionsBuilder);
+
+    public void Dispose() => DisposeCount++;
+}
+
+
+
+/// <summary>A builder subclass with a finalizer that records it ran (#531).</summary>
+internal sealed class FinalizableBuilder(StrongBox<bool> finalized) : DbContextBuilder<CoverageContext>
+{
+    ~FinalizableBuilder()
+    {
+        finalized.Value = true;
+        Dispose(disposing: false);
     }
 }

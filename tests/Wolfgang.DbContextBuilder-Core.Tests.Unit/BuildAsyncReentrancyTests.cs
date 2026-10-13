@@ -142,6 +142,27 @@ public class BuildAsyncReentrancyTests
 
 
     /// <summary>
+    /// The message says why seeding is refused and how to recover, not only that it is (#531).
+    /// </summary>
+    [Fact]
+    public async Task Seeding_after_BuildAsync_explains_how_to_recover()
+    {
+        using var builder = new DbContextBuilder<BasicContext>().UseInMemory();
+        await using var context = await builder.BuildAsync();
+
+        var ex = Assert.Throws<InvalidOperationException>(() => SeedCallsByName["SeedWith(entity)"](builder));
+
+        Assert.Equal
+        (
+            "Seed data must be added before the first BuildAsync() call: the database has already been " +
+            "created and seeded. Add all seed data first, or use a new DbContextBuilder.",
+            ex.Message
+        );
+    }
+
+
+
+    /// <summary>
     /// After a provider switch the new, empty database has not been seeded, so seeding is
     /// accepted again and the next build saves every seed row.
     /// </summary>
