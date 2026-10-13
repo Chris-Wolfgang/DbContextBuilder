@@ -302,6 +302,26 @@ public class SqliteDbContextCreatorTests
 
 
 
+    /// <summary>
+    /// UseInMemory on a disposed builder throws before it changes anything: the SQLite services
+    /// registered before Dispose are all still there. The disposed check has to come before
+    /// <c>ServiceCollection.Clear()</c>, not only inside the creator swap (#531).
+    /// </summary>
+    [Fact]
+    public void UseInMemory_after_Dispose_leaves_the_registered_services_alone()
+    {
+        var builder = new DbContextBuilder<BasicContext>().UseSqlite();
+        var registered = builder.ServiceCollection.Count;
+        builder.Dispose();
+
+        Assert.Throws<ObjectDisposedException>(() => builder.UseInMemory());
+
+        Assert.NotEqual(0, registered);
+        Assert.Equal(registered, builder.ServiceCollection.Count);
+    }
+
+
+
     // BasicContext is internal, so the theory takes the call's name and looks the action up here.
     private static readonly Dictionary<string, Action<DbContextBuilder<BasicContext>>> ConfigurationCallsByName = new()
     {
