@@ -199,7 +199,7 @@ This project uses `.editorconfig` for consistent code style:
 # Format all code
 dotnet format
 
-# Check formatting without changes (CI mode)
+# Check formatting without changes (CI does not run this; run it before pushing)
 dotnet format --verify-no-changes
 
 # PowerShell formatting script
