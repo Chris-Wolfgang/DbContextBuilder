@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791829497307,
+  "lastUpdate": 1792306741258,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "Mutation score": [
@@ -237,6 +237,33 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/24bbc24cc0f1a9444d84bab838a6fef738786ddc"
         },
         "date": 1791829495781,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score",
+            "value": 94.95,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "cc819d2b9e2a2c57678a7415a098b336e280679a",
+          "message": "ci: key stryker's Dependabot skip on the actor too; drop stale pull_request_target wording (#592) (#722)\n\n#592 asked for every Dependabot exemption to key on both the PR author and the actor,\nso a person pushing to a Dependabot branch still gets the full checks. pr.yaml and\nprotected-files.yaml already do; stryker.yaml's job condition still skipped on\n`pull_request.user.login == 'dependabot[bot]'` alone. It now skips only when the\nauthor and the actor are both Dependabot.\n\nTwo pr.yaml comments still described the old pull_request_target setup: the changelog\njob's fail-closed note (it said a first-adoption PR could not reach the job because\npull_request_target runs main's pr.yaml) and the \"jobs don't share workspaces under\npull_request_target\" note. pr.yaml runs on pull_request now; the comments say what\nactually happens. No behaviour change in pr.yaml.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-13T02:52:12Z",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/cc819d2b9e2a2c57678a7415a098b336e280679a"
+        },
+        "date": 1792306739350,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
