@@ -93,8 +93,10 @@ Matching is case-insensitive, because Windows and ReSharper resolve names that w
 Dependabot is exempted from the overwrite step (its bumps to `Directory.Build.props` are
 legitimate), and from the guard.
 
-The guard is a required check, not a sandbox: it prevents a protected change landing, not a PR's
-own run from seeing it. The scans that hold `security-events: write` do not rely on it for their
+The guard is a merge gate, not a sandbox: it is meant to stop a protected change landing, not a
+PR's own run from seeing it. It is **not yet a required check** in the `main` ruleset (#613), so
+today a failing guard blocks a merge only if the merger respects it; `pr.yaml`'s required
+`Detect .NET Projects` job runs the same classification. The scans that hold `security-events: write` do not rely on it for their
 inputs: `actions-audit.yaml` and `semgrep.yaml` take `.github/requirements/*` from the base branch
 before `pip install`, and refuse to fall back to the PR's copy.
 
@@ -234,7 +236,7 @@ PR #2: New feature
 When adding new configuration files that control code quality or security:
 
 1. Add the file name to every trusted-fetch list in `pr.yaml` - the bash `config_files` arrays and the Stage 2 PowerShell list (search `pr.yaml` for `Fetch trusted configuration files` to find them all). The `secrets-scan` job does not consume project config files and does not need to be updated.
-2. Add the pattern to **`.github/workflows/protected-files.yaml`** - the authoritative guard (a required check).
+2. Add the pattern to **`.github/workflows/protected-files.yaml`** - the authoritative guard (to become a required check, #613).
 3. Add it to the "Detect protected configuration file changes" step in `pr.yaml` as well; the two classify the same files and are kept in lock-step.
 4. Test that the file is correctly fetched from main branch.
 5. Update this documentation (both lists above).
