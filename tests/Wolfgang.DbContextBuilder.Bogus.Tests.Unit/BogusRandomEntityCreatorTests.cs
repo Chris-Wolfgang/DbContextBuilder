@@ -129,6 +129,21 @@ public class BogusRandomEntityCreatorTests
 
 
 
+    // An entity whose only enum property has a type with no defined values: there is nothing to
+    // pick, so the creator must leave it at its default instead of failing (#571 review).
+    private sealed class EmptyEnumSample
+    {
+        public Empty Empty { get; set; }
+    }
+
+
+
+    private enum Empty
+    {
+    }
+
+
+
     // Unset is 0, the value a property the creator leaves alone keeps. The creator picks from every
     // defined value, Unset included, so a populated property can hold it too.
     private enum Shade
@@ -301,6 +316,57 @@ public class BogusRandomEntityCreatorTests
         Assert.NotEqual(firstCall, secondCall);
         Assert.NotEqual(firstCall, otherSeed);
     }
+
+
+
+    /// <summary>
+    /// Verifies that two creators with the same seed generate the same dates, even when they run
+    /// at different times: a seeded creator does not measure its dates from the current time.
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_with_the_same_seed_generates_the_same_dates()
+    {
+        var first = new BogusRandomEntityCreator(seed: 42).CreateRandomEntities<Sample>(5);
+
+        // Long enough for the system clock to move on, so dates measured from "now" would differ.
+        System.Threading.Thread.Sleep(50);
+
+        var second = new BogusRandomEntityCreator(seed: 42).CreateRandomEntities<Sample>(5);
+
+        Assert.Equal(DateFingerprint(first), DateFingerprint(second));
+    }
+
+
+
+    /// <summary>
+    /// Verifies that an enum property whose type defines no values keeps its default instead of
+    /// making generation fail.
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_when_enum_type_has_no_values_leaves_the_property_at_default()
+    {
+        var sut = new BogusRandomEntityCreator();
+
+        var items = sut.CreateRandomEntities<EmptyEnumSample>(3).ToList();
+
+        Assert.Equal(3, items.Count);
+        Assert.All(items, item => Assert.Equal(default, item.Empty));
+    }
+
+
+
+    private static string DateFingerprint(IEnumerable<Sample> items) =>
+        string.Join
+        (
+            "|",
+            items.Select
+            (
+                item => FormattableString.Invariant
+                (
+                    $"{item.CreatedOn:O}/{item.UpdatedOn:O}/{item.Birthday:O}/{item.OpensAt:O}/{item.NullableDateTime:O}/{item.NullableDateTimeOffset:O}"
+                )
+            )
+        );
 
 
 

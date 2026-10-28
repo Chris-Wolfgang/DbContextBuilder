@@ -35,6 +35,10 @@ namespace Wolfgang.DbContextBuilderCore;
 /// </remarks>
 public class BogusRandomEntityCreator : ICreateRandomEntities
 {
+    // Bogus dates are relative to "now" unless the faker is given a reference date. A seeded creator
+    // pins it, so its dates are reproducible too, not just its other values.
+    private static readonly DateTime SeededDateReference = new(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
     // Null for the unseeded creator. Seeded, it hands each CreateRandomEntities call its own seed,
     // so a run is reproducible while successive calls still produce different entities.
     private readonly Randomizer? _seeds;
@@ -103,24 +107,37 @@ public class BogusRandomEntityCreator : ICreateRandomEntities
             .RuleForType(typeof(DateOnly?), f => (DateOnly?)DateOnly.FromDateTime(f.Date.Past()))
             .RuleForType(typeof(TimeOnly?), f => (TimeOnly?)TimeOnly.FromDateTime(f.Date.Past()));
 
-        // Enums cannot be matched by RuleForType (each is its own type): add a rule per settable
-        // enum-typed property, picking one of the enum's defined values. Indexers are skipped: Bogus
-        // sets a rule's member as a plain property, and an indexer's setter needs its index too.
+        AddEnumRules(faker);
+
+        if (_seeds is not null)
+        {
+            faker.UseSeed(_seeds.Int());
+            faker.UseDateTimeReference(SeededDateReference);
+        }
+
+        return faker.Generate(count);
+    }
+
+
+
+    // Enums cannot be matched by RuleForType (each is its own type): add a rule per settable
+    // enum-typed property, picking one of the enum's defined values. Indexers are skipped: Bogus
+    // sets a rule's member as a plain property, and an indexer's setter needs its index too.
+    private static void AddEnumRules<TEntity>(Faker<TEntity> faker) where TEntity : class
+    {
         foreach (var property in typeof(TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.SetMethod?.IsPublic == true && p.GetIndexParameters().Length == 0))
         {
             var enumType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
             if (enumType.IsEnum)
             {
                 var values = Enum.GetValues(enumType).Cast<object>().ToArray();
-                faker.RuleFor(property.Name, f => f.PickRandom(values));
+
+                // An enum with no defined values has nothing to pick from: leave the property alone.
+                if (values.Length > 0)
+                {
+                    faker.RuleFor(property.Name, f => f.PickRandom(values));
+                }
             }
         }
-
-        if (_seeds is not null)
-        {
-            faker.UseSeed(_seeds.Int());
-        }
-
-        return faker.Generate(count);
     }
 }
