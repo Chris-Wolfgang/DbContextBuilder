@@ -92,9 +92,9 @@ An earlier revision documented an `_appFooter` inline-script bootstrap that was 
 Committed as `[]` (empty array). The `docfx.yaml` workflow regenerates
 the real `versions.json` at deploy time from the set of actual `v*`
 tags that have versioned docs deployed (D6 derivation) and writes it
-to the gh-pages site root. The empty stub is the fanout-safe default —
-no DateTime-Extensions paths leak into other repos when this folder is
-synced fleet-wide.
+to the gh-pages site root. The empty stub is the fanout-safe default:
+the file carries no version paths of its own, so the same stub works in
+every repository that uses the picker.
 
 **Local picker testing** requires populating `versions.json` manually
 with mock entries (see "Testing locally" below). The picker
@@ -106,10 +106,10 @@ gracefully falls back to "no dropdown" if the stub is empty.
 > separate `.github/version-picker-template.html` file. That file is
 > gone — both workflows now build the markup inline as a PowerShell
 > string-array. The only dynamic piece is the page title (the repo
-> name), so the template-file indirection was pure overhead. See the
-> D20-Dice commit `b58861a` (and the follow-up `1b9a7c7` that fixed
-> a YAML literal-block-scalar trap from an attempted here-string)
-> for the original design.
+> name), so the template-file indirection was pure overhead. The
+> design came from repo-template, where the picker is maintained; an
+> attempted here-string there hit a YAML literal-block-scalar trap,
+> which is why the markup is a string-array.
 >
 > Where to find the generation in each workflow:
 >

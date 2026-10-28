@@ -38,7 +38,8 @@ resolution is covered by `sourcelink.yaml`.
 ## Files
 
 - `consumer/StepIntoConsumer.csproj` / `Program.cs` — the fixture consumer. It
-  references `Wolfgang.DbContextBuilder-Core` and the break line is marked
+  references `Wolfgang.DbContextBuilder-Core-EF10` (the retired `-Core` no longer
+  ships, #591) and the break line is marked
   `STEP_INTO_TARGET`. Inherits the repo's own analyzers rather than an
   isolation-stub `Directory.Build.props`/`.targets` (that pattern hit a stale,
   root-only protected-file check elsewhere in `pr.yaml`) — the couple of
