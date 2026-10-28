@@ -123,7 +123,9 @@ public class DbContextBuilder<T> where T : DbContext
                 case string:
                     throw new ArgumentException("One of the entities passed in is of type string", nameof(entities));
                 case IEnumerable<object> e:
-                    _seedData.AddRange(e);
+                    // A nested sequence gets the same per-item check as the single-entity
+                    // overload (#735); the IEnumerable overload reaches it through here too.
+                    AddSequenceItems(e, nameof(entities));
                     break;
                 default:
                     _seedData.Add(entity);
@@ -166,29 +168,7 @@ public class DbContextBuilder<T> where T : DbContext
 
         if (entity is IEnumerable<object> sequence)
         {
-            // Buffer first so the failing call leaves `_seedData` untouched (atomic w.r.t.
-            // seed state). IEnumerable<T> is covariant in T for reference types, so
-            // List<string> casts to IEnumerable<object> at runtime and would slip through
-            // without the per-item check below.
-            var buffer = new List<object>();
-            foreach (var item in sequence)
-            {
-                // Same per-item arms as the params overload: a null item used to be stored and
-                // fail later, inside EF, with an unhelpful ArgumentNullException (#560).
-                if (item is null)
-                {
-                    throw new ArgumentException("One of the entities is null", nameof(entity));
-                }
-
-                if (item is string)
-                {
-                    throw new ArgumentException("One of the entities passed in is of type string", nameof(entity));
-                }
-
-                buffer.Add(item);
-            }
-
-            _seedData.AddRange(buffer);
+            AddSequenceItems(sequence, nameof(entity));
         }
         else
         {
@@ -196,6 +176,32 @@ public class DbContextBuilder<T> where T : DbContext
         }
 
         return this;
+    }
+
+
+
+    // Adds each item of a sequence passed as one seed argument. Buffers first so a failing
+    // sequence leaves `_seedData` untouched. IEnumerable<T> is covariant for reference types, so
+    // a List<string> arrives here as IEnumerable<object> and is caught item by item (#560, #735).
+    private void AddSequenceItems(IEnumerable<object> sequence, string paramName)
+    {
+        var buffer = new List<object>();
+        foreach (var item in sequence)
+        {
+            if (item is null)
+            {
+                throw new ArgumentException("One of the entities is null", paramName);
+            }
+
+            if (item is string)
+            {
+                throw new ArgumentException("One of the entities passed in is of type string", paramName);
+            }
+
+            buffer.Add(item);
+        }
+
+        _seedData.AddRange(buffer);
     }
 
 
