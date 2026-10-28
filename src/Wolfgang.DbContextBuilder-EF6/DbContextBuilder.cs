@@ -46,8 +46,8 @@ public class DbContextBuilder<T> where T : DbContext
     /// Allows the user to specify their own implementation of ICreateRandomEntities
     /// for creating random entities.
     /// </summary>
-    /// <param name="creator">The creator to use</param>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <param name="creator">The creator to use.</param>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="creator"/> is <c>null</c>.</exception>
     public DbContextBuilder<T> UseCustomRandomEntityCreator(ICreateRandomEntities creator)
     {
@@ -65,8 +65,8 @@ public class DbContextBuilder<T> where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
-    /// <param name="entities">The entities to populate the database with</param>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <param name="entities">The entities to populate the database with.</param>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
@@ -97,8 +97,8 @@ public class DbContextBuilder<T> where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
-    /// <param name="entities">The entities to populate the database with</param>
+    /// <returns>The builder, for chaining.</returns>
+    /// <param name="entities">The entities to populate the database with.</param>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
@@ -220,7 +220,7 @@ public class DbContextBuilder<T> where T : DbContext
     /// </summary>
     /// <param name="count">The number of items to create</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count) where TEntity : class
@@ -244,7 +244,7 @@ public class DbContextBuilder<T> where T : DbContext
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="func"/> is <c>null</c>.</exception>
@@ -275,7 +275,7 @@ public class DbContextBuilder<T> where T : DbContext
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and the index number of the entity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="func"/> is <c>null</c>.</exception>
