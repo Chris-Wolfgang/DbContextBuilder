@@ -341,7 +341,7 @@ public class TestsWithSqliteAndAutoFixture : DbContextBuilderTestsBase
 
 
     /// <summary>
-    /// Verifies that calling UseSqlite multiple times doesn't cause issues 
+    /// Verifies that calling UseSqlite multiple times doesn't cause issues
     /// </summary>
     [Fact]
     public async Task UseSqlite_when_called_multiple_times_still_builds_a_context()

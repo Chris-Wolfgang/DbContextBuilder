@@ -46,7 +46,7 @@ public class TestsWithDefaults : DbContextBuilderTestsBase
     /// Verifies that the default database is Microsoft's InMemory database
     /// </summary>
     [Fact]
-    public async Task Default_database_is_InMemory()
+    public async Task BuildAsync_when_no_provider_is_selected_uses_InMemory()
     {
         // Arrange
         using var sut = new DbContextBuilder<AdventureWorksDbContext>();

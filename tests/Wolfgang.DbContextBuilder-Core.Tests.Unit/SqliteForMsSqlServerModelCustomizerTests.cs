@@ -96,7 +96,7 @@ public class SqliteForMsSqlServerModelCustomizerTests
 
 
     /// <summary>
-    /// Verifies that OverrideTableRenaming renames table properly using a custom implementation 
+    /// Verifies that OverrideTableRenaming renames table properly using a custom implementation
     /// </summary>
     [Fact]
     public void OverrideTableRenaming_can_rename_table_with_custom_implementation()
