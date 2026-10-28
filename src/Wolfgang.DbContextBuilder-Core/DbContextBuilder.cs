@@ -737,6 +737,10 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             .Distinct()
             .ToDictionary(type => type, type => context.Model.FindEntityType(type));
 
+        // The seeded entities each principal type can point at, resolved once per principal type
+        // rather than once per foreign key per row (#740).
+        var candidatesByPrincipalType = new Dictionary<Type, List<object>>();
+
         foreach (var dependent in _randomlySeeded)
         {
             var entityType = entityTypeByType[dependent.GetType()];
@@ -747,7 +751,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
             foreach (var foreignKey in entityType.GetForeignKeys())
             {
-                ReconcileForeignKey(dependent, foreignKey, seededByType);
+                ReconcileForeignKey(dependent, foreignKey, seededByType, candidatesByPrincipalType);
             }
         }
     }
@@ -758,10 +762,11 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     (
         object dependent,
         IForeignKey foreignKey,
-        IReadOnlyDictionary<Type, List<object>> seededByType
+        IReadOnlyDictionary<Type, List<object>> seededByType,
+        Dictionary<Type, List<object>> candidatesByPrincipalType
     )
     {
-        var principal = FindPrincipal(dependent, foreignKey, seededByType);
+        var principal = FindPrincipal(dependent, foreignKey, seededByType, candidatesByPrincipalType);
 
         if (principal is not null)
         {
@@ -790,7 +795,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     (
         object dependent,
         IForeignKey foreignKey,
-        IReadOnlyDictionary<Type, List<object>> seededByType
+        IReadOnlyDictionary<Type, List<object>> seededByType,
+        Dictionary<Type, List<object>> candidatesByPrincipalType
     )
     {
         // Seeded entities are grouped by runtime type, so match every group whose type IS the
@@ -798,11 +804,17 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         // seeded instances are of a derived type was never found (#569).
         var principalType = foreignKey.PrincipalEntityType.ClrType;
 
+        if (!candidatesByPrincipalType.TryGetValue(principalType, out var candidates))
+        {
+            candidates = seededByType
+                .Where(group => principalType.IsAssignableFrom(group.Key))
+                .SelectMany(group => group.Value)
+                .ToList();
+            candidatesByPrincipalType[principalType] = candidates;
+        }
+
         // Prefer a principal that is not the dependent itself (handles self-referencing FKs).
-        return seededByType
-            .Where(group => principalType.IsAssignableFrom(group.Key))
-            .SelectMany(group => group.Value)
-            .FirstOrDefault(candidate => !ReferenceEquals(candidate, dependent));
+        return candidates.Find(candidate => !ReferenceEquals(candidate, dependent));
     }
 
 
