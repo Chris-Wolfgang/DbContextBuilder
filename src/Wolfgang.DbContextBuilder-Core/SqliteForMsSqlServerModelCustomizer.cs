@@ -4,7 +4,7 @@ namespace Wolfgang.DbContextBuilderCore;
 
 /// <summary>
 /// An implementation of SqliteModelCustomizer specifically configured to handle a DbContext
-/// designed for Microsoft SQL Server databases. 
+/// designed for Microsoft SQL Server databases.
 /// </summary>
 /// <remarks>
 /// This class includes overrides to map common default value SQL functions from SQL Server to
