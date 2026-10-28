@@ -975,6 +975,39 @@ public class DbContextBuilderTests
 
 
     /// <summary>
+    /// The params and IEnumerable overloads check every item of a nested sequence, as the
+    /// single-entity overload does (#735).
+    /// </summary>
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    public void SeedWith_when_a_nested_sequence_holds_a_null_or_a_string_throws_ArgumentException(bool useParams, bool useString)
+    {
+        object? bad = useString ? "not an entity" : null;
+        var nested = new List<object?> { new Category { Name = "a" }, bad };
+        var sut = new DbContextBuilder<TestDbContext>();
+
+        var ex = Assert.Throws<ArgumentException>
+        (
+            () => useParams
+                ? sut.SeedWith<object>(new Category { Name = "b" }, nested)
+                : sut.SeedWith<object>(new List<object> { new Category { Name = "b" }, nested }.AsEnumerable())
+        );
+
+        Assert.Equal("entities", ex.ParamName);
+        Assert.StartsWith
+        (
+            useString ? "One of the entities passed in is of type string" : "One of the entities is null",
+            ex.Message,
+            StringComparison.Ordinal
+        );
+    }
+
+
+
+    /// <summary>
     /// Regression: when the caller widens TEntity to <see cref="object"/> the
     /// static `typeof(TEntity) == typeof(string)` check (the original guard) would
     /// pass through. The runtime <c>entity is string</c> check must still reject.
