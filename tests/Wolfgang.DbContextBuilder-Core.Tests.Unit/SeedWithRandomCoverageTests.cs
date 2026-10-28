@@ -329,7 +329,7 @@ public class SeedWithRandomCoverageTests
         Assert.StartsWith("One of the entities passed in is of type string", ex.Message, StringComparison.Ordinal);
 
         await using var context = await sut.BuildAsync();
-        Assert.Equal(0, context.Manufacturers.Count());
+        Assert.Empty(context.Manufacturers);
     }
 
 
@@ -349,7 +349,7 @@ public class SeedWithRandomCoverageTests
         Assert.StartsWith("One of the entities is null", ex.Message, StringComparison.Ordinal);
 
         await using var context = await sut.BuildAsync();
-        Assert.Equal(0, context.Manufacturers.Count());
+        Assert.Empty(context.Manufacturers);
     }
 
 
@@ -1079,7 +1079,7 @@ public class SeedWithRandomCoverageTests
     /// de-duplication path that only runs when a SQLite extension is applied a second time).
     /// </summary>
     [Fact]
-    public async Task Selecting_a_Sqlite_provider_twice_works()
+    public async Task UseSqliteForMsSqlServer_when_called_after_UseSqlite_builds_and_seeds()
     {
         using var sut = NewBuilder()
             .UseSqlite()
