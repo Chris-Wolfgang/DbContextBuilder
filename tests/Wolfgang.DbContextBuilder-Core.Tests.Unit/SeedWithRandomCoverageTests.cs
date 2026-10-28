@@ -355,6 +355,78 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
+    /// The params and IEnumerable overloads check every item of a nested sequence, as the
+    /// single-entity overload does (#735): a null or a string inside it is rejected at seed time
+    /// instead of being stored to fail later, inside EF.
+    /// </summary>
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    public void SeedWith_when_a_nested_sequence_holds_a_null_or_a_string_throws_ArgumentException(bool useParams, bool useString)
+    {
+        object? bad = useString ? "not an entity" : null;
+        var nested = new List<object?> { new CoverageManufacturer { Id = 1, Name = "a" }, bad };
+        using var sut = new DbContextBuilder<CoverageContext>().UseInMemory();
+
+        var ex = Assert.Throws<ArgumentException>
+        (
+            () => useParams
+                ? sut.SeedWith<object>(new CoverageManufacturer { Id = 2, Name = "b" }, nested)
+                : sut.SeedWith<object>(new List<object> { new CoverageManufacturer { Id = 2, Name = "b" }, nested }.AsEnumerable())
+        );
+
+        Assert.Equal("entities", ex.ParamName);
+        Assert.StartsWith
+        (
+            useString ? "One of the entities passed in is of type string" : "One of the entities is null",
+            ex.Message,
+            StringComparison.Ordinal
+        );
+    }
+
+
+
+    /// <summary>
+    /// A byte key runs out of unused values after 255 rows: BuildAsync says which entity and key
+    /// ran out, instead of the bare OverflowException Convert.ChangeType used to throw (#735).
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_when_a_byte_key_has_no_unused_value_left_throws_InvalidOperationException()
+    {
+        using var sut = new DbContextBuilder<NarrowKeyContext>()
+            .UseCustomRandomEntityCreator(new CollidingTypedKeyRandomEntityCreator())
+            .UseInMemory()
+            .SeedWithRandom<ByteKeyRow>(256);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.BuildAsync());
+
+        Assert.StartsWith("Cannot give every seeded ByteKeyRow a unique primary key", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("its largest value is 255", ex.Message, StringComparison.Ordinal);
+    }
+
+
+
+    /// <summary>
+    /// The limit is the key type's largest value, not one below it: 255 byte-keyed rows still fit.
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_when_a_byte_key_uses_every_value_up_to_255_succeeds()
+    {
+        using var sut = new DbContextBuilder<NarrowKeyContext>()
+            .UseCustomRandomEntityCreator(new CollidingTypedKeyRandomEntityCreator())
+            .UseInMemory()
+            .SeedWithRandom<ByteKeyRow>(255);
+
+        await using var context = await sut.BuildAsync();
+
+        Assert.Equal(255, context.Set<ByteKeyRow>().Select(row => row.Id).Distinct().Count());
+    }
+
+
+
+    /// <summary>
     /// Verifies the params overload flattens an item that is itself an <c>IEnumerable&lt;object&gt;</c>.
     /// </summary>
     [Fact]
