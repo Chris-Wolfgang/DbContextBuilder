@@ -86,7 +86,7 @@ these alongside anything else:
 | `.github/workflows/*.yml` / `*.yaml` | the checks themselves |
 | `.github/license-audit/*.json` | licence allow-list |
 | `.github/requirements/*` | pip-installed and executed by the privileged scans |
-| `scripts/changelog.ps1`, `tfm-parity.ps1`, `build-pr.ps1`, `third-party-notices.ps1` | CI executes them |
+| `scripts/changelog.ps1`, `tfm-parity.ps1`, `compile-link-parity.ps1`, `build-pr.ps1`, `third-party-notices.ps1` | CI executes them |
 
 Matching is case-insensitive, because Windows and ReSharper resolve names that way.
 
