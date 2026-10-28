@@ -219,7 +219,7 @@ public class SqliteModelCustomizer : ModelCustomizer
         {
             var originalTableName = entityType.GetTableName();
             var originalSchemaName = entityType.GetSchema();
-            
+
             RenameTable(entityType, OverrideTableRenaming, originalTableName, originalSchemaName);
 
             foreach (var property in entityType.GetProperties())
