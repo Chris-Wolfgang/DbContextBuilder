@@ -15,7 +15,7 @@ namespace Wolfgang.DbContextBuilderCore;
 ///   2. Replacing column default-value SQL found in <see cref="DefaultValueMap"/> (see <see cref="OverrideDefaultValueHandling"/>).
 ///   3. Passing computed-column SQL through a hook that leaves it unchanged by default (see <see cref="OverrideComputedValueHandling"/>).
 ///   4. Renaming join tables of many-to-many relationships after the two tables they join.
-/// 
+///
 /// You can override the functionality provided in this class or, if you will frequently work
 /// against the same database engine, derive your own <see cref="ModelCustomizer"/> (from
 /// scratch or from this one) and override the desired functionality. Once created it can be
