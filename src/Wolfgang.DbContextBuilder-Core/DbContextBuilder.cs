@@ -14,8 +14,8 @@ namespace Wolfgang.DbContextBuilderCore;
 /// <para>
 /// The first <see cref="BuildAsync"/> call creates and seeds the database; later calls return
 /// another context over the same, already-seeded database. Add all seed data before the first
-/// <see cref="BuildAsync"/> call. Selecting a different provider afterwards starts a new, empty
-/// database that the next <see cref="BuildAsync"/> call seeds again.
+/// <see cref="BuildAsync"/> call. Selecting a provider again (the same or a different one) starts a
+/// new, empty database that the next <see cref="BuildAsync"/> call seeds again.
 /// </para>
 /// <para>
 /// When using the SQLite provider, the builder holds an open SQLite in-memory connection and
@@ -165,7 +165,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Allows the user to specify their own implementation of ICreateRandomEntities
     /// for creating random entities.
     /// </summary>
-    /// <param name="creator">The creator to use</param>
+    /// <param name="creator">The creator to use.</param>
     /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="creator"/> is null.</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
@@ -250,7 +250,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
     /// <typeparam name="TEntity">The type of the entities to seed.</typeparam>
-    /// <param name="entities">The entities to populate the database with</param>
+    /// <param name="entities">The entities to populate the database with.</param>
     /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
@@ -292,7 +292,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
     /// <typeparam name="TEntity">The type of the entities to seed.</typeparam>
-    /// <param name="entities">The entities to populate the database with</param>
+    /// <param name="entities">The entities to populate the database with.</param>
     /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
@@ -469,19 +469,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// </summary>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     /// <exception cref="InvalidOperationException">No random-entity provider is configured (call <c>UseAutoFixture()</c>, <c>UseBogus()</c> or <see cref="UseCustomRandomEntityCreator"/> first), or a previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
-    /// <remarks>
-    /// Foreign keys on the generated entities are reconciled against the model when the
-    /// context is built: a required FK is wired to a seeded principal of its type (so seed the
-    /// principals too), and an optional FK with no seeded principal is set to <c>null</c>. The
-    /// FK values on a randomly-seeded entity are therefore not the raw random values produced
-    /// by the creator. Entities added via <c>SeedWith</c> are never reconciled.
-    /// A single-property integer primary key is kept unique across all seeded entities of the
-    /// type: a random key that collides with another (random or <c>SeedWith</c>) key is replaced
-    /// with the lowest unused value. A key that a <c>SeedWith</c> entity sets is never changed. A
-    /// key left unset (at the property's sentinel, 0 unless configured otherwise) on a key EF
-    /// generates is assigned the lowest unused value instead, by either method, as EF would have
-    /// generated one for it.
-    /// </remarks>
+    /// <inheritdoc cref="SeedWithRandom{TEntity}(int)" path="/remarks"/>
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
@@ -515,19 +503,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// </summary>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     /// <exception cref="InvalidOperationException">No random-entity provider is configured (call <c>UseAutoFixture()</c>, <c>UseBogus()</c> or <see cref="UseCustomRandomEntityCreator"/> first), or a previous <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
-    /// <remarks>
-    /// Foreign keys on the generated entities are reconciled against the model when the
-    /// context is built: a required FK is wired to a seeded principal of its type (so seed the
-    /// principals too), and an optional FK with no seeded principal is set to <c>null</c>. The
-    /// FK values on a randomly-seeded entity are therefore not the raw random values produced
-    /// by the creator. Entities added via <c>SeedWith</c> are never reconciled.
-    /// A single-property integer primary key is kept unique across all seeded entities of the
-    /// type: a random key that collides with another (random or <c>SeedWith</c>) key is replaced
-    /// with the lowest unused value. A key that a <c>SeedWith</c> entity sets is never changed. A
-    /// key left unset (at the property's sentinel, 0 unless configured otherwise) on a key EF
-    /// generates is assigned the lowest unused value instead, by either method, as EF would have
-    /// generated one for it.
-    /// </remarks>
+    /// <inheritdoc cref="SeedWithRandom{TEntity}(int)" path="/remarks"/>
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and the index number of the entity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
