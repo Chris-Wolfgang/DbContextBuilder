@@ -7,8 +7,6 @@ using AutoFixture.Kernel;
 
 namespace Wolfgang.DbContextBuilderCore;
 
-
-
 /// <summary>
 /// An <see cref="ICreateRandomEntities"/> implementation backed by
 /// <see href="https://github.com/AutoFixture/AutoFixture">AutoFixture</see>. It populates the
@@ -59,6 +57,7 @@ public class AutoFixtureRandomEntityCreator : ICreateRandomEntities
     /// <exception cref="ArgumentNullException"><paramref name="fixture"/> is null.</exception>
     public AutoFixtureRandomEntityCreator(Fixture fixture) =>
         Fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+
 
 
     /// <summary>
