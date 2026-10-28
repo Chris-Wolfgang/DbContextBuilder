@@ -35,6 +35,16 @@
     <None Include="$(MSBuildProjectDirectory)/obj/THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
+  <ItemGroup Condition="$(_RelativeProjectDir.StartsWith('src/')) and $(TargetFramework.StartsWith('net4'))">
+    <!-- Byte-identical output across operating systems (#732). The portable PDB records every
+         referenced assembly's timestamp and MVID. For .NET Framework TFMs the SDK uses the
+         machine's installed targeting pack when there is one (Windows) and this NuGet package
+         when there is not (Linux). They are different builds of the same reference assemblies,
+         so the same commit produced different PDBs, and therefore different DLLs, per OS.
+         Referencing the package explicitly makes every OS compile against it. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- Include BannedSymbols.txt as AdditionalFiles for BannedApiAnalyzers -->
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />

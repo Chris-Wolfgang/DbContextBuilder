@@ -3,9 +3,11 @@ name: Build reproducibility
 # Verifies that the deterministic-build knobs in Directory.Build.props
 # (<Deterministic>, <ContinuousIntegrationBuild>, SourceLink + EmbedUntrackedSources)
 # actually produce byte-identical managed assemblies when the same commit is
-# built on different runners. Advisory — cross-OS differences are reported as a
-# warning, not a hard failure (managed IL is expected to match; native/embedded
-# differences, if any, surface here for investigation).
+# built on different runners. Any .dll or .pdb hash difference between ubuntu-latest and
+# windows-latest fails the run (#732). Two fixes make that hold: Directory.Build.targets
+# rewrites the SDK-generated sources to LF before compiling, and Directory.Build.props pins
+# the .NET Framework reference assemblies for net4x builds. Package files (.nupkg/.snupkg)
+# are not compared: NuGet stamps the pack time into every zip entry.
 #
 # Covers one representative project per shared-source group rather than all 10
 # src projects: -Core-EF6/7/8/9/10 compile the same source files, linked from
@@ -13,6 +15,8 @@ name: Build reproducibility
 # docs/adr/0001), so only -Core-EF10 (net10.0, the newest shipped package) and
 # -Core-EF8 (net8.0) are built — the other EF-pinned wrappers would just re-verify
 # the same source under a different TFM. -Core itself no longer ships (ADR-0003).
+# The classic -EF6 package is built for net462 to cover the .NET Framework reference
+# assemblies.
 
 on:
   workflow_dispatch:
@@ -52,14 +56,21 @@ jobs:
             -c Release -f net8.0 -p:ContinuousIntegrationBuild=true
           dotnet build src/Wolfgang.DbContextBuilder.Abstractions/Wolfgang.DbContextBuilder.Abstractions.csproj \
             -c Release -f netstandard2.0 -p:ContinuousIntegrationBuild=true
+          dotnet build src/Wolfgang.DbContextBuilder-EF6/Wolfgang.DbContextBuilder-EF6.csproj \
+            -c Release -f net462 -p:ContinuousIntegrationBuild=true
 
       - name: Hash assemblies
         shell: bash
         run: |
           sha256sum \
             src/Wolfgang.DbContextBuilder-Core-EF10/bin/Release/net10.0/Wolfgang.DbContextBuilder-Core-EF10.dll \
+            src/Wolfgang.DbContextBuilder-Core-EF10/bin/Release/net10.0/Wolfgang.DbContextBuilder-Core-EF10.pdb \
             src/Wolfgang.DbContextBuilder-Core-EF8/bin/Release/net8.0/Wolfgang.DbContextBuilder-Core-EF8.dll \
+            src/Wolfgang.DbContextBuilder-Core-EF8/bin/Release/net8.0/Wolfgang.DbContextBuilder-Core-EF8.pdb \
             src/Wolfgang.DbContextBuilder.Abstractions/bin/Release/netstandard2.0/Wolfgang.DbContextBuilder.Abstractions.dll \
+            src/Wolfgang.DbContextBuilder.Abstractions/bin/Release/netstandard2.0/Wolfgang.DbContextBuilder.Abstractions.pdb \
+            src/Wolfgang.DbContextBuilder-EF6/bin/Release/net462/Wolfgang.DbContextBuilder-EF6.dll \
+            src/Wolfgang.DbContextBuilder-EF6/bin/Release/net462/Wolfgang.DbContextBuilder-EF6.pdb \
             | awk '{ n = split($2, parts, "/"); print $1 "  " parts[n] }' \
             | sort > "hashes-${{ matrix.os }}.txt"
           echo "== ${{ matrix.os }} =="
@@ -89,9 +100,10 @@ jobs:
           echo "== ubuntu-latest =="; cat "$ubuntu"
           echo "== windows-latest =="; cat "$windows"
           if diff -u "$ubuntu" "$windows"; then
-            echo "✅ Reproducible: managed assembly hashes match across ubuntu + windows."
+            echo "✅ Reproducible: .dll and .pdb hashes match across ubuntu + windows."
           else
-            echo "::warning::Assembly hashes differ across runners — the build is not byte-identical cross-OS. Investigate embedded paths / SourceLink normalization."
+            echo "::error::.dll/.pdb hashes differ across runners - the build is not byte-identical cross-OS. Check the generated-source line endings (Directory.Build.targets), the net4x reference assemblies (Directory.Build.props), and embedded paths / SourceLink normalization."
+            exit 1
           fi
 
   # Scheduled runs have no one watching them, so a failure files (or comments on) one tracking
