@@ -17,7 +17,7 @@ namespace Wolfgang.DbContextBuilder.Examples.Examples;
 public class Example04_RelationalConstraintsWithSqlite
 {
     [Fact]
-    public async Task Aggregates_run_as_real_sql_against_sqlite()
+    public async Task UseSqlite_when_aggregating_runs_the_query_as_real_sql()
     {
         var product = new Product { Name = "Widget", UnitPrice = 5m, UnitsInStock = 50 };
 

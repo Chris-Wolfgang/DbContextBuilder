@@ -473,9 +473,9 @@ public class SqliteModelCustomizerTests
         sut.DefaultValueMap["(GETDATE())"] = "datetime('now')";
 
         // Act & Assert — the same key in different casings should resolve to the same value
-        Assert.True(sut.DefaultValueMap.ContainsKey("(GETDATE())"));
-        Assert.True(sut.DefaultValueMap.ContainsKey("(getdate())"));
-        Assert.True(sut.DefaultValueMap.ContainsKey("(GetDate())"));
+        Assert.Contains("(GETDATE())", sut.DefaultValueMap);
+        Assert.Contains("(getdate())", sut.DefaultValueMap);
+        Assert.Contains("(GetDate())", sut.DefaultValueMap);
         Assert.Equal("datetime('now')", sut.DefaultValueMap["(getdate())"]);
     }
 
