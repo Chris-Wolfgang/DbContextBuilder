@@ -14,5 +14,14 @@ having to rely on an actual database whose data can be changed or deleted over t
 
 - **[Documentation](docs/introduction.md)** — concepts and getting-started walkthrough
 - **[Getting started](docs/getting-started.md)** — quickest path to a working test
-- **[API Reference](api/Wolfgang.DbContextBuilderCore.yml)** — full member listing
+- **[API Reference](api/Wolfgang.DbContextBuilderCore.yml)** — full member listing for the EF Core
+  packages (`-Core-EF6` through `-Core-EF10` share one API, documented from `-Core-EF10`),
+  `Wolfgang.DbContextBuilder.Abstractions`, `.AutoFixture` and `.Bogus`
+
+> The classic `Wolfgang.DbContextBuilder-EF6` package (namespace `Wolfgang.DbContextBuilderEF6`) is
+> not in the API reference: the docs are generated for `net10.0` on a Linux runner, and that package
+> targets .NET Framework 4.6.2–4.8.1 only. Its public surface is small (`DbContextBuilder<T>`,
+> `UseEffort`, `UseAutoFixture`, `ICreateDbContext`, `ICreateRandomEntities`); the
+> [README](https://github.com/Chris-Wolfgang/DbContextBuilder#readme) and the XML docs shipped in the
+> package cover it.
 - **[GitHub repository](https://github.com/Chris-Wolfgang/DbContextBuilder)** — source, issues, releases

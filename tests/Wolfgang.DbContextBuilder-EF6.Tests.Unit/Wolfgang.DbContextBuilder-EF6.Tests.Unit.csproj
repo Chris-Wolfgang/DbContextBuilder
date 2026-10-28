@@ -25,12 +25,11 @@
 	<PropertyGroup>
 		<!-- CA1707 (underscores) is intentional: test method names follow the MethodUnderTest_when_condition_expected_result convention. -->
 		<!--
-		  CS1591 (missing XML doc) suppressed: the classic EF6 test
-		  classes pre-date the XML-doc convention used by the EF Core
-		  test files. Adding XML docs to ~30 test classes / ~150 members
-		  is a separate follow-up; until then, suppress to keep
-		  TreatWarningsAsErrors=Release green now that
-		  tests/Directory.Build.props is gone.
+		  CS1591 (missing XML doc) suppressed for good: the classic EF6
+		  test classes pre-date the XML-doc convention used by the EF Core
+		  test files, and documenting ~30 test classes / ~150 members adds
+		  nothing the test names do not already say. New EF6 tests still
+		  get a <summary> by convention (#737).
 		-->
 		<NoWarn>$(NoWarn);CA1707;CS1591</NoWarn>
 	</PropertyGroup>
