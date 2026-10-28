@@ -5,7 +5,7 @@ namespace Wolfgang.DbContextBuilderCore;
 /// <summary>
 /// Creates <see cref="DbContext"/> instances using the EF Core in-memory database provider.
 /// </summary>
-internal class InMemoryDbContextCreator : ICreateDbContext
+internal sealed class InMemoryDbContextCreator : ICreateDbContext
 {
     private readonly string _databaseName = Guid.NewGuid().ToString();
 

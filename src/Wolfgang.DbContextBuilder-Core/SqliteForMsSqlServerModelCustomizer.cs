@@ -21,7 +21,8 @@ public class SqliteForMsSqlServerModelCustomizer : SqliteModelCustomizer
     /// calling <see cref="DbContextBuilderSqliteExtensions.UseSqliteForMsSqlServer{TDbContext}"/>
     /// on a <see cref="DbContextBuilder{T}"/>.
     /// </remarks>
-    public SqliteForMsSqlServerModelCustomizer(ModelCustomizerDependencies dependencies) : base(dependencies)
+    public SqliteForMsSqlServerModelCustomizer(ModelCustomizerDependencies dependencies)
+        : base(dependencies)
     {
         // Only the scaffolded, parenthesised spellings are registered; another spelling such as a
         // hand-written GETDATE() misses the map and is dropped below. Add it to DefaultValueMap.
