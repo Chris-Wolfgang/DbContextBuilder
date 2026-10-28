@@ -60,7 +60,9 @@ public class IgnoreVirtualMembersTests
 
         var result = sut.Create(interfaceProp, context);
 
-        Assert.True(interfaceProp.GetMethod!.IsVirtual && interfaceProp.GetMethod.IsFinal);
+        Assert.True(interfaceProp.GetMethod!.IsVirtual);
+
+        Assert.True(interfaceProp.GetMethod.IsFinal);
         Assert.IsType<NoSpecimen>(result);
     }
 
@@ -79,7 +81,9 @@ public class IgnoreVirtualMembersTests
 
         var result = sut.Create(sealedOverride, context);
 
-        Assert.True(sealedOverride.GetMethod!.IsVirtual && sealedOverride.GetMethod.IsFinal);
+        Assert.True(sealedOverride.GetMethod!.IsVirtual);
+
+        Assert.True(sealedOverride.GetMethod.IsFinal);
         Assert.Null(result);
     }
 

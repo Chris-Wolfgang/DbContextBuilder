@@ -81,7 +81,7 @@ public class BuildReentrancyTests
     [InlineData("SeedWithRandom(count)")]
     [InlineData("SeedWithRandom(count, func)")]
     [InlineData("SeedWithRandom(count, indexed func)")]
-    public void Seeding_when_called_after_Build_throws_InvalidOperationException(string method)
+    public void SeedWith_and_SeedWithRandom_when_called_after_Build_throw_InvalidOperationException(string method)
     {
         var sut = new DbContextBuilder<TestDbContext>()
             .UseEffort()
@@ -109,7 +109,7 @@ public class BuildReentrancyTests
     /// next build seeds the new database.
     /// </summary>
     [Fact]
-    public void Seeding_when_provider_is_selected_again_is_accepted_and_seeds_the_new_database()
+    public void UseEffort_when_called_again_after_Build_accepts_and_seeds_the_new_database()
     {
         var sut = new DbContextBuilder<TestDbContext>()
             .UseEffort()

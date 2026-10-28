@@ -235,7 +235,7 @@ public class DbSetAssertionsTests
     /// composed in a single await without throwing.
     /// </summary>
     [Fact]
-    public async Task Chained_assertions_compose_cleanly_when_all_pass()
+    public async Task Should_when_assertions_are_chained_and_all_pass_completes()
     {
         await using var context = await CreateSeededContextAsync(3);
 
@@ -316,7 +316,7 @@ public class DbSetAssertionsTests
     /// <see cref="ArgumentNullException.ThrowIfNull(object?, string?)"/>.
     /// </summary>
     [Fact]
-    public async Task Predicate_assertions_when_predicate_is_null_throw_ArgumentNullException()
+    public async Task DbSetAssertions_predicate_methods_when_predicate_is_null_throw_ArgumentNullException()
     {
         await using var context = await CreateSeededContextAsync(1);
         var assertions = context.Set<TableWithDefaults>().Should();

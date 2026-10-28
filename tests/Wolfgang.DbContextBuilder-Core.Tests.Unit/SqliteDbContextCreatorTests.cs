@@ -1,8 +1,8 @@
-using AdventureWorks.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
@@ -42,7 +42,7 @@ public class SqliteDbContextCreatorTests
     /// that Dispose is idempotent.
     /// </summary>
     [Fact]
-    public void IsDisposed_is_false_until_disposed_then_true()
+    public void IsDisposed_when_Dispose_is_called_becomes_true()
     {
         // Arrange
         var sut = new SqliteDbContextCreator();
@@ -66,7 +66,7 @@ public class SqliteDbContextCreatorTests
     /// (which holds an open in-memory connection) rather than leaking it.
     /// </summary>
     [Fact]
-    public void Reselecting_a_provider_disposes_the_previous_Sqlite_creator()
+    public void UseInMemory_when_called_after_UseSqlite_disposes_the_previous_Sqlite_creator()
     {
         // Arrange — first provider is SQLite, which owns an open connection
         using var builder = new DbContextBuilder<BasicContext>().UseSqlite();
@@ -272,7 +272,7 @@ public class SqliteDbContextCreatorTests
     /// </summary>
     [Theory]
     [MemberData(nameof(ConfigurationCalls))]
-    public void Configuration_after_Dispose_throws_ObjectDisposedException(string call)
+    public void Configuration_methods_when_builder_is_disposed_throw_ObjectDisposedException(string call)
     {
         var builder = new DbContextBuilder<BasicContext>();
         builder.Dispose();
