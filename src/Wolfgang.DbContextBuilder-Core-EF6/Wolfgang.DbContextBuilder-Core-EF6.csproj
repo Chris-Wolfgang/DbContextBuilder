@@ -1,4 +1,4 @@
- <Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<!-- Version, AssemblyVersion and the PackageValidation baseline: one shared copy for the lockstep packages. -->
 	<Import Project="../Version.props" />
 	<PropertyGroup>
@@ -6,7 +6,7 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Title>Wolfgang.DbContextBuilder for EF Core 6</Title>
-		<Description>A library for easily building DbContext for testing using in-memory database</Description>
+		<Description>Builds EF Core 6 DbContext instances seeded with test data, on the EF Core InMemory provider or an in-memory SQLite database. For projects on EF Core 6.x.</Description>
 		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Chris-Wolfgang/DbContextBuilder</RepositoryUrl>
@@ -21,31 +21,31 @@
 		<EnablePackageValidation>true</EnablePackageValidation>
 		<IsTestProject>false</IsTestProject>
 	</PropertyGroup>
-	 <PropertyGroup>
+	<PropertyGroup>
 		<DefineConstants>$(DefineConstants);EF_CORE_6;EF_CORE_6_OR_GREATER</DefineConstants>
 	</PropertyGroup>
-	 <ItemGroup>
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextActivator.cs" Link="DbContextActivator.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilder.cs" Link="DbContextBuilder.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderSqliteExtensions.cs" Link="DbContextBuilderSqliteExtensions.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\Assembly.cs" Link="Assembly.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\ICreateDbContext.cs" Link="ICreateDbContext.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\ISeedProfile.cs" Link="ISeedProfile.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\InMemoryDbContextCreator.cs" Link="InMemoryDbContextCreator.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteDbContextCreator.cs" Link="SqliteDbContextCreator.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteForMsSqlServerModelCustomizer.cs" Link="SqliteForMsSqlServerModelCustomizer.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteModelCustomizer.cs" Link="SqliteModelCustomizer.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\Assertions\DbContextAssertionException.cs" Link="Assertions\DbContextAssertionException.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\Assertions\DbContextAssertionsExtensions.cs" Link="Assertions\DbContextAssertionsExtensions.cs" />
-	   <Compile Include="..\Wolfgang.DbContextBuilder-Core\Assertions\DbSetAssertions.cs" Link="Assertions\DbSetAssertions.cs" />
-	 </ItemGroup>
 	<ItemGroup>
-	  <!-- Lock EF to version 6.x but not 7 or later -->
-	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="[6.0.36,7.0.0)" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="[6.0.36,7.0.0)" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[6.0.36,7.0.0)" />
-	  <!-- Pin SQLite native lib above SQLitePCLRaw.lib.e_sqlite3 2.1.2 (GHSA-2m69-gcr7-jv3q / NU1903). -->
-	  <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextActivator.cs" Link="DbContextActivator.cs" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilder.cs" Link="DbContextBuilder.cs" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core\DbContextBuilderSqliteExtensions.cs" Link="DbContextBuilderSqliteExtensions.cs" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core\Assembly.cs" Link="Assembly.cs" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core\ICreateDbContext.cs" Link="ICreateDbContext.cs" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core\ISeedProfile.cs" Link="ISeedProfile.cs" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core\InMemoryDbContextCreator.cs" Link="InMemoryDbContextCreator.cs" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteDbContextCreator.cs" Link="SqliteDbContextCreator.cs" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteForMsSqlServerModelCustomizer.cs" Link="SqliteForMsSqlServerModelCustomizer.cs" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core\SqliteModelCustomizer.cs" Link="SqliteModelCustomizer.cs" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core\Assertions\DbContextAssertionException.cs" Link="Assertions\DbContextAssertionException.cs" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core\Assertions\DbContextAssertionsExtensions.cs" Link="Assertions\DbContextAssertionsExtensions.cs" />
+		<Compile Include="..\Wolfgang.DbContextBuilder-Core\Assertions\DbSetAssertions.cs" Link="Assertions\DbSetAssertions.cs" />
+	</ItemGroup>
+	<ItemGroup>
+		<!-- Lock EF to version 6.x but not 7 or later -->
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="[6.0.36,7.0.0)" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="[6.0.36,7.0.0)" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="[6.0.36,7.0.0)" />
+		<!-- Pin SQLite native lib above SQLitePCLRaw.lib.e_sqlite3 2.1.2 (GHSA-2m69-gcr7-jv3q / NU1903). -->
+		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
 	</ItemGroup>
 	<ItemGroup>
 		<!-- Include the icon and README file directly in the package's root -->
