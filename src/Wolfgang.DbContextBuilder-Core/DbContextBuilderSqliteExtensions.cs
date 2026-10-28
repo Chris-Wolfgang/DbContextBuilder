@@ -28,7 +28,6 @@ public static class DbContextBuilderSqliteExtensions
     /// overrides the earlier choice.
     /// Choose one provider per builder.
     /// </remarks>
-    /// <exception cref="ObjectDisposedException"><paramref name="builder"/> has been disposed.</exception>
     public static DbContextBuilder<TDbContext> UseSqlite<TDbContext>
     (
         this DbContextBuilder<TDbContext> builder
@@ -55,7 +54,6 @@ public static class DbContextBuilderSqliteExtensions
     /// previous <c>UseInMemory</c>, <c>UseSqlite</c>, or <c>UseSqliteForMsSqlServer</c> call
     /// overrides the earlier choice.
     /// </remarks>
-    /// <exception cref="ObjectDisposedException"><paramref name="builder"/> has been disposed.</exception>
     public static DbContextBuilder<TDbContext> UseSqliteForMsSqlServer<TDbContext>
     (
         this DbContextBuilder<TDbContext> builder
