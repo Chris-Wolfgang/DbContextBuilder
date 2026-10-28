@@ -84,13 +84,32 @@ stay on 10.0.x to reproduce a package built during the current release cycle.
         <(cd published && find . -name '*.dll' -exec sha256sum {} + | sort)
    ```
 
-## Advisory, not a guarantee
+## What is guaranteed
 
-Per the internal reproducible-build check (#310), managed-IL differences are
-treated as **investigate-worthy**, not proof of tampering — a different SDK patch
-or OS can introduce benign wrapper/native differences while the IL still matches.
-A mismatch in the **managed `.dll`** content built with a matching SDK is the
-signal that warrants a report.
+The guarantee covers the **assemblies and their symbols**: the same commit, built
+with the same SDK, gives byte-identical `.dll` and `.pdb` files on Linux and
+Windows. The `Build reproducibility` workflow builds -Core-EF10 (net10.0),
+-Core-EF8 (net8.0), Abstractions (netstandard2.0) and the classic -EF6 package
+(net462) on `ubuntu-latest` and `windows-latest` every week, and fails on any
+`.dll`/`.pdb` hash difference (#732). Two build settings make that hold:
+
+- `Directory.Build.targets` rewrites the SDK-generated sources
+  (`*.AssemblyInfo.cs`, `*.AssemblyAttributes.cs`, `*.GlobalUsings.g.cs`) to LF
+  before compiling. The SDK writes them with the OS newline, and the portable
+  PDB records and embeds every compiled source, so they made the PDB, and with
+  it the DLL's module version id, differ per OS.
+- `Directory.Build.props` pins `Microsoft.NETFramework.ReferenceAssemblies` for
+  net4x builds. Without it, Windows compiles against the installed targeting pack
+  and Linux against the NuGet package, and the PDB records each reference
+  assembly's identity.
+
+Package files are **not** covered: NuGet stamps the pack time into every
+`.nupkg`/`.snupkg` zip entry, so two packs of one commit on one machine differ.
+Compare the assemblies inside the packages, as shown above.
+
+A mismatch in a `.dll` built from the same commit with the same SDK is the
+signal that warrants a report. A different SDK patch can legitimately change
+the output.
 
 ## Report a discrepancy
 
