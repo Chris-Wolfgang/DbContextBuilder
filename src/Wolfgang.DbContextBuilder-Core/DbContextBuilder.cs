@@ -37,8 +37,15 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     // The creator whose database BuildAsync has already created and seeded. Later builds on the
     // same creator neither re-create nor re-seed it (#559); selecting a new creator resets it.
     private ICreateDbContext? _seededCreator;
-    // The primary-key CLR types EnsureUniqueRandomPrimaryKeys renumbers.
-    private static readonly HashSet<Type> _integralKeyTypes = [typeof(int), typeof(long), typeof(short), typeof(byte)];
+    // The primary-key CLR types EnsureUniqueRandomPrimaryKeys renumbers, with the largest key each
+    // can hold.
+    private static readonly Dictionary<Type, long> _integralKeyMaxValues = new()
+    {
+        [typeof(int)] = int.MaxValue,
+        [typeof(long)] = long.MaxValue,
+        [typeof(short)] = short.MaxValue,
+        [typeof(byte)] = byte.MaxValue,
+    };
 
 
 
@@ -343,28 +350,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         if (entity is IEnumerable<object> sequence)
         {
             // Walk the sequence so a List<string> (or any IEnumerable wrapping strings) is
-            // rejected element-by-element, matching the per-item check the params overload
-            // performs. Buffer first so the failing call leaves `_seedData` untouched
-            // (atomic w.r.t. seed state).
-            var buffer = new List<object>();
-            foreach (var item in sequence)
-            {
-                // Same per-item arms as AddSeedItems: a null item used to be stored and fail
-                // later, inside EF, with an unhelpful ArgumentNullException (#560).
-                if (item is null)
-                {
-                    throw new ArgumentException("One of the entities is null", nameof(entity));
-                }
-
-                if (item is string)
-                {
-                    throw new ArgumentException("One of the entities passed in is of type string", nameof(entity));
-                }
-
-                buffer.Add(item);
-            }
-
-            _seedData.AddRange(buffer);
+            // rejected element-by-element, with the same per-item check as the other overloads.
+            AddSequenceItems(sequence, nameof(entity));
         }
         else
         {
@@ -396,13 +383,42 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
                 case string:
                     throw new ArgumentException("One of the entities passed in is of type string", paramName);
                 case IEnumerable<object> e:
-                    _seedData.AddRange(e);
+                    // A nested sequence gets the same per-item check as the single-entity
+                    // overload (#735): a null or string inside it used to be stored and fail
+                    // later, inside EF (the bug #560 fixed for the single-entity overload).
+                    AddSequenceItems(e, paramName);
                     break;
                 default:
                     _seedData.Add(entity);
                     break;
             }
         }
+    }
+
+
+
+    // Adds each item of a sequence passed as one seed argument. Buffers first so a failing
+    // sequence leaves `_seedData` untouched. IEnumerable<T> is covariant for reference types, so
+    // a List<string> arrives here as IEnumerable<object> and is caught item by item (#560, #735).
+    private void AddSequenceItems(IEnumerable<object> sequence, string paramName)
+    {
+        var buffer = new List<object>();
+        foreach (var item in sequence)
+        {
+            if (item is null)
+            {
+                throw new ArgumentException("One of the entities is null", paramName);
+            }
+
+            if (item is string)
+            {
+                throw new ArgumentException("One of the entities passed in is of type string", paramName);
+            }
+
+            buffer.Add(item);
+        }
+
+        _seedData.AddRange(buffer);
     }
 
 
@@ -596,6 +612,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         foreach (var entities in keyedGroups)
         {
             var keyProperty = entities.Key.PropertyInfo!;
+            var maxKey = _integralKeyMaxValues[keyProperty.PropertyType];
             // On a key EF never generates there is no "not set" value: every value is a real key.
             long? sentinel = entities.Key.ValueGenerated == ValueGenerated.Never ? null : ReadSentinel(entities.Key);
             bool IsUnset(object entity) => ReadKey(keyProperty, entity) == sentinel;
@@ -628,8 +645,30 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
                     candidate++;
                 }
 
+                ThrowIfKeyExhausted(candidate, maxKey, entity, keyProperty);
                 keyProperty.SetValue(entity, Convert.ChangeType(candidate, keyProperty.PropertyType, CultureInfo.InvariantCulture));
             }
+        }
+    }
+
+
+
+    /// <summary>
+    /// A byte or short key runs out after 255 / 32,767 rows. Says so, instead of the bare
+    /// <see cref="OverflowException"/> <see cref="Convert.ChangeType(object, Type, IFormatProvider)"/>
+    /// would throw (#735).
+    /// </summary>
+    /// <exception cref="InvalidOperationException"><paramref name="candidate"/> is larger than <paramref name="maxKey"/>.</exception>
+    private static void ThrowIfKeyExhausted(long candidate, long maxKey, object entity, PropertyInfo keyProperty)
+    {
+        if (candidate > maxKey)
+        {
+            throw new InvalidOperationException
+            (
+                $"Cannot give every seeded {entity.GetType().Name} a unique primary key: the " +
+                $"{keyProperty.PropertyType.Name} key '{keyProperty.Name}' has no unused value left " +
+                $"(its largest value is {maxKey}). Seed fewer rows or use a wider key type."
+            );
         }
     }
 
@@ -639,7 +678,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     {
         var keyProperties = context.Model.FindEntityType(clrType)?.FindPrimaryKey()?.Properties;
         var property = keyProperties is { Count: 1 } ? keyProperties[0] : null;
-        return property?.PropertyInfo is not null && _integralKeyTypes.Contains(property.PropertyInfo.PropertyType) ? property : null;
+        return property?.PropertyInfo is not null && _integralKeyMaxValues.ContainsKey(property.PropertyInfo.PropertyType) ? property : null;
     }
 
 
@@ -778,7 +817,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <returns>A new instance of <typeparamref name="T"/>.</returns>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     /// <exception cref="InvalidOperationException">The database could not be created for the configured
-    /// provider; EF Core's failure is the <see cref="Exception.InnerException"/>.</exception>
+    /// provider; EF Core's failure is the <see cref="Exception.InnerException"/>. Or a randomly-seeded type has a <see cref="byte"/> or <see cref="short"/>
+    /// primary key with no unused value left for one of its rows.</exception>
     public async Task<T> BuildAsync()
     {
         ThrowIfDisposed();
