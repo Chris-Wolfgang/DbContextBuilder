@@ -91,10 +91,12 @@ jobs:
     #
     # Dependabot's bumps touch src/*.csproj, and a non-.cs change makes --since test every
     # mutant: about 55 minutes of Windows runner per bump. The weekly full run covers what a
-    # dependency change does to the score.
+    # dependency change does to the score. Only Dependabot's own pushes skip: a person who
+    # pushes to a Dependabot branch still gets a run (#592).
     if: >-
       github.repository != 'Chris-Wolfgang/repo-template'
-      && (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]')
+      && (github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
+          || github.actor != 'dependabot[bot]')
     # A full run took 54 min on 2026-09-30, 76 min on 2026-10-04 and passed 120 min (cancelled)
     # on 2026-10-05, as tests were added. About a third of detected mutants are timeouts, each of
     # which waits out Stryker's per-mutant timeout, so the run grows with the suite. 240 leaves
