@@ -38,7 +38,7 @@ existing `AdventureWorks-EF7` scaffold) skipped the same items.
 
 ## What still needs to happen to close #41
 
-`tests/Wolfgang.DbContextBuilder-Core-EF8.Tests.Unit/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF8.csproj`
+`tests/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF8/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF8.csproj`
 currently `<Compile Include>`s the **EF7-scaffolded** AdventureWorks
 files from `../../extra-projects/AdventureWorks-EF7/Models/Generated/`.
 The plan was to switch those Include paths to point at
