@@ -32,7 +32,7 @@ dotnet ef dbcontext scaffold \
 ## What still needs to happen to close #42
 
 Same as #41 / EF8 — see `../AdventureWorks-EF8/SCAFFOLDING.md`. The
-EF9 test csproj (`tests/Wolfgang.DbContextBuilder-Core-EF9.Tests.Unit/`)
+EF9 test csproj (`tests/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF9/`)
 still `<Compile Include>`s the EF7 scaffold and needs the rewire to
 this project once the record/class + SqlServer-extensions architectural
 work lands.
