@@ -30,7 +30,10 @@
         "**/changelog/**",
         "**/*.md",
         "**/PublicAPI.*.txt",
-        "**/mutation-floors.json"
+        "**/mutation-floors.json",
+        "**/*.ico",
+        "**/*.png",
+        "**/*.svg"
       ]
     }
   }
