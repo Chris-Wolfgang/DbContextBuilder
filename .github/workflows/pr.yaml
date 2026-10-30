@@ -1,6 +1,6 @@
 # Sequential PR validation workflow with coverage gating
 # Stage 1: Linux tests with the coverage gate (95% src, 100% tests)
-# Stage 2: Windows .NET (5.0-10.0) and .NET Framework (4.6.2-4.8.1) tests (only if Linux passes)
+# Stage 2: Windows .NET (6.0-10.0) and .NET Framework (4.6.2-4.8.1) tests (only if Linux passes)
 # Stage 3: macOS tests (only if Stage 2 passes)
 #
 # SECURITY NOTE:
@@ -637,7 +637,7 @@ jobs:
   # STAGE 1: Linux - .NET Core/5+ Tests with Coverage Gate
   # ============================================================================
   test-linux-core:
-    name: "Stage 1: Linux Tests (.NET 5.0-10.0) + Coverage Gate"
+    name: "Stage 1: Linux Tests (.NET 6.0-10.0) + Coverage Gate"
     runs-on: ubuntu-latest
     needs: detect-projects
     if: github.repository != 'Chris-Wolfgang/repo-template' && needs.detect-projects.outputs.has-projects == 'true'
@@ -1127,7 +1127,7 @@ jobs:
   # STAGE 2: Windows - All .NET Tests (Gated by Stage 1)
   # ============================================================================
   test-windows:
-    name: "Stage 2: Windows Tests (.NET 5.0-10.0, Framework 4.6.2-4.8.1)"
+    name: "Stage 2: Windows Tests (.NET 6.0-10.0, Framework 4.6.2-4.8.1)"
     runs-on: windows-latest
     needs: [detect-projects, test-linux-core]
     if: github.repository != 'Chris-Wolfgang/repo-template' && needs.detect-projects.outputs.has-projects == 'true'
@@ -1279,7 +1279,7 @@ jobs:
       - name: Build solution
         run: dotnet build --no-restore --configuration Release
 
-      - name: Run all .NET tests (.NET 5.0-10.0 and Framework 4.6.2-4.8.1)
+      - name: Run all .NET tests (.NET 6.0-10.0 and Framework 4.6.2-4.8.1)
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -2048,17 +2048,12 @@ jobs:
           echo "=========================================="
           echo "Architecture: $(uname -m)"
           echo ""
-          echo "Skipped frameworks (no ARM64 support):"
-          echo "  - .NET 5.0 ❌"
-          echo ""
           echo "Tested frameworks (ARM64 compatible):"
           echo "  - .NET 6.0 ✅"
           echo "  - .NET 7.0 ✅"
           echo "  - .NET 8.0 ✅"
           echo "  - .NET 9.0 ✅"
           echo "  - .NET 10.0 ✅"
-          echo ""
-          echo ".NET Core 5.0 are tested on Linux and Windows"
           echo ""
 
       - name: Summarize pipeline result
