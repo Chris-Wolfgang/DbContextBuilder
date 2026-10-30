@@ -5,6 +5,14 @@ namespace Wolfgang.DbContextBuilderCore;
 /// <summary>
 /// Defines the contract for creating instances of <see cref="DbContext"/>.
 /// </summary>
+/// <remarks>
+/// Install an implementation with
+/// <see cref="DbContextBuilder{T}.UseCustomDbContextCreator(ICreateDbContext)"/>. The implementation
+/// configures the provider on the options builder it is handed. The builder takes ownership of it:
+/// an implementation that also implements <see cref="System.IDisposable"/> is disposed when another
+/// provider replaces it or when the builder is disposed. The builder disposes the context it seeds
+/// through; the context it hands back to the caller is the caller's to dispose.
+/// </remarks>
 public interface ICreateDbContext
 {
     /// <summary>

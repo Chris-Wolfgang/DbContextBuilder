@@ -26,7 +26,8 @@ source**: the `-Core-EFx` projects link its `.cs` files (ADR-0001). Edit code in
 ## Public surface (EF Core builder)
 
 `DbContextBuilder<T>`: `UseInMemory()`, `UseSqlite()`, `UseSqliteForMsSqlServer()`,
-`UseDbContextOptionsBuilder(...)`, `UseCustomRandomEntityCreator(...)`, `UseSeedProfile(...)`,
+`UseDbContextOptionsBuilder(...)`, `UseCustomRandomEntityCreator(...)`, `UseCustomDbContextCreator(...)`,
+`UseSeedProfile(...)`,
 `UseDiagnosticOutput(...)`, `SeedWith(...)` (single entity, `params T[]`, `IEnumerable<T>`),
 `SeedWithRandom<T>(count[, func])`, `BuildAsync()`, `Dispose()`. There is no synchronous `Build()`
 on the EF Core builder (the classic EF 6 builder has `Build()` and `BuildAsync()`).
