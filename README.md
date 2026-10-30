@@ -154,11 +154,11 @@ The Core package exposes a small, focused surface. The full reference is on the 
 | `.UseDiagnosticOutput(writeLine)` | Route EF Core logs (and a one-line seed summary) to a sink such as `testOutputHelper.WriteLine`. |
 | `.SeedWith<TEntity>(...)` | Seed specific rows. Accepts a single entity, `params T[]`, or `IEnumerable<T>`. |
 | `.SeedWithRandom<TEntity>(count, [func])` | Seed N random rows (requires a random-data provider). Optional `func` mutates each generated entity. |
-| `.BuildAsync()` | Materialize the `DbContext` (dispose it with `await using`). The first call creates and seeds the database; later calls return new contexts over it. The builder owns the provider resources — for SQLite, the in-memory connection — so dispose the builder after the last context is done. |
+| `.BuildAsync()` / `.BuildAsync(cancellationToken)` | Materialize the `DbContext` (dispose it with `await using`). The token is passed to the context creator, database creation and the seed save. The first call creates and seeds the database; later calls return new contexts over it. The builder owns the provider resources — for SQLite, the in-memory connection — so dispose the builder after the last context is done. |
 | `SqliteModelCustomizer` | The model customizer `UseSqlite()` installs, with hooks: `OverrideTableRenaming`, `OverrideDefaultValueHandling`, `OverrideComputedValueHandling`, `OverrideManyToManyTableHandling`, `DefaultValueMap`. |
 | `SqliteForMsSqlServerModelCustomizer` | The customizer `UseSqliteForMsSqlServer()` installs: derives from `SqliteModelCustomizer`, maps `(getdate())` / `(newid())` defaults to SQLite and drops other SQL Server default and computed SQL. |
-| `.Should()` (namespace `Wolfgang.DbContextBuilderCore.Assertions`) | Fluent assertions on a `DbSet<T>` or `IQueryable<T>` (`DbSetAssertions<T>`): `HaveCount`, `BeEmpty`, `NotBeEmpty`, `Contain`, `NotContain`, `AllSatisfy`. Failures throw `DbContextAssertionException`. |
-| `ICreateDbContext` / `ICreateRandomEntities` | Extension points for plugging in your own provider (`UseCustomDbContextCreator`) or random-entity generator (`UseCustomRandomEntityCreator`). |
+| `.Should()` (namespace `Wolfgang.DbContextBuilderCore.Assertions`) | Fluent assertions on a `DbSet<T>` or `IQueryable<T>` (`DbSetAssertions<T>`): `HaveCount`, `BeEmpty`, `NotBeEmpty`, `Contain`, `NotContain`, `AllSatisfy`, each with an optional trailing `CancellationToken`. Failures throw `DbContextAssertionException`. |
+| `ICreateDbContext` / `ICreateRandomEntities` | Extension points for plugging in your own provider (`UseCustomDbContextCreator`) or random-entity generator (`UseCustomRandomEntityCreator`). `ICreateDbContext.CreateDbContextAsync(optionsBuilder, cancellationToken)` has a default implementation that checks the token and calls the original overload, so existing creators keep working; override it to pass the token on. |
 
 
 
