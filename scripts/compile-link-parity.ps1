@@ -34,7 +34,7 @@ $groups = @(
     },
     @{
         Shared   = 'tests/Wolfgang.DbContextBuilder-Core.Tests.Unit'
-        Wrappers = @(Get-ChildItem -Path 'tests' -Directory -Filter 'Wolfgang.DbContextBuilder-Core-EF*.Tests.Unit')
+        Wrappers = @(Get-ChildItem -Path 'tests' -Directory -Filter 'Wolfgang.DbContextBuilder-Core.Tests.Unit-EF*')
     }
 )
 
