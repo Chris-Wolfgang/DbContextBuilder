@@ -46,11 +46,11 @@ internal static class DbContextActivator<TDbContext>
 
         if (ctor is null)
         {
-            // Fall back to Activator.CreateInstance so the call still works (and
-            // throws a familiar MissingMethodException) for types that take
-            // DbContextOptions (non-generic) or other shapes. Only the constructor
-            // lookup above is cached: the returned delegate pays Activator's
-            // reflection cost on every Create.
+            // No public ctor accepts the options. GetConstructor's default binder already
+            // matches a ctor taking the non-generic DbContextOptions (it is assignable), so
+            // that shape is compiled above too (#572). What is left can only fail: fall back
+            // to Activator.CreateInstance so the caller gets the familiar
+            // MissingMethodException rather than an expression-tree error.
             return options => (TDbContext)Activator.CreateInstance(type, options)!;
         }
 
