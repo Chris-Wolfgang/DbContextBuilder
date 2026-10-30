@@ -343,9 +343,9 @@ jobs:
             echo "::error::Failed to fetch origin/main — aborting before changelog check."
             exit 1
           fi
-          # Fail closed: never run the PR's own copy of the validator. (A first-adoption PR
-          # cannot reach this job anyway — pull_request_target runs the base branch's pr.yaml,
-          # so the job only exists once main carries both this workflow and the script.)
+          # Fail closed: never run the PR's own copy of the validator. This job runs from the
+          # PR's own pr.yaml (pull_request), so a PR that adds the script must not get to run
+          # it: until main carries scripts/changelog.ps1, the check below refuses to run.
           if ! git cat-file -e origin/main:scripts/changelog.ps1 2>/dev/null; then
             echo "::error::scripts/changelog.ps1 is not present in origin/main — refusing to run the PR-controlled copy. Merge the script to main first."
             exit 1
@@ -417,7 +417,7 @@ jobs:
           persist-credentials: false
 
       # Same defense-in-depth pattern as detect-projects and the test stages:
-      # jobs don't share workspaces under pull_request_target, so each build/
+      # jobs don't share workspaces, so each build/
       # analyzer job re-fetches protected config from main after checkout.
       # Without this, a malicious PR could ship a permissive .editorconfig /
       # BannedSymbols.txt / .DotSettings that would silence InspectCode
@@ -629,7 +629,7 @@ jobs:
 
       - name: Upload SARIF to Code Scanning
         if: steps.sarif.outcome == 'success' && hashFiles('inspect.sarif') != ''
-        uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d  # v4.38.3
+        uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee  # v4.39.0
         with:
           sarif_file: inspect.sarif
 
