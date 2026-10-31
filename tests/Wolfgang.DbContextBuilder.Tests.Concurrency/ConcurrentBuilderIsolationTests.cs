@@ -30,7 +30,7 @@ public class ConcurrentBuilderIsolationTests
 
 
     [Fact]
-    public void ConcurrentBuilders_do_not_leak_data_across_instances()
+    public void BuildAsync_when_builders_run_concurrently_does_not_leak_data_across_instances()
     {
         // WithPotentialDeadlocksReportedAsBugs(false): matches the convention this suite is
         // modeled on (AuditTrail's ConcurrentSchemaInstallTests) - the EF Core InMemory

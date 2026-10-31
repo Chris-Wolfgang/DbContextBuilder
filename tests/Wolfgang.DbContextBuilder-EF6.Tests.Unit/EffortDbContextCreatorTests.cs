@@ -67,7 +67,7 @@ public class EffortDbContextCreatorTests
     /// connection (and the in-memory database other contexts use) alone.
     /// </summary>
     [Fact]
-    public void Disposing_a_context_does_not_dispose_the_shared_connection()
+    public void CreateDbContext_when_the_context_is_disposed_leaves_the_shared_connection_open()
     {
         using var sut = new EffortDbContextCreator();
         var disposals = 0;
