@@ -32,7 +32,7 @@ public sealed class DocExampleCompilationTests
 
 
     [Fact]
-    public async Task Documented_examples_still_compile()
+    public async Task Compile_when_given_each_documented_example_reports_no_errors()
     {
         // The message is built for every sample (not only failing ones) so this test's own failure
         // path is executed, and covered, on every run.

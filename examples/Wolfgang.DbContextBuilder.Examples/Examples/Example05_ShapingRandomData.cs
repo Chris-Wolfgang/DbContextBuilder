@@ -16,7 +16,7 @@ namespace Wolfgang.DbContextBuilder.Examples.Examples;
 public class Example05_ShapingRandomData
 {
     [Fact]
-    public async Task Generated_products_can_be_shaped_per_item()
+    public async Task SeedWithRandom_when_given_a_shaping_callback_applies_it_to_each_generated_item()
     {
         using var builder = new DbContextBuilder<ShopDbContext>();
         await using var context = await builder
