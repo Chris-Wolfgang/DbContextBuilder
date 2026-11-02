@@ -13,13 +13,27 @@ namespace Wolfgang.DbContextBuilderEF6;
 /// Uses the Builder pattern to create instances of DbContext types seeded with specified data.
 /// </summary>
 /// <remarks>
+/// <para>
 /// The target <typeparamref name="T"/> must have a constructor that accepts
 /// (<see cref="System.Data.Common.DbConnection"/>, <see cref="bool"/>)
 /// for use with in-memory database providers such as Effort.
+/// </para>
+/// <para>
+/// The first <see cref="Build"/> or <see cref="BuildAsync"/> call creates and seeds the database;
+/// later calls return another context over the same, already-seeded database. Add all seed data
+/// before the first build: the seeding methods throw <see cref="InvalidOperationException"/> after
+/// it. Selecting a provider again (<c>UseEffort()</c>, the same or a different one) starts a new,
+/// empty database that the next build seeds again.
+/// </para>
 /// </remarks>
 public class DbContextBuilder<T> where T : DbContext
 {
     private readonly List<object> _seedData = new List<object>();
+
+    // The creator whose database Build/BuildAsync has already created and seeded. Later builds on
+    // the same creator do not seed it again (#734, the EF Core builder's #559); a new creator
+    // (UseEffort) is a new, empty database, so it is seeded again.
+    private ICreateDbContext? _seededCreator;
 
 
 
@@ -59,9 +73,12 @@ public class DbContextBuilder<T> where T : DbContext
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(IEnumerable<TEntity> entities)
         where TEntity : class
     {
+        ThrowIfSeeded();
+
         if (entities == null)
         {
             throw new ArgumentNullException(nameof(entities));
@@ -86,9 +103,12 @@ public class DbContextBuilder<T> where T : DbContext
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(params TEntity[] entities)
         where TEntity : class
     {
+        ThrowIfSeeded();
+
         if (entities == null)
         {
             throw new ArgumentNullException(nameof(entities));
@@ -126,9 +146,12 @@ public class DbContextBuilder<T> where T : DbContext
     /// <exception cref="ArgumentException"><paramref name="entity"/> is a <see cref="string"/> instance (matches the
     /// <c>params</c> overload's rejection regardless of how <typeparamref name="TEntity"/> was inferred), or
     /// <paramref name="entity"/> is a sequence that contains a null or a <see cref="string"/> item.</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(TEntity entity)
         where TEntity : class
     {
+        ThrowIfSeeded();
+
         if (entity == null)
         {
             throw new ArgumentNullException(nameof(entity));
@@ -184,8 +207,11 @@ public class DbContextBuilder<T> where T : DbContext
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
     /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count) where TEntity : class
     {
+        ThrowIfSeeded();
+
         if (count < 1)
         {
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
@@ -209,9 +235,12 @@ public class DbContextBuilder<T> where T : DbContext
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
     /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="func"/> is <c>null</c>.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, TEntity> func) where TEntity : class
     {
+        ThrowIfSeeded();
+
         if (count < 1)
         {
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
@@ -241,9 +270,12 @@ public class DbContextBuilder<T> where T : DbContext
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
     /// <returns><see cref="DbContextBuilder{T}"/></returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="func"/> is <c>null</c>.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, int, TEntity> func) where TEntity : class
     {
+        ThrowIfSeeded();
+
         if (count < 1)
         {
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
@@ -268,6 +300,10 @@ public class DbContextBuilder<T> where T : DbContext
     /// <summary>
     /// Creates a new instance of <typeparamref name="T"/> seeded with the configured data.
     /// </summary>
+    /// <remarks>
+    /// The first call creates the database and saves the seed data. Later calls return a new
+    /// context over the same database without seeding it again.
+    /// </remarks>
     /// <returns>A new instance of <typeparamref name="T"/>.</returns>
     /// <exception cref="MissingMethodException">
     /// <typeparamref name="T"/> does not have a constructor that accepts
@@ -291,12 +327,17 @@ public class DbContextBuilder<T> where T : DbContext
         // context — otherwise it leaks for the lifetime of the builder. The seed data
         // remains because EffortDbContextCreator holds the underlying connection open
         // independent of any one context.
-        using (var seedContext = contextCreator.CreateDbContext<T>())
+        if (!ReferenceEquals(_seededCreator, contextCreator))
         {
-            if (PrepareSeedContext(seedContext))
+            using (var seedContext = contextCreator.CreateDbContext<T>())
             {
-                seedContext.SaveChanges();
+                if (PrepareSeedContext(seedContext))
+                {
+                    seedContext.SaveChanges();
+                }
             }
+
+            _seededCreator = contextCreator;
         }
 
         return contextCreator.CreateDbContext<T>();
@@ -308,6 +349,10 @@ public class DbContextBuilder<T> where T : DbContext
     /// Creates a new instance of <typeparamref name="T"/> seeded with the configured data
     /// asynchronously.
     /// </summary>
+    /// <remarks>
+    /// The first call creates the database and saves the seed data. Later calls return a new
+    /// context over the same database without seeding it again.
+    /// </remarks>
     /// <returns>A new instance of <typeparamref name="T"/>.</returns>
     /// <exception cref="MissingMethodException">
     /// <typeparamref name="T"/> does not have a constructor that accepts
@@ -327,15 +372,36 @@ public class DbContextBuilder<T> where T : DbContext
         var contextCreator = ResolveContextCreator();
 
         // Same temporary seed context as Build; only the save is asynchronous.
-        using (var seedContext = contextCreator.CreateDbContext<T>())
+        if (!ReferenceEquals(_seededCreator, contextCreator))
         {
-            if (PrepareSeedContext(seedContext))
+            using (var seedContext = contextCreator.CreateDbContext<T>())
             {
-                await seedContext.SaveChangesAsync().ConfigureAwait(false);
+                if (PrepareSeedContext(seedContext))
+                {
+                    await seedContext.SaveChangesAsync().ConfigureAwait(false);
+                }
             }
+
+            _seededCreator = contextCreator;
         }
 
         return contextCreator.CreateDbContext<T>();
+    }
+
+
+
+    // The seeding methods call this: seed data added after the database was seeded would never
+    // reach it, because later builds on the same creator do not seed again (#734).
+    private void ThrowIfSeeded()
+    {
+        if (_seededCreator is not null && ReferenceEquals(_seededCreator, CreateDbContext))
+        {
+            throw new InvalidOperationException
+            (
+                "Seed data must be added before the first Build() or BuildAsync() call: the database has already " +
+                "been created and seeded. Add all seed data first, or use a new DbContextBuilder."
+            );
+        }
     }
 
 
