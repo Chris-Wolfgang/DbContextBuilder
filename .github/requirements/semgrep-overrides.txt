@@ -1,0 +1,3 @@
+# mcp 1.29.0 (pinned exactly by semgrep up to 1.182.1) carries GHSA-84m7-p3x7-pcfv, fixed in 1.30.0.
+# Remove this file, and the --override below, once a semgrep release declares mcp>=1.30.0.
+mcp==1.30.0
