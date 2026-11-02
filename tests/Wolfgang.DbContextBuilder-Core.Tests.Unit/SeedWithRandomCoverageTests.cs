@@ -374,7 +374,7 @@ public class SeedWithRandomCoverageTests
         (
             () => useParams
                 ? sut.SeedWith<object>(new CoverageManufacturer { Id = 2, Name = "b" }, nested)
-                : sut.SeedWith<object>(new List<object> { new CoverageManufacturer { Id = 2, Name = "b" }, nested }.AsEnumerable())
+                : sut.SeedWith(new List<object> { new CoverageManufacturer { Id = 2, Name = "b" }, nested }.AsEnumerable())
         );
 
         Assert.Equal("entities", ex.ParamName);
