@@ -119,7 +119,13 @@ public class BuildReentrancyTests
         sut.UseEffort().SeedWith(new Category { Name = "second" });
         using var second = sut.Build();
 
-        Assert.Equal(new[] { "first", "second" }, second.Categories.Select(category => category.Name).ToList().OrderBy(name => name, StringComparer.Ordinal).ToArray());
+        var names = second.Categories
+            .Select(category => category.Name)
+            .AsEnumerable()
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(new[] { "first", "second" }, names);
         Assert.Single(first.Categories);
     }
 }
