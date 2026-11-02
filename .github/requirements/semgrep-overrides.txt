@@ -1,3 +1,13 @@
 # mcp 1.29.0 (pinned exactly by semgrep up to 1.182.1) carries GHSA-84m7-p3x7-pcfv, fixed in 1.30.0.
 # Remove this file, and the --override below, once a semgrep release declares mcp>=1.30.0.
 mcp==1.30.0
+
+# opentelemetry-api <=1.45.0 carries GHSA-xcq7-p3pf-p88h (unbounded tracestate parsing), fixed in
+# 1.45.1. semgrep 1.180.0 pins the whole OpenTelemetry family to ~=1.37.0 / ~=0.58b0, and
+# opentelemetry-sdk pins opentelemetry-api exactly, so the family moves together.
+# Remove these lines once a semgrep release declares opentelemetry-api>=1.45.1.
+opentelemetry-api>=1.45.1
+opentelemetry-sdk>=1.45.1
+opentelemetry-exporter-otlp-proto-http>=1.45.1
+opentelemetry-instrumentation-requests>=0.66b1
+opentelemetry-instrumentation-threading>=0.66b1
