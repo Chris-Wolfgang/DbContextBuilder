@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793645562010,
+  "lastUpdate": 1793731870962,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -2580,6 +2580,120 @@ window.BENCHMARK_DATA = {
             "value": 6593932.921875,
             "unit": "ns",
             "range": "± 2220577.501125857"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "83efe6482ac9bc95a9b01229ae4970869bc98499",
+          "message": "fix(seeding): check nested-sequence items in every SeedWith overload; clear error for an exhausted byte/short key (#749)\n\n* fix(seeding): validate nested-sequence items in every SeedWith overload; name an exhausted narrow key (#735)\n\n- SeedWith(params) / SeedWith(IEnumerable<T>) flattened a nested\n  IEnumerable<object> item with AddRange, so a null or string inside it\n  slipped through (the bug #560 fixed only for the single-entity\n  overload). All three overloads now go through one AddSequenceItems\n  helper (buffered, per-item null/string check), on the EF Core and EF6\n  builders. This also makes the single-entity overload share the arms,\n  as #740 asked.\n- EnsureUniqueRandomPrimaryKeys converted a long candidate into a byte /\n  short key with Convert.ChangeType, which threw a bare OverflowException\n  past 255 / 32,767 rows. It now throws an InvalidOperationException that\n  names the entity, the key and its largest value.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* fix(seeding): share the integral-key table outside the generic builder; drop redundant type arguments\n\nInspectCode flagged the static Dictionary in DbContextBuilder<T>: a static field in a\ngeneric type is duplicated per closed type. Move it to the non-generic internal\nIntegralKeyTypes class (linked into the five -Core-EFx projects like the other Core\nsources). Also drop the redundant <object> type argument on the two IEnumerable\nSeedWith calls in the new tests; inference picks the same IEnumerable<TEntity> overload.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-03T13:47:41-05:00",
+          "tree_id": "3bdb5690556b8a82b85b6549824506a070b883ca",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/83efe6482ac9bc95a9b01229ae4970869bc98499"
+        },
+        "date": 1793731835883,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 27765.861078898113,
+            "unit": "ns",
+            "range": "± 2111.40831883045"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 37614.81951904297,
+            "unit": "ns",
+            "range": "± 1355.0541919397908"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 192348.3836263021,
+            "unit": "ns",
+            "range": "± 7788.106567854749"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 1)",
+            "value": 8598912.268229166,
+            "unit": "ns",
+            "range": "± 327159.19039155287"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 1)",
+            "value": 217481.7869466146,
+            "unit": "ns",
+            "range": "± 20228.16020627249"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 26866.025848388672,
+            "unit": "ns",
+            "range": "± 1209.6487683008754"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 63325.478515625,
+            "unit": "ns",
+            "range": "± 3888.428913519684"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 441595.6412760417,
+            "unit": "ns",
+            "range": "± 83611.76579461867"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 10)",
+            "value": 9141997.078125,
+            "unit": "ns",
+            "range": "± 229018.0771686029"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 10)",
+            "value": 779087.248046875,
+            "unit": "ns",
+            "range": "± 217869.0876260333"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 25718.692464192707,
+            "unit": "ns",
+            "range": "± 649.404783167329"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 284534.0572916667,
+            "unit": "ns",
+            "range": "± 7707.033379997185"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 3553396.5234375,
+            "unit": "ns",
+            "range": "± 858781.9757118529"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 100)",
+            "value": 13033212.028645834,
+            "unit": "ns",
+            "range": "± 754115.8609351995"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 100)",
+            "value": 3638587.0677083335,
+            "unit": "ns",
+            "range": "± 156413.43576045186"
           }
         ]
       }
