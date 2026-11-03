@@ -6,9 +6,6 @@ using System.Threading.Tasks;
 
 namespace Wolfgang.DbContextBuilderEF6;
 
-
-
-
 /// <summary>
 /// Uses the Builder pattern to create instances of DbContext types seeded with specified data.
 /// </summary>
@@ -89,8 +86,10 @@ public class DbContextBuilder<T> where T : DbContext
             throw new ArgumentException("The type of TEntity cannot be string", nameof(entities));
         }
 
-        var enumerable = entities as TEntity[] ?? entities.ToArray();
-        return SeedWith(enumerable);
+        // Iterate directly rather than materializing to an array; the per-item arms are shared
+        // with the params overload (#740).
+        AddSeedItems(entities, nameof(entities));
+        return this;
     }
 
 
@@ -114,24 +113,7 @@ public class DbContextBuilder<T> where T : DbContext
             throw new ArgumentNullException(nameof(entities));
         }
 
-        foreach (var entity in entities)
-        {
-            switch (entity)
-            {
-                case null:
-                    throw new ArgumentException("One of the entities is null", nameof(entities));
-                case string:
-                    throw new ArgumentException("One of the entities passed in is of type string", nameof(entities));
-                case IEnumerable<object> e:
-                    // A nested sequence gets the same per-item check as the single-entity
-                    // overload (#735); the IEnumerable overload reaches it through here too.
-                    AddSequenceItems(e, nameof(entities));
-                    break;
-                default:
-                    _seedData.Add(entity);
-                    break;
-            }
-        }
+        AddSeedItems(entities, nameof(entities));
         return this;
     }
 
@@ -180,6 +162,33 @@ public class DbContextBuilder<T> where T : DbContext
 
 
 
+    // Shared validation + add loop for the IEnumerable and params overloads, so their
+    // null/string/sequence arms cannot drift (#740, as in the EF Core builder).
+    private void AddSeedItems<TEntity>(IEnumerable<TEntity> source, string paramName)
+        where TEntity : class
+    {
+        foreach (var entity in source)
+        {
+            switch (entity)
+            {
+                case null:
+                    throw new ArgumentException("One of the entities is null", paramName);
+                case string:
+                    throw new ArgumentException("One of the entities passed in is of type string", paramName);
+                case IEnumerable<object> e:
+                    // A nested sequence gets the same per-item check as the single-entity
+                    // overload (#735).
+                    AddSequenceItems(e, paramName);
+                    break;
+                default:
+                    _seedData.Add(entity);
+                    break;
+            }
+        }
+    }
+
+
+
     // Adds each item of a sequence passed as one seed argument. Buffers first so a failing
     // sequence leaves `_seedData` untouched. IEnumerable<T> is covariant for reference types, so
     // a List<string> arrives here as IEnumerable<object> and is caught item by item (#560, #735).
@@ -218,17 +227,13 @@ public class DbContextBuilder<T> where T : DbContext
     {
         ThrowIfSeeded();
 
-        if (count < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
-        }
+        ThrowIfCountInvalid(count);
 
-        var entities = RandomEntityCreator
-            .CreateRandomEntities<TEntity>(count);
-
-        _seedData.AddRange(entities);
-
-        return this;
+        return AddRandom
+        (
+            RandomEntityCreator
+                .CreateRandomEntities<TEntity>(count)
+        );
     }
 
 
@@ -247,23 +252,19 @@ public class DbContextBuilder<T> where T : DbContext
     {
         ThrowIfSeeded();
 
-        if (count < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
-        }
+        ThrowIfCountInvalid(count);
 
         if (func == null)
         {
             throw new ArgumentNullException(nameof(func));
         }
 
-        var entities = RandomEntityCreator
-            .CreateRandomEntities<TEntity>(count)
-            .Select(func);
-
-        _seedData.AddRange(entities);
-
-        return this;
+        return AddRandom
+        (
+            RandomEntityCreator
+                .CreateRandomEntities<TEntity>(count)
+                .Select(func)
+        );
     }
 
 
@@ -282,23 +283,19 @@ public class DbContextBuilder<T> where T : DbContext
     {
         ThrowIfSeeded();
 
-        if (count < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
-        }
+        ThrowIfCountInvalid(count);
 
         if (func == null)
         {
             throw new ArgumentNullException(nameof(func));
         }
 
-        var entities = RandomEntityCreator
-            .CreateRandomEntities<TEntity>(count)
-            .Select(func);
-
-        _seedData.AddRange(entities);
-
-        return this;
+        return AddRandom
+        (
+            RandomEntityCreator
+                .CreateRandomEntities<TEntity>(count)
+                .Select(func)
+        );
     }
 
 
@@ -408,6 +405,27 @@ public class DbContextBuilder<T> where T : DbContext
                 "been created and seeded. Add all seed data first, or use a new DbContextBuilder."
             );
         }
+    }
+
+
+
+    // The count guard the three SeedWithRandom overloads share (#740).
+    private static void ThrowIfCountInvalid(int count)
+    {
+        if (count < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
+        }
+    }
+
+
+
+    // Adds the generated entities for the three SeedWithRandom overloads (#740).
+    private DbContextBuilder<T> AddRandom<TEntity>(IEnumerable<TEntity> entities)
+        where TEntity : class
+    {
+        _seedData.AddRange(entities);
+        return this;
     }
 
 
