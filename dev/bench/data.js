@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793731870962,
+  "lastUpdate": 1793736635803,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -2694,6 +2694,120 @@ window.BENCHMARK_DATA = {
             "value": 3638587.0677083335,
             "unit": "ns",
             "range": "± 156413.43576045186"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4ce3a6275e03c149072f96e3bfc6a81b57e32e5c",
+          "message": "docs: fix documentation drift from #737 (#753)\n\n- .github/sourcelink/README.md: the consumer references -Core-EF10, not\n  the retired -Core.\n- README / docfx_project/index.md: say the classic -EF6 package is not in\n  the API reference (docs are generated for net10.0; -EF6 is net4x only)\n  and where its surface is documented instead.\n- docs/DOCFX-VERSION-PICKER.md: drop the DateTime-Extensions / D20-Dice\n  provenance notes.\n- Core-EF7..EF10 test wrapper ReadMe.md: \"contains no source of its own;\n  it links ...\" (and no trailing space).\n- EF6 test csproj: the CS1591 suppression is permanent; reword the comment\n  that promised an untracked follow-up.\n\nThe CONTRIBUTING \"(CI mode)\" item is in #723.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-03T15:05:19-05:00",
+          "tree_id": "faed48f79259aa64fce2a3e5c3b82631c106e9dc",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/4ce3a6275e03c149072f96e3bfc6a81b57e32e5c"
+        },
+        "date": 1793736629439,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 35316.044860839844,
+            "unit": "ns",
+            "range": "± 2511.9342816913572"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 47466.48474121094,
+            "unit": "ns",
+            "range": "± 2184.5797511310243"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 263431.9518229167,
+            "unit": "ns",
+            "range": "± 21557.363809570783"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 1)",
+            "value": 11851923.609375,
+            "unit": "ns",
+            "range": "± 170929.9576553038"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 1)",
+            "value": 271687.849609375,
+            "unit": "ns",
+            "range": "± 26981.8463073881"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 35295.410400390625,
+            "unit": "ns",
+            "range": "± 2349.5283993325584"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 153659.7820638021,
+            "unit": "ns",
+            "range": "± 44501.62023350105"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 498542.0048828125,
+            "unit": "ns",
+            "range": "± 17581.79639372585"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 10)",
+            "value": 12597287.880208334,
+            "unit": "ns",
+            "range": "± 116534.78101636675"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 10)",
+            "value": 954706.00390625,
+            "unit": "ns",
+            "range": "± 140373.64161894552"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 34787.654469807945,
+            "unit": "ns",
+            "range": "± 2811.0682800559584"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 424646.185546875,
+            "unit": "ns",
+            "range": "± 11965.383002111645"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 3824230.15625,
+            "unit": "ns",
+            "range": "± 1435399.6356256572"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 100)",
+            "value": 18646796.979166668,
+            "unit": "ns",
+            "range": "± 1132229.5478099484"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 100)",
+            "value": 4884922.630208333,
+            "unit": "ns",
+            "range": "± 127206.04283535591"
           }
         ]
       }
