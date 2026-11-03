@@ -993,7 +993,7 @@ public class DbContextBuilderTests
         (
             () => useParams
                 ? sut.SeedWith<object>(new Category { Name = "b" }, nested)
-                : sut.SeedWith<object>(new List<object> { new Category { Name = "b" }, nested }.AsEnumerable())
+                : sut.SeedWith(new List<object> { new Category { Name = "b" }, nested }.AsEnumerable())
         );
 
         Assert.Equal("entities", ex.ParamName);
