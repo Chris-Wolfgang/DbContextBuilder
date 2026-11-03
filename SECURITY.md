@@ -109,8 +109,11 @@ language support, and Scorecard has no detector for .NET-native fuzzing
 frameworks (CsCheck, SharpFuzz, DotnetFuzzing) even when one is present, so
 this finding fires permanently until Scorecard ships a .NET detector.
 `BranchProtectionID` ([#411](https://github.com/Chris-Wolfgang/DbContextBuilder/issues/411))
-is open and labeled `blocked` pending further investigation into what it
-needs.
+is open and labeled `blocked`: Scorecard scores branch protection 4/10 because
+`main` requires no approver, no code-owner review and no last-push approval.
+Each of those needs a reviewer other than the PR's author, which a
+single-maintainer repository cannot provide without bypassing its own ruleset.
+It unblocks if a second maintainer with write access joins.
 
 ## Credit
 

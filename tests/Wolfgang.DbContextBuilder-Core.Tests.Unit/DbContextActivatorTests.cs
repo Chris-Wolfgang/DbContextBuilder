@@ -74,6 +74,26 @@ public class DbContextActivatorTests
 
 
 
+    /// <summary>
+    /// The compiled delegate calls the constructor directly, so an exception the constructor
+    /// throws reaches the caller unwrapped. The <see cref="Activator.CreateInstance(Type, object[])"/>
+    /// fallback would wrap it in a <see cref="System.Reflection.TargetInvocationException"/>, so this
+    /// also pins that the lookup finds the public instance constructor (#531).
+    /// </summary>
+    [Fact]
+    public void Create_when_the_ctor_throws_rethrows_the_ctor_exception_unwrapped()
+    {
+        var options = new DbContextOptionsBuilder<ContextWithThrowingCtor>()
+            .UseInMemoryDatabase($"throwing-{Guid.NewGuid()}")
+            .Options;
+
+        var ex = Assert.Throws<InvalidOperationException>(() => DbContextActivator<ContextWithThrowingCtor>.Create(options));
+
+        Assert.Equal(ContextWithThrowingCtor.Message, ex.Message);
+    }
+
+
+
     private sealed class ContextWithGenericOptionsCtor : DbContext
     {
         public ContextWithGenericOptionsCtor(DbContextOptions<ContextWithGenericOptionsCtor> options)
@@ -89,6 +109,19 @@ public class DbContextActivatorTests
         public ContextWithNonGenericOptionsCtor(DbContextOptions options)
             : base(options)
         {
+        }
+    }
+
+
+
+    private sealed class ContextWithThrowingCtor : DbContext
+    {
+        public const string Message = "The context constructor failed.";
+
+        public ContextWithThrowingCtor(DbContextOptions<ContextWithThrowingCtor> options)
+            : base(options)
+        {
+            throw new InvalidOperationException(Message);
         }
     }
 

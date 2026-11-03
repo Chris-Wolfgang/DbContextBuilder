@@ -1,7 +1,10 @@
 using System;
+using System.Data.Common;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Wolfgang.DbContextBuilderCore.Assertions;
 using Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
 using Xunit;
@@ -208,6 +211,59 @@ public class DbSetAssertionsTests
         await using var context = await CreateSeededContextAsync(0);
 
         await context.Set<TableWithDefaults>().Should().AllSatisfy(t => t.Id == 1234567);
+    }
+
+
+
+    /// <summary>
+    /// On an empty set AllSatisfy stops after the total count: one query, not a second count with
+    /// the predicate (#531). A command interceptor sees every query, so the extra one is
+    /// observable. The non-empty case shows the counter does see both queries.
+    /// </summary>
+    [Fact]
+    public async Task AllSatisfy_when_set_is_empty_runs_one_query()
+    {
+        var empty = await CountAllSatisfyQueriesAsync(rowCount: 0);
+        var populated = await CountAllSatisfyQueriesAsync(rowCount: 1);
+
+        Assert.Equal(2, populated);
+        Assert.Equal(1, empty);
+    }
+
+
+
+    private static async Task<int> CountAllSatisfyQueriesAsync(int rowCount)
+    {
+        var counter = new CommandCounter();
+        var options = new DbContextOptionsBuilder<BasicContext>().AddInterceptors(counter);
+        using var builder = new DbContextBuilder<BasicContext>()
+            .UseDbContextOptionsBuilder(options)
+            .UseSqliteForMsSqlServer();
+        builder.SeedWith(Enumerable.Range(1, rowCount).Select(id => new TableWithDefaults { Id = id }));
+        await using var context = await builder.BuildAsync();
+
+        var before = counter.Count;
+        await context.Set<TableWithDefaults>().Should().AllSatisfy(t => t.Id > 0);
+        return counter.Count - before;
+    }
+
+
+
+    private sealed class CommandCounter : DbCommandInterceptor
+    {
+        public int Count { get; private set; }
+
+        public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync
+        (
+            DbCommand command,
+            CommandEventData eventData,
+            InterceptionResult<DbDataReader> result,
+            CancellationToken cancellationToken = default
+        )
+        {
+            Count++;
+            return base.ReaderExecutingAsync(command, eventData, result, cancellationToken);
+        }
     }
 
 
