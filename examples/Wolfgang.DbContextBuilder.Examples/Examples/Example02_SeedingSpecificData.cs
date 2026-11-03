@@ -15,7 +15,7 @@ namespace Wolfgang.DbContextBuilder.Examples.Examples;
 public class Example02_SeedingSpecificData
 {
     [Fact]
-    public async Task Service_computes_lifetime_value_over_seeded_orders()
+    public async Task SeedWith_when_orders_are_seeded_lets_the_service_compute_lifetime_value()
     {
         // Arrange — a small catalogue and a customer with two orders.
         var widget = new Product { Name = "Widget", UnitPrice = 9.99m, UnitsInStock = 100 };

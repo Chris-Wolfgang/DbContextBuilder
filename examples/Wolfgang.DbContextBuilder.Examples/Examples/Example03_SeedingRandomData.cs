@@ -17,7 +17,7 @@ namespace Wolfgang.DbContextBuilder.Examples.Examples;
 public class Example03_SeedingRandomData
 {
     [Fact]
-    public async Task Low_stock_query_runs_over_a_randomly_seeded_catalogue()
+    public async Task SeedWithRandom_when_the_catalogue_is_random_runs_the_low_stock_query()
     {
         using var builder = new DbContextBuilder<ShopDbContext>();
         await using var context = await builder
