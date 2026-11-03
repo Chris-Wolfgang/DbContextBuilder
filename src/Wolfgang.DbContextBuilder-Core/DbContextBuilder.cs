@@ -37,15 +37,6 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     // The creator whose database BuildAsync has already created and seeded. Later builds on the
     // same creator neither re-create nor re-seed it (#559); selecting a new creator resets it.
     private ICreateDbContext? _seededCreator;
-    // The primary-key CLR types EnsureUniqueRandomPrimaryKeys renumbers, with the largest key each
-    // can hold.
-    private static readonly Dictionary<Type, long> _integralKeyMaxValues = new()
-    {
-        [typeof(int)] = int.MaxValue,
-        [typeof(long)] = long.MaxValue,
-        [typeof(short)] = short.MaxValue,
-        [typeof(byte)] = byte.MaxValue,
-    };
 
 
 
@@ -612,7 +603,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         foreach (var entities in keyedGroups)
         {
             var keyProperty = entities.Key.PropertyInfo!;
-            var maxKey = _integralKeyMaxValues[keyProperty.PropertyType];
+            var maxKey = IntegralKeyTypes.MaxValues[keyProperty.PropertyType];
             // On a key EF never generates there is no "not set" value: every value is a real key.
             long? sentinel = entities.Key.ValueGenerated == ValueGenerated.Never ? null : ReadSentinel(entities.Key);
             bool IsUnset(object entity) => ReadKey(keyProperty, entity) == sentinel;
@@ -678,7 +669,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     {
         var keyProperties = context.Model.FindEntityType(clrType)?.FindPrimaryKey()?.Properties;
         var property = keyProperties is { Count: 1 } ? keyProperties[0] : null;
-        return property?.PropertyInfo is not null && _integralKeyMaxValues.ContainsKey(property.PropertyInfo.PropertyType) ? property : null;
+        return property?.PropertyInfo is not null && IntegralKeyTypes.MaxValues.ContainsKey(property.PropertyInfo.PropertyType) ? property : null;
     }
 
 
