@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793736635803,
+  "lastUpdate": 1793754798804,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -2808,6 +2808,120 @@ window.BENCHMARK_DATA = {
             "value": 4884922.630208333,
             "unit": "ns",
             "range": "± 127206.04283535591"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "219a303d420d234809b86fab390db55c4fbd6d8e",
+          "message": "ci: run the compile-link parity check in Stage 2 and build-pr.ps1 (#755)\n\n* ci: run scripts/compile-link-parity.ps1 in Stage 2 and build-pr.ps1 (#738)\n\n- pr.yaml Stage 2: a step after the TFM parity guard runs main's copy of\n  the script (the same trusted-copy pattern; skips with a notice until\n  the script is on main). A mismatch fails the step.\n- build-pr.ps1 runs it locally; a mismatch is a failure.\n- The script joins the protected-file lists in pr.yaml and\n  protected-files.yaml, and the table in docs/WORKFLOW_SECURITY.md,\n  because CI executes it.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* chore(split): move this PR's protected files to their own PR\n\nThe protected-files guard fails a PR that changes protected files together with anything\nelse, and nothing can bypass it. This commit restores .github/workflows/pr.yaml,\n.github/workflows/protected-files.yaml and scripts/build-pr.ps1 to the base's version, so\nthis PR carries only the docs/WORKFLOW_SECURITY.md row. The same three files are\nre-applied unchanged by the PR stacked directly above this one.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-03T20:10:44-05:00",
+          "tree_id": "d1dae10805799465427fbdd13df3ecf6a78673d8",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/219a303d420d234809b86fab390db55c4fbd6d8e"
+        },
+        "date": 1793754797091,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 26078.494822184246,
+            "unit": "ns",
+            "range": "± 1181.866776850246"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 35356.739196777344,
+            "unit": "ns",
+            "range": "± 1630.379380906546"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 225375.8369140625,
+            "unit": "ns",
+            "range": "± 13429.956972704009"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 1)",
+            "value": 8266377.143229167,
+            "unit": "ns",
+            "range": "± 47218.323234572345"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 1)",
+            "value": 254580.3009440104,
+            "unit": "ns",
+            "range": "± 22350.262998254046"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 25311.48198445638,
+            "unit": "ns",
+            "range": "± 73.4722273768179"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 61566.30615234375,
+            "unit": "ns",
+            "range": "± 5270.465752782289"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 449324.2513020833,
+            "unit": "ns",
+            "range": "± 80968.58308158797"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 10)",
+            "value": 8674609.033854166,
+            "unit": "ns",
+            "range": "± 57625.20882437703"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 10)",
+            "value": 947494.7434895834,
+            "unit": "ns",
+            "range": "± 232457.69645227384"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 25161.221771240234,
+            "unit": "ns",
+            "range": "± 194.75430208829613"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 336929.6848958333,
+            "unit": "ns",
+            "range": "± 11146.679360706761"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 1792764.0260416667,
+            "unit": "ns",
+            "range": "± 46707.70443307628"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 100)",
+            "value": 13204421.864583334,
+            "unit": "ns",
+            "range": "± 147951.16290910516"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 100)",
+            "value": 3508590.1328125,
+            "unit": "ns",
+            "range": "± 69947.75506588878"
           }
         ]
       }
