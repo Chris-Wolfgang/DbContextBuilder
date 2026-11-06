@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793754798804,
+  "lastUpdate": 1793984484320,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -2922,6 +2922,120 @@ window.BENCHMARK_DATA = {
             "value": 3508590.1328125,
             "unit": "ns",
             "range": "± 69947.75506588878"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1560a267d8977317a330079f73ae37ae721452ef",
+          "message": "perf(bogus): cache the configured Faker per entity type (#572) (#790)\n\nBogusRandomEntityCreator registered twelve RuleForType rules on a new\nFaker<TEntity> for every CreateRandomEntities call. A static generic holder\nnow builds it once per type; Generate runs under a lock on that instance\nbecause Faker<T> keeps per-instance state.\n\nThe compiled DbContextActivator ctor half of #572 is already in place:\nGetConstructor's default binder matches a non-generic DbContextOptions ctor\ntoo (DbContextActivatorTests proves it), so only unconstructible shapes reach\nActivator. The fallback comment now says so.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-06T11:58:53-05:00",
+          "tree_id": "e0ea9d7b1e9961157683e48d8c921ac79af075af",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/1560a267d8977317a330079f73ae37ae721452ef"
+        },
+        "date": 1793984483072,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 38828.843811035156,
+            "unit": "ns",
+            "range": "± 1802.0036277961344"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 61346.433837890625,
+            "unit": "ns",
+            "range": "± 1628.9796346999915"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 268106.171875,
+            "unit": "ns",
+            "range": "± 17472.41849518134"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 1)",
+            "value": 10006566.447916666,
+            "unit": "ns",
+            "range": "± 96951.6595819908"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 1)",
+            "value": 272317.294921875,
+            "unit": "ns",
+            "range": "± 25693.69361231938"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 39243.06335449219,
+            "unit": "ns",
+            "range": "± 1690.447583636218"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 126536.2646484375,
+            "unit": "ns",
+            "range": "± 11246.67581792211"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 470943.5455729167,
+            "unit": "ns",
+            "range": "± 27629.024513627894"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 10)",
+            "value": 11544809.8125,
+            "unit": "ns",
+            "range": "± 193379.52308236703"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 10)",
+            "value": 895538.6119791666,
+            "unit": "ns",
+            "range": "± 175591.87696307502"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 38677.77168782552,
+            "unit": "ns",
+            "range": "± 1575.5885294336235"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 446719.3841145833,
+            "unit": "ns",
+            "range": "± 8481.284149380335"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 3358521.453125,
+            "unit": "ns",
+            "range": "± 784092.9969032033"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 100)",
+            "value": 19883772.255208332,
+            "unit": "ns",
+            "range": "± 59920.47916679615"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 100)",
+            "value": 7744005.291666667,
+            "unit": "ns",
+            "range": "± 1829637.2444782197"
           }
         ]
       }
