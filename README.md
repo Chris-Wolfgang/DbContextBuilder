@@ -75,7 +75,9 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 ## 📚 Documentation
 
 - **GitHub Repository:** [https://github.com/Chris-Wolfgang/DbContextBuilder](https://github.com/Chris-Wolfgang/DbContextBuilder)
-- **API Documentation:** https://Chris-Wolfgang.github.io/DbContextBuilder/
+- **API Documentation:** https://Chris-Wolfgang.github.io/DbContextBuilder/ (the EF Core packages
+  and the random-data providers; the classic `Wolfgang.DbContextBuilder-EF6` package has no API pages
+  there, see below)
 - **CHANGELOG:** [CHANGELOG.md](CHANGELOG.md)
 - **Contributing Guide:** [CONTRIBUTING.md](CONTRIBUTING.md)
 - **DocFX Version Picker Troubleshooting:** [docs/DOCFX-VERSION-PICKER.md](docs/DOCFX-VERSION-PICKER.md)

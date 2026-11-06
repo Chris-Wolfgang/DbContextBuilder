@@ -819,7 +819,7 @@ public abstract class DbContextBuilderTestsBase
     public void SeedWithRandom_int_func_TEntity_TEntity_when_passed_value_less_than_1_throws_ArgumentOutOfRangeException()
     {
         // Arrange
-        Func<Address, Address> func = null!; 
+        Func<Address, Address> func = null!;
 
         using var sut = CreateDbContextBuilder();
 

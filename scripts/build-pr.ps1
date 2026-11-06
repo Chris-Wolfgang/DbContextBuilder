@@ -113,6 +113,16 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
         }
     }
 
+    # Mirrors pr.yaml's Stage 2 compile-link parity check (#738): every EF Core wrapper
+    # must link every shared source file. Unlike the TFM parity guard, a finding fails.
+    if (Test-Path './scripts/compile-link-parity.ps1') {
+        & pwsh -NoProfile -File './scripts/compile-link-parity.ps1'
+        if ($LASTEXITCODE -ne 0) {
+            Write-Fail "Compile-link parity check failed (exit $LASTEXITCODE)"
+            $failed += "Compile-link parity"
+        }
+    }
+
     $testProjects = @(Get-ChildItem -Path './tests' -Recurse -File -Include '*.csproj', '*.vbproj', '*.fsproj' -ErrorAction SilentlyContinue)
 
     # Mirrors pr.yaml's Stage 2 ledger: the assembly of every project that ran a

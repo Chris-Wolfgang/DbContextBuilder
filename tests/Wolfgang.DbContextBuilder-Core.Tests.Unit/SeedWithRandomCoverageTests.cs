@@ -329,7 +329,7 @@ public class SeedWithRandomCoverageTests
         Assert.StartsWith("One of the entities passed in is of type string", ex.Message, StringComparison.Ordinal);
 
         await using var context = await sut.BuildAsync();
-        Assert.Equal(0, context.Manufacturers.Count());
+        Assert.Empty(context.Manufacturers);
     }
 
 
@@ -349,7 +349,79 @@ public class SeedWithRandomCoverageTests
         Assert.StartsWith("One of the entities is null", ex.Message, StringComparison.Ordinal);
 
         await using var context = await sut.BuildAsync();
-        Assert.Equal(0, context.Manufacturers.Count());
+        Assert.Empty(context.Manufacturers);
+    }
+
+
+
+    /// <summary>
+    /// The params and IEnumerable overloads check every item of a nested sequence, as the
+    /// single-entity overload does (#735): a null or a string inside it is rejected at seed time
+    /// instead of being stored to fail later, inside EF.
+    /// </summary>
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    public void SeedWith_when_a_nested_sequence_holds_a_null_or_a_string_throws_ArgumentException(bool useParams, bool useString)
+    {
+        object? bad = useString ? "not an entity" : null;
+        var nested = new List<object?> { new CoverageManufacturer { Id = 1, Name = "a" }, bad };
+        using var sut = new DbContextBuilder<CoverageContext>().UseInMemory();
+
+        var ex = Assert.Throws<ArgumentException>
+        (
+            () => useParams
+                ? sut.SeedWith<object>(new CoverageManufacturer { Id = 2, Name = "b" }, nested)
+                : sut.SeedWith(new List<object> { new CoverageManufacturer { Id = 2, Name = "b" }, nested }.AsEnumerable())
+        );
+
+        Assert.Equal("entities", ex.ParamName);
+        Assert.StartsWith
+        (
+            useString ? "One of the entities passed in is of type string" : "One of the entities is null",
+            ex.Message,
+            StringComparison.Ordinal
+        );
+    }
+
+
+
+    /// <summary>
+    /// A byte key runs out of unused values after 255 rows: BuildAsync says which entity and key
+    /// ran out, instead of the bare OverflowException Convert.ChangeType used to throw (#735).
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_when_a_byte_key_has_no_unused_value_left_throws_InvalidOperationException()
+    {
+        using var sut = new DbContextBuilder<NarrowKeyContext>()
+            .UseCustomRandomEntityCreator(new CollidingTypedKeyRandomEntityCreator())
+            .UseInMemory()
+            .SeedWithRandom<ByteKeyRow>(256);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.BuildAsync());
+
+        Assert.StartsWith("Cannot give every seeded ByteKeyRow a unique primary key", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("its largest value is 255", ex.Message, StringComparison.Ordinal);
+    }
+
+
+
+    /// <summary>
+    /// The limit is the key type's largest value, not one below it: 255 byte-keyed rows still fit.
+    /// </summary>
+    [Fact]
+    public async Task BuildAsync_when_a_byte_key_uses_every_value_up_to_255_succeeds()
+    {
+        using var sut = new DbContextBuilder<NarrowKeyContext>()
+            .UseCustomRandomEntityCreator(new CollidingTypedKeyRandomEntityCreator())
+            .UseInMemory()
+            .SeedWithRandom<ByteKeyRow>(255);
+
+        await using var context = await sut.BuildAsync();
+
+        Assert.Equal(255, context.Set<ByteKeyRow>().Select(row => row.Id).Distinct().Count());
     }
 
 
@@ -952,6 +1024,62 @@ public class SeedWithRandomCoverageTests
 
 
     /// <summary>
+    /// A second Dispose does nothing: the context creator the builder owns is disposed once (#531).
+    /// </summary>
+    [Fact]
+    public async Task Dispose_called_twice_disposes_the_context_creator_once()
+    {
+        var creator = new DisposeCountingDbContextCreator();
+        var sut = new DbContextBuilder<CoverageContext>();
+        sut.SetCreateDbContext(creator);
+        await using (await sut.BuildAsync())
+        {
+        }
+
+        sut.Dispose();
+        sut.Dispose();
+
+        Assert.Equal(1, creator.DisposeCount);
+    }
+
+
+
+    /// <summary>
+    /// Dispose suppresses finalization, so a derived builder that adds a finalizer does not run it
+    /// after an explicit Dispose (#531). The builder nobody disposed shows the finalizer does run
+    /// here, so the assertion on the disposed one is not vacuous.
+    /// </summary>
+    [Fact]
+    public void Dispose_suppresses_the_finalizer_of_a_derived_builder()
+    {
+        var disposedFinalized = new StrongBox<bool>();
+        var abandonedFinalized = new StrongBox<bool>();
+
+        CreateFinalizableBuilder(disposedFinalized, dispose: true);
+        CreateFinalizableBuilder(abandonedFinalized, dispose: false);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+
+        Assert.True(abandonedFinalized.Value);
+        Assert.False(disposedFinalized.Value);
+    }
+
+
+
+    // Not inlined, so the builder is unreachable once this returns, even in a Debug build.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void CreateFinalizableBuilder(StrongBox<bool> finalized, bool dispose)
+    {
+        var builder = new FinalizableBuilder(finalized);
+        if (dispose)
+        {
+            builder.Dispose();
+        }
+    }
+
+
+
+    /// <summary>
     /// UseSqliteForMsSqlServer's model customizer is applied when the context is built: a SQL Server
     /// default ((getdate()), as scaffolded) only works on SQLite once the customizer has rewritten it.
     /// </summary>
@@ -1007,7 +1135,7 @@ public class SeedWithRandomCoverageTests
     /// de-duplication path that only runs when a SQLite extension is applied a second time).
     /// </summary>
     [Fact]
-    public async Task Selecting_a_Sqlite_provider_twice_works()
+    public async Task UseSqliteForMsSqlServer_when_called_after_UseSqlite_builds_and_seeds()
     {
         using var sut = NewBuilder()
             .UseSqlite()
@@ -1680,5 +1808,33 @@ internal sealed class SaveCountingContext(DbContextOptions<SaveCountingContext> 
     {
         _saves.Value!.Value++;
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+}
+
+
+
+/// <summary>Creates InMemory contexts and counts how often it is disposed (#531).</summary>
+internal sealed class DisposeCountingDbContextCreator : ICreateDbContext, IDisposable
+{
+    private readonly InMemoryDbContextCreator _inner = new();
+
+    public int DisposeCount { get; private set; }
+
+    public Task<TDbContext> CreateDbContextAsync<TDbContext>(DbContextOptionsBuilder<TDbContext> optionsBuilder)
+        where TDbContext : DbContext =>
+        _inner.CreateDbContextAsync(optionsBuilder);
+
+    public void Dispose() => DisposeCount++;
+}
+
+
+
+/// <summary>A builder subclass with a finalizer that records it ran (#531).</summary>
+internal sealed class FinalizableBuilder(StrongBox<bool> finalized) : DbContextBuilder<CoverageContext>
+{
+    ~FinalizableBuilder()
+    {
+        finalized.Value = true;
+        Dispose(disposing: false);
     }
 }

@@ -2,12 +2,12 @@
 
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore.Tests.Unit</RootNamespace>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFrameworks>net9.0;net10.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
-		<DefineConstants>$(DefineConstants);EF_CORE_10;EF_CORE_6_OR_GREATER;EF_CORE_7_OR_GREATER;EF_CORE_8_OR_GREATER;EF_CORE_9_OR_GREATER;EF_CORE_10_OR_GREATER</DefineConstants>
+		<DefineConstants>$(DefineConstants);EF_CORE_9;EF_CORE_6_OR_GREATER;EF_CORE_7_OR_GREATER;EF_CORE_8_OR_GREATER;EF_CORE_9_OR_GREATER</DefineConstants>
 
 	</PropertyGroup>
 
@@ -36,15 +36,15 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="[2.8.2]">
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core-EF10\Wolfgang.DbContextBuilder-Core-EF10.csproj" />
-	  <ProjectReference Include="..\..\extra-projects\AdventureWorks-EF10\AdventureWorks-EF10.csproj" />
+	  <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core-EF9\Wolfgang.DbContextBuilder-Core-EF9.csproj" />
+	  <ProjectReference Include="..\..\extra-projects\AdventureWorks-EF9\AdventureWorks-EF9.csproj" />
 	</ItemGroup>
 
 

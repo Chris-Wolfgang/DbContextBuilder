@@ -2,13 +2,12 @@
 
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore.Tests.Unit</RootNamespace>
-		<TargetFrameworks>net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
-		<CheckEolTargetFramework>false</CheckEolTargetFramework>
+		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
-		<DefineConstants>$(DefineConstants);EF_CORE_7;EF_CORE_6_OR_GREATER;EF_CORE_7_OR_GREATER</DefineConstants>
+		<DefineConstants>$(DefineConstants);EF_CORE_8;EF_CORE_6_OR_GREATER;EF_CORE_7_OR_GREATER;EF_CORE_8_OR_GREATER</DefineConstants>
 
 	</PropertyGroup>
 
@@ -29,53 +28,29 @@
 
 
 
-	<!-- .NET 7.0 specific packages -->
-	<ItemGroup Condition="
-			   '$(TargetFramework)' == 'net7.0'
-			   ">
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-	</ItemGroup>
-
-	<!-- .NET 8.0+ specific packages -->
-	<ItemGroup Condition="
-			   '$(TargetFramework)' == 'net8.0' or
-			   '$(TargetFramework)' == 'net9.0' or
-			   '$(TargetFramework)' == 'net10.0'
-			   ">
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
-	</ItemGroup>
+	<ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="10.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
 	<ItemGroup>
-	    <PackageReference Include="coverlet.collector" Version="10.0.1">
-	      <PrivateAssets>all</PrivateAssets>
-	      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	    </PackageReference>
-	    <PackageReference Include="Moq" Version="4.20.72" />
-	    <PackageReference Include="xunit" Version="2.9.3" />
-	    <PackageReference Include="xunit.runner.visualstudio" Version="[2.8.2]">
-	      <PrivateAssets>all</PrivateAssets>
-	      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	    </PackageReference>
-	  </ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core-EF7\Wolfgang.DbContextBuilder-Core-EF7.csproj" />
-	  <ProjectReference Include="..\..\extra-projects\AdventureWorks-EF7\AdventureWorks-EF7.csproj" />
+	  <ProjectReference Include="..\..\src\Wolfgang.DbContextBuilder-Core-EF8\Wolfgang.DbContextBuilder-Core-EF8.csproj" />
+	  <ProjectReference Include="..\..\extra-projects\AdventureWorks-EF8\AdventureWorks-EF8.csproj" />
 	</ItemGroup>
 
 
 	<PropertyGroup>
 		<!-- CA1707 (underscores) is intentional: test method names follow the MethodUnderTest_when_condition_expected_result convention. -->
-		<!--
-		  NU1901/NU1902 suppressed: EF Core 7 is in maintenance/EOL and its
-		  Microsoft.EntityFrameworkCore.SqlServer transitive package chain
-		  pins old Azure.Identity (1.10.3) and Microsoft.Identity.Client
-		  (4.56.0) which have known low/moderate severity vulnerabilities.
-		  Test execution doesn't exercise the SQL Server provider (tests use
-		  SQLite + InMemory), so accepting the audit warnings at test-build
-		  time is safe. Re-evaluate when this repo drops EF Core 7 support.
-		-->
-		<NoWarn>$(NoWarn);CA1707;NU1901;NU1902</NoWarn>
+		<NoWarn>$(NoWarn);CA1707</NoWarn>
 	</PropertyGroup>
 
   <!-- Analyzer PackageReferences are centralized in Directory.Build.props -->

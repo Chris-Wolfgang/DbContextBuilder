@@ -16,7 +16,7 @@ namespace Wolfgang.DbContextBuilder.Examples.Examples;
 public class Example06_FluentDbSetAssertions
 {
     [Fact]
-    public async Task Assert_directly_against_the_DbSet()
+    public async Task Should_when_asserting_on_a_DbSet_checks_it_directly()
     {
         var products = new[]
         {

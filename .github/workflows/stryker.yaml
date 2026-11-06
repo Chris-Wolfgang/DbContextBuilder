@@ -383,7 +383,7 @@ jobs:
             $duplicateWrappers = @(
               @(foreach ($n in 7, 8, 9) {
                   Get-ChildItem -Path "src/Wolfgang.DbContextBuilder-Core-EF$n" -Filter '*.csproj' -ErrorAction SilentlyContinue
-                  Get-ChildItem -Path "tests/Wolfgang.DbContextBuilder-Core-EF$n.Tests.Unit" -Filter '*.csproj' -ErrorAction SilentlyContinue
+                  Get-ChildItem -Path "tests/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF$n" -Filter '*.csproj' -ErrorAction SilentlyContinue
                 }) +
               @(Get-ChildItem -Path 'tests/Wolfgang.DbContextBuilder-Core-EF6.Tests.Unit' -Filter '*.csproj' -ErrorAction SilentlyContinue))
             # Wolfgang.DbContextBuilder.Abstractions is one interface with no executable code, so

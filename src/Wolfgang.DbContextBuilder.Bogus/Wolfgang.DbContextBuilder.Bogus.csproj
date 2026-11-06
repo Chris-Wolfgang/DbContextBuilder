@@ -4,7 +4,6 @@
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
 		<TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
-		<CheckEolTargetFramework>false</CheckEolTargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Title>Wolfgang.DbContextBuilder Bogus random-data provider</Title>
 		<Description>Bogus-backed random test-data generation for Wolfgang.DbContextBuilder. Adds UseBogus() so SeedWithRandom&lt;T&gt;() fills entities with realistic-looking fake values. Pick the package whose .NET target matches your EF Core version.</Description>

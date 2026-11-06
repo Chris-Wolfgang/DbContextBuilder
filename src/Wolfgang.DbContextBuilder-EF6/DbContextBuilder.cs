@@ -6,9 +6,6 @@ using System.Threading.Tasks;
 
 namespace Wolfgang.DbContextBuilderEF6;
 
-
-
-
 /// <summary>
 /// Uses the Builder pattern to create instances of DbContext types seeded with specified data.
 /// </summary>
@@ -49,8 +46,8 @@ public class DbContextBuilder<T> where T : DbContext
     /// Allows the user to specify their own implementation of ICreateRandomEntities
     /// for creating random entities.
     /// </summary>
-    /// <param name="creator">The creator to use</param>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <param name="creator">The creator to use.</param>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="creator"/> is <c>null</c>.</exception>
     public DbContextBuilder<T> UseCustomRandomEntityCreator(ICreateRandomEntities creator)
     {
@@ -68,8 +65,8 @@ public class DbContextBuilder<T> where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
-    /// <param name="entities">The entities to populate the database with</param>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <param name="entities">The entities to populate the database with.</param>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
@@ -89,8 +86,10 @@ public class DbContextBuilder<T> where T : DbContext
             throw new ArgumentException("The type of TEntity cannot be string", nameof(entities));
         }
 
-        var enumerable = entities as TEntity[] ?? entities.ToArray();
-        return SeedWith(enumerable);
+        // Iterate directly rather than materializing to an array; the per-item arms are shared
+        // with the params overload (#740).
+        AddSeedItems(entities, nameof(entities));
+        return this;
     }
 
 
@@ -98,8 +97,8 @@ public class DbContextBuilder<T> where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
-    /// <param name="entities">The entities to populate the database with</param>
+    /// <returns>The builder, for chaining.</returns>
+    /// <param name="entities">The entities to populate the database with.</param>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
@@ -114,22 +113,7 @@ public class DbContextBuilder<T> where T : DbContext
             throw new ArgumentNullException(nameof(entities));
         }
 
-        foreach (var entity in entities)
-        {
-            switch (entity)
-            {
-                case null:
-                    throw new ArgumentException("One of the entities is null", nameof(entities));
-                case string:
-                    throw new ArgumentException("One of the entities passed in is of type string", nameof(entities));
-                case IEnumerable<object> e:
-                    _seedData.AddRange(e);
-                    break;
-                default:
-                    _seedData.Add(entity);
-                    break;
-            }
-        }
+        AddSeedItems(entities, nameof(entities));
         return this;
     }
 
@@ -166,29 +150,7 @@ public class DbContextBuilder<T> where T : DbContext
 
         if (entity is IEnumerable<object> sequence)
         {
-            // Buffer first so the failing call leaves `_seedData` untouched (atomic w.r.t.
-            // seed state). IEnumerable<T> is covariant in T for reference types, so
-            // List<string> casts to IEnumerable<object> at runtime and would slip through
-            // without the per-item check below.
-            var buffer = new List<object>();
-            foreach (var item in sequence)
-            {
-                // Same per-item arms as the params overload: a null item used to be stored and
-                // fail later, inside EF, with an unhelpful ArgumentNullException (#560).
-                if (item is null)
-                {
-                    throw new ArgumentException("One of the entities is null", nameof(entity));
-                }
-
-                if (item is string)
-                {
-                    throw new ArgumentException("One of the entities passed in is of type string", nameof(entity));
-                }
-
-                buffer.Add(item);
-            }
-
-            _seedData.AddRange(buffer);
+            AddSequenceItems(sequence, nameof(entity));
         }
         else
         {
@@ -200,29 +162,78 @@ public class DbContextBuilder<T> where T : DbContext
 
 
 
+    // Shared validation + add loop for the IEnumerable and params overloads, so their
+    // null/string/sequence arms cannot drift (#740, as in the EF Core builder).
+    private void AddSeedItems<TEntity>(IEnumerable<TEntity> source, string paramName)
+        where TEntity : class
+    {
+        foreach (var entity in source)
+        {
+            switch (entity)
+            {
+                case null:
+                    throw new ArgumentException("One of the entities is null", paramName);
+                case string:
+                    throw new ArgumentException("One of the entities passed in is of type string", paramName);
+                case IEnumerable<object> e:
+                    // A nested sequence gets the same per-item check as the single-entity
+                    // overload (#735).
+                    AddSequenceItems(e, paramName);
+                    break;
+                default:
+                    _seedData.Add(entity);
+                    break;
+            }
+        }
+    }
+
+
+
+    // Adds each item of a sequence passed as one seed argument. Buffers first so a failing
+    // sequence leaves `_seedData` untouched. IEnumerable<T> is covariant for reference types, so
+    // a List<string> arrives here as IEnumerable<object> and is caught item by item (#560, #735).
+    private void AddSequenceItems(IEnumerable<object> sequence, string paramName)
+    {
+        var buffer = new List<object>();
+        foreach (var item in sequence)
+        {
+            if (item is null)
+            {
+                throw new ArgumentException("One of the entities is null", paramName);
+            }
+
+            if (item is string)
+            {
+                throw new ArgumentException("One of the entities passed in is of type string", paramName);
+            }
+
+            buffer.Add(item);
+        }
+
+        _seedData.AddRange(buffer);
+    }
+
+
+
     /// <summary>
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
     /// <param name="count">The number of items to create</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count) where TEntity : class
     {
         ThrowIfSeeded();
 
-        if (count < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
-        }
+        ThrowIfCountInvalid(count);
 
-        var entities = RandomEntityCreator
-            .CreateRandomEntities<TEntity>(count);
-
-        _seedData.AddRange(entities);
-
-        return this;
+        return AddRandom
+        (
+            RandomEntityCreator
+                .CreateRandomEntities<TEntity>(count)
+        );
     }
 
 
@@ -233,7 +244,7 @@ public class DbContextBuilder<T> where T : DbContext
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="func"/> is <c>null</c>.</exception>
@@ -241,23 +252,19 @@ public class DbContextBuilder<T> where T : DbContext
     {
         ThrowIfSeeded();
 
-        if (count < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
-        }
+        ThrowIfCountInvalid(count);
 
         if (func == null)
         {
             throw new ArgumentNullException(nameof(func));
         }
 
-        var entities = RandomEntityCreator
-            .CreateRandomEntities<TEntity>(count)
-            .Select(func);
-
-        _seedData.AddRange(entities);
-
-        return this;
+        return AddRandom
+        (
+            RandomEntityCreator
+                .CreateRandomEntities<TEntity>(count)
+                .Select(func)
+        );
     }
 
 
@@ -268,7 +275,7 @@ public class DbContextBuilder<T> where T : DbContext
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and the index number of the entity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="func"/> is <c>null</c>.</exception>
@@ -276,23 +283,19 @@ public class DbContextBuilder<T> where T : DbContext
     {
         ThrowIfSeeded();
 
-        if (count < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
-        }
+        ThrowIfCountInvalid(count);
 
         if (func == null)
         {
             throw new ArgumentNullException(nameof(func));
         }
 
-        var entities = RandomEntityCreator
-            .CreateRandomEntities<TEntity>(count)
-            .Select(func);
-
-        _seedData.AddRange(entities);
-
-        return this;
+        return AddRandom
+        (
+            RandomEntityCreator
+                .CreateRandomEntities<TEntity>(count)
+                .Select(func)
+        );
     }
 
 
@@ -402,6 +405,27 @@ public class DbContextBuilder<T> where T : DbContext
                 "been created and seeded. Add all seed data first, or use a new DbContextBuilder."
             );
         }
+    }
+
+
+
+    // The count guard the three SeedWithRandom overloads share (#740).
+    private static void ThrowIfCountInvalid(int count)
+    {
+        if (count < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
+        }
+    }
+
+
+
+    // Adds the generated entities for the three SeedWithRandom overloads (#740).
+    private DbContextBuilder<T> AddRandom<TEntity>(IEnumerable<TEntity> entities)
+        where TEntity : class
+    {
+        _seedData.AddRange(entities);
+        return this;
     }
 
 
