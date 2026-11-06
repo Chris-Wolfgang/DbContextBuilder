@@ -34,7 +34,8 @@ $groups = @(
     },
     @{
         Shared   = 'tests/Wolfgang.DbContextBuilder-Core.Tests.Unit'
-        Wrappers = @(Get-ChildItem -Path 'tests' -Directory -Filter 'Wolfgang.DbContextBuilder-Core.Tests.Unit-EF*')
+        Wrappers = @(Get-ChildItem -Path 'tests' -Directory |
+            Where-Object { $_.Name -like 'Wolfgang.DbContextBuilder-Core-EF*.Tests.Unit' -or $_.Name -like 'Wolfgang.DbContextBuilder-Core.Tests.Unit-EF*' })
     }
 )
 
