@@ -188,8 +188,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          printf '{"sdk":{"version":"%s","rollForward":"disable"}}
-' "$VERIFY_SDK" > global.json
+          echo "{\"sdk\":{\"version\":\"$VERIFY_SDK\",\"rollForward\":\"disable\"}}" > global.json
           dotnet --version
 
       - name: Pack every src project
