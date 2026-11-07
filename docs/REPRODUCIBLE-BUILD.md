@@ -110,9 +110,22 @@ which is the check you would run yourself.
 - **Package files.** NuGet stamps the pack time into every `.nupkg`/`.snupkg` zip
   entry, so two packs of one commit on one machine differ. Compare the assemblies
   inside the packages, as shown above.
-- **A different SDK.** A different SDK patch can legitimately change the output.
-  There is no `global.json` pin, so use the SDK version shown in the release's
-  `release.yaml` run log.
+- **A different SDK, or a different runtime hosting it.** A different SDK patch
+  can change the output, and so can the runtime the compiler runs on, because the
+  portable PDB records both. There is no `global.json` pin, so match the release:
+  find the `SDK with version '...'` line in the release's `release.yaml` run log
+  (v0.9.0 used 10.0.401), install exactly that SDK, select it with a
+  `global.json` that cannot roll forward, and stop the compiler host from rolling
+  forward to a newer runtime:
+
+  ```bash
+  echo '{"sdk":{"version":"10.0.401","rollForward":"disable"}}' > global.json
+  export DOTNET_ROLL_FORWARD=Disable
+  ```
+
+  Rebuilding v0.9.0 this way on `windows-latest` matched all 46 `.dll` and `.pdb`
+  files in its published `.nupkg` and `.snupkg` packages; without the pinned SDK
+  and runtime, every file differed.
 
 A mismatch in a `.dll` built from the same commit with the same SDK on Windows is
 the signal that warrants a report.
