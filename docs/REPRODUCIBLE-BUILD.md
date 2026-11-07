@@ -7,7 +7,7 @@ claim, without trusting our CI.
 
 Tracks issue #319. Pairs with the internal reproducible-build check
 (`.github/workflows/reproducible-build.yaml`, #310), which proves our own builds
-are byte-stable across runners.
+are byte-stable when the same commit is built twice on the reference runner.
 
 ## What makes the build reproducible
 
@@ -30,7 +30,7 @@ identical given the same source commit and a matching compiler (SDK) version.
 | Tool | Version |
 | --- | --- |
 | .NET SDK | 10.0.x (latest patch — the released packages are packed with the 10.0 SDK) |
-| OS | Any (Linux/macOS/Windows). Managed IL is expected to match cross-OS; see the advisory note below. |
+| OS | **Windows** is the reference environment: the released packages are packed on `windows-latest` (`release.yaml`). Other operating systems may produce different bytes; see [What is guaranteed](#what-is-guaranteed). |
 
 There is no `global.json` SDK pin, so use the latest **.NET 10** SDK. The Roslyn
 compiler ships with the SDK, so a different SDK *major* can change the emitted IL;
@@ -86,30 +86,49 @@ stay on 10.0.x to reproduce a package built during the current release cycle.
 
 ## What is guaranteed
 
-The guarantee covers the **assemblies and their symbols**: the same commit, built
-with the same SDK, gives byte-identical `.dll` and `.pdb` files on Linux and
-Windows. The `Build reproducibility` workflow builds -Core-EF10 (net10.0),
--Core-EF8 (net8.0), Abstractions (netstandard2.0) and the classic -EF6 package
-(net462) on `ubuntu-latest` and `windows-latest` every week, and fails on any
-`.dll`/`.pdb` hash difference (#732). Two build settings make that hold:
+The guarantee is **same commit, same SDK, same kind of environment, same bytes**.
+The assemblies (`.dll`) and symbols (`.pdb`) you rebuild on Windows with the SDK
+the release used are byte-identical to the ones inside the published packages.
 
-- `Directory.Build.targets` rewrites the SDK-generated sources
-  (`*.AssemblyInfo.cs`, `*.AssemblyAttributes.cs`, `*.GlobalUsings.g.cs`) to LF
-  before compiling. The SDK writes them with the OS newline, and the portable
-  PDB records and embeds every compiled source, so they made the PDB, and with
-  it the DLL's module version id, differ per OS.
-- `Directory.Build.props` pins `Microsoft.NETFramework.ReferenceAssemblies` for
-  net4x builds. Without it, Windows compiles against the installed targeting pack
-  and Linux against the NuGet package, and the PDB records each reference
-  assembly's identity.
+That is what the `Build reproducibility` workflow checks every week: it builds
+every `src/` project, all target frameworks, from two checkouts in different
+directories on `windows-latest`, and fails on any `.dll`/`.pdb` difference. A manual
+run with a `verify-tag` input packs a release tag and compares the assemblies and
+symbols inside every package against the ones published on that GitHub release,
+which is the check you would run yourself.
 
-Package files are **not** covered: NuGet stamps the pack time into every
-`.nupkg`/`.snupkg` zip entry, so two packs of one commit on one machine differ.
-Compare the assemblies inside the packages, as shown above.
+**Not guaranteed:**
 
-A mismatch in a `.dll` built from the same commit with the same SDK is the
-signal that warrants a report. A different SDK patch can legitimately change
-the output.
+- **Identical bytes across operating systems.** Linux, macOS and Windows may
+  produce different files from the same commit. The workflow also builds on
+  `ubuntu-latest` and reports a difference as a warning only. Today they match
+  because `Directory.Build.targets` rewrites the SDK-generated sources to LF
+  and `Directory.Build.props` pins `Microsoft.NETFramework.ReferenceAssemblies`
+  for net4x builds, which also stops a machine's installed targeting pack from
+  leaking into the PDB. Neither is a promise, and verification does not depend on
+  them: rebuild on Windows.
+- **Package files.** NuGet stamps the pack time into every `.nupkg`/`.snupkg` zip
+  entry, so two packs of one commit on one machine differ. Compare the assemblies
+  inside the packages, as shown above.
+- **A different SDK, or a different runtime hosting it.** A different SDK patch
+  can change the output, and so can the runtime the compiler runs on, because the
+  portable PDB records both. There is no `global.json` pin, so match the release:
+  find the `SDK with version '...'` line in the release's `release.yaml` run log
+  (v0.9.0 used 10.0.401), install exactly that SDK, select it with a
+  `global.json` that cannot roll forward, and stop the compiler host from rolling
+  forward to a newer runtime:
+
+  ```bash
+  echo '{"sdk":{"version":"10.0.401","rollForward":"disable"}}' > global.json
+  export DOTNET_ROLL_FORWARD=Disable
+  ```
+
+  Rebuilding v0.9.0 this way on `windows-latest` matched all 46 `.dll` and `.pdb`
+  files in its published `.nupkg` and `.snupkg` packages; without the pinned SDK
+  and runtime, every file differed.
+
+A mismatch in a `.dll` built from the same commit with the same SDK on Windows is
+the signal that warrants a report.
 
 ## Report a discrepancy
 
