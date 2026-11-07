@@ -1,25 +1,41 @@
 name: Build reproducibility
 
-# Verifies that the deterministic-build knobs in Directory.Build.props
-# (<Deterministic>, <ContinuousIntegrationBuild>, SourceLink + EmbedUntrackedSources)
-# actually produce byte-identical managed assemblies when the same commit is
-# built on different runners. Any .dll or .pdb hash difference between ubuntu-latest and
-# windows-latest fails the run (#732). Two fixes make that hold: Directory.Build.targets
-# rewrites the SDK-generated sources to LF before compiling, and Directory.Build.props pins
-# the .NET Framework reference assemblies for net4x builds. Package files (.nupkg/.snupkg)
-# are not compared: NuGet stamps the pack time into every zip entry.
+# What this proves: the same commit, built with the same SDK on the SAME kind of runner, gives
+# byte-identical managed assemblies and symbols. That is the guarantee anyone who downloads the
+# source relies on to rebuild a release and compare it (docs/REPRODUCIBLE-BUILD.md).
 #
-# Covers one representative project per shared-source group rather than all 10
-# src projects: -Core-EF6/7/8/9/10 compile the same source files, linked from
-# src/Wolfgang.DbContextBuilder-Core/ by each wrapper's own csproj (see
-# docs/adr/0001), so only -Core-EF10 (net10.0, the newest shipped package) and
-# -Core-EF8 (net8.0) are built — the other EF-pinned wrappers would just re-verify
-# the same source under a different TFM. -Core itself no longer ships (ADR-0003).
-# The classic -EF6 package is built for net462 to cover the .NET Framework reference
-# assemblies.
+# The reference environment is windows-latest, because release.yaml packs the published
+# packages there. Cross-OS equality is NOT promised and is NOT a gate: the `cross-os` job only
+# reports a difference as a warning.
+#
+# Jobs:
+#   rebuild         Builds every src project (all TFMs) from two checkouts in different
+#                   directories on windows-latest, hashes every .dll/.pdb, and fails on any
+#                   difference. Different directories prove no build path leaks into the output.
+#   cross-os        Informational. Builds on ubuntu-latest and warns if the hashes differ from
+#                   the Windows ones. Directory.Build.targets (LF generated sources) and
+#                   Directory.Build.props (pinned net4x reference assemblies) make them match today.
+#   verify-release  Manual only (workflow_dispatch with `verify-tag`). Packs the tag on windows-latest
+#                   and compares the .dll/.pdb inside every package against the package published on
+#                   the GitHub release. This is the check a third party would run. It needs the same
+#                   SDK the release used: a different SDK patch can legitimately change the output.
+#
+# Package files (.nupkg/.snupkg) are never compared byte for byte: NuGet stamps the pack time into
+# every zip entry. Only the assemblies and symbols inside them are.
 
 on:
   workflow_dispatch:
+    inputs:
+      verify-tag:
+        description: 'Release tag to rebuild and compare against its published packages (optional)'
+        required: false
+        default: ''
+        type: string
+      sdk-version:
+        description: 'Exact .NET SDK to rebuild the tag with (verify-tag only), e.g. 10.0.401 - the SDK the release run used'
+        required: false
+        default: ''
+        type: string
   schedule:
     - cron: '40 5 * * 1'   # Mondays 05:40 UTC
 
@@ -27,13 +43,75 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build + hash (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ ubuntu-latest, windows-latest ]
-    runs-on: ${{ matrix.os }}
+  rebuild:
+    name: Rebuild twice (windows-latest)
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      CI: 'true'
+    steps:
+      - name: Checkout (copy A)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: a
+          persist-credentials: false
+
+      - name: Checkout (copy B)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: b
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Build and hash both copies
+        shell: bash
+        run: |
+          set -euo pipefail
+          for copy in a b; do
+            for proj in "$copy"/src/*/*.csproj; do
+              dotnet build "$proj" -c Release -p:ContinuousIntegrationBuild=true
+            done
+            # Paths are relative to the copy root, so the two manifests are comparable.
+            ( cd "$copy" && find src -path '*/bin/Release/*' -type f \
+                \( -name 'Wolfgang.*.dll' -o -name 'Wolfgang.*.pdb' \) -print0 \
+                | sort -z | xargs -0 sha256sum ) > "manifest-$copy.txt"
+            if [ ! -s "manifest-$copy.txt" ]; then
+              echo "::error::No assemblies were found to hash in copy $copy."
+              exit 1
+            fi
+          done
+          echo "== copy A ==" && cat manifest-a.txt
+
+      - name: Compare
+        shell: bash
+        run: |
+          if diff -u manifest-a.txt manifest-b.txt; then
+            echo "Reproducible: $(wc -l < manifest-a.txt) assemblies and symbols are byte-identical across two builds."
+          else
+            echo "::error::The same commit built in two directories produced different .dll/.pdb bytes - the build is not reproducible."
+            exit 1
+          fi
+
+      - name: Upload manifest
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: manifest-windows
+          path: manifest-a.txt
+          if-no-files-found: error
+
+  cross-os:
+    name: Cross-OS comparison (informational)
+    needs: rebuild
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -47,71 +125,151 @@ jobs:
             8.0.x
             10.0.x
 
-      - name: Build src (Release, deterministic)
-        shell: bash
-        run: |
-          dotnet build src/Wolfgang.DbContextBuilder-Core-EF10/Wolfgang.DbContextBuilder-Core-EF10.csproj \
-            -c Release -f net10.0 -p:ContinuousIntegrationBuild=true
-          dotnet build src/Wolfgang.DbContextBuilder-Core-EF8/Wolfgang.DbContextBuilder-Core-EF8.csproj \
-            -c Release -f net8.0 -p:ContinuousIntegrationBuild=true
-          dotnet build src/Wolfgang.DbContextBuilder.Abstractions/Wolfgang.DbContextBuilder.Abstractions.csproj \
-            -c Release -f netstandard2.0 -p:ContinuousIntegrationBuild=true
-          dotnet build src/Wolfgang.DbContextBuilder-EF6/Wolfgang.DbContextBuilder-EF6.csproj \
-            -c Release -f net462 -p:ContinuousIntegrationBuild=true
-
-      - name: Hash assemblies
-        shell: bash
-        run: |
-          sha256sum \
-            src/Wolfgang.DbContextBuilder-Core-EF10/bin/Release/net10.0/Wolfgang.DbContextBuilder-Core-EF10.dll \
-            src/Wolfgang.DbContextBuilder-Core-EF10/bin/Release/net10.0/Wolfgang.DbContextBuilder-Core-EF10.pdb \
-            src/Wolfgang.DbContextBuilder-Core-EF8/bin/Release/net8.0/Wolfgang.DbContextBuilder-Core-EF8.dll \
-            src/Wolfgang.DbContextBuilder-Core-EF8/bin/Release/net8.0/Wolfgang.DbContextBuilder-Core-EF8.pdb \
-            src/Wolfgang.DbContextBuilder.Abstractions/bin/Release/netstandard2.0/Wolfgang.DbContextBuilder.Abstractions.dll \
-            src/Wolfgang.DbContextBuilder.Abstractions/bin/Release/netstandard2.0/Wolfgang.DbContextBuilder.Abstractions.pdb \
-            src/Wolfgang.DbContextBuilder-EF6/bin/Release/net462/Wolfgang.DbContextBuilder-EF6.dll \
-            src/Wolfgang.DbContextBuilder-EF6/bin/Release/net462/Wolfgang.DbContextBuilder-EF6.pdb \
-            | awk '{ n = split($2, parts, "/"); print $1 "  " parts[n] }' \
-            | sort > "hashes-${{ matrix.os }}.txt"
-          echo "== ${{ matrix.os }} =="
-          cat "hashes-${{ matrix.os }}.txt"
-
-      - name: Upload hashes
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: hashes-${{ matrix.os }}
-          path: hashes-${{ matrix.os }}.txt
-
-  compare:
-    name: Compare across runners
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download hashes
+      - name: Download Windows manifest
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          path: hashes
+          name: manifest-windows
+          path: windows
 
-      - name: Diff manifests
+      - name: Build, hash and compare
         shell: bash
         run: |
-          ubuntu="hashes/hashes-ubuntu-latest/hashes-ubuntu-latest.txt"
-          windows="hashes/hashes-windows-latest/hashes-windows-latest.txt"
-          echo "== ubuntu-latest =="; cat "$ubuntu"
-          echo "== windows-latest =="; cat "$windows"
-          if diff -u "$ubuntu" "$windows"; then
-            echo "✅ Reproducible: .dll and .pdb hashes match across ubuntu + windows."
+          set -euo pipefail
+          for proj in src/*/*.csproj; do
+            dotnet build "$proj" -c Release -p:ContinuousIntegrationBuild=true
+          done
+          find src -path '*/bin/Release/*' -type f \
+            \( -name 'Wolfgang.*.dll' -o -name 'Wolfgang.*.pdb' \) -print0 \
+            | sort -z | xargs -0 sha256sum > manifest-ubuntu.txt
+          if diff -u windows/manifest-a.txt manifest-ubuntu.txt; then
+            echo "Ubuntu and Windows happen to produce identical assemblies and symbols."
           else
-            echo "::error::.dll/.pdb hashes differ across runners - the build is not byte-identical cross-OS. Check the generated-source line endings (Directory.Build.targets), the net4x reference assemblies (Directory.Build.props), and embedded paths / SourceLink normalization."
-            exit 1
+            # Not a failure: byte equality across operating systems is not part of the guarantee.
+            echo "::warning::Ubuntu and Windows produced different bytes. This is allowed; rebuild on windows-latest to compare against the published packages."
           fi
+
+  verify-release:
+    name: Verify published release (${{ inputs.verify-tag }})
+    if: github.event_name == 'workflow_dispatch' && inputs.verify-tag != ''
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      CI: 'true'
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      VERIFY_TAG: ${{ inputs.verify-tag }}
+      VERIFY_SDK: ${{ inputs.sdk-version }}
+      # Roslyn runs on whichever runtime the SDK's host resolves, and the portable PDB records it, so
+      # pin the host to the runtime that ships with the pinned SDK instead of the newest installed one.
+      DOTNET_ROLL_FORWARD: ${{ inputs.sdk-version != '' && 'Disable' || '' }}
+    steps:
+      - name: Checkout the release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.verify-tag }}
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      # A different SDK patch can legitimately change the output, so the rebuild must use the SDK
+      # the release run used (see the "SDK with version" line in that run's log). The runner image
+      # has newer SDKs preinstalled, so install the exact one and select it with a global.json
+      # that cannot roll forward.
+      - name: Select the release's SDK
+        if: env.VERIFY_SDK != ''
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: ${{ inputs.sdk-version }}
+
+      - name: Pin the SDK
+        if: env.VERIFY_SDK != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "{\"sdk\":{\"version\":\"$VERIFY_SDK\",\"rollForward\":\"disable\"}}" > global.json
+          dotnet --version
+
+      - name: Pack every src project
+        shell: bash
+        run: |
+          set -euo pipefail
+          for proj in src/*/*.csproj; do
+            dotnet pack "$proj" -c Release -p:ContinuousIntegrationBuild=true
+          done
+
+      - name: Download the published packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p published
+          gh release download "$VERIFY_TAG" --pattern '*.nupkg' --pattern '*.snupkg' --dir published
+          ls published
+
+      - name: Compare assemblies and symbols inside each package
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tmp = Join-Path $env:RUNNER_TEMP 'verify'
+          New-Item -ItemType Directory -Force $tmp | Out-Null
+
+          function Get-InnerHashes([string] $package, [string] $label)
+          {
+              $zip = Join-Path $tmp "$label-$(Split-Path $package -Leaf).zip"
+              Copy-Item $package $zip
+              $dir = Join-Path $tmp "$label-$(Split-Path $package -Leaf)"
+              Expand-Archive $zip $dir -Force
+              $result = @{}
+              Get-ChildItem $dir -Recurse -File -Include '*.dll', '*.pdb' | ForEach-Object {
+                  $rel = $_.FullName.Substring($dir.Length).TrimStart('\', '/') -replace '\\', '/'
+                  $result[$rel] = (Get-FileHash $_.FullName -Algorithm SHA256).Hash
+              }
+              return $result
+          }
+
+          $failures = 0
+          $compared = 0
+          foreach ($published in Get-ChildItem published -File)
+          {
+              $local = Get-ChildItem src -Recurse -File -Filter $published.Name |
+                  Where-Object { $_.FullName -match '[\\/]bin[\\/]Release[\\/]' } |
+                  Select-Object -First 1
+              if ($null -eq $local)
+              {
+                  Write-Host "::error::No locally packed file named $($published.Name)."
+                  $failures++
+                  continue
+              }
+
+              $want = Get-InnerHashes $published.FullName 'published'
+              $got = Get-InnerHashes $local.FullName 'local'
+              foreach ($key in ($want.Keys + $got.Keys | Sort-Object -Unique))
+              {
+                  $compared++
+                  if ($want[$key] -ne $got[$key])
+                  {
+                      Write-Host "::error::$($published.Name) :: $key differs (published $($want[$key]), rebuilt $($got[$key]))."
+                      $failures++
+                  }
+              }
+          }
+
+          Write-Host "Compared $compared file(s) across the published packages; $failures difference(s)."
+          if ($failures -gt 0 -or $compared -eq 0)
+          {
+              throw "The rebuilt assemblies do not match the published release. Check that the SDK matches the one the release used."
+          }
 
   # Scheduled runs have no one watching them, so a failure files (or comments on) one tracking
   # issue per workflow instead of failing into a void (#588). A separate job, so only it holds
   # issues: write; manual and push/PR runs are watched by whoever started them.
   notify-failure:
     name: File an issue when the scheduled run fails
-    needs: [build, compare]
+    needs: [rebuild, cross-os]
     if: failure() && github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 5
