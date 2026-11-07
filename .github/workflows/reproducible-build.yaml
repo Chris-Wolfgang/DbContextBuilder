@@ -159,6 +159,9 @@ jobs:
       GH_REPO: ${{ github.repository }}
       VERIFY_TAG: ${{ inputs.verify-tag }}
       VERIFY_SDK: ${{ inputs.sdk-version }}
+      # Roslyn runs on whichever runtime the SDK's host resolves, and the portable PDB records it, so
+      # pin the host to the runtime that ships with the pinned SDK instead of the newest installed one.
+      DOTNET_ROLL_FORWARD: ${{ inputs.sdk-version != '' && 'Disable' || '' }}
     steps:
       - name: Checkout the release tag
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
