@@ -31,6 +31,11 @@ on:
         required: false
         default: ''
         type: string
+      sdk-version:
+        description: 'Exact .NET SDK to rebuild the tag with (verify-tag only), e.g. 10.0.401 - the SDK the release run used'
+        required: false
+        default: ''
+        type: string
   schedule:
     - cron: '40 5 * * 1'   # Mondays 05:40 UTC
 
@@ -153,6 +158,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
       VERIFY_TAG: ${{ inputs.verify-tag }}
+      VERIFY_SDK: ${{ inputs.sdk-version }}
     steps:
       - name: Checkout the release tag
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -166,6 +172,25 @@ jobs:
           dotnet-version: |
             8.0.x
             10.0.x
+
+      # A different SDK patch can legitimately change the output, so the rebuild must use the SDK
+      # the release run used (see the "SDK with version" line in that run's log). The runner image
+      # has newer SDKs preinstalled, so install the exact one and select it with a global.json
+      # that cannot roll forward.
+      - name: Select the release's SDK
+        if: env.VERIFY_SDK != ''
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: ${{ inputs.sdk-version }}
+
+      - name: Pin the SDK
+        if: env.VERIFY_SDK != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '{"sdk":{"version":"%s","rollForward":"disable"}}
+' "$VERIFY_SDK" > global.json
+          dotnet --version
 
       - name: Pack every src project
         shell: bash
