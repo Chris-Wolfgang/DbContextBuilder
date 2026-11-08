@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792306741258,
+  "lastUpdate": 1794145089302,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "Mutation score": [
@@ -269,6 +269,33 @@ window.BENCHMARK_DATA = {
           {
             "name": "Mutation score",
             "value": 94.95,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "534863141a3596e1798edf7b8f0c5ebfb4bbc8e9",
+          "message": "ci: reproducible-build gate rebuilds twice on the reference runner; cross-OS informational (#795)\n\n* ci: reproducible-build gate rebuilds twice on the reference runner; cross-OS is informational\n\nThe guarantee anyone can rely on is that the same commit and SDK give the same bytes on the same kind of runner. release.yaml packs on windows-latest, so that is the reference. The old gate failed on any Ubuntu/Windows difference, which is not promised. Adds a manual verify-release job that compares a published release's assemblies and symbols with a fresh rebuild of its tag.\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\n\n* ci(repro): verify-release can rebuild with the exact SDK the release used\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\n\n* ci(repro): fix the global.json line in the SDK pin step\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\n\n* ci(repro): disable runtime roll-forward when rebuilding with a pinned SDK\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Sonnet 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-07T13:57:25Z",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/534863141a3596e1798edf7b8f0c5ebfb4bbc8e9"
+        },
+        "date": 1794145088006,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score",
+            "value": 96.92,
             "unit": "%"
           }
         ]
