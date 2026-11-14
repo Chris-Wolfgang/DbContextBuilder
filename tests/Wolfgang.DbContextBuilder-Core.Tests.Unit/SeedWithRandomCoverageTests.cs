@@ -403,6 +403,7 @@ public class SeedWithRandomCoverageTests
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => sut.BuildAsync());
 
         Assert.StartsWith("Cannot give every seeded ByteKeyRow a unique primary key", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("Byte key 'Id' has no unused value left", ex.Message, StringComparison.Ordinal);
         Assert.Contains("its largest value is 255", ex.Message, StringComparison.Ordinal);
     }
 
