@@ -15,6 +15,8 @@ public class BuildReentrancyTests
 {
     private const string AlreadySeededMessage = "Seed data must be added before the first Build() or BuildAsync() call";
 
+    private const string AlreadySeededMessageTail = "been created and seeded. Add all seed data first, or use a new DbContextBuilder.";
+
 
 
     /// <summary>
@@ -100,6 +102,7 @@ public class BuildReentrancyTests
 
         var ex = Assert.Throws<InvalidOperationException>(seed);
         Assert.StartsWith(AlreadySeededMessage, ex.Message, StringComparison.Ordinal);
+        Assert.EndsWith(AlreadySeededMessageTail, ex.Message, StringComparison.Ordinal);
     }
 
 
