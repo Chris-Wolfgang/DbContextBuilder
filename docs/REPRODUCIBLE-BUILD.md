@@ -32,9 +32,11 @@ identical given the same source commit and a matching compiler (SDK) version.
 | .NET SDK | 10.0.x (latest patch — the released packages are packed with the 10.0 SDK) |
 | OS | **Windows** is the reference environment: the released packages are packed on `windows-latest` (`release.yaml`). Other operating systems may produce different bytes; see [What is guaranteed](#what-is-guaranteed). |
 
-There is no `global.json` SDK pin, so use the latest **.NET 10** SDK. The Roslyn
-compiler ships with the SDK, so a different SDK *major* can change the emitted IL;
-stay on 10.0.x to reproduce a package built during the current release cycle.
+`global.json` pins the SDK to the **.NET 10** major (`"version": "10.0.100"`,
+`"rollForward": "latestFeature"`), so any 10.0.x SDK at or above 10.0.100 builds
+the repository and an SDK 11 cannot be picked up by accident. The Roslyn compiler
+ships with the SDK, so a different SDK *major* can change the emitted IL. For
+byte-identical output, match the exact SDK the release used (see below).
 
 ## Verify a release
 
@@ -112,11 +114,11 @@ which is the check you would run yourself.
   inside the packages, as shown above.
 - **A different SDK, or a different runtime hosting it.** A different SDK patch
   can change the output, and so can the runtime the compiler runs on, because the
-  portable PDB records both. There is no `global.json` pin, so match the release:
-  find the `SDK with version '...'` line in the release's `release.yaml` run log
-  (v0.9.0 used 10.0.401), install exactly that SDK, select it with a
-  `global.json` that cannot roll forward, and stop the compiler host from rolling
-  forward to a newer runtime:
+  portable PDB records both. The checked-in `global.json` only pins the major
+  (`latestFeature`), so match the release exactly: find the `SDK with version '...'`
+  line in the release's `release.yaml` run log (v0.9.0 used 10.0.401), install
+  exactly that SDK, overwrite `global.json` with one that cannot roll forward, and
+  stop the compiler host from rolling forward to a newer runtime:
 
   ```bash
   echo '{"sdk":{"version":"10.0.401","rollForward":"disable"}}' > global.json
