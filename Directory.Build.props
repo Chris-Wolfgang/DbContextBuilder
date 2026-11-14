@@ -119,7 +119,7 @@
          csproj where they are repo-specific. -->
     <Authors>Chris Wolfgang</Authors>
     <Company>Chris Wolfgang</Company>
-    <Copyright>Copyright (c) Chris Wolfgang</Copyright>
+    <Copyright>Copyright (c) 2025-2026 Chris Wolfgang</Copyright>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
