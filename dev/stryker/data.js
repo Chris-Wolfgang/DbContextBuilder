@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794145089302,
+  "lastUpdate": 1794753835375,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "Mutation score": [
@@ -296,6 +296,33 @@ window.BENCHMARK_DATA = {
           {
             "name": "Mutation score",
             "value": 96.92,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "e3844164ff3dd6c412e6438b0c7f73556d2759cf",
+          "message": "docs(reproducible-build): describe the global.json SDK pin (#804)\n\nOnce #800 adds global.json (10.0.100, latestFeature), the verifier doc's\n\"there is no global.json pin\" text is wrong. Say what the pin does and that\nan exact rebuild still overwrites it with the release's SDK.\n\nRefs #796\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-14T18:35:32Z",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/e3844164ff3dd6c412e6438b0c7f73556d2759cf"
+        },
+        "date": 1794753834087,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score",
+            "value": 97.36,
             "unit": "%"
           }
         ]
