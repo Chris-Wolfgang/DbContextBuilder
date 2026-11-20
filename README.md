@@ -60,9 +60,9 @@ Each package targets the .NET runtimes its EF version requires:
 | `Wolfgang.DbContextBuilder-Core-EF9` | `net9.0` |
 | `Wolfgang.DbContextBuilder-Core-EF10` | `net10.0` |
 | `Wolfgang.DbContextBuilder-EF6` (classic) | `net462; net47; net471; net472; net48; net481` |
-| `Wolfgang.DbContextBuilder.Abstractions` | `netstandard2.0; net10.0` |
-| `Wolfgang.DbContextBuilder.AutoFixture` | `net6.0; net7.0; net8.0; net9.0; net10.0` |
-| `Wolfgang.DbContextBuilder.Bogus` | `net6.0; net7.0; net8.0; net9.0; net10.0` |
+| `Wolfgang.DbContextBuilder.Abstractions` | `netstandard2.0; net10.0; net11.0` |
+| `Wolfgang.DbContextBuilder.AutoFixture` | `net6.0; net7.0; net8.0; net9.0; net10.0; net11.0` |
+| `Wolfgang.DbContextBuilder.Bogus` | `net6.0; net7.0; net8.0; net9.0; net10.0; net11.0` |
 
 ---
 
