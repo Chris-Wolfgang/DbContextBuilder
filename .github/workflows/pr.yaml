@@ -419,7 +419,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: |
+            10.0.x
+            11.0.x
 
       # Restore + build everything the solution knows about. On
       # windows-latest .NET Framework 4.x reference assemblies are bundled,
@@ -670,6 +672,7 @@ jobs:
             8.0.x
             9.0.x
             10.0.x
+            11.0.x
 
       - name: Restore .NET workloads
         # Some projects (MAUI / MauiHybrid / Android / iOS / WPF) declare workloads via
@@ -697,9 +700,9 @@ jobs:
           while IFS= read -r -d '' proj; do
             project_found=true
             # Check if project has any .NET 5+ target framework
-            # Look for: net5.0, net6.0, net7.0, net8.0, net9.0, net10.0, or netcoreapp, netstandard
+            # Look for: net5.0, net6.0, net7.0, net8.0, net9.0, net10.0, net11.0, or netcoreapp, netstandard
             # Normalize line endings to handle multi-line <TargetFramework> / <TargetFrameworks> elements
-            if tr -d '\n\r' < "$proj" | grep -qE '<TargetFramework[s]?>.*(net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0)|netcoreapp|netstandard)'; then
+            if tr -d '\n\r' < "$proj" | grep -qE '<TargetFramework[s]?>.*(net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0|11\.0)|netcoreapp|netstandard)'; then
               projects+=("$proj")
               echo "✓ Including: $proj (has .NET 5+ or .NET Core target)"
             else
@@ -750,7 +753,7 @@ jobs:
               tfm_raw=$(dotnet msbuild "$proj" -noLogo -getProperty:TargetFramework 2>/dev/null \
                 | grep -v '^[[:space:]]*$' | tail -n1 | sed 's/^TargetFramework[=:][[:space:]]*//' | tr -d '[:space:]')
             fi
-            frameworks=$(printf '%s' "$tfm_raw" | tr ';' '\n' | grep -E '^(net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0)|netcoreapp[0-9.]+|netstandard[0-9.]+)$' || true)
+            frameworks=$(printf '%s' "$tfm_raw" | tr ';' '\n' | grep -E '^(net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0|11\.0)|netcoreapp[0-9.]+|netstandard[0-9.]+)$' || true)
             
             if [ -z "$frameworks" ]; then
               echo "⚠️  No Linux-compatible frameworks found in $proj"
@@ -840,7 +843,7 @@ jobs:
               tfm_raw=$(dotnet msbuild "$test_proj" -noLogo -getProperty:TargetFramework 2>/dev/null \
                 | grep -v '^[[:space:]]*$' | tail -n1 | sed 's/^TargetFramework[=:][[:space:]]*//' | tr -d '[:space:]')
             fi
-            frameworks=$(printf '%s' "$tfm_raw" | tr ';' '\n' | grep -E '^(net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0)|netcoreapp3\.1)$' || true)
+            frameworks=$(printf '%s' "$tfm_raw" | tr ';' '\n' | grep -E '^(net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0|11\.0)|netcoreapp3\.1)$' || true)
             
             if [ -z "$frameworks" ]; then
               echo "⊘ Skipping: No compatible .NET 5.0-10.0 target frameworks found"
@@ -1165,6 +1168,7 @@ jobs:
             8.0.x
             9.0.x
             10.0.x
+            11.0.x
 
       - name: TFM parity between src/ and test projects (guard 3)
         # Warns when a src/ project targets a framework no test project can
@@ -1300,11 +1304,11 @@ jobs:
             # gates their coverage. Skipped here, they never enter this stage's ran-assemblies
             # ledger, so the row check below does not expect them either.
             # The skip comes AFTER TFM discovery so a TFM Stage 1 cannot run (its allowlist is
-            # net5.0-net10.0 + netcoreapp3.1; e.g. net48 or net8.0-windows) is still reported
+            # net5.0-net11.0 + netcoreapp3.1; e.g. net48 or net8.0-windows) is still reported
             # as running nowhere, instead of vanishing with the project.
             if ($testProj.Name -like '*.Tests.Integration.*') {
               $allFrameworks = @($tfmMatch.Groups[1].Value -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
-              $notOnStage1 = @($allFrameworks | Where-Object { $_ -notmatch '^(net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0)|netcoreapp3\.1)$' })
+              $notOnStage1 = @($allFrameworks | Where-Object { $_ -notmatch '^(net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0|11\.0)|netcoreapp3\.1)$' })
               if ($notOnStage1.Count -gt 0) {
                 Write-Host "::warning file=$($testProj.FullName)::TFM(s) not covered by any CI stage: $($notOnStage1 -join ', ') — integration projects run only on Stage 1 (Linux), which does not run these TFMs."
               }
@@ -1314,7 +1318,7 @@ jobs:
             }
 
             # Split by semicolon for multi-targeting projects
-            $frameworks = $tfmMatch.Groups[1].Value -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0|462|47|471|472|48|481|coreapp3\.1)$' }
+            $frameworks = $tfmMatch.Groups[1].Value -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0|11\.0|462|47|471|472|48|481|coreapp3\.1)$' }
             
             if ($frameworks.Count -eq 0) {
               Write-Host "⊘ Skipping: No compatible .NET 5.0-10.0 or Framework 4.6.2-4.8.1 target frameworks found" -ForegroundColor Yellow
@@ -1686,6 +1690,7 @@ jobs:
             8.0.x
             9.0.x
             10.0.x
+            11.0.x
 
       - name: Restore .NET workloads
         # Some projects (MAUI / MauiHybrid / Android / iOS / WPF) declare workloads via
@@ -1713,9 +1718,9 @@ jobs:
           while IFS= read -r -d '' proj; do
             project_found=true
             # Check if project has any .NET 6+ target framework (macOS ARM64 compatible)
-            # Look for: net6.0, net7.0, net8.0, net9.0, net10.0
+            # Look for: net6.0, net7.0, net8.0, net9.0, net10.0, net11.0
             # Normalize newlines to spaces so multi-line <TargetFrameworks> elements are matched correctly
-            if tr $'\n' ' ' < "$proj" | grep -qE '<TargetFramework[s]?>[^<]*net(6\.0|7\.0|8\.0|9\.0|10\.0)'; then
+            if tr $'\n' ' ' < "$proj" | grep -qE '<TargetFramework[s]?>[^<]*net(6\.0|7\.0|8\.0|9\.0|10\.0|11\.0)'; then
               projects+=("$proj")
               echo "✓ Including: $proj (has .NET 6+ target)"
             else
@@ -1765,7 +1770,7 @@ jobs:
               tfm_raw=$(dotnet msbuild "$proj" -noLogo -getProperty:TargetFramework 2>/dev/null \
                 | grep -v '^[[:space:]]*$' | tail -n1 | sed 's/^TargetFramework[=:][[:space:]]*//' | tr -d '[:space:]')
             fi
-            frameworks=$(printf '%s' "$tfm_raw" | tr ';' '\n' | grep -E '^net(6\.0|7\.0|8\.0|9\.0|10\.0)$' || true)
+            frameworks=$(printf '%s' "$tfm_raw" | tr ';' '\n' | grep -E '^net(6\.0|7\.0|8\.0|9\.0|10\.0|11\.0)$' || true)
             
             if [ -z "$frameworks" ]; then
               echo "⚠️  No macOS ARM64-compatible frameworks found in $proj"
@@ -1845,7 +1850,7 @@ jobs:
               tfm_raw=$(dotnet msbuild "$test_proj" -noLogo -getProperty:TargetFramework 2>/dev/null \
                 | grep -v '^[[:space:]]*$' | tail -n1 | sed 's/^TargetFramework[=:][[:space:]]*//' | tr -d '[:space:]')
             fi
-            frameworks=$(printf '%s' "$tfm_raw" | tr ';' '\n' | grep -E '^net(6\.0|7\.0|8\.0|9\.0|10\.0)$' || true)
+            frameworks=$(printf '%s' "$tfm_raw" | tr ';' '\n' | grep -E '^net(6\.0|7\.0|8\.0|9\.0|10\.0|11\.0)$' || true)
             
             if [ -z "$frameworks" ]; then
               echo "⊘ Skipping: No compatible .NET 6.0-10.0 target frameworks found (ARM64 required)"

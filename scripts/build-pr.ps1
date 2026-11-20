@@ -156,7 +156,7 @@ if (-not $SkipTests -and $failed.Count -eq 0) {
 
             $frameworks = $tfmMatch.Groups[1].Value -split ';' |
                 ForEach-Object { $_.Trim() } |
-                Where-Object { $_ -match '^net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0|462|47|471|472|48|481|coreapp3\.1)$' }
+                Where-Object { $_ -match '^net(5\.0|6\.0|7\.0|8\.0|9\.0|10\.0|11\.0|462|47|471|472|48|481|coreapp3\.1)$' }
 
             if ($frameworks.Count -eq 0) {
                 Write-Host "  No compatible frameworks — skipping" -ForegroundColor Yellow
