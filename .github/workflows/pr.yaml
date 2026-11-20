@@ -2486,6 +2486,7 @@ jobs:
         # older versions. Exempt only when Dependabot opened the PR AND triggered this run: a
         # collaborator's push to a dependabot/** branch keeps the PR author but not the actor (#592).
         if: github.event.pull_request.user.login != 'dependabot[bot]' || github.actor != 'dependabot[bot]'
+        shell: bash
         run: |
           echo "Fetching configuration files from main branch to prevent malicious overrides..."
           
