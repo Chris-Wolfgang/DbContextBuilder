@@ -166,7 +166,7 @@ The Core package exposes a small, focused surface. The full reference is on the 
 ## 🛠️ Building from Source
 
 ### Prerequisites
-- [.NET SDK](https://dotnet.microsoft.com/download) - the current release (10.0); see *Supported Frameworks* for the targets that are built
+- [.NET SDK](https://dotnet.microsoft.com/download) - 11.0 (pinned by `global.json`); see *Supported Frameworks* for the targets that are built
 - [PowerShell 7](https://github.com/PowerShell/PowerShell) (`pwsh`) for the scripts under `scripts/`
 
 ### Build Steps
