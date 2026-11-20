@@ -50,6 +50,7 @@ jobs:
             8.0.x
             9.0.x
             10.0.x
+            11.0.x
 
       # Pinned, not floating (#517). Keep DOCFX_VERSION in step across build-all-versions.yaml,
       # docfx.yaml and release.yaml.
