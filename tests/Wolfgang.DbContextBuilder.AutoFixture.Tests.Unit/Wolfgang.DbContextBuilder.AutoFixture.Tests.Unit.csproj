@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore.Tests.Unit</RootNamespace>
-		<TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+		<TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
@@ -28,7 +28,7 @@
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
 		<DefineConstants>$(DefineConstants);EF_CORE_9;EF_CORE_6_OR_GREATER;EF_CORE_7_OR_GREATER;EF_CORE_8_OR_GREATER;EF_CORE_9_OR_GREATER</DefineConstants>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+	<PropertyGroup Condition="('$(TargetFramework)' == 'net10.0' or '$(TargetFramework)' == 'net11.0')">
 		<DefineConstants>$(DefineConstants);EF_CORE_10;EF_CORE_6_OR_GREATER;EF_CORE_7_OR_GREATER;EF_CORE_8_OR_GREATER;EF_CORE_9_OR_GREATER;EF_CORE_10_OR_GREATER</DefineConstants>
 	</PropertyGroup>
 
@@ -37,7 +37,7 @@
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
 	</ItemGroup>
 	<!-- .NET 8.0 - 10.0 test tooling -->
-	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0' or '$(TargetFramework)' == 'net10.0'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0' or ('$(TargetFramework)' == 'net10.0' or '$(TargetFramework)' == 'net11.0')">
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
 	</ItemGroup>
 
@@ -85,7 +85,7 @@
 	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
 		<ProjectReference Include="..\..\extra-projects\AdventureWorks-EF9\AdventureWorks-EF9.csproj" />
 	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+	<ItemGroup Condition="('$(TargetFramework)' == 'net10.0' or '$(TargetFramework)' == 'net11.0')">
 		<ProjectReference Include="..\..\extra-projects\AdventureWorks-EF10\AdventureWorks-EF10.csproj" />
 	</ItemGroup>
 
