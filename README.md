@@ -192,6 +192,20 @@ pwsh ./scripts/format.ps1
 pwsh ./scripts/build-pr.ps1
 ```
 
+### CI test matrix
+
+Every pull request runs the tests on five legs, each over the target frameworks that runtime supports there:
+
+| Leg | Runner | Target frameworks |
+|---|---|---|
+| Stage 1: Linux x64 (coverage gate) | `ubuntu-latest` | net6.0 and later |
+| Stage 2: Windows x64 | `windows-latest` | every TFM, .NET Framework 4.6.2-4.8.1 included |
+| Stage 3: macOS ARM64 | `macos-latest` | net6.0 and later |
+| Stage 4: Linux ARM64 | `ubuntu-24.04-arm` | net6.0 and later |
+| Stage 5: Windows ARM64 | `windows-11-arm` | net6.0 and later (.NET Framework runs on Stage 2) |
+
+Coverage is gated once, on Stage 1; the other legs prove the tests pass there.
+
 ## 🔐 Verify the build
 
 Every release publishes a signed SLSA build-provenance attestation, a CycloneDX
