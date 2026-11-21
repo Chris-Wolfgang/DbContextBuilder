@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794434186482,
+  "lastUpdate": 1795219486445,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "BenchmarkDotNet": [
@@ -3150,6 +3150,120 @@ window.BENCHMARK_DATA = {
             "value": 3224718.2552083335,
             "unit": "ns",
             "range": "± 657159.3986384788"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "87ca59bb6b38b7d2dadd33a09449694d6c40f934",
+          "message": "ci: install the .NET 11.0.x SDK and let net11.0 through the TFM filters (#808)\n\nEvery actions/setup-dotnet step now installs 11.0.x beside 10.0.x, and the\nStage 1/2/3 and build-pr.ps1 TFM allowlists accept net11.0, so the\nnet11.0 slots and the global.json 11.0.100 pin (next PR) have an SDK and\nare not filtered out. Stage job names are unchanged, so the required\nchecks on main still match.\n\nRefs #799\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-20T18:56:45-05:00",
+          "tree_id": "d648ad950023ec6d5985ba7faa490c95aa973f07",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/87ca59bb6b38b7d2dadd33a09449694d6c40f934"
+        },
+        "date": 1795219485472,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 1)",
+            "value": 18149.347747802734,
+            "unit": "ns",
+            "range": "± 913.6286378161205"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 1)",
+            "value": 23098.06758626302,
+            "unit": "ns",
+            "range": "± 1496.1158724215186"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 1)",
+            "value": 97070.31315104167,
+            "unit": "ns",
+            "range": "± 33255.94230889059"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 1)",
+            "value": 5950068.696614583,
+            "unit": "ns",
+            "range": "± 87403.87249710399"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 1)",
+            "value": 214266.13444010416,
+            "unit": "ns",
+            "range": "± 39917.97019738025"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 10)",
+            "value": 17663.554931640625,
+            "unit": "ns",
+            "range": "± 377.3833513860181"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 10)",
+            "value": 45441.0908203125,
+            "unit": "ns",
+            "range": "± 1377.8230980956728"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 10)",
+            "value": 206922.234375,
+            "unit": "ns",
+            "range": "± 23110.5805109464"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 10)",
+            "value": 6628024.809895833,
+            "unit": "ns",
+            "range": "± 186278.63977862845"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 10)",
+            "value": 403448.6868489583,
+            "unit": "ns",
+            "range": "± 45263.37966860501"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_NoSeed(SeedCount: 100)",
+            "value": 17455.222330729168,
+            "unit": "ns",
+            "range": "± 451.4667866044859"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWith(SeedCount: 100)",
+            "value": 167590.89192708334,
+            "unit": "ns",
+            "range": "± 5252.294439946988"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom(SeedCount: 100)",
+            "value": 1240269.3984375,
+            "unit": "ns",
+            "range": "± 72918.54764541762"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.Sqlite_SeedWith(SeedCount: 100)",
+            "value": 9126261.6796875,
+            "unit": "ns",
+            "range": "± 258184.8558209456"
+          },
+          {
+            "name": "Wolfgang.DbContextBuilderCore.Benchmarks.BuildAsyncBenchmarks.InMemory_SeedWithRandom_ForeignKeys(SeedCount: 100)",
+            "value": 2552723.7604166665,
+            "unit": "ns",
+            "range": "± 72188.4841113492"
           }
         ]
       }
