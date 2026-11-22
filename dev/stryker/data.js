@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794753835375,
+  "lastUpdate": 1795358962148,
   "repoUrl": "https://github.com/Chris-Wolfgang/DbContextBuilder",
   "entries": {
     "Mutation score": [
@@ -318,6 +318,33 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/e3844164ff3dd6c412e6438b0c7f73556d2759cf"
         },
         "date": 1794753834087,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score",
+            "value": 97.36,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "d2bb6be07cf9efc9305efafd9d67143650e27103",
+          "message": "docs(readme): state the five-leg CI test matrix and the per-leg TFM rule (#811)\n\nRefs #797\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-21T13:35:26Z",
+          "url": "https://github.com/Chris-Wolfgang/DbContextBuilder/commit/d2bb6be07cf9efc9305efafd9d67143650e27103"
+        },
+        "date": 1795358961258,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
