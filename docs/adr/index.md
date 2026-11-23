@@ -16,6 +16,7 @@ part of the review.
 
 | ADR | Title | Status |
 |---|---|---|
+| [0000](0000-record-architecture-decisions.md) | Record architecture decisions | Accepted |
 | [0001](0001-ef-version-wrappers-link-shared-source.md) | EF-version wrapper packages link the same source files as -Core | Accepted |
 | [0002](0002-many-to-many-join-table-heuristic-with-override-hook.md) | Many-to-many join table detection is a documented heuristic with a public override hook | Accepted |
 | [0003](0003-core-package-deprecated-not-unpublished.md) | Wolfgang.DbContextBuilder-Core stopped shipping and is deprecated, never unpublished | Accepted |
