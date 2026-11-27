@@ -97,7 +97,7 @@ jobs:
               # Directory.Build.props/targets are matched at ANY depth: MSBuild discovers them
               # by directory, so src/Directory.Build.props shapes the build exactly as the root
               # one does. This repository has four of them.
-              .editorconfig|directory.build.props|directory.build.targets|*/directory.build.props|*/directory.build.targets|bannedsymbols.txt|coverlet.runsettings|.config/dotnet-tools.json|.gitleaks.toml|scripts/changelog.ps1|scripts/tfm-parity.ps1|scripts/build-pr.ps1|scripts/third-party-notices.ps1) protected+=("$file") ;;
+              .editorconfig|directory.build.props|directory.build.targets|*/directory.build.props|*/directory.build.targets|bannedsymbols.txt|coverlet.runsettings|.config/dotnet-tools.json|.gitleaks.toml|scripts/changelog.ps1|scripts/tfm-parity.ps1|scripts/compile-link-parity.ps1|scripts/build-pr.ps1|scripts/third-party-notices.ps1) protected+=("$file") ;;
               *)
                 # -i: Windows (and ReSharper on it) resolve names case-insensitively, so
                 # foo.dotsettings is as live as foo.DotSettings. The license-audit policy

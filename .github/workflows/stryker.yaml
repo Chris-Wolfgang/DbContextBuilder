@@ -194,7 +194,7 @@ jobs:
         # TFM each test project targets; pinning to a subset would
         # silently fail repos that target older runtimes. No project
         # targets netcoreapp3.1 or net5.0, so those SDKs are not installed (#586).
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           dotnet-version: |
             6.0.x
@@ -202,6 +202,7 @@ jobs:
             8.0.x
             9.0.x
             10.0.x
+            11.0.x
 
       # Pinned, not floating (#517).
       - name: Install dotnet-stryker
@@ -383,7 +384,7 @@ jobs:
             $duplicateWrappers = @(
               @(foreach ($n in 7, 8, 9) {
                   Get-ChildItem -Path "src/Wolfgang.DbContextBuilder-Core-EF$n" -Filter '*.csproj' -ErrorAction SilentlyContinue
-                  Get-ChildItem -Path "tests/Wolfgang.DbContextBuilder-Core-EF$n.Tests.Unit" -Filter '*.csproj' -ErrorAction SilentlyContinue
+                  Get-ChildItem -Path "tests/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF$n" -Filter '*.csproj' -ErrorAction SilentlyContinue
                 }) +
               @(Get-ChildItem -Path 'tests/Wolfgang.DbContextBuilder-Core-EF6.Tests.Unit' -Filter '*.csproj' -ErrorAction SilentlyContinue))
             # Wolfgang.DbContextBuilder.Abstractions is one interface with no executable code, so

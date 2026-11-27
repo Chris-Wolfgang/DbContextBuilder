@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Sqlite.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Wolfgang.DbContextBuilderCore;
 
@@ -27,7 +28,6 @@ public static class DbContextBuilderSqliteExtensions
     /// overrides the earlier choice.
     /// Choose one provider per builder.
     /// </remarks>
-    /// <exception cref="ObjectDisposedException"><paramref name="builder"/> has been disposed.</exception>
     public static DbContextBuilder<TDbContext> UseSqlite<TDbContext>
     (
         this DbContextBuilder<TDbContext> builder
@@ -54,7 +54,6 @@ public static class DbContextBuilderSqliteExtensions
     /// previous <c>UseInMemory</c>, <c>UseSqlite</c>, or <c>UseSqliteForMsSqlServer</c> call
     /// overrides the earlier choice.
     /// </remarks>
-    /// <exception cref="ObjectDisposedException"><paramref name="builder"/> has been disposed.</exception>
     public static DbContextBuilder<TDbContext> UseSqliteForMsSqlServer<TDbContext>
     (
         this DbContextBuilder<TDbContext> builder
@@ -103,13 +102,7 @@ public static class DbContextBuilderSqliteExtensions
         // Remove any existing IModelCustomizer registrations to avoid duplicates/competing implementations.
         // This runs after AddEntityFrameworkSqlite so it also removes the default ModelCustomizer
         // that EF registers, leaving modelCustomizerType as the only one.
-        var modelCustomizerDescriptors = builder.ServiceCollection
-            .Where(sd => sd.ServiceType == typeof(IModelCustomizer))
-            .ToList();
-        foreach (var descriptor in modelCustomizerDescriptors)
-        {
-            builder.ServiceCollection.Remove(descriptor);
-        }
+        builder.ServiceCollection.RemoveAll<IModelCustomizer>();
 
         builder.ServiceCollection.AddSingleton(typeof(IModelCustomizer), modelCustomizerType);
         builder.SetCreateDbContext(new SqliteDbContextCreator());

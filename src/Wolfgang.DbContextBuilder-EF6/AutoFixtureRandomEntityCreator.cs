@@ -7,8 +7,6 @@ using AutoFixture.Kernel;
 
 namespace Wolfgang.DbContextBuilderEF6;
 
-
-
 /// <summary>
 /// Provides an API to create random entities for seeding databases.
 /// </summary>
@@ -37,6 +35,7 @@ internal class AutoFixtureRandomEntityCreator : ICreateRandomEntities
     {
         Fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
     }
+
 
 
     /// <summary>
