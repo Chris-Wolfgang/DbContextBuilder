@@ -370,19 +370,19 @@ jobs:
               @(foreach ($name in 'DocExamples', 'Fuzz', 'Concurrency') {
                   Get-ChildItem -Path "tests/Wolfgang.DbContextBuilder.Tests.$name" -Filter '*.csproj' -ErrorAction SilentlyContinue
                 }))
-            # The five -Core-EF{N} wrappers compile the same linked source, so the umbrella created
-            # and tested the same 407 mutants five times, once per wrapper and its test project.
-            # EF6 (oldest) and EF10 (newest) are kept; between them they cover the EF_CORE_N
-            # conditional code at both ends. EF7-EF9 and their test projects are dropped here and
+            # The six -Core-EF{N} wrappers compile the same linked source, so the umbrella would
+            # create and test the same mutants six times, once per wrapper and its test project.
+            # EF6 (oldest) and EF11 (newest) are kept; between them they cover the EF_CORE_N
+            # conditional code at both ends. EF7-EF10 and their test projects are dropped here and
             # stay in pr.yaml's test stages. Floors are keyed by source path
-            # (src/Wolfgang.DbContextBuilder-Core), which EF6 and EF10 still report under.
+            # (src/Wolfgang.DbContextBuilder-Core), which EF6 and EF11 still report under.
             # Core-EF6 had two test projects: tests/...-Core-EF6.Tests.Unit has no code of its own
             # and links the same 12 files from tests/...-Core.Tests.Unit, with the same constants,
             # target frameworks and project references. In the umbrella every Core-EF6 test ran
             # twice, in coverage capture and against every mutant it covers, killing nothing the
             # other copy did not. The linking copy is dropped; the source project stays.
             $duplicateWrappers = @(
-              @(foreach ($n in 7, 8, 9) {
+              @(foreach ($n in 7, 8, 9, 10) {
                   Get-ChildItem -Path "src/Wolfgang.DbContextBuilder-Core-EF$n" -Filter '*.csproj' -ErrorAction SilentlyContinue
                   Get-ChildItem -Path "tests/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF$n" -Filter '*.csproj' -ErrorAction SilentlyContinue
                 }) +
@@ -502,7 +502,7 @@ jobs:
             $json = Get-Content $report.FullName -Raw | ConvertFrom-Json
             foreach ($file in $json.files.PSObject.Properties) {
               # Keys are absolute and can climb through a linked project
-              # (src\X-EF10\..\X\File.cs); report them relative to the repository.
+              # (src\X-EF11\..\X\File.cs); report them relative to the repository.
               $path = [IO.Path]::GetRelativePath($env:GITHUB_WORKSPACE, [IO.Path]::GetFullPath($file.Name)) -replace '\\', '/'
               foreach ($mutant in $file.Value.mutants) {
                 $counts[$mutant.status] = 1 + [int]$counts[$mutant.status]
@@ -528,7 +528,7 @@ jobs:
           }
           $score = [math]::Round(100.0 * $detected / $valid, 2)
 
-          # A source file linked into several projects (-Core into -Core-EF6..EF10) is
+          # A source file linked into several projects (-Core into -Core-EF6..EF11) is
           # mutated once per project, and those copies agree on path, span and replacement.
           # Key on all of them so the copies collapse but two different mutations on one
           # line (another column, or the same mutator with another replacement) both stay.
