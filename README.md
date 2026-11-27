@@ -60,9 +60,9 @@ Each package targets the .NET runtimes its EF version requires:
 | `Wolfgang.DbContextBuilder-Core-EF9` | `net9.0` |
 | `Wolfgang.DbContextBuilder-Core-EF10` | `net10.0` |
 | `Wolfgang.DbContextBuilder-EF6` (classic) | `net462; net47; net471; net472; net48; net481` |
-| `Wolfgang.DbContextBuilder.Abstractions` | `netstandard2.0; net10.0` |
-| `Wolfgang.DbContextBuilder.AutoFixture` | `net6.0; net7.0; net8.0; net9.0; net10.0` |
-| `Wolfgang.DbContextBuilder.Bogus` | `net6.0; net7.0; net8.0; net9.0; net10.0` |
+| `Wolfgang.DbContextBuilder.Abstractions` | `netstandard2.0; net10.0; net11.0` |
+| `Wolfgang.DbContextBuilder.AutoFixture` | `net6.0; net7.0; net8.0; net9.0; net10.0; net11.0` |
+| `Wolfgang.DbContextBuilder.Bogus` | `net6.0; net7.0; net8.0; net9.0; net10.0; net11.0` |
 
 ---
 
@@ -75,7 +75,9 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 ## 📚 Documentation
 
 - **GitHub Repository:** [https://github.com/Chris-Wolfgang/DbContextBuilder](https://github.com/Chris-Wolfgang/DbContextBuilder)
-- **API Documentation:** https://Chris-Wolfgang.github.io/DbContextBuilder/
+- **API Documentation:** https://Chris-Wolfgang.github.io/DbContextBuilder/ (the EF Core packages
+  and the random-data providers; the classic `Wolfgang.DbContextBuilder-EF6` package has no API pages
+  there, see below)
 - **CHANGELOG:** [CHANGELOG.md](CHANGELOG.md)
 - **Contributing Guide:** [CONTRIBUTING.md](CONTRIBUTING.md)
 - **DocFX Version Picker Troubleshooting:** [docs/DOCFX-VERSION-PICKER.md](docs/DOCFX-VERSION-PICKER.md)
@@ -164,7 +166,7 @@ The Core package exposes a small, focused surface. The full reference is on the 
 ## 🛠️ Building from Source
 
 ### Prerequisites
-- [.NET SDK](https://dotnet.microsoft.com/download) - the current release (10.0); see *Supported Frameworks* for the targets that are built
+- [.NET SDK](https://dotnet.microsoft.com/download) - 11.0 (pinned by `global.json`); see *Supported Frameworks* for the targets that are built
 - [PowerShell 7](https://github.com/PowerShell/PowerShell) (`pwsh`) for the scripts under `scripts/`
 
 ### Build Steps
@@ -189,6 +191,20 @@ pwsh ./scripts/format.ps1
 # Run the PR workflow's Windows stage locally (build, tests on every TFM, coverage gates, DevSkim, gitleaks)
 pwsh ./scripts/build-pr.ps1
 ```
+
+### CI test matrix
+
+Every pull request runs the tests on five legs, each over the target frameworks that runtime supports there:
+
+| Leg | Runner | Target frameworks |
+|---|---|---|
+| Stage 1: Linux x64 (coverage gate) | `ubuntu-latest` | net6.0 and later |
+| Stage 2: Windows x64 | `windows-latest` | every TFM, .NET Framework 4.6.2-4.8.1 included |
+| Stage 3: macOS ARM64 | `macos-latest` | net6.0 and later |
+| Stage 4: Linux ARM64 | `ubuntu-24.04-arm` | net6.0 and later |
+| Stage 5: Windows ARM64 | `windows-11-arm` | net6.0 and later (.NET Framework runs on Stage 2) |
+
+Coverage is gated once, on Stage 1; the other legs prove the tests pass there.
 
 ## 🔐 Verify the build
 

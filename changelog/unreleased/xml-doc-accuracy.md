@@ -1,3 +1,3 @@
 type: docs
 
-XML documentation now matches the code: the missing `<exception>`, `<param>` and `<typeparam>` tags on the builder, the SQLite extensions and `SqliteModelCustomizer.Customize` are added; `SqliteModelCustomizer`'s class remarks and `DefaultValueMap` examples are corrected; the single-entity `SeedWith` documents how it treats a list; and the `AutoFixtureRandomEntityCreator(Fixture)` constructor says it applies no customizations.
+XML documentation fixes: the duplicate `ObjectDisposedException` tags on `UseSqlite`/`UseSqliteForMsSqlServer` are gone, the three `SeedWithRandom` overloads share one remarks block, the EF6 and provider packages describe their fluent return value as "The builder, for chaining." like the EF Core builder, and the builder remarks say that selecting a provider again (the same or a different one) starts a new, empty database.

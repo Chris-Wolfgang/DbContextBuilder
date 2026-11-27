@@ -34,9 +34,28 @@ public class BogusRandomEntityCreator : ICreateRandomEntities
             throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
         }
 
+        var faker = FakerCache<TEntity>.Instance;
+
+        // Faker<T> keeps per-instance generation state, so one cached instance is not safe to
+        // drive from two threads at once; seeding calls are short, so a lock is enough.
+        lock (faker)
+        {
+            return faker.Generate(count);
+        }
+    }
+
+
+
+    /// <summary>
+    /// Holds one configured <see cref="Faker{T}"/> per entity type, so the twelve type rules are
+    /// registered once per type instead of on every <see cref="CreateRandomEntities{TEntity}(int)"/> call (#572).
+    /// </summary>
+    /// <typeparam name="TEntity">The entity type the cached faker generates.</typeparam>
+    private static class FakerCache<TEntity> where TEntity : class
+    {
         // Bogus is non-strict by default: properties without a rule are left at their
         // default value, so navigation/reference-type properties stay unset.
-        var faker = new Faker<TEntity>()
+        internal static readonly Faker<TEntity> Instance = new Faker<TEntity>()
             .RuleForType(typeof(string), f => f.Lorem.Word())
             .RuleForType(typeof(bool), f => f.Random.Bool())
             .RuleForType(typeof(byte), f => f.Random.Byte())
@@ -49,7 +68,5 @@ public class BogusRandomEntityCreator : ICreateRandomEntities
             .RuleForType(typeof(Guid), f => f.Random.Guid())
             .RuleForType(typeof(DateTime), f => f.Date.Past())
             .RuleForType(typeof(DateTimeOffset), f => f.Date.PastOffset());
-
-        return faker.Generate(count);
     }
 }
