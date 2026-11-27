@@ -89,7 +89,8 @@ public class DbContextBuilderDisposalTests
     public void UseEffort_when_a_creator_is_already_set_disposes_it()
     {
         var previous = new TrackingDbContextCreator();
-        using var sut = new DbContextBuilder<TestDbContext> { CreateDbContext = previous };
+        using var sut = new DbContextBuilder<TestDbContext>();
+        sut.CreateDbContext = previous;
 
         sut.UseEffort();
 
@@ -106,7 +107,8 @@ public class DbContextBuilderDisposalTests
     public void SetCreateDbContext_with_the_active_creator_keeps_it()
     {
         var creator = new TrackingDbContextCreator();
-        using var sut = new DbContextBuilder<TestDbContext> { CreateDbContext = creator };
+        using var sut = new DbContextBuilder<TestDbContext>();
+        sut.CreateDbContext = creator;
 
         sut.SetCreateDbContext(creator);
 
@@ -126,7 +128,8 @@ public class DbContextBuilderDisposalTests
         var sut = new DbContextBuilder<TestDbContext>();
         sut.Dispose();
 
-        var ex = await Record.ExceptionAsync(() => CallsByName[call](sut));
+        // A synchronous entry point throws before it returns; BuildAsync returns a faulted task.
+        var ex = await Record.ExceptionAsync(() => CallsByName[call](sut) as Task ?? Task.CompletedTask);
 
         var disposed = Assert.IsType<ObjectDisposedException>(ex);
         Assert.Equal(nameof(DbContextBuilder<TestDbContext>), disposed.ObjectName);
@@ -135,20 +138,21 @@ public class DbContextBuilderDisposalTests
 
 
     // TestDbContext is public, but the entry points are spread over methods and extensions, so the
-    // theory takes a name and looks the call up here.
-    private static readonly Dictionary<string, Func<DbContextBuilder<TestDbContext>, Task>> CallsByName = new()
+    // theory takes a name and looks the call up here. Each entry returns what the call returns (the
+    // builder, a context, or BuildAsync's task) as object, so no Task<T> result is silently dropped.
+    private static readonly Dictionary<string, Func<DbContextBuilder<TestDbContext>, object>> CallsByName = new()
     {
-        ["UseEffort"] = b => Task.FromResult(b.UseEffort()),
-        ["UseAutoFixture"] = b => Task.FromResult(b.UseAutoFixture()),
-        ["UseCustomRandomEntityCreator"] = b => Task.FromResult(b.UseCustomRandomEntityCreator(new AutoFixtureRandomEntityCreator())),
-        ["SeedWith(IEnumerable)"] = b => Task.FromResult(b.SeedWith((IEnumerable<Category>)new[] { new Category { Name = "a" } })),
-        ["SeedWith(params)"] = b => Task.FromResult(b.SeedWith(new Category { Name = "a" }, new Category { Name = "b" })),
-        ["SeedWith(entity)"] = b => Task.FromResult(b.SeedWith(new Category { Name = "a" })),
-        ["SeedWithRandom(count)"] = b => Task.FromResult(b.SeedWithRandom<Category>(1)),
+        ["UseEffort"] = b => b.UseEffort(),
+        ["UseAutoFixture"] = b => b.UseAutoFixture(),
+        ["UseCustomRandomEntityCreator"] = b => b.UseCustomRandomEntityCreator(new AutoFixtureRandomEntityCreator()),
+        ["SeedWith(IEnumerable)"] = b => b.SeedWith((IEnumerable<Category>)new[] { new Category { Name = "a" } }),
+        ["SeedWith(params)"] = b => b.SeedWith(new Category { Name = "a" }, new Category { Name = "b" }),
+        ["SeedWith(entity)"] = b => b.SeedWith(new Category { Name = "a" }),
+        ["SeedWithRandom(count)"] = b => b.SeedWithRandom<Category>(1),
         // The disposed check runs before the func's null check, so null stands in for a transform.
-        ["SeedWithRandom(count, func)"] = b => Task.FromResult(b.SeedWithRandom<Category>(1, (Func<Category, Category>)null!)),
-        ["SeedWithRandom(count, func with index)"] = b => Task.FromResult(b.SeedWithRandom<Category>(1, (Func<Category, int, Category>)null!)),
-        ["Build"] = b => Task.FromResult(b.Build()),
+        ["SeedWithRandom(count, func)"] = b => b.SeedWithRandom(1, (Func<Category, Category>)null!),
+        ["SeedWithRandom(count, func with index)"] = b => b.SeedWithRandom(1, (Func<Category, int, Category>)null!),
+        ["Build"] = b => b.Build(),
         ["BuildAsync"] = b => b.BuildAsync(),
     };
 

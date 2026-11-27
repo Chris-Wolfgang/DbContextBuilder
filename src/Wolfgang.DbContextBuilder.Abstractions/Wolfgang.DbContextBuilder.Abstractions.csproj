@@ -3,7 +3,7 @@
 	<Import Project="../Version.props" />
 	<PropertyGroup>
 		<RootNamespace>Wolfgang.DbContextBuilderCore</RootNamespace>
-		<TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
+		<TargetFrameworks>netstandard2.0;net10.0;net11.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<Title>Wolfgang.DbContextBuilder Abstractions</Title>
 		<Description>Shared abstractions for the Wolfgang.DbContextBuilder family (e.g. ICreateRandomEntities), so add-on packages can target the family without depending on a specific EF Core version.</Description>

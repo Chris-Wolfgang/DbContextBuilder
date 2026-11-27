@@ -26,8 +26,7 @@ public abstract class ICreateRandomEntitiesTestsBase
     /// </summary>
     /// <param name="count"></param>
     [Theory]
-    [InlineData(7)]
-    [InlineData(17)]
+    [MemberData(nameof(DbContextBuilderTestsBase.SeedCounts), MemberType = typeof(DbContextBuilderTestsBase))]
     public void CreateRandomEntities_returns_the_specified_number_of_items(int count)
     {
         // Arrange

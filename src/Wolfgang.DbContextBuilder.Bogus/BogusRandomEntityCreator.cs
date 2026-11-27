@@ -75,6 +75,44 @@ public class BogusRandomEntityCreator : ICreateRandomEntities
             throw new ArgumentOutOfRangeException(nameof(count), count, "Value cannot be less than 1");
         }
 
+        if (_seeds is null)
+        {
+            var shared = FakerCache<TEntity>.Instance;
+
+            // Faker<T> keeps per-instance generation state, so one cached instance is not safe to
+            // drive from two threads at once; seeding calls are short, so a lock is enough.
+            lock (shared)
+            {
+                return shared.Generate(count);
+            }
+        }
+
+        // A seeded call gets a faker of its own: UseSeed and UseDateTimeReference change the
+        // faker's state, so the shared cached instance must never carry them.
+        var seeded = CreateFaker<TEntity>();
+        seeded.UseSeed(_seeds.Int());
+        seeded.UseDateTimeReference(SeededDateReference);
+        return seeded.Generate(count);
+    }
+
+
+
+    /// <summary>
+    /// Holds one configured <see cref="Faker{T}"/> per entity type for the unseeded creator, so the
+    /// type and enum rules are registered once per type instead of on every
+    /// <see cref="CreateRandomEntities{TEntity}(int)"/> call (#572).
+    /// </summary>
+    /// <typeparam name="TEntity">The entity type the cached faker generates.</typeparam>
+    private static class FakerCache<TEntity> where TEntity : class
+    {
+        internal static readonly Faker<TEntity> Instance = CreateFaker<TEntity>();
+    }
+
+
+
+    // Builds a faker with every type rule and the entity's enum rules, unseeded.
+    private static Faker<TEntity> CreateFaker<TEntity>() where TEntity : class
+    {
         // Bogus is non-strict by default: properties without a rule are left at their
         // default value, so navigation/reference-type properties stay unset.
         var faker = new Faker<TEntity>()
@@ -108,14 +146,7 @@ public class BogusRandomEntityCreator : ICreateRandomEntities
             .RuleForType(typeof(TimeOnly?), f => (TimeOnly?)TimeOnly.FromDateTime(f.Date.Past()));
 
         AddEnumRules(faker);
-
-        if (_seeds is not null)
-        {
-            faker.UseSeed(_seeds.Int());
-            faker.UseDateTimeReference(SeededDateReference);
-        }
-
-        return faker.Generate(count);
+        return faker;
     }
 
 

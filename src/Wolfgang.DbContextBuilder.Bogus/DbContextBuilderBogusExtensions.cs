@@ -15,7 +15,7 @@ public static class DbContextBuilderBogusExtensions
     /// </summary>
     /// <param name="builder">The builder to configure.</param>
     /// <typeparam name="T">The <see cref="DbContext"/> type being built.</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
     public static DbContextBuilder<T> UseBogus<T>(this DbContextBuilder<T> builder) where T : DbContext
     {

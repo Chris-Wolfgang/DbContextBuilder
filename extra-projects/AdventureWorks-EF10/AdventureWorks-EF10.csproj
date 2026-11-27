@@ -19,6 +19,11 @@
 		  <PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="[10.0.12,11.0.0)" />
+		<!-- EF Core SqlServer 10 brings System.Security.Cryptography.Pkcs 9.0.11 (GHSA-846f-f764-76mx,
+		     GHSA-2fmv-rv2c-59x7; fixed in 9.0.21 / 10.0.13), which NuGet Audit turns into NU1902/NU1903
+		     errors in every test project that references this one. Drop the pin once SqlServer brings a
+		     patched version itself. -->
+		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="[10.0.12,11.0.0)">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
