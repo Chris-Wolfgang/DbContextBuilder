@@ -1,0 +1,17 @@
+<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <!--
+    Team-shared InspectCode / ReSharper settings for this test project (#824).
+
+    `UnusedAutoPropertyAccessor.Global` / `.Local` — the test models (entity
+    POCOs such as CoverageAllScalars, the self-referencing and owned types in
+    SeedWithRandomCoverageTests, Invoice in SqliteModelCustomizerTests) are
+    populated by EF Core, AutoFixture, Bogus and the seeding code through
+    reflection, and read back through EF metadata. ReSharper cannot see those
+    callers, so it reports every such setter or getter as unused. Removing the
+    accessors would break the models the tests exercise.
+
+    Scope is this project only; production code under src/ keeps the rule.
+  -->
+  <s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=UnusedAutoPropertyAccessor_002EGlobal/@EntryIndexedValue">DO_NOT_SHOW</s:String>
+  <s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=UnusedAutoPropertyAccessor_002ELocal/@EntryIndexedValue">DO_NOT_SHOW</s:String>
+</wpf:ResourceDictionary>
