@@ -146,12 +146,12 @@ public class CancellationTokenTests
     // TableWithDefaults is internal, so the theory takes the call's name and looks it up here.
     private static readonly Dictionary<string, Func<DbSetAssertions<TableWithDefaults>, CancellationToken, Task>> AssertionCallsByName = new()
     {
-        ["HaveCount"] = (should, token) => should.HaveCount(1, token),
-        ["BeEmpty"] = (should, token) => should.BeEmpty(token),
-        ["NotBeEmpty"] = (should, token) => should.NotBeEmpty(token),
-        ["Contain"] = (should, token) => should.Contain(row => row.Id == 1, token),
-        ["NotContain"] = (should, token) => should.NotContain(row => row.Id == 2, token),
-        ["AllSatisfy"] = (should, token) => should.AllSatisfy(row => row.Id > 0, token),
+        ["HaveCount"] = async (should, token) => _ = await should.HaveCount(1, token),
+        ["BeEmpty"] = async (should, token) => _ = await should.BeEmpty(token),
+        ["NotBeEmpty"] = async (should, token) => _ = await should.NotBeEmpty(token),
+        ["Contain"] = async (should, token) => _ = await should.Contain(row => row.Id == 1, token),
+        ["NotContain"] = async (should, token) => _ = await should.NotContain(row => row.Id == 2, token),
+        ["AllSatisfy"] = async (should, token) => _ = await should.AllSatisfy(row => row.Id > 0, token),
     };
 
 
