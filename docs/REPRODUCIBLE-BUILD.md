@@ -1,148 +1,119 @@
-# Reproducible build — third-party verification
+# Verifying a release of DbContextBuilder
 
-This library builds deterministically, so anyone can rebuild a released version
-from source and confirm the compiled assemblies match what was published to NuGet.
-This page is the **consumer-side** procedure: how *you* independently verify the
-claim, without trusting our CI.
+Anyone can check that a published release of DbContextBuilder was built from the tagged source, without
+trusting this repository's CI. This page is for a consumer who has never seen the repository.
 
-Tracks issue #319. Pairs with the internal reproducible-build check
-(`.github/workflows/reproducible-build.yaml`, #310), which proves our own builds
-are byte-stable when the same commit is built twice on the reference runner.
+## What "reproducible" means here
 
-## What makes the build reproducible
+The same tag, built with the SDK recorded in the release's `BUILD-MANIFEST.txt`, **on Linux**, gives:
 
-`Directory.Build.props` sets the determinism knobs that remove machine- and
-time-dependent inputs from the compiled output:
+- byte-identical `.dll` and `.pdb` files for every target framework, and
+- `.nupkg` / `.snupkg` packages whose **entries** match the published packages entry by entry.
 
-- Deterministic compilation (the .NET SDK default) — no timestamps / random
-  GUIDs in the assembly.
-- `ContinuousIntegrationBuild=true` — set automatically in CI when `$(CI)` is
-  `true`; normalizes embedded source paths. Pass it explicitly when rebuilding
-  locally (see below).
-- `<EmbedUntrackedSources>true</EmbedUntrackedSources>` + `Microsoft.SourceLink.GitHub`
-  — source references resolve to the exact commit rather than local paths.
+What is expected to differ, and is never compared:
 
-The **managed IL** in each assembly is therefore expected to be byte-for-byte
-identical given the same source commit and a matching compiler (SDK) version.
+- **the package file itself** (`.nupkg` / `.snupkg` as a zip): NuGet stamps every zip entry with the pack time, so
+  two packs of the same commit never give the same zip bytes, even on one machine. Compare the entries.
+- **a build on another operating system**: cross-OS identity is reported by the
+  [Reproducible Build workflow](https://github.com/Chris-Wolfgang/DbContextBuilder/actions/workflows/reproducible-build.yaml), not promised.
 
-## Tooling
+Every pull request is checked the same way: the workflow packs the commit twice on Ubuntu and fails unless both
+packs are identical by the rules above.
 
-| Tool | Version |
-| --- | --- |
-| .NET SDK | 10.0.x (latest patch — the released packages are packed with the 10.0 SDK) |
-| OS | **Windows** is the reference environment: the released packages are packed on `windows-latest` (`release.yaml`). Other operating systems may produce different bytes; see [What is guaranteed](#what-is-guaranteed). |
+## What a release publishes
 
-`global.json` pins the SDK to the **.NET 10** major (`"version": "10.0.100"`,
-`"rollForward": "latestFeature"`), so any 10.0.x SDK at or above 10.0.100 builds
-the repository and an SDK 11 cannot be picked up by accident. The Roslyn compiler
-ships with the SDK, so a different SDK *major* can change the emitted IL. For
-byte-identical output, match the exact SDK the release used (see below).
+Each GitHub Release carries, next to the packages:
+
+| Asset | Contents |
+|---|---|
+| `SHA256SUMS.txt` | `<sha256>  <tfm>/<file>` for every `.dll`/`.pdb`, and `<sha256>  <package-file>` for every `.nupkg`/`.snupkg` |
+| `BUILD-MANIFEST.txt` | exact SDK version (`dotnet --version`), runner image and version, commit SHA, tag, and the `CI` / `ContinuousIntegrationBuild` / `Deterministic` values |
+
+Both are subjects of the release's build-provenance attestation, so step 5 below covers them as well as the packages.
 
 ## Verify a release
 
-1. **Clone the source at the exact release tag** (replace `v0.9.0`):
+You need git, the GitHub CLI (`gh`), Python 3 and a Linux machine (or container).
+
+1. **Clone the tag.**
 
    ```bash
-   git clone --depth 1 --branch v0.9.0 https://github.com/Chris-Wolfgang/DbContextBuilder.git
+   TAG=v1.2.3   # the release you are checking
+   git clone --branch "$TAG" --depth 1 https://github.com/Chris-Wolfgang/DbContextBuilder.git
    cd DbContextBuilder
+   gh release download "$TAG" --repo Chris-Wolfgang/DbContextBuilder --dir ../release
+   cat ../release/BUILD-MANIFEST.txt
    ```
 
-2. **Pack in Release with the CI determinism flag** (this repo ships 9 packages):
+2. **Install the recorded SDK.** `global.json` pins the major version; install the exact version that
+   `BUILD-MANIFEST.txt` names (for example with `dotnet-install.sh --version <sdk>`), and check that `dotnet --version`
+   prints it from inside the clone.
+
+3. **Pack exactly as the workflow does**, once per packable project under `src/`:
 
    ```bash
-   dotnet pack src/Wolfgang.DbContextBuilder-Core-EF6/Wolfgang.DbContextBuilder-Core-EF6.csproj -c Release -p:ContinuousIntegrationBuild=true
-   dotnet pack src/Wolfgang.DbContextBuilder-Core-EF7/Wolfgang.DbContextBuilder-Core-EF7.csproj -c Release -p:ContinuousIntegrationBuild=true
-   dotnet pack src/Wolfgang.DbContextBuilder-Core-EF8/Wolfgang.DbContextBuilder-Core-EF8.csproj -c Release -p:ContinuousIntegrationBuild=true
-   dotnet pack src/Wolfgang.DbContextBuilder-Core-EF9/Wolfgang.DbContextBuilder-Core-EF9.csproj -c Release -p:ContinuousIntegrationBuild=true
-   dotnet pack src/Wolfgang.DbContextBuilder-Core-EF10/Wolfgang.DbContextBuilder-Core-EF10.csproj -c Release -p:ContinuousIntegrationBuild=true
-   dotnet pack src/Wolfgang.DbContextBuilder-EF6/Wolfgang.DbContextBuilder-EF6.csproj -c Release -p:ContinuousIntegrationBuild=true
-   dotnet pack src/Wolfgang.DbContextBuilder.Abstractions/Wolfgang.DbContextBuilder.Abstractions.csproj -c Release -p:ContinuousIntegrationBuild=true
-   dotnet pack src/Wolfgang.DbContextBuilder.AutoFixture/Wolfgang.DbContextBuilder.AutoFixture.csproj -c Release -p:ContinuousIntegrationBuild=true
-   dotnet pack src/Wolfgang.DbContextBuilder.Bogus/Wolfgang.DbContextBuilder.Bogus.csproj -c Release -p:ContinuousIntegrationBuild=true
+   export CI=true
+   for proj in $(git ls-files 'src/*.csproj' 'src/**/*.csproj'); do
+     [ "$(dotnet msbuild "$proj" -getProperty:IsPackable | tr -d '[:space:]')" = "true" ] || continue
+     dotnet pack "$proj" -c Release -p:ContinuousIntegrationBuild=true -p:Deterministic=true -o ../rebuilt
+   done
    ```
 
-   `Wolfgang.DbContextBuilder-Core` is not in this list — it stopped shipping as
-   of #362 (deprecated on nuget.org, not unlisted; the last version it published
-   remains verifiable the same way).
-
-3. **Compare against the published hashes.** Each release attaches a
-   `reproducible-build-manifest.json` listing the expected SHA-256 of every
-   published `.nupkg`. Download it from the release page and compare:
+4. **Compare.**
 
    ```bash
-   # your local package hash
-   sha256sum src/Wolfgang.DbContextBuilder-Core-EF10/bin/Release/*.nupkg
-   # expected hash from the release
-   cat reproducible-build-manifest.json
+   # Assemblies and symbols, keyed <tfm>/<file> exactly as in SHA256SUMS.txt.
+   for d in $(git ls-files 'src/*.csproj' 'src/**/*.csproj' | xargs -n1 dirname); do
+     [ -d "$d/bin/Release" ] || continue
+     (cd "$d/bin/Release" && find . -mindepth 2 -maxdepth 2 \( -name '*.dll' -o -name '*.pdb' \) \
+       | sed 's|^\./||' | xargs sha256sum | sed 's/ \*/  /')   # Git Bash on Windows prints ' *<file>' (binary mode)
+   done | sort -u -k2 > ../rebuilt-assemblies.txt
+   grep -vE '\.s?nupkg$' ../release/SHA256SUMS.txt | sort -k2 | diff - ../rebuilt-assemblies.txt \
+     && echo "Assemblies and symbols: identical"
+
+   # Packages, entry by entry.
+   python3 - ../release ../rebuilt <<'PY'
+   import hashlib, pathlib, sys, zipfile
+   def entries(p):
+       with zipfile.ZipFile(p) as z:
+           return {e.filename: hashlib.sha256(z.read(e)).hexdigest() for e in z.infolist() if not e.is_dir()}
+   ok = True
+   for pub in sorted(pathlib.Path(sys.argv[1]).glob("*.*nupkg")):
+       mine = pathlib.Path(sys.argv[2]) / pub.name
+       same = mine.exists() and entries(pub) == entries(mine)
+       ok &= same
+       print(("identical entries: " if same else "DIFFERS: ") + pub.name)
+   sys.exit(0 if ok else 1)
+   PY
    ```
 
-   For the most robust check, compare the **compiled assemblies** rather than the
-   `.nupkg` wrapper (the wrapper's zip framing can vary by SDK patch even when the
-   IL is identical). Extract both packages and diff the `.dll` hashes:
+5. **Check the provenance** of the downloaded assets against this repository:
 
    ```bash
-   unzip -o your.nupkg -d local && unzip -o published.nupkg -d published
-   diff <(cd local && find . -name '*.dll' -exec sha256sum {} + | sort) \
-        <(cd published && find . -name '*.dll' -exec sha256sum {} + | sort)
+   for f in ../release/*; do gh attestation verify "$f" --repo Chris-Wolfgang/DbContextBuilder; done
    ```
 
-## What is guaranteed
+## Releases cut before the standard
 
-The guarantee is **same commit, same SDK, same kind of environment, same bytes**.
-The assemblies (`.dll`) and symbols (`.pdb`) you rebuild on Windows with the SDK
-the release used are byte-identical to the ones inside the published packages.
+A tag cut before this repository took the reproducible-builds pieces (literal copyright year, LF-normalized generated
+sources, the reference-assemblies pin, `global.json`) has no `SHA256SUMS.txt` or `BUILD-MANIFEST.txt`, and its copyright
+attribute may carry the year it was built in. To rebuild such a tag, pass the original year
+(`-p:Copyright="Copyright (c) <year> <holder>"`) and expect only the Linux-to-Linux comparison to hold.
 
-That is what the `Build reproducibility` workflow checks every week: it builds
-every `src/` project, all target frameworks, from two checkouts in different
-directories on `windows-latest`, and fails on any `.dll`/`.pdb` difference. A manual
-run with a `verify-tag` input packs a release tag and compares the assemblies and
-symbols inside every package against the ones published on that GitHub release,
-which is the check you would run yourself.
+In this repository that covers every tag up to and including `v0.9.0`. Those releases were packed on `windows-latest`
+and carry a `reproducible-build-manifest.json` (SHA-256 of each `.nupkg`) in place of the two assets above. Package
+files never match byte for byte (see above), so compare the `.dll`/`.pdb` inside the packages instead. Rebuild on
+Windows with the exact SDK the release used: find the `SDK with version '...'` line in the release run's log
+(`v0.9.0` used 10.0.401). Then stop the SDK and the compiler host from rolling forward:
 
-**Not guaranteed:**
-
-- **Identical bytes across operating systems.** Linux, macOS and Windows may
-  produce different files from the same commit. The workflow also builds on
-  `ubuntu-latest` and reports a difference as a warning only. Today they match
-  because `Directory.Build.targets` rewrites the SDK-generated sources to LF
-  and `Directory.Build.props` pins `Microsoft.NETFramework.ReferenceAssemblies`
-  for net4x builds, which also stops a machine's installed targeting pack from
-  leaking into the PDB. Neither is a promise, and verification does not depend on
-  them: rebuild on Windows.
-- **Package files.** NuGet stamps the pack time into every `.nupkg`/`.snupkg` zip
-  entry, so two packs of one commit on one machine differ. Compare the assemblies
-  inside the packages, as shown above.
-- **A different SDK, or a different runtime hosting it.** A different SDK patch
-  can change the output, and so can the runtime the compiler runs on, because the
-  portable PDB records both. The checked-in `global.json` only pins the major
-  (`latestFeature`), so match the release exactly: find the `SDK with version '...'`
-  line in the release's `release.yaml` run log (v0.9.0 used 10.0.401), install
-  exactly that SDK, overwrite `global.json` with one that cannot roll forward, and
-  stop the compiler host from rolling forward to a newer runtime:
-
-  ```bash
-  echo '{"sdk":{"version":"10.0.401","rollForward":"disable"}}' > global.json
-  export DOTNET_ROLL_FORWARD=Disable
-  ```
-
-  Rebuilding v0.9.0 this way on `windows-latest` matched all 46 `.dll` and `.pdb`
-  files in its published `.nupkg` and `.snupkg` packages; without the pinned SDK
-  and runtime, every file differed.
-
-A mismatch in a `.dll` built from the same commit with the same SDK on Windows is
-the signal that warrants a report.
+```bash
+echo '{"sdk":{"version":"10.0.401","rollForward":"disable"}}' > global.json
+export DOTNET_ROLL_FORWARD=Disable
+```
 
 ## Report a discrepancy
 
-If a rebuilt assembly's IL does not match the published package built with the
-same SDK and commit, **do not** open a public issue with details first — follow
-the [security policy](../SECURITY.md) and report privately via the repository's
-Security tab. Include: the release tag, your exact `dotnet --version`, your OS,
-and the differing file hashes.
-
-## Independent attestations
-
-Third parties are encouraged to publish verification attestations using
-[Reproducible Builds](https://reproducible-builds.org/) project conventions (or a
-service such as [vouchsafe.io](https://vouchsafe.io/)), pointing at the release
-tag and the `reproducible-build-manifest.json` they verified against.
+If a rebuilt assembly does not match the published one, and you built the same tag with the recorded SDK, do **not**
+open a public issue with the details first. Follow the [security policy](../SECURITY.md) and report it privately
+through the repository's Security tab. Include the release tag, your exact `dotnet --version`, your OS, and the hashes
+that differ.
