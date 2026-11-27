@@ -20,14 +20,16 @@ public class BogusRandomEntityCreatorTests
 #pragma warning disable S3459 // Unassigned auto-property — assigned via reflection by Bogus
     private sealed class Sample
     {
-        // A rule whose range includes the type's default (false, 0) may legitimately produce it,
-        // so for those properties the test checks that the setter ran, not what it stored.
+        // A rule whose range includes the type's default (false, 0, midnight, Unset) may legitimately
+        // produce it, so for those properties the test checks that the setter ran, not what it stored.
         private readonly HashSet<string> _assigned = [];
         private bool _isActive;
         private byte _byteValue;
         private float _floatValue;
         private double _doubleValue;
         private decimal _price;
+        private TimeOnly _opensAt;
+        private Shade _shade;
 
         public IReadOnlyCollection<string> Assigned => _assigned;
 
@@ -55,11 +57,100 @@ public class BogusRandomEntityCreatorTests
 
         public DateTimeOffset UpdatedOn { get; set; }
 
+        public DateOnly Birthday { get; set; }
+
+        public TimeOnly OpensAt { get => _opensAt; set => _opensAt = Track(nameof(OpensAt), value); }
+
+        public bool? NullableBool { get; set; }
+
+        public byte? NullableByte { get; set; }
+
+        public short? NullableShort { get; set; }
+
+        public int? NullableInt { get; set; }
+
+        public long? NullableLong { get; set; }
+
+        public float? NullableFloat { get; set; }
+
+        public double? NullableDouble { get; set; }
+
+        public decimal? NullableDecimal { get; set; }
+
+        public Guid? NullableGuid { get; set; }
+
+        public DateTime? NullableDateTime { get; set; }
+
+        public DateTimeOffset? NullableDateTimeOffset { get; set; }
+
+        public DateOnly? NullableDateOnly { get; set; }
+
+        public TimeOnly? NullableTimeOnly { get; set; }
+
+        public Shade Shade { get => _shade; set => _shade = Track(nameof(Shade), value); }
+
+        public Shade? NullableShade { get; set; }
+
+        // Not settable from outside, so the creator must leave it alone.
+        public Shade FixedShade { get; private set; } = Shade.Unset;
+
         private T Track<T>(string property, T value)
         {
             _assigned.Add(property);
             return value;
         }
+    }
+
+
+
+    // An entity with a public enum-typed indexer next to a plain enum property. Bogus can only set
+    // a plain property, so the creator must leave the indexer alone (#571 review).
+    private sealed class IndexedSample
+    {
+        private readonly Dictionary<int, Shade> _byIndex = [];
+        private Shade _shade;
+
+
+
+        public bool ShadeAssigned { get; private set; }
+
+
+
+        public Shade Shade { get => _shade; set => (_shade, ShadeAssigned) = (value, true); }
+
+
+
+        public Shade this[int index]
+        {
+            get => _byIndex.TryGetValue(index, out var shade) ? shade : Shade.Unset;
+            set => _byIndex[index] = value;
+        }
+    }
+
+
+
+    // An entity whose only enum property has a type with no defined values: there is nothing to
+    // pick, so the creator must leave it at its default instead of failing (#571 review).
+    private sealed class EmptyEnumSample
+    {
+        public Empty Empty { get; set; }
+    }
+
+
+
+    private enum Empty
+    {
+    }
+
+
+
+    // Unset is 0, the value a property the creator leaves alone keeps. The creator picks from every
+    // defined value, Unset included, so a populated property can hold it too.
+    private enum Shade
+    {
+        Unset = 0,
+        Light = 1,
+        Dark = 2,
     }
 #pragma warning restore S3459
     // ReSharper restore UnusedAutoPropertyAccessor.Local
@@ -119,9 +210,168 @@ public class BogusRandomEntityCreatorTests
         Assert.All(items, item => Assert.NotEqual(default, item.UpdatedOn));
         // Rules whose range includes the default are checked through their setters: deterministic,
         // where "some entity got true / a non-zero value" only fails rarely by chance.
-        string[] tracked = [nameof(Sample.ByteValue), nameof(Sample.DoubleValue), nameof(Sample.FloatValue), nameof(Sample.IsActive), nameof(Sample.Price)];
+        string[] tracked = [nameof(Sample.ByteValue), nameof(Sample.DoubleValue), nameof(Sample.FloatValue), nameof(Sample.IsActive), nameof(Sample.OpensAt), nameof(Sample.Price), nameof(Sample.Shade)];
         Assert.All(items, item => Assert.Equal(tracked, item.Assigned.OrderBy(name => name, StringComparer.Ordinal)));
+        Assert.All(items, item => Assert.NotEqual(default, item.Birthday));
     }
+
+
+
+    /// <summary>
+    /// Verifies that the nullable form of every rule-typed value type is populated (#571):
+    /// RuleForType matches the exact type, so int? needs its own rule beside int.
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_populates_nullable_value_type_properties()
+    {
+        var sut = new BogusRandomEntityCreator();
+
+        var items = sut.CreateRandomEntities<Sample>(64).ToList();
+
+        Assert.All(items, item => Assert.NotNull(item.NullableBool));
+        Assert.All(items, item => Assert.NotNull(item.NullableByte));
+        Assert.All(items, item => Assert.True(item.NullableShort >= 1));
+        Assert.All(items, item => Assert.InRange(item.NullableInt!.Value, 1, 100_000));
+        Assert.All(items, item => Assert.True(item.NullableLong >= 1));
+        Assert.All(items, item => Assert.NotNull(item.NullableFloat));
+        Assert.All(items, item => Assert.NotNull(item.NullableDouble));
+        Assert.All(items, item => Assert.NotNull(item.NullableDecimal));
+        Assert.All(items, item => Assert.NotEqual(Guid.Empty, item.NullableGuid!.Value));
+        Assert.All(items, item => Assert.NotEqual(default, item.NullableDateTime!.Value));
+        Assert.All(items, item => Assert.NotEqual(default, item.NullableDateTimeOffset!.Value));
+        Assert.All(items, item => Assert.NotEqual(default, item.NullableDateOnly!.Value));
+        Assert.All(items, item => Assert.NotNull(item.NullableTimeOnly));
+    }
+
+
+
+    /// <summary>
+    /// Verifies that settable enum and nullable-enum properties get a defined value, and that an
+    /// enum property without a public setter is left alone (#571).
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_populates_settable_enum_properties_only()
+    {
+        var sut = new BogusRandomEntityCreator();
+
+        var items = sut.CreateRandomEntities<Sample>(64).ToList();
+
+        Assert.All(items, item => Assert.Contains(nameof(Sample.Shade), item.Assigned));
+        Assert.All(items, item => Assert.True(Enum.IsDefined(item.Shade)));
+        Assert.All(items, item => Assert.NotNull(item.NullableShade));
+        Assert.All(items, item => Assert.Equal(Shade.Unset, item.FixedShade));
+    }
+
+
+
+    /// <summary>
+    /// Verifies that a public enum-typed indexer is left alone: Bogus cannot set an indexer, so
+    /// adding a rule for it would make generation throw (#571 review).
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_when_entity_has_an_enum_indexer_leaves_it_alone()
+    {
+        var sut = new BogusRandomEntityCreator();
+
+        var items = sut.CreateRandomEntities<IndexedSample>(8).ToList();
+
+        Assert.All(items, item => Assert.True(item.ShadeAssigned));
+        Assert.All(items, item => Assert.True(Enum.IsDefined(item.Shade)));
+        Assert.All(items, item => Assert.Equal(Shade.Unset, item[0]));
+        items[0][0] = Shade.Dark;
+        Assert.Equal(Shade.Dark, items[0][0]);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that two creators with the same seed generate the same entities, call for call.
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_with_the_same_seed_is_reproducible()
+    {
+        var first = new BogusRandomEntityCreator(seed: 42);
+        var second = new BogusRandomEntityCreator(seed: 42);
+
+        Assert.Equal(Fingerprint(first.CreateRandomEntities<Sample>(5)), Fingerprint(second.CreateRandomEntities<Sample>(5)));
+        Assert.Equal(Fingerprint(first.CreateRandomEntities<Sample>(5)), Fingerprint(second.CreateRandomEntities<Sample>(5)));
+    }
+
+
+
+    /// <summary>
+    /// Verifies that successive calls on one seeded creator, and creators with different seeds,
+    /// generate different entities.
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_with_a_seed_varies_between_calls_and_seeds()
+    {
+        var sut = new BogusRandomEntityCreator(seed: 42);
+        var other = new BogusRandomEntityCreator(seed: 43);
+
+        var firstCall = Fingerprint(sut.CreateRandomEntities<Sample>(5));
+        var secondCall = Fingerprint(sut.CreateRandomEntities<Sample>(5));
+        var otherSeed = Fingerprint(other.CreateRandomEntities<Sample>(5));
+
+        Assert.NotEqual(firstCall, secondCall);
+        Assert.NotEqual(firstCall, otherSeed);
+    }
+
+
+
+    /// <summary>
+    /// Verifies that two creators with the same seed generate the same dates, even when they run
+    /// at different times: a seeded creator does not measure its dates from the current time.
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_with_the_same_seed_generates_the_same_dates()
+    {
+        var first = new BogusRandomEntityCreator(seed: 42).CreateRandomEntities<Sample>(5);
+
+        // Long enough for the system clock to move on, so dates measured from "now" would differ.
+        System.Threading.Thread.Sleep(50);
+
+        var second = new BogusRandomEntityCreator(seed: 42).CreateRandomEntities<Sample>(5);
+
+        Assert.Equal(DateFingerprint(first), DateFingerprint(second));
+    }
+
+
+
+    /// <summary>
+    /// Verifies that an enum property whose type defines no values keeps its default instead of
+    /// making generation fail.
+    /// </summary>
+    [Fact]
+    public void CreateRandomEntities_when_enum_type_has_no_values_leaves_the_property_at_default()
+    {
+        var sut = new BogusRandomEntityCreator();
+
+        var items = sut.CreateRandomEntities<EmptyEnumSample>(3).ToList();
+
+        Assert.Equal(3, items.Count);
+        Assert.All(items, item => Assert.Equal(default, item.Empty));
+    }
+
+
+
+    private static string DateFingerprint(IEnumerable<Sample> items) =>
+        string.Join
+        (
+            "|",
+            items.Select
+            (
+                item => FormattableString.Invariant
+                (
+                    $"{item.CreatedOn:O}/{item.UpdatedOn:O}/{item.Birthday:O}/{item.OpensAt:O}/{item.NullableDateTime:O}/{item.NullableDateTimeOffset:O}"
+                )
+            )
+        );
+
+
+
+    private static string Fingerprint(IEnumerable<Sample> items) =>
+        string.Join("|", items.Select(item => $"{item.Name}/{item.Id}/{item.Reference}/{item.Shade}"));
 
 
 
@@ -131,7 +381,8 @@ public class BogusRandomEntityCreatorTests
     [Fact]
     public void CreateRandomEntities_produces_varied_values_across_entities()
     {
-        var sut = new BogusRandomEntityCreator();
+        // Seeded, so the values (and this outcome) are the same on every run.
+        var sut = new BogusRandomEntityCreator(seed: 7);
 
         var items = sut.CreateRandomEntities<Sample>(20).ToList();
 
@@ -150,6 +401,8 @@ public class BogusRandomEntityCreatorTests
 
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => sut.CreateRandomEntities<Sample>(0));
         Assert.Equal("count", ex.ParamName);
-        Assert.StartsWith("Count must be greater than 0", ex.Message, StringComparison.Ordinal);
+        Assert.Equal(0, ex.ActualValue);
+        // The same message as AutoFixtureRandomEntityCreator (#571).
+        Assert.StartsWith("Value cannot be less than 1", ex.Message, StringComparison.Ordinal);
     }
 }

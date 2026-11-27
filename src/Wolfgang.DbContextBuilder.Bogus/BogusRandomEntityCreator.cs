@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Bogus;
 
 namespace Wolfgang.DbContextBuilderCore;
@@ -10,6 +12,13 @@ namespace Wolfgang.DbContextBuilderCore;
 /// scalar property types of an entity with realistic-looking fake values, leaving navigation
 /// and other reference-type properties unset (so seeding does not pull in object graphs).
 /// </summary>
+/// <remarks>
+/// Populated property types: <see cref="string"/>, <see cref="bool"/>, <see cref="byte"/>,
+/// <see cref="short"/>, <see cref="int"/>, <see cref="long"/>, <see cref="float"/>,
+/// <see cref="double"/>, <see cref="decimal"/>, <see cref="Guid"/>, <see cref="DateTime"/>,
+/// <see cref="DateTimeOffset"/>, <see cref="DateOnly"/>, <see cref="TimeOnly"/>, the nullable
+/// forms of all of these value types, and any enum (or nullable enum) with a public setter.
+/// </remarks>
 /// <remarks>
 /// Enable it with <c>UseBogus()</c> (or, equivalently,
 /// <c>UseCustomRandomEntityCreator(new BogusRandomEntityCreator())</c>):
@@ -26,36 +35,87 @@ namespace Wolfgang.DbContextBuilderCore;
 /// </remarks>
 public class BogusRandomEntityCreator : ICreateRandomEntities
 {
-    /// <inheritdoc />
-    public IEnumerable<TEntity> CreateRandomEntities<TEntity>(int count) where TEntity : class
+    // Bogus dates are relative to "now" unless the faker is given a reference date. A seeded creator
+    // pins it, so its dates are reproducible too, not just its other values.
+    private static readonly DateTime SeededDateReference = new(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+    // Null for the unseeded creator. Seeded, it hands each CreateRandomEntities call its own seed,
+    // so a run is reproducible while successive calls still produce different entities.
+    private readonly Randomizer? _seeds;
+
+
+
+    /// <summary>
+    /// Creates an instance that uses Bogus's shared, unseeded randomizer.
+    /// </summary>
+    public BogusRandomEntityCreator()
     {
-        if (count < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
-        }
-
-        var faker = FakerCache<TEntity>.Instance;
-
-        // Faker<T> keeps per-instance generation state, so one cached instance is not safe to
-        // drive from two threads at once; seeding calls are short, so a lock is enough.
-        lock (faker)
-        {
-            return faker.Generate(count);
-        }
     }
 
 
 
     /// <summary>
-    /// Holds one configured <see cref="Faker{T}"/> per entity type, so the twelve type rules are
-    /// registered once per type instead of on every <see cref="CreateRandomEntities{TEntity}(int)"/> call (#572).
+    /// Creates an instance whose output is reproducible: two creators made with the same
+    /// <paramref name="seed"/> generate the same entities, call for call (#571).
+    /// </summary>
+    /// <param name="seed">The seed for the random values.</param>
+    public BogusRandomEntityCreator(int seed)
+    {
+        _seeds = new Randomizer(seed);
+    }
+
+
+
+    /// <inheritdoc />
+    public IEnumerable<TEntity> CreateRandomEntities<TEntity>(int count) where TEntity : class
+    {
+        // The same guard, message and ActualValue as AutoFixtureRandomEntityCreator (#571).
+        if (count < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), count, "Value cannot be less than 1");
+        }
+
+        if (_seeds is null)
+        {
+            var shared = FakerCache<TEntity>.Instance;
+
+            // Faker<T> keeps per-instance generation state, so one cached instance is not safe to
+            // drive from two threads at once; seeding calls are short, so a lock is enough.
+            lock (shared)
+            {
+                return shared.Generate(count);
+            }
+        }
+
+        // A seeded call gets a faker of its own: UseSeed and UseDateTimeReference change the
+        // faker's state, so the shared cached instance must never carry them.
+        var seeded = CreateFaker<TEntity>();
+        seeded.UseSeed(_seeds.Int());
+        seeded.UseDateTimeReference(SeededDateReference);
+        return seeded.Generate(count);
+    }
+
+
+
+    /// <summary>
+    /// Holds one configured <see cref="Faker{T}"/> per entity type for the unseeded creator, so the
+    /// type and enum rules are registered once per type instead of on every
+    /// <see cref="CreateRandomEntities{TEntity}(int)"/> call (#572).
     /// </summary>
     /// <typeparam name="TEntity">The entity type the cached faker generates.</typeparam>
     private static class FakerCache<TEntity> where TEntity : class
     {
+        internal static readonly Faker<TEntity> Instance = CreateFaker<TEntity>();
+    }
+
+
+
+    // Builds a faker with every type rule and the entity's enum rules, unseeded.
+    private static Faker<TEntity> CreateFaker<TEntity>() where TEntity : class
+    {
         // Bogus is non-strict by default: properties without a rule are left at their
         // default value, so navigation/reference-type properties stay unset.
-        internal static readonly Faker<TEntity> Instance = new Faker<TEntity>()
+        var faker = new Faker<TEntity>()
             .RuleForType(typeof(string), f => f.Lorem.Word())
             .RuleForType(typeof(bool), f => f.Random.Bool())
             .RuleForType(typeof(byte), f => f.Random.Byte())
@@ -67,6 +127,48 @@ public class BogusRandomEntityCreator : ICreateRandomEntities
             .RuleForType(typeof(decimal), f => f.Random.Decimal(0, 100_000))
             .RuleForType(typeof(Guid), f => f.Random.Guid())
             .RuleForType(typeof(DateTime), f => f.Date.Past())
-            .RuleForType(typeof(DateTimeOffset), f => f.Date.PastOffset());
+            .RuleForType(typeof(DateTimeOffset), f => f.Date.PastOffset())
+            .RuleForType(typeof(DateOnly), f => DateOnly.FromDateTime(f.Date.Past()))
+            .RuleForType(typeof(TimeOnly), f => TimeOnly.FromDateTime(f.Date.Past()))
+            // RuleForType matches the exact type, so the nullable forms need their own rules.
+            .RuleForType(typeof(bool?), f => (bool?)f.Random.Bool())
+            .RuleForType(typeof(byte?), f => (byte?)f.Random.Byte())
+            .RuleForType(typeof(short?), f => (short?)f.Random.Short(1))
+            .RuleForType(typeof(int?), f => (int?)f.Random.Int(1, 100_000))
+            .RuleForType(typeof(long?), f => (long?)f.Random.Long(1))
+            .RuleForType(typeof(float?), f => (float?)f.Random.Float())
+            .RuleForType(typeof(double?), f => (double?)f.Random.Double())
+            .RuleForType(typeof(decimal?), f => (decimal?)f.Random.Decimal(0, 100_000))
+            .RuleForType(typeof(Guid?), f => (Guid?)f.Random.Guid())
+            .RuleForType(typeof(DateTime?), f => (DateTime?)f.Date.Past())
+            .RuleForType(typeof(DateTimeOffset?), f => (DateTimeOffset?)f.Date.PastOffset())
+            .RuleForType(typeof(DateOnly?), f => (DateOnly?)DateOnly.FromDateTime(f.Date.Past()))
+            .RuleForType(typeof(TimeOnly?), f => (TimeOnly?)TimeOnly.FromDateTime(f.Date.Past()));
+
+        AddEnumRules(faker);
+        return faker;
+    }
+
+
+
+    // Enums cannot be matched by RuleForType (each is its own type): add a rule per settable
+    // enum-typed property, picking one of the enum's defined values. Indexers are skipped: Bogus
+    // sets a rule's member as a plain property, and an indexer's setter needs its index too.
+    private static void AddEnumRules<TEntity>(Faker<TEntity> faker) where TEntity : class
+    {
+        foreach (var property in typeof(TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.SetMethod?.IsPublic == true && p.GetIndexParameters().Length == 0))
+        {
+            var enumType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+            if (enumType.IsEnum)
+            {
+                var values = Enum.GetValues(enumType).Cast<object>().ToArray();
+
+                // An enum with no defined values has nothing to pick from: leave the property alone.
+                if (values.Length > 0)
+                {
+                    faker.RuleFor(property.Name, f => f.PickRandom(values));
+                }
+            }
+        }
     }
 }
