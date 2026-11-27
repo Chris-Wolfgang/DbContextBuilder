@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace Wolfgang.DbContextBuilderCore.Tests.Unit;
