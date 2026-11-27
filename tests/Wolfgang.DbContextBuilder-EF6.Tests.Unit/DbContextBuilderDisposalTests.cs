@@ -128,7 +128,8 @@ public class DbContextBuilderDisposalTests
         var sut = new DbContextBuilder<TestDbContext>();
         sut.Dispose();
 
-        var ex = await Record.ExceptionAsync(() => CallsByName[call](sut));
+        // A synchronous entry point throws before it returns; BuildAsync returns a faulted task.
+        var ex = await Record.ExceptionAsync(() => CallsByName[call](sut) as Task ?? Task.CompletedTask);
 
         var disposed = Assert.IsType<ObjectDisposedException>(ex);
         Assert.Equal(nameof(DbContextBuilder<TestDbContext>), disposed.ObjectName);
@@ -136,32 +137,23 @@ public class DbContextBuilderDisposalTests
 
 
 
-    // Each synchronous entry point returns the builder (or a context); the theory only needs the
-    // call to run, so the result is dropped here explicitly instead of wrapped in a Task<T>.
-    private static Task Completed(object result)
-    {
-        _ = result;
-        return Task.CompletedTask;
-    }
-
-
-
     // TestDbContext is public, but the entry points are spread over methods and extensions, so the
-    // theory takes a name and looks the call up here.
-    private static readonly Dictionary<string, Func<DbContextBuilder<TestDbContext>, Task>> CallsByName = new()
+    // theory takes a name and looks the call up here. Each entry returns what the call returns (the
+    // builder, a context, or BuildAsync's task) as object, so no Task<T> result is silently dropped.
+    private static readonly Dictionary<string, Func<DbContextBuilder<TestDbContext>, object>> CallsByName = new()
     {
-        ["UseEffort"] = b => Completed(b.UseEffort()),
-        ["UseAutoFixture"] = b => Completed(b.UseAutoFixture()),
-        ["UseCustomRandomEntityCreator"] = b => Completed(b.UseCustomRandomEntityCreator(new AutoFixtureRandomEntityCreator())),
-        ["SeedWith(IEnumerable)"] = b => Completed(b.SeedWith((IEnumerable<Category>)new[] { new Category { Name = "a" } })),
-        ["SeedWith(params)"] = b => Completed(b.SeedWith(new Category { Name = "a" }, new Category { Name = "b" })),
-        ["SeedWith(entity)"] = b => Completed(b.SeedWith(new Category { Name = "a" })),
-        ["SeedWithRandom(count)"] = b => Completed(b.SeedWithRandom<Category>(1)),
+        ["UseEffort"] = b => b.UseEffort(),
+        ["UseAutoFixture"] = b => b.UseAutoFixture(),
+        ["UseCustomRandomEntityCreator"] = b => b.UseCustomRandomEntityCreator(new AutoFixtureRandomEntityCreator()),
+        ["SeedWith(IEnumerable)"] = b => b.SeedWith((IEnumerable<Category>)new[] { new Category { Name = "a" } }),
+        ["SeedWith(params)"] = b => b.SeedWith(new Category { Name = "a" }, new Category { Name = "b" }),
+        ["SeedWith(entity)"] = b => b.SeedWith(new Category { Name = "a" }),
+        ["SeedWithRandom(count)"] = b => b.SeedWithRandom<Category>(1),
         // The disposed check runs before the func's null check, so null stands in for a transform.
-        ["SeedWithRandom(count, func)"] = b => Completed(b.SeedWithRandom(1, (Func<Category, Category>)null!)),
-        ["SeedWithRandom(count, func with index)"] = b => Completed(b.SeedWithRandom(1, (Func<Category, int, Category>)null!)),
-        ["Build"] = b => Completed(b.Build()),
-        ["BuildAsync"] = async b => _ = await b.BuildAsync(),
+        ["SeedWithRandom(count, func)"] = b => b.SeedWithRandom(1, (Func<Category, Category>)null!),
+        ["SeedWithRandom(count, func with index)"] = b => b.SeedWithRandom(1, (Func<Category, int, Category>)null!),
+        ["Build"] = b => b.Build(),
+        ["BuildAsync"] = b => b.BuildAsync(),
     };
 
 
