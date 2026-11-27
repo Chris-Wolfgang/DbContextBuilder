@@ -14,6 +14,7 @@
     <Project Path="extra-projects/AdventureWorks-EF8/AdventureWorks-EF8.csproj" />
     <Project Path="extra-projects/AdventureWorks-EF9/AdventureWorks-EF9.csproj" />
     <Project Path="extra-projects/AdventureWorks-EF10/AdventureWorks-EF10.csproj" />
+    <Project Path="extra-projects/AdventureWorks-EF11/AdventureWorks-EF11.csproj" />
   </Folder>
   <Folder Name="/Samples/">
     <Project Path="samples/Wolfgang.DbContextBuilder.Samples.ShadowWorkload/Wolfgang.DbContextBuilder.Samples.ShadowWorkload.csproj" />
@@ -22,6 +23,7 @@
     <Project Path="src/Wolfgang.DbContextBuilder.Abstractions/Wolfgang.DbContextBuilder.Abstractions.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder.AutoFixture/Wolfgang.DbContextBuilder.AutoFixture.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder-Core-EF10/Wolfgang.DbContextBuilder-Core-EF10.csproj" />
+    <Project Path="src/Wolfgang.DbContextBuilder-Core-EF11/Wolfgang.DbContextBuilder-Core-EF11.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder-Core-EF6/Wolfgang.DbContextBuilder-Core-EF6.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder-Core-EF7/Wolfgang.DbContextBuilder-Core-EF7.csproj" />
     <Project Path="src/Wolfgang.DbContextBuilder-Core-EF8/Wolfgang.DbContextBuilder-Core-EF8.csproj" />
@@ -32,6 +34,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="tests/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF10/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF10.csproj" />
+    <Project Path="tests/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF11/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF11.csproj" />
     <Project Path="tests/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF7/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF7.csproj" />
     <Project Path="tests/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF8/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF8.csproj" />
     <Project Path="tests/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF9/Wolfgang.DbContextBuilder-Core.Tests.Unit-EF9.csproj" />

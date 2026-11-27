@@ -12,7 +12,7 @@ service, and asserts on the result — exactly what you would do in your own sui
 The project references the published NuGet package
 (`Wolfgang.DbContextBuilder-Core-EF8`), so it mirrors what a consumer's project
 looks like. Swap the package for the one matching your EF Core version
-(`-Core-EF6` … `-Core-EF10`). The random-data examples also reference
+(`-Core-EF6` … `-Core-EF11`). The random-data examples also reference
 `Wolfgang.DbContextBuilder.AutoFixture`: `SeedWithRandom` needs a provider
 (`.UseAutoFixture()`, or `.UseBogus()` from `Wolfgang.DbContextBuilder.Bogus`).
 

@@ -11,3 +11,4 @@ using Wolfgang.DbContextBuilderCore;
 [assembly: InternalsVisibleTo("Wolfgang.DbContextBuilder-Core.Tests.Unit-EF8")]
 [assembly: InternalsVisibleTo("Wolfgang.DbContextBuilder-Core.Tests.Unit-EF9")]
 [assembly: InternalsVisibleTo("Wolfgang.DbContextBuilder-Core.Tests.Unit-EF10")]
+[assembly: InternalsVisibleTo("Wolfgang.DbContextBuilder-Core.Tests.Unit-EF11")]

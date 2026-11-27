@@ -39,7 +39,7 @@ EF version and leaving the others unserved.
 
 ## Decision
 
-**EF-version wrapper packages (`-Core-EF6` through `-Core-EF10`) link `-Core`'s
+**EF-version wrapper packages (`-Core-EF6` through `-Core-EF11`) link `-Core`'s
 source files directly via `<Compile Include>`, and do not ship independent
 copies or depend on a shared library package.** Each sibling project:
 

@@ -15,7 +15,7 @@ having to rely on an actual database whose data can be changed or deleted over t
 - **[Documentation](docs/introduction.md)** — concepts and getting-started walkthrough
 - **[Getting started](docs/getting-started.md)** — quickest path to a working test
 - **[API Reference](api/Wolfgang.DbContextBuilderCore.yml)** — full member listing for the EF Core
-  packages (`-Core-EF6` through `-Core-EF10` share one API, documented from `-Core-EF10`),
+  packages (`-Core-EF6` through `-Core-EF11` share one API, documented from `-Core-EF10`),
   `Wolfgang.DbContextBuilder.Abstractions`, `.AutoFixture` and `.Bogus`
 
 > The classic `Wolfgang.DbContextBuilder-EF6` package (namespace `Wolfgang.DbContextBuilderEF6`) is
