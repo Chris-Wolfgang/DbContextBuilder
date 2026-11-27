@@ -4,10 +4,10 @@
     Fails when an EF Core version wrapper does not link every shared source file.
 
 .DESCRIPTION
-    The -Core-EF6..EF10 packages compile -Core's source through
+    The -Core-EF6..EF11 packages compile -Core's source through
     <Compile Include="..\Wolfgang.DbContextBuilder-Core\..." Link="..." /> items
     (docs/adr/0001-ef-version-wrappers-link-shared-source.md), and the
-    Core.Tests.Unit-EF7..EF10 test wrappers link Core.Tests.Unit's tests the same
+    Core.Tests.Unit-EF7..EF11 test wrappers link Core.Tests.Unit's tests the same
     way. A file added to the shared project and not linked into a wrapper
     compiles in one package and silently not in the others. This is the
     build-time check ADR-0001 lists as a follow-up (#738).

@@ -1,0 +1,40 @@
+<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <!--
+    Team-shared InspectCode / ReSharper settings for this AdventureWorks-EF*
+    demo project. Scope is per-project (not solution-wide) because these
+    findings are false positives ONLY on the EF Core scaffolder output in
+    Models/Generated/*.cs — hand-written code in src/ still gets the rules
+    enforced normally.
+
+    All ~90 .cs files under Models/Generated/ are produced by
+    `dotnet ef dbcontext scaffold`. They cannot be edited: the scaffolder
+    overwrites them on every regen. The specific noise:
+
+      * `CheckNamespace` — scaffolder emits `namespace AdventureWorks.Models`
+        for files that live under `Models/Generated/`.
+      * `PartialTypeWithSinglePart` — scaffolder emits `public partial record`
+        for every entity, one part per file.
+      * `PartialMethodWithSinglePart` — same pattern for scaffolder-emitted
+        partial methods.
+      * `RedundantUsingDirective` — scaffolder emits `using System;` etc. on
+        every file even though `<ImplicitUsings>enable</ImplicitUsings>`
+        provides them.
+      * `UnusedAutoPropertyAccessor.Global` — entity POCOs are data models
+        never instantiated in this demo (the project's `Program.cs` doesn't
+        exercise them), and R# can't see the InspectCode analyses per-project
+        so it treats every public property setter as unused.
+
+    The extra-projects/.editorconfig already marks Models/Generated/*.cs as
+    `generated_code = true`; Roslyn-based analyzers (Meziantou, CA, Sonar)
+    honour that marker but InspectCode's R#-native inspections do not.
+
+    Program.cs at the project root is a trivial demo shim (~1 file) and does
+    not exercise these rules in practice, so per-project scope is effectively
+    equivalent to Models/Generated/ scope for these projects.
+  -->
+  <s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=CheckNamespace/@EntryIndexedValue">DO_NOT_SHOW</s:String>
+  <s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=PartialTypeWithSinglePart/@EntryIndexedValue">DO_NOT_SHOW</s:String>
+  <s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=PartialMethodWithSinglePart/@EntryIndexedValue">DO_NOT_SHOW</s:String>
+  <s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=RedundantUsingDirective/@EntryIndexedValue">DO_NOT_SHOW</s:String>
+  <s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=UnusedAutoPropertyAccessor_002EGlobal/@EntryIndexedValue">DO_NOT_SHOW</s:String>
+</wpf:ResourceDictionary>
