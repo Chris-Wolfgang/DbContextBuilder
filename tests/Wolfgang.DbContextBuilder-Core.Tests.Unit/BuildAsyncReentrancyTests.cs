@@ -1,8 +1,8 @@
-using AdventureWorks.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AdventureWorks.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Wolfgang.DbContextBuilderCore.Tests.Unit.Models;
@@ -129,7 +129,7 @@ public class BuildAsyncReentrancyTests
     /// </summary>
     [Theory]
     [MemberData(nameof(SeedCalls))]
-    public async Task Seeding_after_BuildAsync_throws_InvalidOperationException(string call)
+    public async Task SeedWith_and_SeedWithRandom_when_called_after_BuildAsync_throw_InvalidOperationException(string call)
     {
         using var builder = new DbContextBuilder<BasicContext>().UseInMemory();
         await using var context = await builder.BuildAsync();
@@ -142,11 +142,32 @@ public class BuildAsyncReentrancyTests
 
 
     /// <summary>
+    /// The message says why seeding is refused and how to recover, not only that it is (#531).
+    /// </summary>
+    [Fact]
+    public async Task Seeding_after_BuildAsync_explains_how_to_recover()
+    {
+        using var builder = new DbContextBuilder<BasicContext>().UseInMemory();
+        await using var context = await builder.BuildAsync();
+
+        var ex = Assert.Throws<InvalidOperationException>(() => SeedCallsByName["SeedWith(entity)"](builder));
+
+        Assert.Equal
+        (
+            "Seed data must be added before the first BuildAsync() call: the database has already been " +
+            "created and seeded. Add all seed data first, or use a new DbContextBuilder.",
+            ex.Message
+        );
+    }
+
+
+
+    /// <summary>
     /// After a provider switch the new, empty database has not been seeded, so seeding is
     /// accepted again and the next build saves every seed row.
     /// </summary>
     [Fact]
-    public async Task Seeding_after_a_provider_switch_is_accepted_and_seeds_the_new_database()
+    public async Task SeedWith_when_called_after_a_provider_switch_seeds_the_new_database()
     {
         // Explicit keys: the first build already assigned "a" its generated key, and SQLite would
         // generate the same value for "b" when the instances are inserted into the new database.

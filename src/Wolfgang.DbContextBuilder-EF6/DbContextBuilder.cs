@@ -6,23 +6,36 @@ using System.Threading.Tasks;
 
 namespace Wolfgang.DbContextBuilderEF6;
 
-
-
-
 /// <summary>
 /// Uses the Builder pattern to create instances of DbContext types seeded with specified data.
 /// </summary>
 /// <remarks>
+/// <para>
 /// The target <typeparamref name="T"/> must have a constructor that accepts
 /// (<see cref="System.Data.Common.DbConnection"/>, <see cref="bool"/>)
 /// for use with in-memory database providers such as Effort.
+/// </para>
+/// <para>
 /// The builder owns its context creator (for Effort, the in-memory connection that holds the
 /// database). Dispose the builder after the last context it built is no longer in use.
+/// </para>
+/// <para>
+/// The first <see cref="Build"/> or <see cref="BuildAsync"/> call creates and seeds the database;
+/// later calls return another context over the same, already-seeded database. Add all seed data
+/// before the first build: the seeding methods throw <see cref="InvalidOperationException"/> after
+/// it. Selecting a provider again (<c>UseEffort()</c>, the same or a different one) starts a new,
+/// empty database that the next build seeds again.
+/// </para>
 /// </remarks>
 public class DbContextBuilder<T> : IDisposable where T : DbContext
 {
     private readonly List<object> _seedData = new List<object>();
     private bool _disposed;
+
+    // The creator whose database Build/BuildAsync has already created and seeded. Later builds on
+    // the same creator do not seed it again (#734, the EF Core builder's #559); a new creator
+    // (UseEffort) is a new, empty database, so it is seeded again.
+    private ICreateDbContext? _seededCreator;
 
 
 
@@ -66,8 +79,8 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Allows the user to specify their own implementation of ICreateRandomEntities
     /// for creating random entities.
     /// </summary>
-    /// <param name="creator">The creator to use</param>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <param name="creator">The creator to use.</param>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="creator"/> is <c>null</c>.</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> UseCustomRandomEntityCreator(ICreateRandomEntities creator)
@@ -88,16 +101,19 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
-    /// <param name="entities">The entities to populate the database with</param>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <param name="entities">The entities to populate the database with.</param>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(IEnumerable<TEntity> entities)
         where TEntity : class
     {
         ThrowIfDisposed();
+
+        ThrowIfSeeded();
 
         if (entities == null)
         {
@@ -109,8 +125,10 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
             throw new ArgumentException("The type of TEntity cannot be string", nameof(entities));
         }
 
-        var enumerable = entities as TEntity[] ?? entities.ToArray();
-        return SeedWith(enumerable);
+        // Iterate directly rather than materializing to an array; the per-item arms are shared
+        // with the params overload (#740).
+        AddSeedItems(entities, nameof(entities));
+        return this;
     }
 
 
@@ -118,38 +136,26 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Populates the specified DbSet with the provided entities.
     /// </summary>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
-    /// <param name="entities">The entities to populate the database with</param>
+    /// <returns>The builder, for chaining.</returns>
+    /// <param name="entities">The entities to populate the database with.</param>
     /// <exception cref="ArgumentNullException">entities is null</exception>
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(params TEntity[] entities)
         where TEntity : class
     {
         ThrowIfDisposed();
 
+        ThrowIfSeeded();
+
         if (entities == null)
         {
             throw new ArgumentNullException(nameof(entities));
         }
 
-        foreach (var entity in entities)
-        {
-            switch (entity)
-            {
-                case null:
-                    throw new ArgumentException("One of the entities is null", nameof(entities));
-                case string:
-                    throw new ArgumentException("One of the entities passed in is of type string", nameof(entities));
-                case IEnumerable<object> e:
-                    _seedData.AddRange(e);
-                    break;
-                default:
-                    _seedData.Add(entity);
-                    break;
-            }
-        }
+        AddSeedItems(entities, nameof(entities));
         return this;
     }
 
@@ -166,11 +172,14 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <exception cref="ArgumentException"><paramref name="entity"/> is a <see cref="string"/> instance (matches the
     /// <c>params</c> overload's rejection regardless of how <typeparamref name="TEntity"/> was inferred), or
     /// <paramref name="entity"/> is a sequence that contains a null or a <see cref="string"/> item.</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(TEntity entity)
         where TEntity : class
     {
         ThrowIfDisposed();
+
+        ThrowIfSeeded();
 
         if (entity == null)
         {
@@ -186,29 +195,7 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
         if (entity is IEnumerable<object> sequence)
         {
-            // Buffer first so the failing call leaves `_seedData` untouched (atomic w.r.t.
-            // seed state). IEnumerable<T> is covariant in T for reference types, so
-            // List<string> casts to IEnumerable<object> at runtime and would slip through
-            // without the per-item check below.
-            var buffer = new List<object>();
-            foreach (var item in sequence)
-            {
-                // Same per-item arms as the params overload: a null item used to be stored and
-                // fail later, inside EF, with an unhelpful ArgumentNullException (#560).
-                if (item is null)
-                {
-                    throw new ArgumentException("One of the entities is null", nameof(entity));
-                }
-
-                if (item is string)
-                {
-                    throw new ArgumentException("One of the entities passed in is of type string", nameof(entity));
-                }
-
-                buffer.Add(item);
-            }
-
-            _seedData.AddRange(buffer);
+            AddSequenceItems(sequence, nameof(entity));
         }
         else
         {
@@ -220,29 +207,81 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
 
 
 
+    // Shared validation + add loop for the IEnumerable and params overloads, so their
+    // null/string/sequence arms cannot drift (#740, as in the EF Core builder).
+    private void AddSeedItems<TEntity>(IEnumerable<TEntity> source, string paramName)
+        where TEntity : class
+    {
+        foreach (var entity in source)
+        {
+            switch (entity)
+            {
+                case null:
+                    throw new ArgumentException("One of the entities is null", paramName);
+                case string:
+                    throw new ArgumentException("One of the entities passed in is of type string", paramName);
+                case IEnumerable<object> e:
+                    // A nested sequence gets the same per-item check as the single-entity
+                    // overload (#735).
+                    AddSequenceItems(e, paramName);
+                    break;
+                default:
+                    _seedData.Add(entity);
+                    break;
+            }
+        }
+    }
+
+
+
+    // Adds each item of a sequence passed as one seed argument. Buffers first so a failing
+    // sequence leaves `_seedData` untouched. IEnumerable<T> is covariant for reference types, so
+    // a List<string> arrives here as IEnumerable<object> and is caught item by item (#560, #735).
+    private void AddSequenceItems(IEnumerable<object> sequence, string paramName)
+    {
+        var buffer = new List<object>();
+        foreach (var item in sequence)
+        {
+            if (item is null)
+            {
+                throw new ArgumentException("One of the entities is null", paramName);
+            }
+
+            if (item is string)
+            {
+                throw new ArgumentException("One of the entities passed in is of type string", paramName);
+            }
+
+            buffer.Add(item);
+        }
+
+        _seedData.AddRange(buffer);
+    }
+
+
+
     /// <summary>
     /// Populates the specified DbSet with random entities of type TEntity.
     /// </summary>
     /// <param name="count">The number of items to create</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count) where TEntity : class
     {
         ThrowIfDisposed();
 
-        if (count < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
-        }
+        ThrowIfSeeded();
 
-        var entities = RandomEntityCreator
-            .CreateRandomEntities<TEntity>(count);
+        ThrowIfCountInvalid(count);
 
-        _seedData.AddRange(entities);
-
-        return this;
+        return AddRandom
+        (
+            RandomEntityCreator
+                .CreateRandomEntities<TEntity>(count)
+        );
     }
 
 
@@ -253,31 +292,30 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="func"/> is <c>null</c>.</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, TEntity> func) where TEntity : class
     {
         ThrowIfDisposed();
 
-        if (count < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
-        }
+        ThrowIfSeeded();
+
+        ThrowIfCountInvalid(count);
 
         if (func == null)
         {
             throw new ArgumentNullException(nameof(func));
         }
 
-        var entities = RandomEntityCreator
-            .CreateRandomEntities<TEntity>(count)
-            .Select(func);
-
-        _seedData.AddRange(entities);
-
-        return this;
+        return AddRandom
+        (
+            RandomEntityCreator
+                .CreateRandomEntities<TEntity>(count)
+                .Select(func)
+        );
     }
 
 
@@ -288,31 +326,30 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <param name="count">The number of items to create</param>
     /// <param name="func">A function that takes a TEntity and the index number of the entity and returns an updated TEntity</param>
     /// <typeparam name="TEntity">The type of entity to create</typeparam>
-    /// <returns><see cref="DbContextBuilder{T}"/></returns>
+    /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
+    /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="func"/> is <c>null</c>.</exception>
     /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, int, TEntity> func) where TEntity : class
     {
         ThrowIfDisposed();
 
-        if (count < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
-        }
+        ThrowIfSeeded();
+
+        ThrowIfCountInvalid(count);
 
         if (func == null)
         {
             throw new ArgumentNullException(nameof(func));
         }
 
-        var entities = RandomEntityCreator
-            .CreateRandomEntities<TEntity>(count)
-            .Select(func);
-
-        _seedData.AddRange(entities);
-
-        return this;
+        return AddRandom
+        (
+            RandomEntityCreator
+                .CreateRandomEntities<TEntity>(count)
+                .Select(func)
+        );
     }
 
 
@@ -320,6 +357,10 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// <summary>
     /// Creates a new instance of <typeparamref name="T"/> seeded with the configured data.
     /// </summary>
+    /// <remarks>
+    /// The first call creates the database and saves the seed data. Later calls return a new
+    /// context over the same database without seeding it again.
+    /// </remarks>
     /// <returns>A new instance of <typeparamref name="T"/>.</returns>
     /// <exception cref="MissingMethodException">
     /// <typeparamref name="T"/> does not have a constructor that accepts
@@ -346,12 +387,17 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         // context — otherwise it leaks for the lifetime of the builder. The seed data
         // remains because EffortDbContextCreator holds the underlying connection open
         // independent of any one context.
-        using (var seedContext = contextCreator.CreateDbContext<T>())
+        if (!ReferenceEquals(_seededCreator, contextCreator))
         {
-            if (PrepareSeedContext(seedContext))
+            using (var seedContext = contextCreator.CreateDbContext<T>())
             {
-                seedContext.SaveChanges();
+                if (PrepareSeedContext(seedContext))
+                {
+                    seedContext.SaveChanges();
+                }
             }
+
+            _seededCreator = contextCreator;
         }
 
         return contextCreator.CreateDbContext<T>();
@@ -363,6 +409,10 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
     /// Creates a new instance of <typeparamref name="T"/> seeded with the configured data
     /// asynchronously.
     /// </summary>
+    /// <remarks>
+    /// The first call creates the database and saves the seed data. Later calls return a new
+    /// context over the same database without seeding it again.
+    /// </remarks>
     /// <returns>A new instance of <typeparamref name="T"/>.</returns>
     /// <exception cref="MissingMethodException">
     /// <typeparamref name="T"/> does not have a constructor that accepts
@@ -385,15 +435,57 @@ public class DbContextBuilder<T> : IDisposable where T : DbContext
         var contextCreator = ResolveContextCreator();
 
         // Same temporary seed context as Build; only the save is asynchronous.
-        using (var seedContext = contextCreator.CreateDbContext<T>())
+        if (!ReferenceEquals(_seededCreator, contextCreator))
         {
-            if (PrepareSeedContext(seedContext))
+            using (var seedContext = contextCreator.CreateDbContext<T>())
             {
-                await seedContext.SaveChangesAsync().ConfigureAwait(false);
+                if (PrepareSeedContext(seedContext))
+                {
+                    await seedContext.SaveChangesAsync().ConfigureAwait(false);
+                }
             }
+
+            _seededCreator = contextCreator;
         }
 
         return contextCreator.CreateDbContext<T>();
+    }
+
+
+
+    // The seeding methods call this: seed data added after the database was seeded would never
+    // reach it, because later builds on the same creator do not seed again (#734).
+    private void ThrowIfSeeded()
+    {
+        if (_seededCreator is not null && ReferenceEquals(_seededCreator, CreateDbContext))
+        {
+            throw new InvalidOperationException
+            (
+                "Seed data must be added before the first Build() or BuildAsync() call: the database has already " +
+                "been created and seeded. Add all seed data first, or use a new DbContextBuilder."
+            );
+        }
+    }
+
+
+
+    // The count guard the three SeedWithRandom overloads share (#740).
+    private static void ThrowIfCountInvalid(int count)
+    {
+        if (count < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), "Count must be greater than 0");
+        }
+    }
+
+
+
+    // Adds the generated entities for the three SeedWithRandom overloads (#740).
+    private DbContextBuilder<T> AddRandom<TEntity>(IEnumerable<TEntity> entities)
+        where TEntity : class
+    {
+        _seedData.AddRange(entities);
+        return this;
     }
 
 
