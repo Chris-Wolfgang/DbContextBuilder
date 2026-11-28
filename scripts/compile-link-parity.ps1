@@ -4,10 +4,10 @@
     Fails when an EF Core version wrapper does not link every shared source file.
 
 .DESCRIPTION
-    The -Core-EF6..EF10 packages compile -Core's source through
+    The -Core-EF6..EF11 packages compile -Core's source through
     <Compile Include="..\Wolfgang.DbContextBuilder-Core\..." Link="..." /> items
     (docs/adr/0001-ef-version-wrappers-link-shared-source.md), and the
-    Core.Tests.Unit-EF7..EF10 test wrappers link Core.Tests.Unit's tests the same
+    Core.Tests.Unit-EF7..EF11 test wrappers link Core.Tests.Unit's tests the same
     way. A file added to the shared project and not linked into a wrapper
     compiles in one package and silently not in the others. This is the
     build-time check ADR-0001 lists as a follow-up (#738).
@@ -57,7 +57,19 @@ foreach ($group in $groups) {
 
     foreach ($wrapper in $group.Wrappers) {
         $csproj = Get-ChildItem -Path $wrapper.FullName -Filter '*.csproj' | Select-Object -First 1
-        if (-not $csproj) { throw "No .csproj in $($wrapper.FullName)" }
+        if (-not $csproj)
+        {
+            # A protected-only PR can land a wrapper's config (e.g. its .csproj.DotSettings)
+            # before the PR that adds the project itself. Skip such a folder while it holds
+            # no C# source; a folder with .cs files and no .csproj is still an error.
+            $wrapperPath = ConvertTo-RepoPath $wrapper.FullName
+            $sources = @(git ls-files -- "$wrapperPath/*.cs" "$wrapperPath/**/*.cs")
+            if ($LASTEXITCODE -ne 0) { throw "git ls-files failed for $wrapperPath" }
+            if ($sources.Count -gt 0) { throw "No .csproj in $($wrapper.FullName)" }
+
+            Write-Host "::warning::Skipping $wrapperPath - it has no .csproj and no .cs files yet."
+            continue
+        }
 
         [xml]$xml = Get-Content -Raw -LiteralPath $csproj.FullName
         $linked = @(

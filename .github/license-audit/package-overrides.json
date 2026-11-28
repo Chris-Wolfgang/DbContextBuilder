@@ -4,5 +4,11 @@
     "Id": "SQLitePCLRaw.lib.e_sqlite3",
     "Version": "3.53.3",
     "License": "Apache-2.0"
+  },
+  {
+    "_comment": "The native SQLite library that SQLitePCLRaw 3.x (EF Core 11 Sqlite) depends on. Its LICENSE.txt reads \"SQLite is Public Domain\" and links https://sqlite.org/copyright.html: the SQLite public-domain dedication, SPDX \"blessing\".",
+    "Id": "SQLite",
+    "Version": "3.53.4",
+    "License": "blessing"
   }
 ]
