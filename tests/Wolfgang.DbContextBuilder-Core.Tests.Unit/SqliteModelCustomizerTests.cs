@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.Data.Sqlite;
@@ -879,6 +880,7 @@ public class SqliteModelCustomizerTests
 
 
 
+    [SuppressMessage("Major Code Smell", "S3459:Unassigned members should be removed", Justification = "Model-only type: the tests read its EF metadata, EF would set the values.")]
     private sealed class Invoice
     {
         public int Id { get; set; }

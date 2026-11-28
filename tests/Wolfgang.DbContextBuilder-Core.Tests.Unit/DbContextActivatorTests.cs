@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -127,6 +128,7 @@ public class DbContextActivatorTests
 
 
 
+    [SuppressMessage("Major Code Smell", "S2094:Classes should not be empty", Justification = "A context with no options constructor is the fixture.")]
     private sealed class ContextWithoutOptionsCtor : DbContext
     {
     }

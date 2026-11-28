@@ -66,7 +66,7 @@ public class TestsWithDefaults : DbContextBuilderTestsBase
     public async Task BuildAsync_when_disposed_throws_ObjectDisposedException()
     {
         // Arrange
-        using var sut = new DbContextBuilder<AdventureWorksDbContext>();
+        var sut = new DbContextBuilder<AdventureWorksDbContext>();
         sut.Dispose();
 
         // Act & Assert
@@ -86,7 +86,7 @@ public class TestsWithDefaults : DbContextBuilderTestsBase
     public void Dispose_when_using_Sqlite_disposes_creator()
     {
         // Arrange
-        using var sut = new DbContextBuilder<AdventureWorksDbContext>().UseSqlite();
+        var sut = new DbContextBuilder<AdventureWorksDbContext>().UseSqlite();
         var creator = Assert.IsType<SqliteDbContextCreator>(sut.CreateDbContext);
 
         // Act

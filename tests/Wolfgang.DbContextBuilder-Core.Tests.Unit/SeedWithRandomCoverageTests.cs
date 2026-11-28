@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -840,8 +841,8 @@ public class SeedWithRandomCoverageTests
     {
         using var sut = NewBuilder().UseInMemory();
 
-        Assert.Equal("func", Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom<CoverageManufacturer>(1, (Func<CoverageManufacturer, CoverageManufacturer>)null!)).ParamName);
-        Assert.Equal("func", Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom<CoverageManufacturer>(1, (Func<CoverageManufacturer, int, CoverageManufacturer>)null!)).ParamName);
+        Assert.Equal("func", Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom(1, (Func<CoverageManufacturer, CoverageManufacturer>)null!)).ParamName);
+        Assert.Equal("func", Assert.Throws<ArgumentNullException>(() => sut.SeedWithRandom(1, (Func<CoverageManufacturer, int, CoverageManufacturer>)null!)).ParamName);
     }
 
 
@@ -1402,6 +1403,7 @@ internal sealed class CoverageAllScalars
 
 // No members, so no executable lines to leave uncovered (#450 allows no test-model exclusions).
 // It has no key either, which is the point: EF cannot model it.
+[SuppressMessage("Major Code Smell", "S2094:Classes should not be empty", Justification = "A keyless type EF cannot model is the point of the fixture.")]
 internal sealed class KeylessEntity;
 
 
@@ -1831,6 +1833,7 @@ internal sealed class DisposeCountingDbContextCreator : ICreateDbContext, IDispo
 
 
 /// <summary>A builder subclass with a finalizer that records it ran (#531).</summary>
+[SuppressMessage("Design", "MA0055:Do not use finalizer", Justification = "The finalizer path of Dispose(bool) is what #531's test exercises.")]
 internal sealed class FinalizableBuilder(StrongBox<bool> finalized) : DbContextBuilder<CoverageContext>
 {
     ~FinalizableBuilder()
