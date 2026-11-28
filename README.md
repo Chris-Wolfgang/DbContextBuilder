@@ -209,7 +209,8 @@ Coverage is gated once, on Stage 1; the other legs prove the tests pass there.
 ## 🔐 Verify the build
 
 Every release publishes a signed SLSA build-provenance attestation, a CycloneDX
-SBOM, and a reproducible-build manifest alongside the NuGet packages. See
+SBOM, and the reproducible-build assets `SHA256SUMS.txt` and `BUILD-MANIFEST.txt`
+alongside the NuGet packages. See
 [SECURITY.md § Verifying the supply chain](SECURITY.md#verifying-the-supply-chain)
 to verify a downloaded package came from this repository's CI, and
 [docs/REPRODUCIBLE-BUILD.md](docs/REPRODUCIBLE-BUILD.md) to independently rebuild
