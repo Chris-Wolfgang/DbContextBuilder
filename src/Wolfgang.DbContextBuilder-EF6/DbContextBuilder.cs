@@ -16,6 +16,10 @@ namespace Wolfgang.DbContextBuilderEF6;
 /// for use with in-memory database providers such as Effort.
 /// </para>
 /// <para>
+/// The builder owns its context creator (for Effort, the in-memory connection that holds the
+/// database). Dispose the builder after the last context it built is no longer in use.
+/// </para>
+/// <para>
 /// The first <see cref="Build"/> or <see cref="BuildAsync"/> call creates and seeds the database;
 /// later calls return another context over the same, already-seeded database. Add all seed data
 /// before the first build: the seeding methods throw <see cref="InvalidOperationException"/> after
@@ -23,9 +27,10 @@ namespace Wolfgang.DbContextBuilderEF6;
 /// empty database that the next build seeds again.
 /// </para>
 /// </remarks>
-public class DbContextBuilder<T> where T : DbContext
+public class DbContextBuilder<T> : IDisposable where T : DbContext
 {
     private readonly List<object> _seedData = new List<object>();
+    private bool _disposed;
 
     // The creator whose database Build/BuildAsync has already created and seeded. Later builds on
     // the same creator do not seed it again (#734, the EF Core builder's #559); a new creator
@@ -35,6 +40,34 @@ public class DbContextBuilder<T> where T : DbContext
 
 
     internal ICreateDbContext? CreateDbContext { get; set; }
+
+
+
+    // Replaces the active context creator, disposing the previous one: re-selecting a provider
+    // (UseEffort twice, say) used to drop the old creator and its open connection (#562).
+    internal void SetCreateDbContext(ICreateDbContext creator)
+    {
+        ThrowIfDisposed();
+
+        if (!ReferenceEquals(CreateDbContext, creator))
+        {
+            CreateDbContext?.Dispose();
+        }
+
+        CreateDbContext = creator;
+    }
+
+
+
+    // Every configuration entry point and Build/BuildAsync call this first: a disposed builder
+    // must not accept new state or create a connection nothing would release.
+    internal void ThrowIfDisposed()
+    {
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(DbContextBuilder<T>));
+        }
+    }
 
 
 
@@ -49,8 +82,11 @@ public class DbContextBuilder<T> where T : DbContext
     /// <param name="creator">The creator to use.</param>
     /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="creator"/> is <c>null</c>.</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> UseCustomRandomEntityCreator(ICreateRandomEntities creator)
     {
+        ThrowIfDisposed();
+
         if (creator == null)
         {
             throw new ArgumentNullException(nameof(creator));
@@ -71,9 +107,12 @@ public class DbContextBuilder<T> where T : DbContext
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
     /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(IEnumerable<TEntity> entities)
         where TEntity : class
     {
+        ThrowIfDisposed();
+
         ThrowIfSeeded();
 
         if (entities == null)
@@ -103,9 +142,12 @@ public class DbContextBuilder<T> where T : DbContext
     /// <exception cref="ArgumentException">entities contains a null item</exception>
     /// <exception cref="ArgumentException">entities contains a string</exception>
     /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(params TEntity[] entities)
         where TEntity : class
     {
+        ThrowIfDisposed();
+
         ThrowIfSeeded();
 
         if (entities == null)
@@ -131,9 +173,12 @@ public class DbContextBuilder<T> where T : DbContext
     /// <c>params</c> overload's rejection regardless of how <typeparamref name="TEntity"/> was inferred), or
     /// <paramref name="entity"/> is a sequence that contains a null or a <see cref="string"/> item.</exception>
     /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> SeedWith<TEntity>(TEntity entity)
         where TEntity : class
     {
+        ThrowIfDisposed();
+
         ThrowIfSeeded();
 
         if (entity == null)
@@ -223,8 +268,11 @@ public class DbContextBuilder<T> where T : DbContext
     /// <returns>The builder, for chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count) where TEntity : class
     {
+        ThrowIfDisposed();
+
         ThrowIfSeeded();
 
         ThrowIfCountInvalid(count);
@@ -248,8 +296,11 @@ public class DbContextBuilder<T> where T : DbContext
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="func"/> is <c>null</c>.</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, TEntity> func) where TEntity : class
     {
+        ThrowIfDisposed();
+
         ThrowIfSeeded();
 
         ThrowIfCountInvalid(count);
@@ -279,8 +330,11 @@ public class DbContextBuilder<T> where T : DbContext
     /// <exception cref="ArgumentOutOfRangeException">count is less than 1</exception>
     /// <exception cref="InvalidOperationException">A previous <see cref="Build"/> or <see cref="BuildAsync"/> call has already created and seeded the database.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="func"/> is <c>null</c>.</exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public DbContextBuilder<T> SeedWithRandom<TEntity>(int count, Func<TEntity, int, TEntity> func) where TEntity : class
     {
+        ThrowIfDisposed();
+
         ThrowIfSeeded();
 
         ThrowIfCountInvalid(count);
@@ -321,8 +375,11 @@ public class DbContextBuilder<T> where T : DbContext
     /// <c>InitializeDatabase</c> with a more actionable message; the original exception is
     /// in <see cref="Exception.InnerException"/>.
     /// </exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public T Build()
     {
+        ThrowIfDisposed();
+
         var contextCreator = ResolveContextCreator();
 
         // Create a temporary context to initialize the database (via Effort's shared
@@ -370,8 +427,11 @@ public class DbContextBuilder<T> where T : DbContext
     /// <c>InitializeDatabase</c> with a more actionable message; the original exception is
     /// in <see cref="Exception.InnerException"/>.
     /// </exception>
+    /// <exception cref="ObjectDisposedException">The builder has been disposed.</exception>
     public async Task<T> BuildAsync()
     {
+        ThrowIfDisposed();
+
         var contextCreator = ResolveContextCreator();
 
         // Same temporary seed context as Build; only the save is asynchronous.
@@ -478,5 +538,40 @@ public class DbContextBuilder<T> where T : DbContext
                                "returned by the context creator has already been disposed).";
             throw new InvalidOperationException(msg, e);
         }
+    }
+
+
+
+    /// <summary>
+    /// Disposes the context creator the builder owns, releasing its resources (for Effort, the
+    /// in-memory connection and with it the database).
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+
+
+    /// <summary>
+    /// Releases the context creator. A derived class that adds resources overrides this and calls
+    /// the base implementation.
+    /// </summary>
+    /// <param name="disposing"><see langword="true"/> when called from <see cref="Dispose()"/>;
+    /// <see langword="false"/> from a finalizer, when only unmanaged resources may be released.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            CreateDbContext?.Dispose();
+        }
+
+        _disposed = true;
     }
 }
