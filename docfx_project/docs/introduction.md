@@ -29,7 +29,7 @@ The same builder works against the InMemory provider, SQLite in-memory, and a SQ
 
 DbContextBuilder ships one package per supported EF version so you can install only what you need:
 
-- `Wolfgang.DbContextBuilder-Core-EF6` through `-Core-EF10` — pinned to a single EF Core major
+- `Wolfgang.DbContextBuilder-Core-EF6` through `-Core-EF11` — pinned to a single EF Core major
 - `Wolfgang.DbContextBuilder-EF6` — for projects still on classic Entity Framework 6 (`System.Data.Entity`)
 
 Pick the one that matches your project's EF flavor. With the EF Core packages, `SeedWithRandom`

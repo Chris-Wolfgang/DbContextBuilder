@@ -14,7 +14,7 @@ in-memory database, for tests: choose a provider, seed specific and/or random ro
 
 | Package | Targets | Notes |
 |---|---|---|
-| `Wolfgang.DbContextBuilder-Core-EF6` … `-Core-EF10` | net6.0 … net10.0 (one each) | Each pins one EF Core major. |
+| `Wolfgang.DbContextBuilder-Core-EF6` … `-Core-EF11` | net6.0 … net11.0 (one each) | Each pins one EF Core major. |
 | `Wolfgang.DbContextBuilder-EF6` | net462–net481 | Classic EF 6 on Effort; has its own `ICreateRandomEntities` (ADR-0004). |
 | `Wolfgang.DbContextBuilder.Abstractions` | netstandard2.0; net10.0 | Shared `ICreateRandomEntities`. |
 | `Wolfgang.DbContextBuilder.AutoFixture` / `.Bogus` | net6.0–net10.0 | Random-data providers: `UseAutoFixture()` / `UseBogus()`. |
@@ -53,7 +53,7 @@ await using var context = await builder
 ```
 Wolfgang.DbContextBuilder.slnx        solution (add every new project to it)
 src/                                  the packages above (+ the retired -Core source project)
-tests/                                Core.Tests.Unit (shared sources, linked into Core-EF7..EF10
+tests/                                Core.Tests.Unit (shared sources, linked into Core-EF7..EF11
                                       wrappers), EF6, AutoFixture, Bogus, Concurrency (Coyote),
                                       Fuzz (FsCheck), DocExamples (compiles doc samples)
 benchmarks/                           BenchmarkDotNet suite (charted on gh-pages /dev/bench/)
@@ -66,7 +66,7 @@ scripts/                              build-pr.ps1, changelog.ps1, tfm-parity.ps
 ```
 
 A new test source file in `tests/Wolfgang.DbContextBuilder-Core.Tests.Unit/` must also be linked
-(`<Compile Include=... Link=...>`) into each `tests/*-Core-EF7..EF10.Tests.Unit` wrapper.
+(`<Compile Include=... Link=...>`) into each `tests/*-Core.Tests.Unit-EF7..EF11` wrapper.
 
 ## Build, test, gates
 

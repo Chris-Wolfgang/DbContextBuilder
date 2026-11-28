@@ -24,6 +24,7 @@ DbContextBuilder ships as a family of packages — install the one that matches 
 | [`Wolfgang.DbContextBuilder-Core-EF8`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF8) | EF Core 8 | Pins EF Core 8 (LTS). |
 | [`Wolfgang.DbContextBuilder-Core-EF9`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF9) | EF Core 9 | Pins EF Core 9. |
 | [`Wolfgang.DbContextBuilder-Core-EF10`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF10) | EF Core 10 | Pins EF Core 10. |
+| [`Wolfgang.DbContextBuilder-Core-EF11`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-Core-EF11) | EF Core 11 | Pins EF Core 11. |
 | [`Wolfgang.DbContextBuilder-EF6`](https://www.nuget.org/packages/Wolfgang.DbContextBuilder-EF6) | Classic EF 6 (non-Core) | For applications still on `System.Data.Entity` / EF 6.x. |
 
 > **`Wolfgang.DbContextBuilder-Core` is retired.** Versions up to 0.8.1 remain on NuGet and keep
@@ -59,6 +60,7 @@ Each package targets the .NET runtimes its EF version requires:
 | `Wolfgang.DbContextBuilder-Core-EF8` | `net8.0` |
 | `Wolfgang.DbContextBuilder-Core-EF9` | `net9.0` |
 | `Wolfgang.DbContextBuilder-Core-EF10` | `net10.0` |
+| `Wolfgang.DbContextBuilder-Core-EF11` | `net11.0` |
 | `Wolfgang.DbContextBuilder-EF6` (classic) | `net462; net47; net471; net472; net48; net481` |
 | `Wolfgang.DbContextBuilder.Abstractions` | `netstandard2.0; net10.0; net11.0` |
 | `Wolfgang.DbContextBuilder.AutoFixture` | `net6.0; net7.0; net8.0; net9.0; net10.0; net11.0` |
